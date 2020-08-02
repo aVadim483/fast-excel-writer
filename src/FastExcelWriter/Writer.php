@@ -577,11 +577,11 @@ class Writer
     {
         if (empty($border[$side]) || empty($border[$side]['style'])) {
             $tag = "<$side/>";
+        }elseif (empty($border[$side]['color'])) {
+            $tag = "<$side style=\"" .  $border[$side]['style'] . '"/>';
         } else {
             $tag = "<$side style=\"" .  $border[$side]['style'] . '">';
-            if (!empty($border[$side]['color'])) {
-                $tag .= '<color rgb="' . $border[$side]['color'] . '"/>';
-            }
+            $tag .= '<color rgb="' . $border[$side]['color'] . '"/>';
             $tag .= "</$side>";
         }
         return $tag;

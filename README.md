@@ -14,7 +14,9 @@ This library creates Excel compatible spreadsheets in xlsx format (Office 2007+)
 
 **PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.
 **FastExcelWriter** can only write and only in xlsx format, but does it very fast 
-and with minimal memory usage. **Fast Excel Writer**:
+and with minimal memory usage.
+
+**FastExcelWriter**:
 * 7-9 times faster
 * uses less memory by 8-10 times
 * supports writing huge 100K+ row spreadsheets
@@ -59,17 +61,17 @@ $headStyle = [
 $excel = new Excel(['Sheet1']);
 $sheet = $excel->getSheet();
 
-$sheet->writeRow($row, $headStyle);
+$sheet->writeRow($head, $headStyle);
 
 $sheet
     ->setColFormats(['date', 'string', '0.00'])
     ->setColWidths([12, 14, 5]);
 
 foreach($data as $row) {
-    $sheet->writeRow($row, $rowOptions);
+    $sheet->writeRow($row);
 }
 
-$excel->save($outFileName);
+$excel->save('simple.xlsx');
 ```
 ### Formulas
 
@@ -102,7 +104,7 @@ $totalRow = [
 
 $sheet->writeRow($totalRow);
 
-$excel->save($outFileName);
+$excel->save('formulas.xlsx');
 
 ```
 
@@ -131,7 +133,7 @@ foreach($data as $row) {
     $sheet->writeRow($row );
 }
 
-$excel->save($outFileName);
+$excel->save('formats.xlsx');
 ```
 
 Simple cell formats map to more advanced cell formats

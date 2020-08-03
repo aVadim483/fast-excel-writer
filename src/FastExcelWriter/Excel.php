@@ -27,28 +27,37 @@ class Excel
     /**
      * Excel constructor
      *
-     * @param array|string $sheets
      * @param Writer $writer
      */
-    public function __construct($sheets = null, $writer = null)
+    public function __construct($writer = null)
     {
-        if (empty($sheets)) {
-            $sheets = ['Sheet1'];
-        } else {
-            $sheets = (array)$sheets;
-        }
-        foreach ($sheets as $sheetName) {
-            $sheet = $this->makeSheet($sheetName);
-            if (count($this->sheets) === 1) {
-                $sheet->active = true;
-            }
-        }
         if (null === $writer) {
             $writer = new Writer($this);
         }
         $this->writer = $writer;
         $this->setDefaultLocale();
         Style::setDefaultFont(['name' => 'Arial', 'size' => 10]);
+    }
+
+    /**
+     * @param array|string $sheets
+     * @param Writer $writer
+     *
+     * @return Excel
+     */
+    public static function create($sheets = null, $writer = null)
+    {
+        $excel = new self($writer);
+        if (empty($sheets)) {
+            $sheets = ['Sheet1'];
+        } else {
+            $sheets = (array)$sheets;
+        }
+        foreach ($sheets as $sheetName) {
+            $sheet = $excel->makeSheet($sheetName);
+        }
+
+        return $excel;
     }
 
     /**
@@ -596,6 +605,9 @@ class Excel
             $this->sheets[$key]->key = $key;
             $this->sheets[$key]->index = count($this->sheets);
             $this->sheets[$key]->xmlName = 'sheet' . $this->sheets[$key]->index . '.xml';
+            if (count($this->sheets) === 1) {
+                $this->sheets[$key]->active = true;
+            }
         }
         return $this->sheets[$key];
     }

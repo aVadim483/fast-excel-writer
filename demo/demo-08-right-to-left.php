@@ -27,7 +27,7 @@ $data = [
 ];
 
 $timer = microtime(true);
-$excel = new Excel();
+$excel = Excel::create();
 $excel->setRightToLeft(true);
 
 $sheet = $excel->getSheet();
@@ -42,3 +42,5 @@ foreach($data as $row) {
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+
+// EOF

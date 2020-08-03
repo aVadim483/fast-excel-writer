@@ -7,7 +7,7 @@ use \avadim\FastExcelWriter\Excel;
 use \avadim\FastExcelWriter\Style;
 
 $timer = microtime(true);
-$excel = new Excel();
+$excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidth([1, 2, 3, 4, 5, 6, 7], 4);
@@ -54,3 +54,5 @@ $area->setStyle('F2', $style3);
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+
+// EOF

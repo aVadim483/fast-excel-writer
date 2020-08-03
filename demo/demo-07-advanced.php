@@ -41,7 +41,7 @@ $colors = ['cc9', 'c9c', 'cc9', 'c9f', '9cf', '9fc', '36f', '3f6', '63f', '36c',
 $timer = microtime(true);
 
 // Create new Excel book
-$excel = new Excel(['Demo']);
+$excel = Excel::create(['Demo']);
 
 // Set locale - In most cases, the locale is automatically set correctly,
 // but sometimes you need to do it manually
@@ -115,9 +115,6 @@ $area->setOuterBorder('R0C0:R1C9', Style::BORDER_THICK);
 
 $sheet->writeAreas();
 
-//$excel->save($outFileName);exit;
-//$sheet->setAutofilter(true);
-
 /*
  * You can set three levels for cell style^
  * 1. Default style for sheet via setDefaultStyle()
@@ -149,19 +146,8 @@ foreach($data as $row) {
     $sheet->writeRow($row, $rowOptions);
 }
 
-//$sheet->setFreeze(3, 3);
-//$sheet->setFreeze(0, 3);
-//$sheet->setAutofilter(true);
-//$sheet->writeRow($data);
-
-
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
 
-/*
-header('Content-Type', 'application/vnd.ms-excel');
-header('Content-Disposition', 'attachment; filename=demo.xlsx');
-readfile($fileName);
-*/
 // EOF

@@ -58,7 +58,7 @@ $headStyle = [
     'border' => 'thin',
 ];
 
-$excel = new Excel(['Sheet1']);
+$excel = Excel::create(['Sheet1']);
 $sheet = $excel->getSheet();
 
 $sheet->writeRow($head, $headStyle);
@@ -84,7 +84,7 @@ require 'vendor/autoload.php';
 
 use \avadim\FastExcelWriter\Excel;
 
-$excel = new Excel(['Formulas']);
+$excel = Excel::create(['Formulas']);
 $sheet = $excel->getSheet();
 
 // Set Russian locale

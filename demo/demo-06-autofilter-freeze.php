@@ -17,7 +17,7 @@ for($i=0; $i<1000; $i++) {
 }
 
 $timer = microtime(true);
-$excel = new Excel();
+$excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidths([8, 36, 8, 18]);
@@ -33,3 +33,5 @@ $sheet
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+
+// EOF

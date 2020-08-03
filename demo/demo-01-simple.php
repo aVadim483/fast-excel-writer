@@ -27,7 +27,7 @@ $data = [
 ];
 
 $timer = microtime(true);
-$excel = new Excel();
+$excel = Excel::create();
 $sheet = $excel->getSheet();
 
 // The fastest way to write data is row by row
@@ -40,3 +40,5 @@ foreach($data as $row) {
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+
+// EOF

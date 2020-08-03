@@ -6,7 +6,7 @@ $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 use \avadim\FastExcelWriter\Excel;
 
 $timer = microtime(true);
-$excel = new Excel(['Total']);
+$excel = Excel::create(['Total']);
 
 // make new sheet
 $sheet = $excel->makeSheet('Jan');
@@ -38,3 +38,5 @@ $sheet->writeRow(['Mar 2020', '=SUM(Mar!B:B)']);
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+
+// EOF

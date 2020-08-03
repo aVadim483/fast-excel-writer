@@ -18,16 +18,15 @@ $s4 = substr($s, mt_rand() % 16000, mt_rand() % 5 + 5);
 $row = [$s1, $s2, $s3, $s4];
 
 
-
 $timer = microtime(true);
-$excel = new Excel(['250K']);
+$excel = Excel::create(['250K']);
 $sheet = $excel->getSheet();
 
 $sheet->setColFormats(['string', 'string', 'string', 'string']);
 
 $rowCount = 250000;
 for($i = 0; $i < $rowCount; $i++) {
-    $sheet->writeRow($row, $rowOptions);
+    $sheet->writeRow($row);
 }
 
 $excel->save($outFileName);

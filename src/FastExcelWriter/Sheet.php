@@ -505,8 +505,8 @@ class Sheet
     /**
      * @param Writer $writer
      * @param array $row
-     * @param array $rowOptions
-     * @param array $cellsOptions
+     * @param array|null $rowOptions
+     * @param array|null $cellsOptions
      */
     protected function _writeRow($writer, array $row = [], $rowOptions = null, $cellsOptions = null)
     {

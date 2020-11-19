@@ -217,22 +217,22 @@ class Writer
         }
 
         $zip->addEmptyDir('docProps/');
-        $zip->addFromString('docProps/app.xml', $this->buildAppXML($metadata));
-        $zip->addFromString('docProps/core.xml', $this->buildCoreXML($metadata));
+        $zip->addFromString('docProps/app.xml', $this->_buildAppXML($metadata));
+        $zip->addFromString('docProps/core.xml', $this->_buildCoreXML($metadata));
 
         $zip->addEmptyDir('_rels/');
-        $zip->addFromString('_rels/.rels', $this->buildRelationshipsXML());
+        $zip->addFromString('_rels/.rels', $this->_buildRelationshipsXML());
 
         $zip->addEmptyDir('xl/worksheets/');
         foreach ($sheets as $sheet) {
             $zip->addFile($sheet->fileName, 'xl/worksheets/' . $sheet->xmlName);
         }
-        $zip->addFromString('xl/workbook.xml', $this->buildWorkbookXML($sheets));
-        $zip->addFile($this->writeStylesXML(), 'xl/styles.xml');  //$zip->addFromString("xl/styles.xml"           , self::buildStylesXML() );
-        $zip->addFromString('[Content_Types].xml', $this->buildContentTypesXML($sheets));
+        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($sheets));
+        $zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');  //$zip->addFromString("xl/styles.xml"           , self::buildStylesXML() );
+        $zip->addFromString('[Content_Types].xml', $this->_buildContentTypesXML($sheets));
 
         $zip->addEmptyDir('xl/_rels/');
-        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->buildWorkbookRelsXML($sheets));
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($sheets));
         $zip->close();
 
         return true;
@@ -485,11 +485,16 @@ class Writer
                 $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');
             } elseif ($numFormatType === 'n_numeric') {
                 //$file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . self::xmlSpecialChars($value) . '</v></c>');//int,float,currency
-                $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" ><v>' . self::xmlSpecialChars($value) . '</v></c>');//int,float,currency
+                if (!is_int($value) && !is_float($value)) {
+                    $value = self::xmlSpecialChars($value);
+                }
+                $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" ><v>' . $value . '</v></c>');//int,float,currency
             } elseif ($numFormatType === 'n_auto' || 1) { //auto-detect unknown column types
                 if (!is_string($value) || $value === '0' || ($value[0] !== '0' && ctype_digit($value)) || preg_match("/^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/", $value)) {
-                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . self::xmlSpecialChars($value) . '</v></c>');//int,float,currency
-                } else { //implied: ($cellFormat=='string')
+                    //$file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . self::xmlSpecialChars($value) . '</v></c>');//int,float,currency
+                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');//int,float,currency
+                } else {
+                    //implied: ($cellFormat=='string')
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
@@ -502,7 +507,7 @@ class Writer
     /**
      * @return array
      */
-    protected function styleFontIndexes()
+    protected function _styleFontIndexes()
     {
         $fills = ['', ''];//2 placeholders for static xml later
         $fonts = ['', '', '', ''];//4 placeholders for static xml later
@@ -612,9 +617,9 @@ class Writer
     /**
      * @return bool|string
      */
-    protected function writeStylesXML()
+    protected function _writeStylesXML()
     {
-        $r = $this->styleFontIndexes();
+        $r = $this->_styleFontIndexes();
         $fills = $r['fills'];
         $fonts = $r['fonts'];
         $borders = $r['borders'];
@@ -743,7 +748,7 @@ class Writer
     /**
      * @return string
      */
-    protected function buildAppXML($metadata)
+    protected function _buildAppXML($metadata)
     {
         $appXml = '';
         $appXml .= '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
@@ -758,7 +763,7 @@ class Writer
     /**
      * @return string
      */
-    protected function buildCoreXML($metadata)
+    protected function _buildCoreXML($metadata)
     {
         $coreXml = '';
         $coreXml .= '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
@@ -780,7 +785,7 @@ class Writer
     /**
      * @return string
      */
-    protected function buildRelationshipsXML()
+    protected function _buildRelationshipsXML()
     {
         $relsXml = '';
         $relsXml .= '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -799,7 +804,7 @@ class Writer
      *
      * @return string
      */
-    protected function buildWorkbookXML($sheets)
+    protected function _buildWorkbookXML($sheets)
     {
         $i = 0;
         $workbookXml = '';
@@ -826,7 +831,7 @@ class Writer
      *
      * @return string
      */
-    protected function buildWorkbookRelsXML($sheets)
+    protected function _buildWorkbookRelsXML($sheets)
     {
         $i = 0;
         $wkbkrelsXml = '';
@@ -848,7 +853,7 @@ class Writer
      *
      * @return string
      */
-    protected function buildContentTypesXML($sheets)
+    protected function _buildContentTypesXML($sheets)
     {
         $contentTypesXml = '';
         $contentTypesXml .= '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -985,6 +990,8 @@ class Writer
         } elseif ($numFormat === 'text') {
             $numFormat = '@';
         } elseif ($numFormat === 'integer') {
+            $numFormat = '0';
+        } elseif ($numFormat === 'int') {
             $numFormat = '0';
         } elseif ($numFormat === 'percent') {
             $numFormat = '0%';

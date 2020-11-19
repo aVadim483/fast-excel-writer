@@ -11,22 +11,21 @@ for ($j = 0; $j < 16192; $j++) {
     $s .= $chars[mt_rand() % 36];
 }
 
-$s1 = substr($s, mt_rand() % 4000, mt_rand() % 5 + 5);
-$s2 = substr($s, mt_rand() % 8000, mt_rand() % 5 + 5);
-$s3 = substr($s, mt_rand() % 12000, mt_rand() % 5 + 5);
-$s4 = substr($s, mt_rand() % 16000, mt_rand() % 5 + 5);
-$row = [$s1, $s2, $s3, $s4];
-
-
 $timer = microtime(true);
 $excel = Excel::create(['250K']);
 $sheet = $excel->getSheet();
 
-$sheet->setColFormats(['string', 'string', 'string', 'string']);
+$sheet->setColFormats(['integer', 'string', '0.00', 'string', 'string']);
 
-$rowCount = 250000;
+$rowCount = 100000;
+$n = 0;
 for($i = 0; $i < $rowCount; $i++) {
-    $sheet->writeRow($row);
+    $s1 = substr($s, mt_rand() % 400, mt_rand() % 5 + 5);
+    $s2 = substr($s, mt_rand() % 800, mt_rand() % 5 + 5);
+    $sheet->writeRow([$i, $s1, ($i % 100) / 100, $chars[$n], $s2]);
+    if (!$chars[++$n]) {
+        $n = 0;
+    }
 }
 
 $excel->save($outFileName);

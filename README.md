@@ -3,7 +3,7 @@
 This library is designed to be lightweight, super fast and have minimal memory usage. 
 Partially based on https://github.com/mk-j/PHP_XLSXWriter, but advanced and improved.
 
-This library creates Excel compatible spreadsheets in xlsx format (Office 2007+), with just basic features supported:
+This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with just basic features supported:
 * takes UTF-8 encoded input
 * multiple worksheets
 * supports currency/date/numeric cell formatting, simple formulas
@@ -20,6 +20,8 @@ and with minimal memory usage.
 * 7-9 times faster
 * uses less memory by 8-10 times
 * supports writing huge 100K+ row spreadsheets
+
+By the way, **FastExcelReader** also exists - https://github.com/aVadim483/fast-excel-reader
 
 ## Installation
 
@@ -38,10 +40,8 @@ require 'path/to/fast-excel-writer/src/autoload.php';
 
 You can find more examples in */demo* folder
 
-### Simple example:
+### Simple example
 ```php
-require 'vendor/autoload.php';
-
 use \avadim\FastExcelWriter\Excel;
 
 $head = ['Date', 'Name', 'Amount'];
@@ -80,8 +80,6 @@ Setting the locale allows the use of national language function names.
 You can use both A1 and R1C1 notations in formulas
 
 ```php
-require 'vendor/autoload.php';
-
 use \avadim\FastExcelWriter\Excel;
 
 $excel = Excel::create(['Formulas']);
@@ -99,7 +97,7 @@ $sheet->writeRow([3, random_int(100, 999), '=RC[-1]*0.1']);
 $totalRow = [
     'Total',
     '=SUM(B1:B3)', // English function name
-    '=СУММ(C1:C3)', // Russian function name
+    '=СУММ(C1:C3)', // You can use Russian function name because the locale is 'ru'
 ];
 
 $sheet->writeRow($totalRow);
@@ -207,14 +205,16 @@ $style3 = [
 ];
 ```
 Other style settings
-| style           | allowed values |
-| --------------- | ---- |
-| color           | #RRGGBB, ie: '#ff99cc' or '#f9c' |
-| fill            | #RRGGBB, ie: '#eeffee' or '#efe' |
-| text-align      | 'general', 'left', 'right', 'justify', 'center' |
-| vertical-align  | 'bottom', 'center', 'distributed' |
-| text-wrap       | true, false |
 
-## Supporting FastExcelWriter
+ | style          | allowed values                                  |
+ |----------------|------------------------------------------------ |
+ | color          | #RRGGBB, ie: '#ff99cc' or '#f9c'                |
+ | fill           | #RRGGBB, ie: '#eeffee' or '#efe'                |
+ | text-align     | 'general', 'left', 'right', 'justify', 'center' |
+ | vertical-align | 'bottom', 'center', 'distributed'               |
+ | text-wrap      | true, false                                     |
+
+## Want to support FastExcelWriter?
 
 if you find this package useful you can support and donate to me https://www.paypal.me/VShemarov
+Or just give me star on Github :)

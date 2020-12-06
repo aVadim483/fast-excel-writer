@@ -156,6 +156,9 @@ class Writer
      */
     public function defineFormatType($format)
     {
+        if (is_array($format)) {
+            $format = reset($format);
+        }
         $numberFormat = self::numberFormatStandardized($format);
         $numberFormatType = self::determineNumberFormatType($numberFormat);
         $cellStyleIdx = $this->addCellStyle($numberFormat, null);
@@ -461,7 +464,7 @@ class Writer
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 
-        if (!is_scalar($value) || $value === '' || $value === null) { //objects, array, empty
+        if (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');
         } elseif (is_string($value) && $value[0] === '=') {
             // formula
@@ -472,7 +475,7 @@ class Writer
         } else {
             if ($numFormatType === 'n_date' || $numFormatType === 'n_datetime') {
                 $dateValue = self::convertDateTime($value);
-                if ($dateValue === 0) {
+                if ($dateValue === false) {
                     $numFormatType = 'n_auto';
                 } else {
                     $value = $dateValue;
@@ -715,22 +718,47 @@ class Writer
         //$file->write(		'<xf applyAlignment="false" applyBorder="false" applyFont="false" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="166" xfId="0"/>');
         //$file->write(		'<xf applyAlignment="false" applyBorder="false" applyFont="false" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="167" xfId="0"/>');
         foreach ($styleIndexes as $v) {
-            $applyAlignment = !empty($v['alignment']) ? 'true' : 'false';
-            $wrapText = !empty($v['text-wrap']) ? 'true' : 'false';
-            $horizAlignment = $v['text-align'] ?? 'general';
-            $vertAlignment = $v['vertical-align'] ?? 'bottom';
-            $applyBorder = isset($v['border_idx']) ? 'true' : 'false';
-            $applyFont = 'true';
-            $borderIdx = isset($v['border_idx']) ? (int)$v['border_idx'] : 0;
             $fillIdx = isset($v['fill_idx']) ? (int)$v['fill_idx'] : 0;
             $fontIdx = isset($v['font_idx']) ? (int)$v['font_idx'] : 0;
+            $borderIdx = isset($v['border_idx']) ? (int)$v['border_idx'] : 0;
+            /*
+            $applyFont = 'true';
+            $applyAlignment = !empty($v['alignment']) ? 'true' : 'false';
+            $applyBorder = isset($v['border_idx']) ? 'true' : 'false';
+
+            $horizAlignment = $v['text-align'] ?? 'general';
+            $vertAlignment = $v['vertical-align'] ?? 'bottom';
+            $wrapText = !empty($v['text-wrap']) ? 'true' : 'false';
             //$file->write('<xf applyAlignment="'.$applyAlignment.'" applyBorder="'.$applyBorder.'" applyFont="'.$applyFont.'" applyProtection="false" borderId="'.($borderIdx).'" fillId="'.($fillIdx).'" fontId="'.($fontIdx).'" numFmtId="'.(164+$v['num_fmt_idx']).'" xfId="0"/>');
             $file->write('<xf applyAlignment="' . $applyAlignment . '" applyBorder="' . $applyBorder . '" applyFont="' . $applyFont . '" applyProtection="false" borderId="' . ($borderIdx) . '" fillId="' . ($fillIdx) . '" fontId="' . ($fontIdx) . '" numFmtId="' . (164 + $v['num_fmt_idx']) . '" xfId="0">');
             $file->write('	<alignment horizontal="' . $horizAlignment . '" vertical="' . $vertAlignment . '" textRotation="0" wrapText="' . $wrapText . '" indent="0" shrinkToFit="false"/>');
             $file->write('	<protection locked="true" hidden="false"/>');
             $file->write('</xf>');
+            */
+
+            $xfAttr = 'applyFont="true" ';
+            if (!empty($v['alignment'])) {
+                $xfAttr .= 'applyAlignment="true" ';
+            }
+            if (isset($v['border_idx'])) {
+                $xfAttr .= 'applyBorder="true" ';
+            }
+            $attr = '';
+            if (!empty($v['text-align'])) {
+                $attr .= ' horizontal="' . $v['text-align'] . '"';
+            }
+            if (!empty($v['vertical-align'])) {
+                $attr .= ' vertical="' . $v['vertical-align'] . '"';
+            }
+            if (!empty($v['text-wrap'])) {
+                $attr .= ' wrapText="true"';
+            }
+            $file->write('<xf ' . $xfAttr . ' borderId="' . ($borderIdx) . '" fillId="' . ($fillIdx) . '" fontId="' . ($fontIdx) . '" numFmtId="' . (164 + $v['num_fmt_idx']) . '" xfId="0">');
+            $file->write('	<alignment ' . $attr . '/>');
+            $file->write('</xf>');
         }
         $file->write('</cellXfs>');
+
         $file->write('<cellStyles count="6">');
         $file->write('<cellStyle builtinId="0" customBuiltin="false" name="Normal" xfId="0"/>');
         $file->write('<cellStyle builtinId="3" customBuiltin="false" name="Comma" xfId="15"/>');
@@ -983,18 +1011,17 @@ class Writer
     private static function numberFormatStandardized($numFormat)
     {
         $stack = [];
-        if ($numFormat === 'auto' || null === $numFormat || '' === $numFormat) {
-            $numFormat = 'GENERAL';
-        } elseif ($numFormat === 'string') {
-            $numFormat = '@';
-        } elseif ($numFormat === 'text') {
-            $numFormat = '@';
-        } elseif ($numFormat === 'integer') {
-            $numFormat = '0';
-        } elseif ($numFormat === 'int') {
-            $numFormat = '0';
-        } elseif ($numFormat === 'percent') {
-            $numFormat = '0%';
+        if (!is_scalar($numFormat) || $numFormat === 'auto' || $numFormat === '' || $numFormat === 'GENERAL') {
+            return 'GENERAL';
+        }
+        if ($numFormat === 'string' || $numFormat === 'text') {
+            return '@';
+        }
+        if ($numFormat === 'integer' || $numFormat === 'int') {
+            return '0';
+        }
+        if ($numFormat === 'percent') {
+            return '0%';
         }
         while (isset(self::$localeSettings['formats'][$numFormat])) {
             if (!$numFormat || isset($stack[$numFormat])) {
@@ -1048,7 +1075,7 @@ class Writer
     /**
      * @param $dateInput
      *
-     * @return int|float
+     * @return int|float|bool
      */
     public static function convertDateTime($dateInput) //thanks to Excel::Writer::XLSX::Worksheet.pm (perl)
     {
@@ -1068,7 +1095,8 @@ class Writer
             [$junk, $year, $month, $day, $hour, $min, $sec] = $matches;
             $seconds = $sec / 86400 + $min / 1440 + $hour / 24;
         } else {
-            return 0;
+            // wrong data/time string
+            return false;
         }
 
         //using 1900 as epoch, not 1904, ignoring 1904 special case
@@ -1100,13 +1128,16 @@ class Writer
         # Some boundary checks
         if ($year !== 0 || $month !== 0 || $day !== 0) {
             if ($year < $epoch || $year > 9999) {
-                return 0;
+                // wrong year
+                return false;
             }
             if ($month < 1 || $month > 12) {
-                return 0;
+                // wrong month
+                return false;
             }
             if ($day < 1 || $day > $mdays[$month - 1]) {
-                return 0;
+                // wrong day
+                return false;
             }
         }
 

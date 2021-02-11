@@ -337,7 +337,7 @@ class Excel
         // Strip cell reference down to just letters
         $letters = preg_replace('/[^A-Z]/', '', $colLetter);
 
-        if ($letters > 'XFD') {
+        if (mb_strlen($letters) >= 3 && $letters > 'XFD') {
             return -1;
         }
         // Iterate through each letter, starting at the back to increment the value

@@ -639,6 +639,30 @@ class Excel
         }
         return $this->sheets[$key] ?? null;
     }
+    
+    /**
+     * @param int|string $index
+     */
+    public function removeSheet($index = null): void
+    {
+        if (null === $index) {
+            array_shift($this->sheets);
+        }
+
+        if (is_int($index)) {
+            $keys = array_keys($this->sheets);
+            if (!isset($keys[--$index])) {
+                throw  new Exception('Sheet #' . $index . ' not found');
+            }
+            unset($this->sheets[$keys[$index]]);
+        } else {
+            $key = mb_strtolower($index);
+            if (!isset($this->sheets[$key])) {
+                throw  new Exception('Sheet "' . $index . '" not found');
+            }
+            unset($this->sheets[$key]);
+        }
+    }
 
     /**
      * @return Sheet[]

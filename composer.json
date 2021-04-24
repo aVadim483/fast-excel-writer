@@ -1,6 +1,6 @@
 {
     "name": "avadim/fast-excel-writer",
-    "description": "Lightwight and very fast XLSX Excel Spreadsheet Writer in PHP",
+    "description": "Lightweight and very fast XLSX Excel Spreadsheet Writer in PHP",
     "keywords": [
         "php",
         "library",

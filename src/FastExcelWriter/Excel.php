@@ -182,7 +182,18 @@ class Excel
                 $dir = __DIR__ . '/locale';
             }
             $file = $dir . '/' . $locale . '/settings.php';
-            if (is_file($file) && ($localeData = include($file))) {
+
+            // try load locale settings file
+            $includeFile = '';
+            if (is_file($file)) {
+                $includeFile = $file;
+            } else {
+                $file = str_replace('.utf-8/', '/', $file);
+                if (is_file($file)) {
+                    $includeFile = $file;
+                }
+            }
+            if ($includeFile && ($localeData = include($includeFile))) {
                 $localeSettings = array_merge($localeSettings, $localeData);
             }
             if (strpos($locale, '_')) {
@@ -192,6 +203,10 @@ class Excel
                     $localeSettings = array_merge($localeSettings, $localeData);
                 }
                 $file = $dir . '/' . $language . '/' . $country . '/settings.php';
+                if (is_file($file) && ($localeData = include($file))) {
+                    $localeSettings = array_merge($localeSettings, $localeData);
+                }
+                $file = str_replace('.utf-8/', '/', $file);
                 if (is_file($file) && ($localeData = include($file))) {
                     $localeSettings = array_merge($localeSettings, $localeData);
                 }

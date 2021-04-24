@@ -1,13 +1,13 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\Exception;
 
 /**
  * Class Exception
  *
  * @package avadim\FastExcelWriter
  */
-class Exception extends \RuntimeException
+class SaveException extends Exception
 {
 
 }

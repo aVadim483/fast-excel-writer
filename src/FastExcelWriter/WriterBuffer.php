@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Exception\Exception;
+
 /**
  * Class WriterBuffer
  *
@@ -63,11 +65,11 @@ class WriterBuffer
             if (!$this->fd) {
                 $this->fd = fopen($this->fileName, $this->openFlags);
                 if ($this->fd === false) {
-                    Excel::log("Unable to open {$this->fileName} for writing.");
+                    throw new Exception("Unable to open {$this->fileName} for writing");
                 }
             }
             if ($this->checkUtf8 && !self::isValidUTF8($this->buffer)) {
-                Excel::log("Error, invalid UTF8 encoding detected");
+                //Excel::log("Error, invalid UTF8 encoding detected");
                 $this->checkUtf8 = false;
             }
             fwrite($this->fd, $this->buffer);

@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Exception\Exception;
+
 /**
  * Class Area
  *

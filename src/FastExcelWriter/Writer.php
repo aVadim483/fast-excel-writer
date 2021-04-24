@@ -2,6 +2,9 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Exception\Exception;
+use avadim\FastExcelWriter\Exception\SaveException;
+
 /**
  * Class Writer
  *
@@ -34,10 +37,10 @@ class Writer
     {
         date_default_timezone_get() || date_default_timezone_set('UTC');//php.ini missing tz, avoid warning
         if (!is_writable($this->tempFilename())) {
-            Excel::log('Warning: tempdir ' . sys_get_temp_dir() . ' not writeable, use ->setTempDir()');
+            throw new Exception('Warning: tempdir ' . sys_get_temp_dir() . ' is not writeable, use ->setTempDir()');
         }
         if (!class_exists('\ZipArchive')) {
-            Excel::log('Error: ZipArchive class does not exist');
+            throw new Exception('Error: ZipArchive class does not exist');
         }
         $this->excel = $excel;
         $this->addCellStyle('GENERAL', null);
@@ -201,22 +204,22 @@ class Writer
             $this->writeSheetDataEnd($sheet);//making sure all footers have been written
         }
 
+        if (!is_dir(dirname($fileName))) {
+            throw new SaveException('Directory "' . dirname($fileName) . '" for output file is not exist.');
+        }
         if (file_exists($fileName)) {
             if ($overWrite && is_writable($fileName)) {
                 @unlink($fileName); //if the zip already exists, remove it
             } else {
-                Excel::log("Error in " . __CLASS__ . "::" . __FUNCTION__ . ", file is not writeable.");
-                return false;
+                throw new SaveException('File "' . $fileName. '" is not writeable');
             }
         }
         $zip = new \ZipArchive();
         if (empty($sheets)) {
-            Excel::log("Error in " . __CLASS__ . "::" . __FUNCTION__ . ", no worksheets defined.");
-            return false;
+            throw new SaveException('No worksheets defined');
         }
-        if (!$zip->open($fileName, \ZipArchive::CREATE)) {
-            Excel::log("Error in " . __CLASS__ . "::" . __FUNCTION__ . ", unable to create zip.");
-            return false;
+        if (!$zip->open($fileName, \ZIPARCHIVE::CREATE)) {
+            throw new SaveException('Unable to create zip "' . $fileName. '"');
         }
 
         $zip->addEmptyDir('docProps/');

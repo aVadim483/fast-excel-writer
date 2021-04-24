@@ -337,7 +337,7 @@ class Excel
         // Strip cell reference down to just letters
         $letters = preg_replace('/[^A-Z]/', '', $colLetter);
 
-        if ($letters > 'XFD') {
+        if (mb_strlen($letters) >= 3 && $letters > 'XFD') {
             return -1;
         }
         // Iterate through each letter, starting at the back to increment the value
@@ -638,6 +638,30 @@ class Excel
             }
         }
         return $this->sheets[$key] ?? null;
+    }
+    
+    /**
+     * @param int|string $index
+     */
+    public function removeSheet($index = null): void
+    {
+        if (null === $index) {
+            array_shift($this->sheets);
+        }
+
+        if (is_int($index)) {
+            $keys = array_keys($this->sheets);
+            if (!isset($keys[--$index])) {
+                throw  new Exception('Sheet #' . $index . ' not found');
+            }
+            unset($this->sheets[$keys[$index]]);
+        } else {
+            $key = mb_strtolower($index);
+            if (!isset($this->sheets[$key])) {
+                throw  new Exception('Sheet "' . $index . '" not found');
+            }
+            unset($this->sheets[$key]);
+        }
     }
 
     /**

@@ -31,18 +31,23 @@ class Writer
     /**
      * Writer constructor
      *
-     * @param Excel $excel
+     * @param array $options;
      */
-    public function __construct($excel)
+    public function __construct($options = [])
     {
         date_default_timezone_get() || date_default_timezone_set('UTC');//php.ini missing tz, avoid warning
+        if (isset($options['excel'])) {
+            $this->excel = $options['excel'];
+        }
+        if (isset($options['temp_dir'])) {
+            $this->tempDir = $options['temp_dir'];
+        }
         if (!is_writable($this->tempFilename())) {
             throw new Exception('Warning: tempdir ' . sys_get_temp_dir() . ' is not writeable, use ->setTempDir()');
         }
         if (!class_exists('\ZipArchive')) {
             throw new Exception('Error: ZipArchive class does not exist');
         }
-        $this->excel = $excel;
         $this->addCellStyle('GENERAL', null);
     }
 
@@ -75,6 +80,14 @@ class Writer
     }
 
     /**
+     * @param Excel $excel
+     */
+    public function setExcel($excel)
+    {
+        $this->excel = $excel;
+    }
+
+    /**
      * @param string $tempDir
      */
     public function setTempDir($tempDir = '')
@@ -99,9 +112,19 @@ class Writer
      */
     public function tempFilename()
     {
-        $tempdir = !empty($this->tempDir) ? $this->tempDir : sys_get_temp_dir();
-        $filename = tempnam($tempdir, 'xlsx_writer_');
-        $this->tempFiles[] = $filename;
+        $tempPrefix = 'xlsx_writer_';
+        if (!$this->tempDir) {
+            $tempDir = sys_get_temp_dir();
+            $filename = tempnam($tempDir, $tempPrefix);
+            if (!$filename) {
+                $filename = tempnam(getcwd(), $tempPrefix);
+            }
+        } else {
+            $filename = tempnam($this->tempDir, $tempPrefix);
+        }
+        if ($filename) {
+            $this->tempFiles[] = $filename;
+        }
 
         return $filename;
     }

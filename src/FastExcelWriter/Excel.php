@@ -12,6 +12,8 @@ class Excel
     public const EXCEL_2007_MAX_ROW = 1048576;
     public const EXCEL_2007_MAX_COL = 16384;
 
+    protected static $tempDir;
+
     /** @var array Sheet[] */
     protected $sheets = [];
 
@@ -27,12 +29,27 @@ class Excel
     /**
      * Excel constructor
      *
-     * @param Writer $writer
+     * @param array $options
      */
-    public function __construct($writer = null)
+    public function __construct($options = [])
     {
-        if (null === $writer) {
-            $writer = new Writer($this);
+        if (isset($options['writer'])) {
+            $writer = $options['writer'];
+            $writer->setExcel($this);
+            if (self::$tempDir) {
+                $writer->setTempDir(self::$tempDir);
+            }
+        } else {
+            $writerOptions = [
+                'excel' => $this,
+            ];
+            if (self::$tempDir) {
+                $writerOptions['temp_dir'] = self::$tempDir;
+            }
+            if ($options['temp_dir']) {
+                $writerOptions['temp_dir'] = $options['temp_dir'];
+            }
+            $writer = new Writer($writerOptions);
         }
         $this->writer = $writer;
         $this->setDefaultLocale();
@@ -41,23 +58,33 @@ class Excel
 
     /**
      * @param array|string $sheets
-     * @param Writer $writer
+     * @param array $options
      *
      * @return Excel
      */
-    public static function create($sheets = null, $writer = null)
+    public static function create($sheets = null, $options = [])
     {
-        $excel = new self($writer);
+        $excel = new self($options);
         if (empty($sheets)) {
             $sheets = ['Sheet1'];
         } else {
             $sheets = (array)$sheets;
         }
         foreach ($sheets as $sheetName) {
-            $sheet = $excel->makeSheet($sheetName);
+            $excel->makeSheet($sheetName);
         }
 
         return $excel;
+    }
+
+    /**
+     * Set dir for temporary files
+     *
+     * @param $tempDir
+     */
+    public static function setTempDir($tempDir)
+    {
+        self::$tempDir = $tempDir;
     }
 
     /**
@@ -77,8 +104,8 @@ class Excel
         //$this->setLocale('en_US.UTF-8');
         //$this->setLocale('ru_RU.UTF-8');
         $currentLocale = setlocale(LC_ALL, 0);
-        $componets = explode(';', $currentLocale);
-        foreach ($componets as $component) {
+        $components = explode(';', $currentLocale);
+        foreach ($components as $component) {
             if (strpos($component, '=')) {
                 [$param, $locale] = explode('=', $component, 2);
                 if ($locale !== 'C' && strlen($locale) > 1) {

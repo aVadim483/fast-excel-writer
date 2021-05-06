@@ -38,7 +38,7 @@ require 'path/to/fast-excel-writer/src/autoload.php';
 
 ## Usage
 
-You can find more examples in */demo* folder
+You can find usage examples below or in */demo* folder
 
 ### Simple example
 ```php
@@ -213,6 +213,21 @@ Other style settings
  | text-align     | 'general', 'left', 'right', 'justify', 'center' |
  | vertical-align | 'bottom', 'center', 'distributed'               |
  | text-wrap      | true, false                                     |
+
+## Other options
+The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory
+or in the current execution directory. But you can set the directory for temporary files.
+
+```php
+use \avadim\FastExcelWriter\Excel;
+
+Excel::setTempDir('/path/to/temp/dir'); // use this call before Excel::create()
+$excel = Excel::create();
+
+// Or alternative variant
+
+$excel = Excel::create('SheetName', ['temp_dir' => '/path/to/temp/dir']);
+```
 
 ## Want to support FastExcelWriter?
 

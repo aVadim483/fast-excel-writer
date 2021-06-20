@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Exception\Exception;
+
 /**
  * Class Sheet
  *
@@ -900,6 +902,8 @@ class Sheet
      * @param string|array $cellAddr
      * @param $data
      * @param $merge
+     *
+     * @throws \Exception
      */
     protected function _setCellData($cellAddr, $data, $merge)
     {
@@ -923,7 +927,7 @@ class Sheet
             throw new Exception('Wrong cell address ' . print_r($cellAddr));
         }
         if ($row <= $this->rowCount) {
-            throw new Exception('Row number must be greater then written rows');
+            throw new \Exception('Row number must be greater then written rows');
         }
 
         foreach($data as $key => $val) {

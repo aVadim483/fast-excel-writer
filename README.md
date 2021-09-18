@@ -109,6 +109,7 @@ $excel->save('formulas.xlsx');
 ### Cell Formats
 
 You can use simple and advanced formats
+
 ```php
 $excel = new \avadim\FastExcelWriter\Excel(['Formats']);
 $sheet = $excel->getSheet();
@@ -126,7 +127,7 @@ $data = [
     ['2015-01-12', 324, 2, 88.00, 'none', '=D3*0.15'],
 ];
 
-$sheet->wtiteHeader($header);
+$sheet->writeHeader($header);
 foreach($data as $row) {
     $sheet->writeRow($row );
 }

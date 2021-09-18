@@ -12,7 +12,7 @@ for($i=0; $i<1000; $i++) {
         $i,
         str_shuffle($chars),
         mt_rand() % 10000,
-        date('Y-m-d H:i:s',time()-(mt_rand() % 31536000))
+        date('Y-m-d H:i:s',time() - (mt_rand() % 31536000)),
     ];
 }
 
@@ -21,7 +21,7 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidths([8, 36, 8, 18]);
-$sheet->wtiteHeader(['Num' => 'integer', 'Str' => 'string', 'Float' => '0.00', 'Date' => 'datetime']);
+$sheet->writeHeader(['Num' => 'integer', 'Str' => 'string', 'Float' => '0.00', 'Date' => 'datetime']);
 foreach($data as $row) {
     $sheet->writeRow($row);
 }

@@ -33,7 +33,7 @@ $excel->setRightToLeft(true);
 $sheet = $excel->getSheet();
 
 // The fastest way to write data is row by row
-$sheet->wtiteHeader($header);
+$sheet->writeHeader($header);
 
 foreach($data as $row) {
     $sheet->writeRow($row);

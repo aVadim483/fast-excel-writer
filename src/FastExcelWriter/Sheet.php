@@ -723,7 +723,7 @@ class Sheet
      *
      * @return $this
      */
-    public function wtiteHeader($header, $options = null)
+    public function writeHeader($header, $options = null)
     {
         $rowValues = [];
         $colFormats = [];

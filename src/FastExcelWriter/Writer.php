@@ -497,7 +497,7 @@ class Writer
             $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><f>' . self::xmlSpecialChars($value) . '</f></c>');
         } elseif ($numFormatType === 'n_string' || ($numFormatType === 'n_numeric' && !is_numeric($value))) {
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t>' . self::xmlSpecialChars($value) . '</t></is></c>');
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
         } else {
             if ($numFormatType === 'n_date' || $numFormatType === 'n_datetime') {
                 $dateValue = self::convertDateTime($value);
@@ -527,7 +527,7 @@ class Writer
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
-                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t>' . self::xmlSpecialChars($value) . '</t></is></c>');
+                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
                 }
             }
         }

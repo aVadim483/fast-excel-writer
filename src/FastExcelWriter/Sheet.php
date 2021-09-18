@@ -51,6 +51,9 @@ class Sheet
     protected $areas = [];
     protected $defaultStyle = [];
 
+    protected $currentRow = 0;
+    protected $currentCol = 0;
+
     protected $pageSetup = [];
 
     /**
@@ -458,7 +461,7 @@ class Sheet
                     if ($optionName === 'width') {
                         $this->setColWidth($col, $colOptions['width']);
                     } elseif ($optionName === 'format') {
-                        $this->setColWidth($col, $colOptions['format']);
+                        $this->setColFormat($col, $colOptions['format']);
                     } elseif ($optionName === 'style') {
                         $style = $colOptions['style'];
                     } else {
@@ -619,8 +622,55 @@ class Sheet
     }
 
     /**
-     * @param array|string $row
-     * @param null $options
+     * @param mixed $value
+     * @param array|null $options
+     *
+     * @return $this
+     *
+     * @throws \Exception
+     */
+    public function writeCell($value, $options = null)
+    {
+        $data = [
+            'values' => $value,
+            'styles' => Style::normalize($options),
+        ];
+        if ($this->currentRow < $this->rowCount) {
+            $this->currentRow = $this->rowCount;
+        }
+        $cellAddr = [
+            'row' => $this->currentRow,
+            'col' => $this->currentCol++,
+        ];
+        $this->_setCellData($cellAddr, $data, false, true);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function nextCell()
+    {
+        $this->writeCell(null);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function nextRow()
+    {
+        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $this->cells['styles'][$this->currentRow] ?? []);
+        $this->currentCol = 0;
+
+        return $this;
+    }
+
+    /**
+     * @param array|mixed $row
+     * @param array|null $options
      *
      * @return $this
      */
@@ -902,10 +952,11 @@ class Sheet
      * @param string|array $cellAddr
      * @param $data
      * @param $merge
+     * @param $currentRow
      *
      * @throws \Exception
      */
-    protected function _setCellData($cellAddr, $data, $merge)
+    protected function _setCellData($cellAddr, $data, $merge, $currentRow = false)
     {
         $row = $col = null;
         if (is_string($cellAddr)) {
@@ -926,11 +977,11 @@ class Sheet
         if ($row === null || $col === null) {
             throw new Exception('Wrong cell address ' . print_r($cellAddr));
         }
-        if ($row <= $this->rowCount) {
+        if ($row < $this->rowCount + ($currentRow ? 0 : 1)) {
             throw new \Exception('Row number must be greater then written rows');
         }
 
-        foreach($data as $key => $val) {
+        foreach ($data as $key => $val) {
             $this->cells[$key][$row][$col] = $val;
         }
     }

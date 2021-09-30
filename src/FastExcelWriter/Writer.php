@@ -808,7 +808,7 @@ class Writer
         $appXml .= '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $appXml .= '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">';
         $appXml .= '<TotalTime>0</TotalTime>';
-        $appXml .= '<Company>' . self::xmlSpecialChars($metadata['title'] ?? '') . '</Company>';
+        $appXml .= '<Company>' . self::xmlSpecialChars($metadata['company'] ?? '') . '</Company>';
         $appXml .= '</Properties>';
 
         return $appXml;

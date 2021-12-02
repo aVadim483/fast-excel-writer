@@ -867,13 +867,21 @@ class Writer
         $workbookXml .= '<fileVersion appName="Calc"/><workbookPr backupFile="false" showObjects="all" date1904="false"/><workbookProtection/>';
         $workbookXml .= '<bookViews><workbookView activeTab="0" firstSheet="0" showHorizontalScroll="true" showSheetTabs="true" showVerticalScroll="true" tabRatio="212" windowHeight="8192" windowWidth="16384" xWindow="0" yWindow="0"/></bookViews>';
         $workbookXml .= '<sheets>';
+        $definedNames = '';
         foreach ($sheets as $sheet) {
             $sheetName = self::sanitizeSheetName($sheet->sheetName);
             $workbookXml .= '<sheet name="' . self::xmlSpecialChars($sheetName) . '" sheetId="' . ($i + 1) . '" state="visible" r:id="rId' . ($i + 2) . '"/>';
+            if ($sheet->absoluteAutoFilter) {
+                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCount, $sheet->colCount, true);
+                $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheetName . '\'!' . $filterRange . '</definedName>';
+            }
             $i++;
         }
         $workbookXml .= '</sheets>';
         $workbookXml .= '<definedNames>';
+        if ($definedNames) {
+            $workbookXml .= $definedNames;
+        }
         $workbookXml .= '</definedNames>';
         $workbookXml .= '<calcPr iterateCount="100" refMode="A1" iterate="false" iterateDelta="0.001"/></workbook>';
 

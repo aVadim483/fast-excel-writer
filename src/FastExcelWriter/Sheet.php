@@ -36,6 +36,7 @@ class Sheet
     public $freezeRows      = 0;
     public $freezeColumns   = 0;
     public $autoFilter      = 0;
+    public $absoluteAutoFilter = '';
 
     // zero based
     public $colWidths       = [];
@@ -293,6 +294,7 @@ class Sheet
                 $this->autoFilter = Excel::cellAddress($row, $col);
             }
         }
+        $this->absoluteAutoFilter = Excel::cellAddress($row, $col, true);
         return $this;
     }
 

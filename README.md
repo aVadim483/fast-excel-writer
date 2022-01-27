@@ -7,7 +7,7 @@ This library creates Excel compatible spreadsheets in XLSX format (Office 2007+)
 * takes UTF-8 encoded input
 * multiple worksheets
 * supports currency/date/numeric cell formatting, simple formulas
-* supports basic cell styling
+* supports basic column, row and cell styling
 
 
 **FastExcelWriter** vs **PhpSpreadsheet**

@@ -10,9 +10,11 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidths([10, 20, 30, 40]);
+$sheet->setRowHeight(2, 33);
+//$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 
 $sheet->writeRow([300, 234, 456, 789], ['height' => 20]);
-$sheet->writeRow([300, 234, 456, 789], ['height' => 30]);
+$sheet->writeRow([300, 234, 456, 789]);
 $sheet->writeRow([300, 234, 456, 789], ['height' => 40]);
 
 $excel->save($outFileName);

@@ -42,6 +42,8 @@ class Sheet
     public $colFormats      = [];
     public $colStyles       = [];
 
+    public $rowHeights = [];
+
     public $open = false;
     public $close = false;
 
@@ -477,6 +479,28 @@ class Sheet
     }
 
     /**
+     * @param $rowNum
+     * @param $height
+     *
+     * @return $this
+     */
+    public function setRowHeight($rowNum, $height)
+    {
+        if (is_numeric($rowNum)) {
+            $this->rowHeights[(int)$rowNum - 1] = str_replace(',', '.', (float)$height);
+        }
+        return $this;
+    }
+
+    public function setRowHeights($heights)
+    {
+        foreach ($heights as $rowNum => $rowHeight) {
+            $this->setRowHeight($rowNum, $rowHeight);
+        }
+        return $this;
+    }
+
+    /**
      * @param $style
      *
      * @return $this
@@ -528,7 +552,16 @@ class Sheet
 
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
-            $rowAttr .= ' customHeight="1" ht="' . (float)$rowOptions['height'] . '" ';
+            $height = $rowOptions['height'];
+        }
+        elseif (isset($this->rowHeights[$this->rowCount])) {
+            $height = $this->rowHeights[$this->rowCount];
+        }
+        else {
+            $height = null;
+        }
+        if ($height !== null) {
+            $rowAttr .= ' customHeight="1" ht="' . (float)$height . '" ';
         }
         if (!empty($rowOptions['hidden'])) {
             $rowAttr .= ' hidden="1" ';
@@ -539,7 +572,7 @@ class Sheet
         $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" outlineLevel="0" ' . $rowAttr . '>');
 
         $rowFormat = $rowStyle = $rowCellStyles = null;
-        // styles for each cells
+        // styles for each cell
         $rowCellStyles = $cellsOptions;
 
         $colNum = 0;
@@ -658,11 +691,15 @@ class Sheet
     }
 
     /**
+     * @param array $options
+     *
      * @return $this
      */
-    public function nextRow()
+    public function nextRow($options = [])
     {
-        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $this->cells['styles'][$this->currentRow] ?? []);
+        $styles = $this->cells['styles'][$this->currentRow] ?? [];
+        $styles = array_merge_recursive($styles, $options);
+        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $styles);
         $this->currentCol = 0;
 
         return $this;
@@ -674,7 +711,7 @@ class Sheet
      *
      * @return $this
      */
-    public function writeRow($row = [], $options = null)
+    public function writeRow($row = [], array $options = null)
     {
         $writer = $this->book->getWriter();
         $writer->writeSheetDataBegin($this);

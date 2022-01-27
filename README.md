@@ -55,7 +55,9 @@ $headStyle = [
         'style' => 'bold'
     ],
     'text-align' => 'center',
+    'vertical-align' => 'center',
     'border' => 'thin',
+    'height' => 24,
 ];
 
 $excel = Excel::create(['Sheet1']);
@@ -67,8 +69,15 @@ $sheet
     ->setColFormats(['date', 'string', '0.00'])
     ->setColWidths([12, 14, 5]);
 
-foreach($data as $row) {
-    $sheet->writeRow($row);
+$rowNum = 1;
+foreach($data as $rowData) {
+    $rowOptions = [
+        'height' => 20,
+    ];
+    if ($rowNum % 2) {
+        $rowOptions['fill'] = '#eee';
+    }
+    $sheet->writeRow($rowData);
 }
 
 $excel->save('simple.xlsx');
@@ -207,13 +216,13 @@ $style3 = [
 ```
 Other style settings
 
- | style          | allowed values                                  |
- |----------------|------------------------------------------------ |
- | color          | #RRGGBB, ie: '#ff99cc' or '#f9c'                |
- | fill           | #RRGGBB, ie: '#eeffee' or '#efe'                |
- | text-align     | 'general', 'left', 'right', 'justify', 'center' |
- | vertical-align | 'bottom', 'center', 'distributed'               |
- | text-wrap      | true, false                                     |
+| style          | allowed values                                  |
+|----------------|------------------------------------------------ |
+| color          | #RRGGBB, ie: '#ff99cc' or '#f9c'                |
+| fill           | #RRGGBB, ie: '#eeffee' or '#efe'                |
+| text-align     | 'general', 'left', 'right', 'justify', 'center' |
+| vertical-align | 'bottom', 'center', 'distributed'               |
+| text-wrap      | true, false                                     |
 
 ## Other options
 The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory

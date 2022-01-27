@@ -48,7 +48,7 @@ class Excel
             if (self::$tempDir) {
                 $writerOptions['temp_dir'] = self::$tempDir;
             }
-            if ($options['temp_dir']) {
+            if (isset($options['temp_dir']) && $options['temp_dir']) {
                 $writerOptions['temp_dir'] = $options['temp_dir'];
             }
             $writer = new Writer($writerOptions);

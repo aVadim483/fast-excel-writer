@@ -657,6 +657,8 @@ class Sheet
     }
 
     /**
+     * Write value to the current cell and move pointer to the next cell in the row
+     *
      * @param mixed $value
      * @param array|null $options
      *
@@ -1219,7 +1221,7 @@ class Sheet
     {
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
             $maxRow = max(array_keys($this->cells['values']) + array_keys($this->cells['styles']));
-            for ($numRow = $this->rowCount + 1; $numRow <= $maxRow; $numRow++) {
+            for ($numRow = $this->rowCount; $numRow <= $maxRow; $numRow++) {
                 if (isset($this->cells['values'][$numRow]) || isset($this->cells['styles'][$numRow])) {
                     $colMax = 0;
                     $rowValues = $this->cells['values'][$numRow] ?? [];

@@ -14,7 +14,7 @@ $row = ['#', 'Number', '\=RC[-1]*0.1'];
 $rowOptions = [
     Style::FONT => [
         //Style::FONT_SIZE => 14,
-        Style::FONT_STYLE => Style::FONT_STYLE_BOLD,
+        Style::FONT_STYLE => [Style::FONT_STYLE_BOLD, Style::FONT_STYLE_ITALIC],
     ],
     Style::TEXT_ALIGN => Style::TEXT_ALIGN_CENTER,
     Style::BORDER => Style::BORDER_THICK,

@@ -538,9 +538,9 @@ class Writer
      */
     protected function _styleFontIndexes()
     {
-        $fills = ['', ''];//2 placeholders for static xml later
-        $fonts = ['', '', '', ''];//4 placeholders for static xml later
-        $borders = [''];//1 placeholder for static xml later
+        $fills = ['', ''];  // 2 placeholders for static xml later
+        $fonts = ['', ''];  // 2 placeholders for static xml later
+        $borders = [''];    // 1 placeholder for static xml later
         $styleIndexes = [];
         foreach ($this->cellStyles as $i => $cellStyleString) {
             $semiColonPos = strpos($cellStyleString, ";");
@@ -672,11 +672,9 @@ class Writer
         $file->write('<fonts count="' . (count($fonts)) . '">');
         $file->write('<font><name val="Arial"/><charset val="1"/><family val="2"/><sz val="10"/></font>');
         $file->write('<font><name val="Arial"/><family val="0"/><sz val="10"/></font>');
-        $file->write('<font><name val="Arial"/><family val="0"/><sz val="10"/></font>');
-        $file->write('<font><name val="Arial"/><family val="0"/><sz val="10"/></font>');
 
         foreach ($fonts as $font) {
-            if (!empty($font)) { //fonts have 4 empty placeholders in array to offset the 4 static xml entries above
+            if (!empty($font)) { //fonts have 2 empty placeholders in array to offset the 4 static xml entries above
                 $file->write('<font>');
                 $file->write('<name val="' . htmlspecialchars($font['name']) . '"/><charset val="1"/><family val="' . (int)$font['family'] . '"/>');
                 $file->write('<sz val="' . (int)$font['size'] . '"/>');

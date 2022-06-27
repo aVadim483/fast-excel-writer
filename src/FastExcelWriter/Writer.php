@@ -519,7 +519,7 @@ class Writer
                 }
                 $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" ><v>' . $value . '</v></c>');//int,float,currency
             } elseif ($numFormatType === 'n_auto' || 1) { //auto-detect unknown column types
-                if (!is_string($value) || $value === '0' || ($value[0] !== '0' && ctype_digit($value)) || preg_match("/^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/", $value)) {
+                if (!is_string($value) || $value === '0' || ($value[0] !== '0' && preg_match('/^\d+$/', $value)) || preg_match("/^-?(0|[1-9]\d*)(\.\d+)?$/", $value)) {
                     //$file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . self::xmlSpecialChars($value) . '</v></c>');//int,float,currency
                     $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');//int,float,currency
                 } else {
@@ -1113,7 +1113,7 @@ class Writer
      */
     public static function convertDateTime($dateInput) //thanks to Excel::Writer::XLSX::Worksheet.pm (perl)
     {
-        if (is_int($dateInput) || ctype_digit($dateInput)) {
+        if (is_int($dateInput) || (is_string($dateInput) && preg_match('/^\d+$/', $dateInput))) {
             // date as timestamp
             $time = (int)$dateInput;
         } elseif (preg_match('/^(\d+:\d{1,2})(:\d{1,2})?$/', $dateInput, $matches)) {

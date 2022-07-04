@@ -140,11 +140,16 @@ class Excel
         if (empty($locale)) {
             $newLocale = false;
             $oldLocale = false;
-        } else {
-            if (strpos($locale, '.')) {
+        }
+        else {
+            if ($locale === 'en') {
+                $locale = 'en_US.UTF-8';
+            }
+            elseif (strpos($locale, '.')) {
                 [$localeName, $localePage] = explode('.', $locale);
                 $locale = $localeName . '.UTF-8';
-            } else {
+            }
+            else {
                 $locale .= '.UTF-8';
             }
 
@@ -159,24 +164,21 @@ class Excel
                 }
             }
         }
+
         if ($newLocale) {
             // set date & time patterns
-            $tmpLocale = setlocale(LC_TIME, '0');
-            if (setlocale(LC_TIME, $newLocale)) {
-                $time = strtotime('1985-6-2 13:7:9');
-                $datePattern = strftime('%x', $time);
-                $dateTimePattern = strftime('%c', $time);
-                $timePattern = trim(str_replace($datePattern, '', $dateTimePattern));
-                $datePattern = str_replace(['19', '85', '06', '02', '6', '2'], ['YY', 'YY', 'MM', 'DD', 'M', 'D'], $datePattern);
-                $timePattern = str_replace(['13', '07', '09', '1', '7', '9', 'PM', 'pm'], ['H', 'MM', 'SS', 'H', 'M', 'S', 'AM/PM', 'am/pm'], $timePattern);
+            $time = strtotime('1985-6-2 13:7:9');
+            $calendar = \IntlGregorianCalendar::createInstance();
+            $datePattern = (new \IntlDateFormatter($locale, \IntlDateFormatter::SHORT, \IntlDateFormatter::NONE, null, $calendar))->format($time);
+            $dateTimePattern = (new \IntlDateFormatter($locale, \IntlDateFormatter::SHORT, \IntlDateFormatter::MEDIUM, null, $calendar))->format($time);
 
-                $aFormatSettings['formats']['date'] = $datePattern;
-                $aFormatSettings['formats']['time'] = $timePattern;
-                $aFormatSettings['formats']['datetime'] = $datePattern . ' ' . $timePattern;
-            }
-            if ($tmpLocale) {
-                setlocale(LC_TIME, $tmpLocale);
-            }
+            $timePattern = trim(str_replace($datePattern, '', $dateTimePattern), ' ,');
+            $datePattern = str_replace(['19', '85', '06', '02', '6', '2'], ['YY', 'YY', 'MM', 'DD', 'M', 'D'], $datePattern);
+            $timePattern = str_replace(['13', '07', '09', '1', '7', '9', 'PM', 'pm'], ['H', 'MM', 'SS', 'H', 'M', 'S', 'AM/PM', 'am/pm'], $timePattern);
+
+            $aFormatSettings['formats']['date'] = $datePattern;
+            $aFormatSettings['formats']['time'] = $timePattern;
+            $aFormatSettings['formats']['datetime'] = $datePattern . ' ' . $timePattern;
 
             // set money pattern
             $tmpLocale = setlocale(LC_MONETARY, '0');

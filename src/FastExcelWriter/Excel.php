@@ -719,12 +719,40 @@ class Excel
     }
 
     /**
+     * Save generated file
+     *
      * @param $fileName
      * @param $overWrite
      */
     public function save($fileName, $overWrite = true)
     {
         $this->writer->saveToFile($fileName, $overWrite, $this->getMetadata());
+    }
+
+    /**
+     * Download generated file to client (send to browser)
+     *
+     * @param $name
+     */
+    public function output($name = null)
+    {
+        $tmpFile = $this->writer->tempFilename();
+        $this->save($tmpFile);
+        if (!$name) {
+            $name = basename($tmpFile) . '.xlsx';
+        }
+        else {
+            $name = basename($name);
+            if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== 'xlsx') {
+                $name .= '.xlsx';
+            }
+        }
+
+        header('Cache-Control: max-age=0');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="' . $name . '"');
+
+        readfile($tmpFile);
     }
 
 }

@@ -82,9 +82,14 @@ foreach($data as $rowData) {
 
 $excel->save('simple.xlsx');
 ```
+Also, you can download generated file to client (send to browser)
+```php
+$excel->output('download.xlsx');
+```
+
 ### Formulas
 
-Formulas must start with '='. If you want to write the formula as text, use a backslash. 
+Formulas must start with '='. If you want to write the formula as a text, use a backslash. 
 Setting the locale allows the use of national language function names. 
 You can use both A1 and R1C1 notations in formulas
 

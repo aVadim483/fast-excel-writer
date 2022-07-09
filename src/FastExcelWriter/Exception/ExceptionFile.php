@@ -7,7 +7,7 @@ namespace avadim\FastExcelWriter\Exception;
  *
  * @package avadim\FastExcelWriter
  */
-class SaveException extends Exception
+class ExceptionFile extends Exception
 {
 
 }

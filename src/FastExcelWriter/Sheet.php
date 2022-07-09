@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exception\Exception;
+use avadim\FastExcelWriter\Exception\ExceptionAddress;
 
 /**
  * Class Sheet
@@ -21,27 +22,32 @@ class Sheet
     public $index;
 
     public $active = false;
-    public $fileName  = '';
+    public $fileName = '';
     public $sheetName = '';
-    public $xmlName   = '';
-    public $rowCount  = 0;
-    public $colCount  = 0;
+    public $xmlName = '';
 
-    /**
-     * @var WriterBuffer
-     */
-    public $fileWriter      = null;
+    public $rowCount = 0;
+    public $colCount = 0;
 
-    public $columns         = [];
-    public $freezeRows      = 0;
-    public $freezeColumns   = 0;
-    public $autoFilter      = 0;
+    /** @var WriterBuffer */
+    public $fileWriter = null;
+
+    public $columns = [];
+    public $freezeRows = 0;
+    public $freezeColumns = 0;
+    public $autoFilter = 0;
     public $absoluteAutoFilter = '';
 
-    // zero based
-    public $colWidths       = [];
-    public $colFormats      = [];
-    public $colStyles       = [];
+    // ZERO based
+    public $colWidths = [];
+    public $colFormats = [];
+    public $colStyles = [];
+
+    protected $currentRow = Excel::MIN_ROW;
+    protected $currentCol = Excel::MIN_COL;
+
+    // ZERO based
+    protected $cells = [];
 
     public $rowHeights = [];
 
@@ -49,13 +55,9 @@ class Sheet
     public $close = false;
 
     protected $mergeCells = [];
-    protected $cells = [];
     protected $totalArea = [];
     protected $areas = [];
     protected $defaultStyle = [];
-
-    protected $currentRow = 0;
-    protected $currentCol = 0;
 
     protected $pageSetup = [];
 
@@ -64,7 +66,7 @@ class Sheet
      *
      * @param string $sheetName
      */
-    public function __construct($sheetName)
+    public function __construct(string $sheetName)
     {
         $this->setName($sheetName);
         $this->pageSetup['orientation'] = 'portrait';
@@ -109,7 +111,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setName($sheetName)
+    public function setName(string $sheetName)
     {
         $this->sheetName = $sheetName;
 
@@ -169,7 +171,7 @@ class Sheet
     }
 
     /**
-     * @param int $numPage
+     * @param int|string|null $numPage
      *
      * @return $this
      */
@@ -185,7 +187,7 @@ class Sheet
     }
 
     /**
-     * @param int $numPage
+     * @param int|string|null $numPage
      *
      * @return $this
      */
@@ -236,8 +238,8 @@ class Sheet
      * setFreeze(3, 3) - number rows and columns to freeze
      * setFreeze('C3') - left top cell of free area
      *
-     * @param $freezeRows
-     * @param $freezeColumns
+     * @param mixed $freezeRows
+     * @param mixed $freezeColumns
      *
      * @return $this
      */
@@ -246,10 +248,11 @@ class Sheet
         if (!is_numeric($freezeRows) && null === $freezeColumns) {
             $dimension = Excel::rangeDimension($freezeRows);
             if ($dimension) {
-                $this->setFreezeRows($dimension['rowIndex1'] - 1);
-                $this->setFreezeColumns($dimension['colIndex1'] - 1);
+                $this->setFreezeRows($dimension['row'] - 1);
+                $this->setFreezeColumns($dimension['col'] - 1);
             }
-        } else {
+        }
+        else {
             $this->setFreezeRows((int)$freezeRows);
             $this->setFreezeColumns((int)$freezeColumns);
         }
@@ -262,7 +265,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setFreezeRows($freezeRows)
+    public function setFreezeRows(int $freezeRows)
     {
         $this->freezeRows = ($freezeRows > 0) ? $freezeRows : 0;
 
@@ -274,7 +277,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setFreezeColumns($freezeColumns)
+    public function setFreezeColumns(int $freezeColumns)
     {
         $this->freezeColumns = ($freezeColumns > 0) ? $freezeColumns : 0;
 
@@ -282,12 +285,12 @@ class Sheet
     }
 
     /**
-     * @param int $row
-     * @param int $col
+     * @param int|null $row
+     * @param int|null $col
      *
      * @return $this
      */
-    public function setAutofilter($row = 1, $col = 1)
+    public function setAutofilter(?int $row = 1, ?int $col = 1)
     {
         if ($row >= 0) {
             if (empty($row)) {
@@ -305,7 +308,7 @@ class Sheet
      * @param string $optionName
      * @param mixed $optionValue
      */
-    protected function _setColOption($col, $optionName, $optionValue)
+    protected function _setColOption($col, string $optionName, $optionValue)
     {
         if ($optionValue !== null) {
             if (is_numeric($col)) {
@@ -365,8 +368,8 @@ class Sheet
     /**
      * Set format of single column
      *
-     * @param int|string|array $col Column index or column letter
-     * @param string $format
+     * @param int|string $col Column index or column letter
+     * @param mixed $format
      *
      * @return $this
      */
@@ -427,13 +430,13 @@ class Sheet
     /**
      * Set styles of columns
      *
-     * @param array $colFormats
+     * @param array $colStyles
      *
      * @return $this
      */
-    public function setColStyles(array $colFormats)
+    public function setColStyles(array $colStyles)
     {
-        $this->_setColOptions('style', $colFormats);
+        $this->_setColOptions('style', $colStyles);
 
         return $this;
     }
@@ -535,22 +538,22 @@ class Sheet
 
     /**
      * @param Writer $writer
-     * @param array $row
+     * @param array|null $row
      * @param array|null $rowOptions
      * @param array|null $cellsOptions
      */
-    protected function _writeRow($writer, array $row = [], $rowOptions = null, $cellsOptions = null)
+    protected function _writeRow($writer, array $row = [], array $rowOptions = null, array $cellsOptions = null)
     {
         if (count($this->colFormats) > count($this->columns)) {
             foreach($this->colFormats as $colNum => $format) {
                 $colIndex = $colNum + 1;
                 if (!isset($this->columns[$colIndex])) {
-                    $this->columns[$colIndex] = $writer->defineFormatType($format);
+                    $this->columns[$colIndex] = $this->book->style->defineFormatType($format);
                 }
             }
         }
 
-        $defaultFormatType = $writer->defaultFormatType();
+        $defaultFormatType = $this->book->style->defaultFormatType();
 
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
@@ -577,8 +580,7 @@ class Sheet
         // styles for each cell
         $rowCellStyles = $cellsOptions;
 
-        $colNum = 0;
-        foreach ($row as $cellValue) {
+        foreach ($row as $colNum => $cellValue) {
             $formatType = $this->columns[$colNum + 1] ?? $defaultFormatType;
             $numberFormat = $formatType['number_format'];
             $numberFormatType = $formatType['number_format_type'];
@@ -588,7 +590,7 @@ class Sheet
                 if (isset($rowCellStyles[$colNum])) {
                     $cellStyle = $rowCellStyles[$colNum];
                     if (isset($cellStyle['format'])) {
-                        $cellFormat = $writer->defineFormatType($cellStyle['format']);
+                        $cellFormat = $this->book->style->defineFormatType($cellStyle['format']);
                         $numberFormat = $cellFormat['number_format'];
                         $numberFormatType = $cellFormat['number_format_type'];
                     }
@@ -599,7 +601,7 @@ class Sheet
                         $numberFormatType = $rowFormat['number_format_type'];
                     }
                 }
-                $cellStyleIdx = $writer->addCellStyle($numberFormat, $cellStyle);
+                $cellStyleIdx = $this->book->style->addCellStyle($numberFormat, $cellStyle);
             }
             if (!empty($cellStyle['autofit'])) {
                 $len = max(mb_strlen((string)$cellValue) ?: 1, mb_strlen(str_replace('\\', '', $numberFormat)));
@@ -621,11 +623,11 @@ class Sheet
      * @param int $colNumber
      * @param array $options
      * @param array|null $defaultOptions
-     * @param int $keyOffset
+     * @param int|null $keyOffset
      *
      * @return array
      */
-    protected function _parseColumnOptions($colNumber, $options, $defaultOptions = null, $keyOffset = 1)
+    protected function _parseColumnOptions(int $colNumber, array $options, array $defaultOptions = null, ?int $keyOffset = 1)
     {
         $colOptions = [];
         foreach($options as $key => $val) {
@@ -666,7 +668,7 @@ class Sheet
      *
      * @throws \Exception
      */
-    public function writeCell($value, $options = null)
+    public function writeCell($value, array $options = null)
     {
         $data = [
             'values' => $value,
@@ -675,17 +677,19 @@ class Sheet
         if ($this->currentRow < $this->rowCount) {
             $this->currentRow = $this->rowCount;
         }
-        $cellAddr = [
-            'row' => $this->currentRow,
-            'col' => $this->currentCol++,
+        $cellAddress = [
+            'row' => 1 + $this->currentRow,
+            'col' => 1 + $this->currentCol++,
         ];
-        $this->_setCellData($cellAddr, $data, false, true);
+        $this->_setCellData($cellAddress, $data, false, true);
 
         return $this;
     }
 
     /**
      * @return $this
+     *
+     * @throws \Exception
      */
     public function nextCell()
     {
@@ -695,16 +699,15 @@ class Sheet
     }
 
     /**
-     * @param array $options
+     * @param array|null $options
      *
      * @return $this
      */
-    public function nextRow($options = [])
+    public function nextRow(?array $options = [])
     {
         $styles = $this->cells['styles'][$this->currentRow] ?? [];
         $styles = array_merge_recursive($styles, $options);
         $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $styles);
-        $this->currentCol = 0;
 
         return $this;
     }
@@ -755,14 +758,17 @@ class Sheet
                 for($colNum = 0; $colNum < $cellsCount; $colNum++) {
                     if (!isset($this->colStyles[$colNum])) {
                         $colOptions[$colNum] = $defaultStyle;
-                    } else {
+                    }
+                    else {
                         $colOptions[$colNum] = $this->colStyles[$colNum];
                     }
                 }
-            } else {
+            }
+            else {
                 $colOptions = array_fill(0, count($row), $defaultStyle);
             }
-        } else {
+        }
+        else {
             $colOptions = $this->colStyles;
         }
 
@@ -771,7 +777,8 @@ class Sheet
             $firstKey = key($rowCellsOptions);
             if (is_int($firstKey) || ($firstKey && is_string($firstKey) && $firstKey[0] >= 'A' && $firstKey[0] <= 'Z')) {
                 $rowCellsOptions = $this->_parseColumnOptions(count($row), $rowCellsOptions);
-            } elseif ($rowCellsOptions) {
+            }
+            elseif ($rowCellsOptions) {
                 $rowCellsOptions = array_fill(0, count($row), $rowCellsOptions);
             }
             if ($colOptions) {
@@ -779,27 +786,31 @@ class Sheet
                     if (!empty($colOptions[$colNum])) {
                         if (!empty($cellOptions)) {
                             $rowCellsOptions[$colNum] = array_merge($cellOptions, $colOptions[$colNum]);
-                        } else {
+                        }
+                        else {
                             $rowCellsOptions[$colNum] = $colOptions[$colNum];
                         }
                     }
                 }
             }
-        } else {
+        }
+        else {
             $rowCellsOptions = $colOptions;
         }
 
         $this->_writeRow($writer, $row, $rowOptions, $rowCellsOptions);
+        $this->currentCol = Excel::MIN_COL;
+        $this->currentRow++;
 
         return $this;
     }
 
     /**
-     * @param int $rowCount
+     * @param int|null $rowCount
      *
      * @return $this
      */
-    public function skipRow($rowCount = 1)
+    public function skipRow(?int $rowCount = 1)
     {
         for($i = 0; $i < $rowCount; $i++) {
             $this->writeRow([null]);
@@ -834,6 +845,38 @@ class Sheet
     }
 
     /**
+     * Write value to the specified cell and move pointer to the next cell in the row
+     *
+     * @param string|array $cellAddress
+     * @param mixed $value
+     * @param array|null $style
+     *
+     * @return $this
+     */
+    public function writeTo($cellAddress, $value, ?array $style = [])
+    {
+        $address = $this->_parseAddress($cellAddress);
+        if (!isset($address['row'], $address['col'])) {
+            ExceptionAddress::throwNew('Wrong cell address %s', print_r($address));
+        }
+        else {
+            $cellAddress = $address;
+        }
+
+        while ($this->currentRow < $cellAddress['row'] - 1) {
+            $this->nextRow();
+        }
+        $data = [
+            'values' => $value,
+            'styles' => Style::normalize($style),
+        ];
+        $this->_setCellData($cellAddress, $data, false, false, true);
+        $this->currentCol++;
+
+        return $this;
+    }
+
+    /**
      * Merge cells
      *
      * mergeCells('A1:C3')
@@ -854,10 +897,10 @@ class Sheet
             // check intersection with saved merged cells
             foreach ($this->mergeCells as $savedRange => $savedDimension) {
                 if (
-                    ((($dimension['rowIndex1'] >= $savedDimension['rowIndex1']) && ($dimension['rowIndex1'] <= $savedDimension['rowIndex2']))
-                        || (($dimension['rowIndex2'] >= $savedDimension['rowIndex1']) && ($dimension['rowIndex2'] <= $savedDimension['rowIndex2'])))
-                    && ((($dimension['colIndex1'] >= $savedDimension['colIndex1']) && ($dimension['colIndex1'] <= $savedDimension['colIndex2']))
-                        || (($dimension['colIndex2'] >= $savedDimension['colIndex1']) && ($dimension['colIndex2'] <= $savedDimension['colIndex2'])))
+                    ((($dimension['rowNum1'] >= $savedDimension['rowNum1']) && ($dimension['rowNum1'] <= $savedDimension['rowNum2']))
+                        || (($dimension['rowNum2'] >= $savedDimension['rowNum1']) && ($dimension['rowNum2'] <= $savedDimension['rowNum2'])))
+                    && ((($dimension['colNum1'] >= $savedDimension['colNum1']) && ($dimension['colNum1'] <= $savedDimension['colNum2']))
+                        || (($dimension['colNum2'] >= $savedDimension['colNum1']) && ($dimension['colNum2'] <= $savedDimension['colNum2'])))
                 ) {
                     throw new Exception("Cannot merge cells $range because they are intersecting with $savedRange");
                 }
@@ -892,10 +935,10 @@ class Sheet
             // check intersection with saved merged cells
             foreach ($this->mergeCells as $savedRange => $savedDimension) {
                 if (
-                    ((($dimension['rowIndex1'] >= $savedDimension['rowIndex1']) && ($dimension['rowIndex1'] <= $savedDimension['rowIndex2']))
-                        || (($dimension['rowIndex2'] >= $savedDimension['rowIndex1']) && ($dimension['rowIndex2'] <= $savedDimension['rowIndex2'])))
-                    && ((($dimension['colIndex1'] >= $savedDimension['colIndex1']) && ($dimension['colIndex1'] <= $savedDimension['colIndex2']))
-                        || (($dimension['colIndex2'] >= $savedDimension['colIndex1']) && ($dimension['colIndex2'] <= $savedDimension['colIndex2'])))
+                    ((($dimension['rowNum1'] >= $savedDimension['rowNum1']) && ($dimension['rowNum1'] <= $savedDimension['rowNum2']))
+                        || (($dimension['rowNum2'] >= $savedDimension['rowNum1']) && ($dimension['rowNum2'] <= $savedDimension['rowNum2'])))
+                    && ((($dimension['colNum1'] >= $savedDimension['colNum1']) && ($dimension['colNum1'] <= $savedDimension['colNum2']))
+                        || (($dimension['colNum2'] >= $savedDimension['colNum1']) && ($dimension['colNum2'] <= $savedDimension['colNum2'])))
                 ) {
                     if ($range !== $dimension['range']) {
                         $range .= ' (' . $dimension['range'] . ')';
@@ -922,7 +965,7 @@ class Sheet
      *
      * @return Area
      */
-    public function makeArea($range)
+    public function makeArea(string $range)
     {
         $area = new Area($this, $range);
 
@@ -930,7 +973,8 @@ class Sheet
         $coord = $area->getCoord();
         if (empty($this->totalArea['coord'])) {
             $this->totalArea['coord'] = $coord;
-        } else {
+        }
+        else {
             if ($this->totalArea['coord'][0]['row'] > $coord[0]['row']) {
                 $this->totalArea['coord'][0]['row'] = $coord[0]['row'];
             }
@@ -952,107 +996,133 @@ class Sheet
     /**
      * Begin area
      *
-     * @param string $cellAddr Upper left cell of area
+     * @param string|null $cellAddress Upper left cell of area
      *
      * @return Area
      */
-    public function beginArea($cellAddr = null)
+    public function beginArea(string $cellAddress = null)
     {
-        if (null === $cellAddr) {
-            $cellAddr = 'A' . ($this->rowCount + 1);
+        if (null === $cellAddress) {
+            $cellAddress = 'A' . ($this->rowCount + 1);
         }
-        $dimension = Excel::rangeDimension($cellAddr, true);
-        if ($dimension['rowIndex1'] <= $this->rowCount) {
-            throw new Exception("Cannot make area from $cellAddr (row number must be greater then written rows)");
+        $dimension = Excel::rangeDimension($cellAddress, true);
+        if ($dimension['rowNum1'] <= $this->rowCount) {
+            throw new Exception("Cannot make area from $cellAddress (row number must be greater then written rows)");
         }
-        $maxCell = Excel::cellAddress(Excel::EXCEL_2007_MAX_ROW, Excel::EXCEL_2007_MAX_COL);
+        $maxCell = Excel::cellAddress(Excel::MAX_ROW, Excel::MAX_COL);
 
-        return $this->makeArea($cellAddr . ':' . $maxCell);
+        return $this->makeArea($cellAddress . ':' . $maxCell);
     }
 
     /**
-     * @param $cellAddr
-     * @param $colOffset
-     * @param $rowOffset
+     * @param $cellAddress
      *
      * @return array|bool
      */
-    protected function _rangeDimension($cellAddr, $colOffset = 1, $rowOffset = 1)
+    protected function _parseAddress($cellAddress)
     {
-        if (preg_match('/^R\[?(-?\d+)?\]?C/', $cellAddr)) {
-            $relAddr = $cellAddr;
-            $cellAddr = Excel::colLetter($colOffset) . ($this->rowCount + $rowOffset);
-            $dimension = Excel::rangeDimensionRelative($cellAddr, $relAddr, true);
-        } else {
-            $dimension = Excel::rangeDimension($cellAddr, true);
+        $result = ['row' => null, 'col' => null];
+        if (is_string($cellAddress)) {
+            $result = $this->_rangeDimension($cellAddress);
         }
+        elseif (is_array($cellAddress)) {
+            if (isset($cellAddress['row'], $cellAddress['col'])) {
+                $result = $cellAddress;
+            }
+            else {
+                [$row, $col] = array_values($cellAddress);
+                $result = ['row' => $row, 'col' => $col];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $cellAddress
+     * @param int|null $colOffset
+     * @param int|null $rowOffset
+     *
+     * @return array|bool
+     */
+    protected function _rangeDimension(string $cellAddress, ?int $colOffset = 1, ?int $rowOffset = 1)
+    {
+        if (preg_match('/^R\[?(-?\d+)?\]?C/', $cellAddress)) {
+            // relative address
+            $relAddress = $cellAddress;
+            $cellAddress = Excel::colLetter($colOffset) . ($this->rowCount + $rowOffset);
+            $dimension = Excel::rangeDimensionRelative($cellAddress, $relAddress, true);
+        }
+        else {
+            // absolute address
+            $dimension = Excel::rangeDimension($cellAddress, true);
+        }
+
         return $dimension;
     }
 
     /**
-     * @param string|array $cellAddr
-     * @param $data
-     * @param $merge
-     * @param $currentRow
+     * @param string|array $cellAddress
+     * @param mixed $data
+     * @param bool|null $merge
+     * @param bool|null $currentRow
+     * @param bool|null $changeCurrent
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function _setCellData($cellAddr, $data, $merge, $currentRow = false)
+    protected function _setCellData($cellAddress, $data, ?bool $merge, ?bool $currentRow = false, ?bool $changeCurrent = false)
     {
-        $row = $col = null;
-        if (is_string($cellAddr)) {
-            $dimension = $this->_rangeDimension($cellAddr);
-            $row = $dimension['rowIndex1'];
-            $col = $dimension['colIndex1'];
-            if ($merge && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
-                $this->mergeCells($dimension['range']);
-            }
-        } elseif (is_array($cellAddr)) {
-            if (isset($cellAddr['row'], $cellAddr['col'])) {
-                $row = $cellAddr['row'];
-                $col = $cellAddr['col'];
-            } else {
-                [$row, $col] = $cellAddr;
-            }
-        }
-        if ($row === null || $col === null) {
-            throw new Exception('Wrong cell address ' . print_r($cellAddr));
-        }
-        if ($row < $this->rowCount + ($currentRow ? 0 : 1)) {
-            throw new \Exception('Row number must be greater then written rows');
+        $dimension = $this->_parseAddress($cellAddress);
+        $row = $dimension['row'];
+        $col = $dimension['col'];
+        if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
+            $this->mergeCells($dimension['range']);
         }
 
-        foreach ($data as $key => $val) {
-            $this->cells[$key][$row][$col] = $val;
+        if ($row === null || $col === null) {
+            ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress));
+        }
+        if ($row < $this->rowCount + ($currentRow ? 0 : 1)) {
+            ExceptionAddress::throwNew('Row number must be greater then written rows');
+        }
+
+        foreach ($data as $prop => $val) {
+            $rowIdx = $row - 1;
+            $colIdx = $col - 1;
+            $this->cells[$prop][$rowIdx][$colIdx] = $val;
+            if ($changeCurrent && $prop === 'values') {
+                $this->currentRow = $rowIdx;
+                $this->currentCol = $colIdx;
+            }
         }
     }
 
     /**
-     * @param string|array $cellAddr
-     * @param $value
-     * @param $style
+     * @param string|array $cellAddress
+     * @param mixed $value
+     * @param array|null $style
      *
      * @return $this
      */
-    public function setValue($cellAddr, $value, $style = [])
+    public function setValue($cellAddress, $value, ?array $style = [])
     {
         $data = [
             'values' => $value,
             'styles' => Style::normalize($style),
         ];
-        $this->_setCellData($cellAddr, $data, true);
+        $this->_setCellData($cellAddress, $data, true);
 
         return $this;
     }
 
     /**
-     * @param $cellAddr
+     * @param $cellAddress
      * @param $value
      * @param $style
      *
      * @return $this
      */
-    public function setFormula($cellAddr, $value, $style)
+    public function setFormula($cellAddress, $value, $style)
     {
         if (empty($value)) {
             $value = null;
@@ -1063,30 +1133,31 @@ class Sheet
             'values' => $value,
             'styles' => Style::normalize($style),
         ];
-        $this->_setCellData($cellAddr, $data, true);
+        $this->_setCellData($cellAddress, $data, true);
 
         return $this;
     }
 
     /**
-     * @param string $cellAddr
-     * @param $style
-     * @param $mergeStyles
+     * @param string $cellAddress
+     * @param mixed $style
+     * @param bool|null $mergeStyles
      *
      * @return $this
      */
-    public function applayStyle($cellAddr, $style, $mergeStyles = false)
+    public function applayStyle(string $cellAddress, $style, ?bool $mergeStyles = false)
     {
-        $dimension = $this->_rangeDimension($cellAddr);
-        if ($dimension['rowIndex1'] <= $this->rowCount) {
+        $dimension = $this->_rangeDimension($cellAddress);
+        if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
         $style = Style::normalize($style);
-        for($row = $dimension['rowIndex1']; $row <= $dimension['rowIndex2']; $row++) {
-            for ($col = $dimension['colIndex1']; $col <= $dimension['colIndex2']; $col++) {
+        for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
+            for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {
                 if ($mergeStyles && isset($this->cells['styles'][$row][$col])) {
                     $this->cells['styles'][$row][$col] = array_merge($this->cells['styles'][$row][$col], $style);
-                } else {
+                }
+                else {
                     $this->cells['styles'][$row][$col] = $style;
                 }
             }
@@ -1137,14 +1208,14 @@ class Sheet
     public function setOuterBorder($range, $style)
     {
         $dimension = $this->_rangeDimension($range);
-        if ($dimension['rowIndex1'] <= $this->rowCount) {
+        if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
         $border = Style::normalizeBorder($style);
         // top
         if (!empty($border['top'])) {
-            $row = $dimension['rowIndex1'];
-            for ($col = $dimension['colIndex1']; $col <= $dimension['colIndex2']; $col++) {
+            $row = $dimension['rowNum1'];
+            for ($col = $dimension['colNum1']; $col <= $dimension['colNum2']; $col++) {
                 if (!empty($this->cells['styles'][$row][$col]['border']['top'])) {
                     $this->cells['styles'][$row][$col]['border']['top'] = array_merge($this->cells['styles'][$row][$col]['border']['top'], $border['top']);
                 } else {
@@ -1154,8 +1225,8 @@ class Sheet
         }
         // bottom
         if (!empty($border['bottom'])) {
-            $row = $dimension['rowIndex2'];
-            for ($col = $dimension['colIndex1']; $col <= $dimension['colIndex2']; $col++) {
+            $row = $dimension['rowNum2'];
+            for ($col = $dimension['colNum1']; $col <= $dimension['colNum2']; $col++) {
                 if (!empty($this->cells['styles'][$row][$col]['border']['bottom'])) {
                     $this->cells['styles'][$row][$col]['border']['bottom'] = array_merge($this->cells['styles'][$row][$col]['border']['top'], $border['bottom']);
                 } else {
@@ -1165,8 +1236,8 @@ class Sheet
         }
         // left
         if (!empty($border['left'])) {
-            $col = $dimension['colIndex1'];
-            for ($row = $dimension['rowIndex1']; $row <= $dimension['rowIndex2']; $row++) {
+            $col = $dimension['colNum1'];
+            for ($row = $dimension['rowNum1']; $row <= $dimension['rowNum2']; $row++) {
                 if (!empty($this->cells['styles'][$row][$col]['border']['left'])) {
                     $this->cells['styles'][$row][$col]['border']['left'] = array_merge($this->cells['styles'][$row][$col]['border']['left'], $border['left']);
                 } else {
@@ -1176,8 +1247,8 @@ class Sheet
         }
         // right
         if (!empty($border['right'])) {
-            $col = $dimension['colIndex2'];
-            for ($row = $dimension['rowIndex1']; $row <= $dimension['rowIndex2']; $row++) {
+            $col = $dimension['colNum2'];
+            for ($row = $dimension['rowNum1']; $row <= $dimension['rowNum2']; $row++) {
                 if (!empty($this->cells['styles'][$row][$col]['border']['right'])) {
                     $this->cells['styles'][$row][$col]['border']['right'] = array_merge($this->cells['styles'][$row][$col]['border']['right'], $border['right']);
                 } else {
@@ -1233,7 +1304,7 @@ class Sheet
                         $colMax = $keyMax;
                     }
 
-                    for ($numCol = 1; $numCol <= $colMax; $numCol++) {
+                    for ($numCol = Excel::MIN_COL; $numCol <= $colMax; $numCol++) {
                         if (!isset($rowValues[$numCol])) {
                             $rowValues[$numCol] = null;
                         }

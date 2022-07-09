@@ -11,16 +11,21 @@ use avadim\FastExcelWriter\Exception\Exception;
  */
 class Excel
 {
-    public const EXCEL_2007_MAX_ROW = 1048576;
-    public const EXCEL_2007_MAX_COL = 16384;
+    public const MAX_ROW = 1048576; // max row number in Excel 2007
+    public const MAX_COL = 16384; // max column number in Excel 2007
+    public const MIN_ROW = 0;
+    public const MIN_COL = 0;
 
     protected static $tempDir;
 
+    /** @var Writer */
+    public $writer;
+
+    /** @var Style */
+    public $style;
+
     /** @var array Sheet[] */
     protected $sheets = [];
-
-    /** @var Writer */
-    protected $writer;
 
     protected $metadata = [];
 
@@ -31,45 +36,66 @@ class Excel
     /**
      * Excel constructor
      *
-     * @param array $options
+     * @param array|null $options
      */
-    public function __construct($options = [])
+    public function __construct(?array $options = [])
     {
-        if (isset($options['writer'])) {
-            $writer = $options['writer'];
-            $writer->setExcel($this);
+        $writerOptions = [
+            'excel' => $this,
+        ];
+        if (self::$tempDir) {
+            $writerOptions['temp_dir'] = self::$tempDir;
+        }
+        if (isset($options['temp_dir']) && $options['temp_dir']) {
+            $writerOptions['temp_dir'] = $options['temp_dir'];
+        }
+        if (isset($options['writer_class'])) {
+            $this->writer = $this->getObject($options['writer_class'], $writerOptions);
+            $this->writer->setExcel($this);
             if (self::$tempDir) {
-                $writer->setTempDir(self::$tempDir);
+                $this->writer->setTempDir(self::$tempDir);
             }
         } else {
-            $writerOptions = [
-                'excel' => $this,
-            ];
-            if (self::$tempDir) {
-                $writerOptions['temp_dir'] = self::$tempDir;
-            }
-            if (isset($options['temp_dir']) && $options['temp_dir']) {
-                $writerOptions['temp_dir'] = $options['temp_dir'];
-            }
-            $writer = new Writer($writerOptions);
+            $this->writer = new Writer($writerOptions);
         }
-        $this->writer = $writer;
+
+        if (isset($options['style_class'])) {
+            $this->style = $this->getObject($options['style_class']);
+        } else {
+            $this->style = new Style($options);
+        }
+
         $this->setDefaultLocale();
-        Style::setDefaultFont(['name' => 'Arial', 'size' => 10]);
     }
 
     /**
-     * @param array|string $sheets
-     * @param array $options
+     * @param string|object $class
+     * @param string|array $options
+     *
+     * @return object
+     */
+    protected function getObject($class, $options = null): object
+    {
+        if (is_object($class)) {
+            return $class;
+        }
+
+        return new $class($options);
+    }
+
+    /**
+     * @param array|string|null $sheets
+     * @param array|null $options
      *
      * @return Excel
      */
-    public static function create($sheets = null, $options = [])
+    public static function create($sheets = null, ?array $options = [])
     {
         $excel = new self($options);
         if (empty($sheets)) {
             $sheets = ['Sheet1'];
-        } else {
+        }
+        else {
             $sheets = (array)$sheets;
         }
         foreach ($sheets as $sheetName) {
@@ -120,11 +146,11 @@ class Excel
 
     /**
      * @param string $locale
-     * @param string $dir
+     * @param string|null $dir
      *
      * @return $this
      */
-    public function setLocale($locale, $dir = null)
+    public function setLocale(string $locale, string $dir = null)
     {
         $localeSettings = [];
         // default settings
@@ -192,7 +218,8 @@ class Excel
                 $sepSpace = !empty($locale_info['p_sep_by_space']) ? str_repeat(' ', $locale_info['p_sep_by_space']) : '';
                 if (!empty($locale_info['p_cs_precedes'])) {
                     $moneyPattern = '[$' . $locale_info['currency_symbol'] . ']' . $sepSpace . $moneyPattern;
-                } else {
+                }
+                else {
                     $moneyPattern .= $sepSpace . '[$' . $locale_info['currency_symbol'] . ']';
                 }
                 $aFormatSettings['formats']['money'] = $moneyPattern;
@@ -218,7 +245,8 @@ class Excel
             $includeFile = '';
             if (is_file($file)) {
                 $includeFile = $file;
-            } else {
+            }
+            else {
                 $file = str_replace('.utf-8/', '/', $file);
                 if (is_file($file)) {
                     $includeFile = $file;
@@ -245,61 +273,62 @@ class Excel
         }
         if ($localeSettings) {
             $localeSettings = array_merge($aFormatSettings, $localeSettings);
-        } else {
+        }
+        else {
             $localeSettings = $aFormatSettings;
         }
 
-        $this->writer::setLocaleSettings($localeSettings);
+        $this->style->setLocaleSettings($localeSettings);
 
         return $this;
     }
 
     /**
-     * @param string $title
+     * @param string|null $title
      *
      * @return $this
      */
-    public function setTitle($title = '')
+    public function setTitle(?string $title = '')
     {
         return $this->setMetadata('title', $title);
     }
 
     /**
-     * @param string $subject
+     * @param string|null $subject
      *
      * @return $this
      */
-    public function setSubject($subject = '')
+    public function setSubject(?string $subject = '')
     {
         return $this->setMetadata('subject', $subject);
     }
 
     /**
-     * @param string $author
+     * @param string|null $author
      *
      * @return $this
      */
-    public function setAuthor($author = '')
+    public function setAuthor(?string $author = '')
     {
         return $this->setMetadata('author', $author);
     }
 
     /**
-     * @param string $company
+     * @param string|null $company
      *
      * @return $this
      */
-    public function setCompany($company = '')
+    public function setCompany(?string $company = '')
     {
         return $this->setMetadata('company', $company);
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
      *
      * @return $this
      */
-    public function setDescription($description = '')
+    public function setDescription(?string $description = '')
     {
         return $this->setMetadata('description', $description);
     }
@@ -350,7 +379,7 @@ class Excel
     /**
      * @param bool $isRightToLeft
      */
-    public function setRightToLeft($isRightToLeft = false)
+    public function setRightToLeft(bool $isRightToLeft)
     {
         $this->isRightToLeft = (bool)$isRightToLeft;
     }
@@ -367,13 +396,19 @@ class Excel
      * Set default
      *
      * @param $font
+     *
+     * @return $this
      */
     public function setFont($font)
     {
-        Style::setDefaultFont($font);
+        $this->style->setDefaultFont($font);
+
+        return $this;
     }
 
     /**
+     * Convert letter to index
+     *
      * @param $colLetter
      *
      * @return int
@@ -391,15 +426,17 @@ class Excel
             $index += (ord(substr($letters, -1)) - 64) * (26 ** $i);
         }
 
-        return ($index <= self::EXCEL_2007_MAX_COL) ? (int)$index: -1;
+        return ($index <= self::MAX_COL) ? (int)$index: -1;
     }
 
     /**
-     * @param $colIndex
+     * Convert index to letter
+     *
+     * @param int $colIndex ONE based
      *
      * @return string
      */
-    public static function colLetter($colIndex)
+    public static function colLetter(int $colIndex): string
     {
         static $letters = ['',
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -410,7 +447,7 @@ class Excel
             return $letters[$colIndex];
         }
 
-        if ($colIndex > 0 && $colIndex <= self::EXCEL_2007_MAX_COL) {
+        if ($colIndex > 0 && $colIndex <= self::MAX_COL) {
             $num = $colIndex - 1;
             for ($letter = ''; $num >= 0; $num = (int)($num / 26) - 1) {
                 $letter = chr($num % 26 + 0x41) . $letter;
@@ -423,16 +460,16 @@ class Excel
     }
 
     /**
-     * Create cell address by row and col indexws
+     * Create cell address by row and col indexes
      *
-     * @param int $rowIndex one based
-     * @param int $colIndex one based
-     * @param bool $absolute
-     * @param bool $absoluteRow
+     * @param int $rowIndex ONE based
+     * @param int $colIndex ONE based
+     * @param bool|null $absolute
+     * @param bool|null $absoluteRow
      *
      * @return string Cell label/coordinates, ex: A1, C3, AA42 (or if $absolute==true: $A$1, $C$3, $AA$42)
      */
-    public static function cellAddress($rowIndex, $colIndex, $absolute = false, $absoluteRow = null)
+    public static function cellAddress(int $rowIndex, int $colIndex, ?bool $absolute = false, bool $absoluteRow = null): string
     {
         if ($rowIndex > 0 && $colIndex > 0) {
             $letter = self::colLetter($colIndex);
@@ -449,19 +486,20 @@ class Excel
                 return $letter . $rowIndex;
             }
         }
+
         return '';
     }
 
     /**
      * @param array|string $range
      * @param array|string $offset
-     * @param bool $exception
+     * @param bool|null $exception
      *
      * @return array|bool
      */
-    public static function rangeDimensionRelative($range, $offset, $exception = false)
+    public static function rangeDimensionRelative($range, $offset, ?bool $exception = false)
     {
-        $colIndex1 = $colIndex2 = $rowIndex1 = $rowIndex2 = null;
+        $colNum1 = $colNum2 = $rowNum1 = $rowNum2 = null;
         if (is_array($range)) {
             $sheetName = null;
             if (count($range) === 2) {
@@ -469,26 +507,30 @@ class Excel
                 [$cell1, $cell2] = $range;
                 if (is_array($cell1) && is_array($cell2)) {
                     if (isset($cell1['row'], $cell1['col'])) {
-                        $rowIndex1 = $cell1['row'];
-                        $colIndex1 = $cell1['col'];
+                        $rowNum1 = $cell1['row'];
+                        $colNum1 = $cell1['col'];
                     } else {
-                        [$rowIndex1, $colIndex1] = $cell1;
+                        [$rowNum1, $colNum1] = $cell1;
                     }
                     if (isset($cell2['row'], $cell2['col'])) {
-                        $rowIndex2 = $cell1['row'];
-                        $colIndex2 = $cell1['col'];
-                    } else {
-                        [$rowIndex2, $colIndex2] = $cell2;
+                        $rowNum2 = $cell1['row'];
+                        $colNum2 = $cell1['col'];
+                    }
+                    else {
+                        [$rowNum2, $colNum2] = $cell2;
                     }
                 }
-            } else {
-                // [row1, col1, row2, col2]
-                [$rowIndex1, $colIndex1, $rowIndex2, $colIndex2] = $range;
             }
-        } else {
+            else {
+                // [row1, col1, row2, col2]
+                [$rowNum1, $colNum1, $rowNum2, $colNum2] = $range;
+            }
+        }
+        else {
             if (strpos($range, '!')) {
                 [$sheetName, $range] = explode('!', $range);
-            } else {
+            }
+            else {
                 $sheetName = null;
             }
             $range = strtoupper($range);
@@ -497,63 +539,66 @@ class Excel
                     $matches[4] = $matches[1];
                     $matches[5] = $matches[2];
                 }
-                $colIndex1 = self::colIndex($matches[1]);
-                $colIndex2 = self::colIndex($matches[4]);
-                $rowIndex1 = ($matches[2] <= self::EXCEL_2007_MAX_ROW) ? (int)$matches[2] : -1;
-                $rowIndex2 = ($matches[5] <= self::EXCEL_2007_MAX_ROW) ? (int)$matches[5] : -1;
+                $colNum1 = self::colIndex($matches[1]);
+                $colNum2 = self::colIndex($matches[4]);
+                $rowNum1 = ($matches[2] <= self::MAX_ROW) ? (int)$matches[2] : -1;
+                $rowNum2 = ($matches[5] <= self::MAX_ROW) ? (int)$matches[5] : -1;
             }
         }
-        if ($exception && ($colIndex1 === null || $colIndex2 === null || $rowIndex1 === null || $rowIndex2 === null)) {
-            throw new Exception('Wrong range ' . print_r($range, true) . '');
+        if ($exception && ($colNum1 === null || $colNum2 === null || $rowNum1 === null || $rowNum2 === null)) {
+            throw new Exception('Wrong range ' . print_r($range, true));
         }
         if (!empty($offset)) {
             $rowOffset1 = $colOffset1 = $rowOffset2 = $colOffset2 = null;
             if (is_array($offset)) {
                 if (count($offset) === 4) {
                     [$rowOffset1, $colOffset1, $rowOffset2, $colOffset2] = $offset;
-                } elseif (count($offset) === 2) {
+                }
+                elseif (count($offset) === 2) {
                     // [row, col] or ['row' => row, 'col' => col]
                     if (isset($offset['row'], $offset['col'])) {
                         $rowOffset1 = $offset['row'];
                         $colOffset1 = $offset['col'];
-                    } else {
+                    }
+                    else {
                         [$rowOffset2, $colOffset2] = $offset;
                     }
                 }
-            } else {
+            }
+            else {
                 // 'R1C1'
                 [$rowOffset1, $colOffset1, $rowOffset2, $colOffset2] = self::rangeRelOffsets($offset);
             }
             if ($exception && ($rowOffset1 === null || $colOffset1 === null || $rowOffset2 === null || $colOffset2 === null)) {
-                throw new Exception('Wrong offset of range ' . print_r($offset, true) . '');
+                throw new Exception('Wrong offset of range ' . print_r($offset, true));
             }
 
-            $rowIndex1 += $rowOffset1;
-            $colIndex1 += $colOffset1;
-            $rowIndex2 += $rowOffset2;
-            $colIndex2 += $colOffset2;
+            $rowNum1 += $rowOffset1;
+            $colNum1 += $colOffset1;
+            $rowNum2 += $rowOffset2;
+            $colNum2 += $colOffset2;
         }
-        if ($exception && ($colIndex1 < 0 || $colIndex2 < 0 || $rowIndex1 < 0 || $rowIndex2 < 0)) {
-            throw new Exception('Wrong range ' . print_r($range, true) . '');
+        if ($exception && ($colNum1 < 0 || $colNum2 < 0 || $rowNum1 < 0 || $rowNum2 < 0)) {
+            throw new Exception('Wrong range ' . print_r($range, true));
         }
 
-        if ($colIndex1 > 0 && $colIndex2 > 0 && $rowIndex1 > 0 && $rowIndex2 > 0) {
+        if ($colNum1 > 0 && $colNum2 > 0 && $rowNum1 > 0 && $rowNum2 > 0) {
             // swap indexes if need
-            if ($colIndex2 < $colIndex1) {
-                $idx = $colIndex1;
-                $colIndex1 = $colIndex2;
-                $colIndex2 = $idx;
+            if ($colNum2 < $colNum1) {
+                $idx = $colNum1;
+                $colNum1 = $colNum2;
+                $colNum2 = $idx;
             }
-            if ($rowIndex2 < $rowIndex1) {
-                $idx = $rowIndex1;
-                $rowIndex1 = $rowIndex2;
-                $rowIndex2 = $idx;
+            if ($rowNum2 < $rowNum1) {
+                $idx = $rowNum1;
+                $rowNum1 = $rowNum2;
+                $rowNum2 = $idx;
             }
-            $cell1 = Excel::colLetter($colIndex1) . $rowIndex1;
-            $cell2 = Excel::colLetter($colIndex2) . $rowIndex2;
+            $cell1 = Excel::colLetter($colNum1) . $rowNum1;
+            $cell2 = Excel::colLetter($colNum2) . $rowNum2;
             $localRange = $cell1 . ':' . $cell2;
-            $width = $colIndex2 - $colIndex1 + 1;
-            $height = $rowIndex2 - $rowIndex1 + 1;
+            $width = $colNum2 - $colNum1 + 1;
+            $height = $rowNum2 - $rowNum1 + 1;
 
             return [
                 'range' => ($sheetName ? $sheetName . '!' : '') . $localRange,
@@ -561,12 +606,16 @@ class Excel
                 'cell1' => $cell1,
                 'cell2' => $cell2,
                 'localRange' => $localRange,
-                'rowIndex1' => $rowIndex1,
-                'colIndex1' => $colIndex1,
-                'rowIndex2' => $rowIndex2,
-                'colIndex2' => $colIndex2,
+                'rowNum1' => $rowNum1,
+                'colNum1' => $colNum1,
+                'rowNum2' => $rowNum2,
+                'colNum2' => $colNum2,
+                'row' => $rowNum1,
+                'col' => $colNum1,
+                'rowIndex' => $rowNum1 - 1,
+                'colIndex' => $colNum1 - 1,
                 'width' => $width,
-                'height' => $rowIndex2 - $rowIndex1 + 1,
+                'height' => $rowNum2 - $rowNum1 + 1,
                 'cellCount' => $width * $height,
             ];
         }
@@ -576,11 +625,11 @@ class Excel
 
     /**
      * @param array|string $range
-     * @param bool $exception
+     * @param bool|null $exception
      *
      * @return array|bool
      */
-    public static function rangeDimension($range, $exception = false)
+    public static function rangeDimension($range, ?bool $exception = false)
     {
         return self::rangeDimensionRelative($range, null, $exception);
     }
@@ -588,11 +637,11 @@ class Excel
     /**
      * Return offsets by relative address (zero based)
      *
-     * @param $relAddress
+     * @param string $relAddress
      *
      * @return int[]
      */
-    public static function rangeRelOffsets($relAddress)
+    public static function rangeRelOffsets(string $relAddress): array
     {
         $rowOffset1 = $colOffset1 = $rowOffset2 = $colOffset2 = null;
         $offset = strtoupper($relAddress);
@@ -602,11 +651,13 @@ class Excel
             if (!empty($matches[3])) {
                 $rowOffset2 = !empty($matches[4]) ? (int)$matches[4] : 0;
                 $colOffset2 = !empty($matches[5]) ? (int)$matches[5] : 0;
-            } else {
+            }
+            else {
                 $rowOffset2 = $rowOffset1;
                 $colOffset2 = $colOffset1;
             }
         }
+
         return [
             $rowOffset1,
             $colOffset1,
@@ -624,7 +675,7 @@ class Excel
     {
         $dimension = Excel::rangeDimension($range);
         if ($dimension) {
-            return ['row' => $dimension['rowIndex1'], 'col' => $dimension['colIndex1']];
+            return ['row' => $dimension['rowNum1'], 'col' => $dimension['colNum1']];
         }
         return ['row' => -1, 'col' => -1];
     }
@@ -659,7 +710,7 @@ class Excel
     }
 
     /**
-     * @param int|string $index
+     * @param int|string|null $index
      *
      * @return Sheet|null
      */
@@ -687,7 +738,7 @@ class Excel
     }
     
     /**
-     * @param int|string $index
+     * @param int|string|null $index
      */
     public function removeSheet($index = null): void
     {
@@ -721,10 +772,10 @@ class Excel
     /**
      * Save generated file
      *
-     * @param $fileName
-     * @param $overWrite
+     * @param string $fileName
+     * @param bool|null $overWrite
      */
-    public function save($fileName, $overWrite = true)
+    public function save(string $fileName, ?bool $overWrite = true)
     {
         $this->writer->saveToFile($fileName, $overWrite, $this->getMetadata());
     }
@@ -732,9 +783,9 @@ class Excel
     /**
      * Download generated file to client (send to browser)
      *
-     * @param $name
+     * @param string|null $name
      */
-    public function output($name = null)
+    public function output(string $name = null)
     {
         $tmpFile = $this->writer->tempFilename();
         $this->save($tmpFile);

@@ -242,16 +242,6 @@ class Writer
         }
 
         $sheet->writeDataBegin($this);
-
-        if ($sheet->colFormats) {
-            foreach($sheet->colFormats as $colNum => $format) {
-                $colIndex = $colNum + 1;
-                if (!isset($sheet->columns[$colIndex])) {
-                    $sheet->columns[$colIndex] = $this->excel->style->defineFormatType($format);
-                }
-
-            }
-        }
     }
 
     /**

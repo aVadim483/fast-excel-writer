@@ -460,9 +460,11 @@ class Style
                     case 'color':
                     case 'text-color':
                     case 'font-color':
+                    case 'fg-color':
                         $result['color'] = $styleVal;
                         break;
                     case 'fill':
+                    case 'fill-color':
                     case 'bg-color':
                     case 'background-color':
                     case 'cell-color':
@@ -471,15 +473,40 @@ class Style
                     case 'font':
                         $result['font'] = self::normalizeFont($styleVal);
                         break;
-                    case 'text-align':
                     case 'align':
+                        if ($styleVal === 'center' || $styleVal === 'center-center') {
+                            $result['text-align'] = 'center';
+                            $result['vertical-align'] = 'center';
+                        }
+                        elseif (strpos($styleVal, '-')) {
+                            $parts = explode('-', $styleVal);
+                            if (in_array($parts[0], ['general', 'left', 'right', 'justify'])) {
+                                $result['text-align'] = $parts[0];
+                                unset($parts[0]);
+                            }
+                            if (empty($result['text-align']) && in_array($parts[1], ['general', 'left', 'right', 'justify'])) {
+                                $result['text-align'] = $parts[1];
+                                unset($parts[1]);
+                            }
+                            if (!empty($parts[0]) && in_array($parts[0], ['bottom', 'center', 'distributed', 'top'])) {
+                                $result['vertical-align'] = $parts[0];
+                            }
+                            if (!empty($parts[1]) && empty($result['vertical-align']) && in_array($parts[1], ['bottom', 'center', 'distributed', 'top'])) {
+                                $result['vertical-align'] = $parts[1];
+                                unset($parts[1]);
+                            }
+                        }
+                        break;
+                    case 'text-align':
                     case 'halign':
+                    case 'h-align':
                         if (in_array($styleVal, ['general', 'left', 'right', 'justify', 'center'])) {
                             $result['text-align'] = $styleVal;
                         }
                         break;
                     case 'vertical-align':
                     case 'valign':
+                    case 'v-align':
                         if (in_array($styleVal, ['bottom', 'center', 'distributed', 'top'])) {
                             $result['vertical-align'] = $styleVal;
                         }
@@ -487,12 +514,40 @@ class Style
                     case 'text-wrap':
                         $result['text-wrap'] = (bool)$styleVal;
                         break;
+                    case 'width':
+                    case 'autofit':
+                        if ($styleVal === 'auto' || $styleVal === true) {
+                            $result['options']['width-auto'] = true;
+                        }
+                        else {
+                            $width = self::numFloat($styleVal);
+                            if (is_numeric($width) && $width > 0) {
+                                $result['width'] = $width;
+                            }
+                        }
+                        break;
                     default:
                         $result[$styleKey] = $styleVal;
                 }
             }
         }
         return $result;
+    }
+
+    /**
+     * @param mixed $val
+     *
+     * @return mixed
+     */
+    public static function numFloat($val)
+    {
+        if (is_string($val)) {
+            return (float)str_replace(',', '.', $val);
+        }
+        if (is_numeric($val)) {
+            return (float)$val;
+        }
+        return $val;
     }
 
     /**
@@ -553,7 +608,12 @@ class Style
      */
     protected function addElement(string $sectionName, $value, array $fullStyle = null): int
     {
-        $key = json_encode($value);
+        if (is_string($value)) {
+            $key = $value;
+        }
+        else {
+            $key = json_encode($value);
+        }
         if (isset($this->elements[$sectionName][$key])) {
             return $this->elements[$sectionName][$key]['index'];
         }
@@ -731,20 +791,17 @@ class Style
      *
      * @return int
      */
-    protected function indexStyle(array $cellStyle, array $fullStyle = []): int
+    protected function indexStyle(array $cellStyle, array &$fullStyle = []): int
     {
+        if (isset($cellStyle['options'])) {
+            $fullStyle['options'] = $cellStyle['options'];
+            unset($cellStyle['options']);
+        }
         self::_ksort($cellStyle);
 
         return $this->addElement('cellXfs', $cellStyle, $fullStyle);
     }
 
-    /*
-     * @param string $numberFormat
-     * @param array|null $cellStyle
-     * @param array|null $fullStyle
-     *
-     * @return int
-     */
     /**
      * @param string $format
      * @param array|null $cellStyle
@@ -767,6 +824,7 @@ class Style
             $numberFormatType = self::determineNumberFormatType($numberFormat);
             $cellStyle['numFmtId'] = $this->addElement('numFmts', $numberFormat);
 
+            $fullStyle['format'] = $format;
             $fullStyle['number_format'] = $numberFormat;
             $fullStyle['number_format_type'] = $numberFormatType;
         }

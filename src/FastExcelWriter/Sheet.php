@@ -39,7 +39,6 @@ class Sheet
     public $fileWriter = null;
 
     // ZERO based
-    public $columns = [];
     public $freezeRows = 0;
     public $freezeColumns = 0;
     public $autoFilter = 0;
@@ -47,7 +46,7 @@ class Sheet
 
     // ZERO based
     public $colWidths = [];
-    public $colFormats = [];
+    public $colFormulas = [];
     public $colStyles = [];
 
     // ZERO based
@@ -68,7 +67,7 @@ class Sheet
     protected $areas = [];
     protected $defaultStyle = [];
 
-    protected $pageSetup = [];
+    protected $pageOptions = [];
 
     /**
      * Sheet constructor
@@ -78,7 +77,7 @@ class Sheet
     public function __construct(string $sheetName)
     {
         $this->setName($sheetName);
-        $this->pageSetup['orientation'] = 'portrait';
+        $this->pageOptions['orientation'] = 'portrait';
         $this->cells = [
             'values' => [],
             'styles' => [],
@@ -138,17 +137,17 @@ class Sheet
     }
 
     /**
-     * @param $option
-     * @param $value
+     * @param string $option
+     * @param mixed $value
      *
      * @return $this
      */
-    public function setPageSetup($option, $value)
+    public function setPageOptions(string $option, $value)
     {
         if ($this->rowCount) {
             throw new Exception('Cannot set page settings after rows writing');
         }
-        $this->pageSetup[$option] = $value;
+        $this->pageOptions[$option] = $value;
 
         return $this;
     }
@@ -158,9 +157,9 @@ class Sheet
      *
      * @return mixed|null
      */
-    public function getPageSetup($option)
+    public function getPageOptions($option)
     {
-        return $this->pageSetup[$option] ?? null;
+        return $this->pageOptions[$option] ?? null;
     }
 
     /**
@@ -168,7 +167,7 @@ class Sheet
      */
     public function pageOrientationPortrait()
     {
-        return $this->setPageSetup('orientation', 'portrait');
+        return $this->setPageOptions('orientation', 'portrait');
     }
 
     /**
@@ -176,7 +175,7 @@ class Sheet
      */
     public function pageOrientationLandscape()
     {
-        return $this->setPageSetup('orientation', 'landscape');
+        return $this->setPageOptions('orientation', 'landscape');
     }
 
     /**
@@ -190,7 +189,7 @@ class Sheet
             $numPage = 0;
         }
         if ($numPage >=0) {
-            $this->setPageSetup('fit_width', (int)$numPage);
+            $this->setPageOptions('fit_width', (int)$numPage);
         }
         return $this;
     }
@@ -206,7 +205,7 @@ class Sheet
             $numPage = 0;
         }
         if ($numPage >=0) {
-            $this->setPageSetup('fit_height', (int)$numPage);
+            $this->setPageOptions('fit_height', (int)$numPage);
         }
         return $this;
     }
@@ -216,7 +215,7 @@ class Sheet
      */
     public function getPageOrientation()
     {
-        return $this->pageSetup['orientation'] ?? 'portrait';
+        return $this->pageOptions['orientation'] ?? 'portrait';
     }
 
     /**
@@ -224,7 +223,7 @@ class Sheet
      */
     public function getPageFitToWidth()
     {
-        return (int)($this->pageSetup['fit_width'] ?? 0);
+        return (int)($this->pageOptions['fit_width'] ?? 0);
     }
 
     /**
@@ -232,7 +231,7 @@ class Sheet
      */
     public function getPageFitToHeight()
     {
-        return (int)($this->pageSetup['fit_height'] ?? 0);
+        return (int)($this->pageOptions['fit_height'] ?? 0);
     }
 
     /**
@@ -309,93 +308,52 @@ class Sheet
             }
         }
         $this->absoluteAutoFilter = Excel::cellAddress($row, $col, true);
+
         return $this;
     }
 
     /**
-     * @param int|string $col Column number or column letter
-     * @param string $optionName
-     * @param mixed $optionValue
-     */
-    protected function _setColOption($col, string $optionName, $optionValue)
-    {
-        if ($optionValue !== null) {
-            if (is_numeric($col)) {
-                $colNumber = (int)$col;
-            }
-            else {
-                $colNumber = Excel::colNumber($col);
-            }
-            if ($optionName === 'width' && is_numeric($optionValue)) {
-                $this->colWidths[$colNumber - 1] = str_replace(',', '.', (float)$optionValue);
-            }
-            elseif ($optionName === 'format') {
-                $this->colFormats[$colNumber - 1] = $optionValue;
-                if (isset($this->columns[$colNumber])) {
-                    unset($this->columns[$colNumber]);
-                }
-            }
-            elseif ($optionName === 'style') {
-                if (!empty($this->defaultStyle)) {
-                    $optionValue = $optionValue ? array_merge($optionValue, $this->defaultStyle) : $this->defaultStyle;
-                }
-                $this->colStyles[$colNumber - 1] = $optionValue ? Style::normalize($optionValue) : $optionValue;
-                if (isset($this->columns[$colNumber])) {
-                    unset($this->columns[$colNumber]);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param string $optionName
-     * @param array $colOptions
-     */
-    protected function _setColOptions(string $optionName, array $colOptions)
-    {
-        if ($colOptions) {
-            foreach($colOptions as $col => $value) {
-                $this->_setColOption(is_int($col) ? ++$col : $col, $optionName, $value);
-            }
-        }
-    }
-
-    /**
-     * Set width of single column
+     * Set width of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
-     * @param int|float $width
+     * @param int|float|string $width
      *
      * @return $this
      */
     public function setColWidth($col, $width)
     {
-        foreach((array)$col as $colName) {
-            $this->_setColOption($colName, 'width', $width);
+        $colIndexes = Excel::colIndexRange($col);
+        foreach($colIndexes as $colIdx) {
+            if ($colIdx >= 0) {
+                if ($width === 'auto') {
+                    $this->colStyles[$colIdx]['options']['width-auto'] = true;
+                }
+                else {
+                    $width = Style::numFloat($width);
+                    if (is_numeric($width)) {
+                        $this->colWidths[$colIdx] = $width;
+                    }
+                }
+            }
         }
 
         return $this;
     }
 
     /**
-     * Set format of single column
+     * Set width of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
-     * @param mixed $format
      *
      * @return $this
      */
-    public function setColFormat($col, $format)
+    public function setColWidthAuto($col)
     {
-        foreach((array)$col as $colName) {
-            $this->_setColOption($colName, 'format', $format);
-        }
-
-        return $this;
+        return $this->setColWidth($col, 'auto');
     }
 
     /**
-     * Set style of single column
+     * Set style of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param mixed $style
@@ -404,105 +362,68 @@ class Sheet
      */
     public function setColStyle($col, $style)
     {
-        foreach((array)$col as $colName) {
-            $this->_setColOption($colName, 'style', $style);
+        $colIndexes = Excel::colIndexRange($col);
+        foreach($colIndexes as $colIdx) {
+            if ($colIdx >= 0) {
+                if (!empty($this->colStyles[$colIdx])) {
+                    $this->colStyles[$colIdx] = array_replace_recursive($this->colStyles[$colIdx], $style);
+                }
+                else {
+                    $this->colStyles[$colIdx] = $style;
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set formula for single or multiple column(s)
+     *
+     * @param int|string|array $col Column number or column letter (or array of these)
+     * @param string $formula
+     *
+     * @return $this
+     */
+    public function setColFormula($col, string $formula)
+    {
+        $colIndexes = Excel::colIndexRange($col);
+        if ($formula) {
+            if ($formula[0] !== '=') {
+                $formula = '=' . $formula;
+            }
+        }
+        foreach($colIndexes as $colIdx) {
+            if ($colIdx >= 0) {
+                $this->colFormulas[$colIdx] = $formula;
+            }
         }
 
         return $this;
     }
 
     /**
-     * Set widths of columns
+     * Set format of single or multiple column(s)
      *
-     * @param array $colWidths
+     * @param int|string|array $col Column number or column letter (or array of these)
+     * @param mixed $format
      *
      * @return $this
      */
-    public function setColWidths(array $colWidths)
+    public function setColFormat($col, $format)
     {
-        $this->_setColOptions('width', $colWidths);
+        $this->setColStyle($col, ['format' => $format]);
 
         return $this;
     }
 
     /**
-     * Set formats of columns
+     * Set options of columns (widths, styles, formats, etc)
      *
-     * @param array $colFormats
-     *
-     * @return $this
-     */
-    public function setColFormats(array $colFormats)
-    {
-        $this->_setColOptions('format', $colFormats);
-
-        return $this;
-    }
-
-    /**
-     * Set styles of columns
-     *
-     * @param array $colStyles
-     *
-     * @return $this
-     */
-    public function setColStyles(array $colStyles)
-    {
-        $this->_setColOptions('style', $colStyles);
-
-        return $this;
-    }
-
-    /**
-     * Set options of columns (widths and/or formats)
-     *  $sheet->setColumns([
-     *      ['format' => 'integer'],
-     *      ['format' => 'date', 'width' => 16],
-     *      ['format' => 'text', 'width' => 40, 'text-wrap' => true],
-     *  ]);
-     *
-     * @param array $options
-     *
-     * @return $this
-     */
-    public function setColumns($options)
-    {
-        if (is_array($options)) {
-            if (key($options) === 0) {
-                $colNumber = 1;
-            }
-            else {
-                $colNumber = -1;
-            }
-            foreach($options as $colName => $colOptions) {
-                $col = ($colNumber > 0) ? $colNumber++ : Excel::colNumber($colName);
-                $style = [];
-                foreach($colOptions as $optionName => $optionValue) {
-                    if ($optionName === 'width') {
-                        $this->setColWidth($col, $colOptions['width']);
-                    }
-                    elseif ($optionName === 'format') {
-                        $this->setColFormat($col, $colOptions['format']);
-                    }
-                    elseif ($optionName === 'style') {
-                        $style = $colOptions['style'];
-                    }
-                    else {
-                        $style[$optionName] = $optionValue;
-                    }
-                }
-                if ($style) {
-                    $this->setColStyle($col, $style);
-                }
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * setRowOptions('B', ['width' = 20]) - options for column 'B'
-     * setRowOptions(['B' => ['width' = 20], 'C' => ['color' = '#f00']]) - options for several columns 'B' and 'C'
-     * setRowOptions('B:D', ['width' = 'auto']) - options for range of columns
+     * Call examples:
+     *  setColOptions('B', ['width' = 20]) - options for column 'B'
+     *  setColOptions('B:D', ['width' = 'auto']) - options for range of columns
+     *  setColOptions(['B' => ['width' = 20], 'C' => ['color' = '#f00']]) - options for several columns 'B' and 'C'
      *
      * @param mixed $arg1
      * @param array|null $arg2
@@ -513,24 +434,41 @@ class Sheet
     {
         if ($arg2 === null) {
             $options = $arg1;
+            foreach ($options as $col => $colOptions) {
+                $options[$col] = Style::normalize($colOptions);
+            }
         }
         else {
-            if (is_string($arg1) && preg_match('/^([a-z]+):([a-z]+)$/i', $arg1, $m)) {
-                $options = [];
-                $colNum = Excel::colNumber($m[1]);
-                $maxNum = Excel::colNumber($m[2]);
-                for ($col = $colNum; $col <= $maxNum; $col++) {
-                    $options[$col] = $arg2;
+            $options = [];
+            $colNumbers = Excel::colNumberRange($arg1);
+            if ($colNumbers) {
+                $colOptions = Style::normalize($arg2);
+                foreach ($colNumbers as $col) {
+                    $options[$col] = $colOptions;
                 }
             }
-            elseif (is_numeric($arg1)) {
-                $options[(int)$arg1] = $arg2;
-            }
-            else {
-                $options = [];
+        }
+        if ($options) {
+            foreach($options as $col => $colOptions) {
+                $style = [];
+                foreach($colOptions as $optionName => $optionValue) {
+                    if ($optionName === 'width') {
+                        $this->setColWidth($col, $optionValue);
+                    }
+                    elseif ($optionName === 'formula') {
+                        $this->setColFormula($col, $optionValue);
+                    }
+                    else {
+                        $style[$optionName] = $optionValue;
+                    }
+                }
+                if ($style) {
+                    $this->setColStyle($col, $style);
+                }
             }
         }
-        return $this->setColumns($options);
+
+        return $this;
     }
 
     /**
@@ -611,15 +549,6 @@ class Sheet
     {
         if ($style) {
             $this->defaultStyle = Style::normalize($style);
-            if ($this->colStyles) {
-                foreach($this->colStyles as $colIndex => $colStyle) {
-                    $colStyle = !empty($colStyle) ? array_merge($colStyle, $style) : $style;
-                    $this->colStyles[$colIndex] = $colStyle ? Style::normalize($colStyle) : $colStyle;
-                    if (isset($this->columns[$colIndex])) {
-                        unset($this->columns[$colIndex]);
-                    }
-                }
-            }
         }
 
         return $this;
@@ -641,17 +570,6 @@ class Sheet
      */
     protected function _writeRow(Writer $writer, array $row = [], array $rowOptions = null, array $cellsOptions = null)
     {
-        if (count($this->colFormats) > count($this->columns)) {
-            foreach($this->colFormats as $colNum => $format) {
-                $colIndex = $colNum + 1;
-                if (!isset($this->columns[$colIndex])) {
-                    $this->columns[$colIndex] = $this->book->style->defineFormatType($format);
-                }
-            }
-        }
-
-        $defaultFormatType = $this->book->style->defaultFormatType();
-
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
             $height = $rowOptions['height'];
@@ -673,42 +591,34 @@ class Sheet
         }
         $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" outlineLevel="0" ' . $rowAttr . '>');
 
-        //-- $rowFormat = $rowStyle = $rowCellStyles = null;
-        $rowFormat = null;
-        // styles for each cell
-        $rowCellStyles = $cellsOptions;
+        // add auto formulas of columns
+        if ($this->colFormulas && $row) {
+            foreach($this->colFormulas as $colIdx => $formula) {
+                if (!isset($row[$colIdx])) {
+                    $row[$colIdx] = $formula;
+                }
+            }
+            ksort($row);
+        }
 
         $rowIdx = $this->rowCount;
         foreach ($row as $colIdx => $cellValue) {
-            //$formatType = $this->columns[$colIdx + 1] ?? $defaultFormatType;
-            //$numberFormat = $formatType['number_format'];
-            //$numberFormatType = $formatType['number_format_type'];
-
-            $styles = [
-                $this->defaultStyle ?? null,
-                $this->colStyles[$colIdx] ?? null,
-                $this->rowStyles[$rowIdx] ?? null,
-                $rowOptions ?? null,
-                $cellsOptions[$rowIdx] ?? null,
+            $styleStack = [
+                $this->defaultStyle ?? null, // default style of sheet
+                $this->colStyles[$colIdx] ?? null, // defined style of column
+                $this->rowStyles[$rowIdx] ?? null, // defined style of row
+                $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
+                $rowOptions ?? null, // runtime style of tje row
+                $cellsOptions[$rowIdx] ?? null, // runtime style of the cell
             ];
-            $cellStyle = Style::mergeStyles($styles);
+            $cellStyle = Style::mergeStyles($styleStack);
             $cellStyleIdx = $this->book->style->addStyle($cellStyle, $resultStyle);
-/*
-            if (isset($cellStyle['format'])) {
-                $cellFormat = $this->book->style->defineFormatType($cellStyle['format']);
-            }
-            else {
-                $cellFormat = $this->book->style->defaultFormatType();
-            }
-*/
+
             $numberFormat = $resultStyle['number_format'];
             $numberFormatType = $resultStyle['number_format_type'];
 
-            //$cellStyleIdx = $this->book->style->addCellStyle($numberFormat, $cellStyle, $resultStyle);
-
-            if (!empty($cellStyle['autofit'])) {
-                $style = $this->book->style->findCellStyle($cellStyleIdx);
-                $this->_columnWidth($colIdx, $cellValue, $numberFormat, $style ?? []);
+            if (!empty($cellStyle['options']['width-auto'])) {
+                $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
             }
             $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
             $colIdx++;
@@ -887,7 +797,7 @@ class Sheet
 
         // ++++++++++++++++++++++++++++
         // splits row and cells options
-        $rowOptions = $rowCellsOptions = [];
+        $rowOptions = [];
         if ($options) {
             if (isset($options['height'])) {
                 $rowOptions['height'] = (float)$options['height'];
@@ -901,66 +811,11 @@ class Sheet
                 $rowOptions['collapsed'] = (bool)$options['collapsed'];
                 unset($options['collapsed']);
             }
-            $rowCellsOptions = $options;
         }
         // ----------------------------
 
-        $cellsCount = count($row);
-
-        // combine default options and column options to $colOptions
-        $defaultStyle = $this->getDefaultStyle() ?: null;
-        $colOptions = [];
-
-        /*
-        if ($defaultStyle) {
-            if (!empty($this->colStyles)) {
-                for($colNum = 0; $colNum < $cellsCount; $colNum++) {
-                    if (!isset($this->colStyles[$colNum])) {
-                        $colOptions[$colNum] = $defaultStyle;
-                    }
-                    else {
-                        $colOptions[$colNum] = $this->colStyles[$colNum];
-                    }
-                }
-            }
-            else {
-                // --[1] $colOptions = array_fill(0, count($row), $defaultStyle);
-            }
-        }
-        else {
-            // --[1] $colOptions = $this->colStyles;
-        }
-        */
-
-        // combine column options and cell options for current row
-        if (!empty($rowCellsOptions) && is_array($rowCellsOptions)) {
-            $firstKey = key($rowCellsOptions);
-            if (is_int($firstKey) || ($firstKey && is_string($firstKey) && $firstKey[0] >= 'A' && $firstKey[0] <= 'Z')) {
-                $rowCellsOptions = $this->_parseColumnOptions(count($row), $rowCellsOptions);
-            }
-            else {
-                $rowCellsOptions = array_fill(0, count($row), $rowCellsOptions);
-            }
-            /* --[1]
-            if ($colOptions) {
-                foreach ($rowCellsOptions as $colNum => $cellOptions) {
-                    if (!empty($colOptions[$colNum])) {
-                        if (!empty($cellOptions)) {
-                            $rowCellsOptions[$colNum] = array_merge($cellOptions, $colOptions[$colNum]);
-                        }
-                        else {
-                            $rowCellsOptions[$colNum] = $colOptions[$colNum];
-                        }
-                    }
-                }
-            }
-            */
-        }
-        else {
-            // --[1] $rowCellsOptions = $colOptions;
-        }
-
-        $this->_writeRow($writer, $row, $rowOptions, $rowCellsOptions);
+        //$this->_writeRow($writer, $row, $rowOptions, $rowCellsOptions);
+        $this->_writeRow($writer, $row, $rowOptions);
         $this->currentCol = Excel::MIN_COL;
 
         $this->currentRow++;
@@ -988,21 +843,24 @@ class Sheet
      *
      * @return $this
      */
-    public function writeHeader($header, $options = null)
+    public function writeHeader(array $header, array $options = null)
     {
         $rowValues = [];
-        $colFormats = [];
+        $colStyles = [];
+        $colNum = 1;
         foreach($header as $key => $val) {
             if (!is_int($key)) {
-                $rowValues[] = $key;
-                $colFormats[] = $val;
-            } else {
-                $rowValues[] = $val;
-                $colFormats[] = null;
+                $rowValues[$colNum] = $key;
+                $colStyles[$colNum]['format'] = $val;
             }
+            else {
+                $rowValues[$colNum] = $val;
+                $colStyles[$colNum]['format'] = null;
+            }
+            $colNum++;
         }
         $this->writeRow($rowValues, $options);
-        $this->setColFormats($colFormats);
+        $this->setColOptions($colStyles);
 
         return $this;
     }
@@ -1038,7 +896,13 @@ class Sheet
 
         $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, false, true);
-        $this->currentCol++;
+        if (isset($address['width'], $address['range']) && $address['width'] > 1) {
+            $this->mergeCells($address['range']);
+            $this->currentCol += $address['width'];
+        }
+        else {
+            $this->currentCol++;
+        }
 
         return $this;
     }
@@ -1507,7 +1371,8 @@ class Sheet
                     // array of all styles
                     ksort($rowStyles);
                     $this->_writeRow($writer, array_values($rowValues), null, array_values($rowStyles));
-                } else {
+                }
+                else {
                     $this->_writeRow($writer, [null]);
                 }
             }

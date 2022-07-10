@@ -129,8 +129,6 @@ class Excel
     public function setDefaultLocale()
     {
         $this->setLocale('en');
-        //$this->setLocale('en_US.UTF-8');
-        //$this->setLocale('ru_RU.UTF-8');
         $currentLocale = setlocale(LC_ALL, 0);
         $components = explode(';', $currentLocale);
         foreach ($components as $component) {
@@ -192,21 +190,6 @@ class Excel
         }
 
         if ($newLocale) {
-            // set date & time patterns
-            /*
-            $time = strtotime('1985-6-2 13:7:9');
-            $calendar = \IntlGregorianCalendar::createInstance();
-            $datePattern = (new \IntlDateFormatter($locale, \IntlDateFormatter::SHORT, \IntlDateFormatter::NONE, null, $calendar))->format($time);
-            $dateTimePattern = (new \IntlDateFormatter($locale, \IntlDateFormatter::SHORT, \IntlDateFormatter::MEDIUM, null, $calendar))->format($time);
-
-            $timePattern = trim(str_replace($datePattern, '', $dateTimePattern), ' ,');
-            $datePattern = str_replace(['19', '85', '06', '02', '6', '2'], ['YY', 'YY', 'MM', 'DD', 'M', 'D'], $datePattern);
-            $timePattern = str_replace(['13', '07', '09', '1', '7', '9', 'PM', 'pm'], ['H', 'MM', 'SS', 'H', 'M', 'S', 'AM/PM', 'am/pm'], $timePattern);
-
-            $aFormatSettings['formats']['date'] = $datePattern;
-            $aFormatSettings['formats']['time'] = $timePattern;
-            $aFormatSettings['formats']['datetime'] = $datePattern . ' ' . $timePattern;
-            */
             // set money pattern
             $tmpLocale = setlocale(LC_MONETARY, '0');
             if (setlocale(LC_MONETARY, $newLocale)) {
@@ -435,6 +418,73 @@ class Excel
         return ($colNumber <= self::MAX_COL) ? (int)$colNumber : -1;
     }
 
+    /**
+     * Convert letter to index (ZERO based)
+     *
+     * @param $colLetter
+     *
+     * @return int
+     */
+    public static function colIndex($colLetter)
+    {
+        $colNumber = self::colNumber($colLetter);
+
+        if ($colNumber > 0) {
+            return $colNumber - 1;
+        }
+
+        return $colNumber;
+    }
+
+    /**
+     * Convert letter range to array of numbers (ONE based)
+     *
+     * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
+     *
+     * @return array
+     */
+    public static function colNumberRange($colLetter): array
+    {
+        $result = [];
+        if (is_array($colLetter)) {
+            foreach ($colLetter as $col) {
+                $result[] = self::colNumber($col);
+            }
+        }
+        elseif (is_string($colLetter) && preg_match('/^([a-z]+):([a-z]+)$/i', $colLetter, $m)) {
+            $colNum = self::colNumber($m[1]);
+            $maxNum = self::colNumber($m[2]);
+            for ($col = $colNum; $col <= $maxNum; $col++) {
+                $result[] = $col;
+            }
+        }
+        else {
+            $col = self::colNumber($colLetter);
+            if ($col > 0) {
+                $result[] = $col;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Convert letter range to array of numbers (ONE based)
+     *
+     * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
+     *
+     * @return array
+     */
+    public static function colIndexRange($colLetter): array
+    {
+        $result = self::colNumberRange($colLetter);
+
+        foreach ($result as $key => $num) {
+            $result[$key] = ($num > 0) ? $num - 1 : -1;
+        }
+
+        return $result;
+    }
     /**
      * Convert column number to letter
      *
@@ -671,20 +721,6 @@ class Excel
             $rowOffset2,
             $colOffset2,
         ];
-    }
-
-    /**
-     * @param $range
-     *
-     * @return array
-     */
-    public static function rangeRowColNumbers($range): array
-    {
-        $dimension = Excel::rangeDimension($range);
-        if ($dimension) {
-            return ['row' => $dimension['row'], 'col' => $dimension['col']];
-        }
-        return ['row' => -1, 'col' => -1];
     }
 
     /**

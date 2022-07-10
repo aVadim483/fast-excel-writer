@@ -131,7 +131,14 @@ class Area
                     }
                     return true;
                 }
-                $idxAddress = Excel::rangeRowColNumbers($cellAddress);
+                $dimension = Excel::rangeDimension($cellAddress);
+                if ($dimension) {
+                    $idxAddress = ['row' => $dimension['row'], 'col' => $dimension['col']];
+                }
+                else {
+                    $idxAddress = ['row' => -1, 'col' => -1];
+                }
+
             }
             else {
                 // $cellAddress is array

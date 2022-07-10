@@ -76,6 +76,8 @@ class Style
 
     protected $elements = [];
 
+    protected $elementIndexes = [];
+
 
     /**
      * Constructor of Style
@@ -502,6 +504,21 @@ class Style
 
     /**
      * @param string $sectionName
+     * @param int $index
+     *
+     * @return array
+     */
+    protected function findElement(string $sectionName, int $index)
+    {
+        if (isset($this->elementIndexes[$index], $this->elements[$sectionName][$this->elementIndexes[$index]])) {
+            return $this->elements[$sectionName][$this->elementIndexes[$index]];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param string $sectionName
      * @param string|array $value
      *
      * @return int
@@ -517,14 +534,16 @@ class Style
             'index' => $index,
             'value' => $value,
         ];
+        $this->elementIndexes[$index] = $key;
 
         return $index;
     }
 
     /**
      * @param array $cellStyle
+     * @param array $fullStyle
      */
-    protected function addStyleFont(array &$cellStyle)
+    protected function addStyleFont(array &$cellStyle, array &$fullStyle = [])
     {
         $index = 0;
         if (isset($cellStyle['font']) || isset($cellStyle['color']) || isset($cellStyle['text-color']) || isset($cellStyle['font-style']) || isset($cellStyle['font-size'])) {
@@ -567,14 +586,20 @@ class Style
             if (isset($cellStyle['font'])) {
                 unset($cellStyle['font']);
             }
+
+            $fullStyle['font'] = $value;
+        }
+        else {
+            $fullStyle['font'] = $this->findElement('fonts', $index);
         }
         $cellStyle['fontId'] = $index;
     }
 
     /**
      * @param array $cellStyle
+     * @param array $fullStyle
      */
-    protected function addStyleFill(array &$cellStyle)
+    protected function addStyleFill(array &$cellStyle, array &$fullStyle = [])
     {
         $index = 0;
         $fill = [];
@@ -608,20 +633,31 @@ class Style
         if ($fill) {
             $value = self::normalizeFill($fill);
             $index = $this->addElement('fills', $value);
+
+            $fullStyle['fills'] = $value;
+        }
+        else {
+            $fullStyle['fill'] = $this->findElement('fills', $index);
         }
         $cellStyle['fillId'] = $index;
     }
 
     /**
      * @param array $cellStyle
+     * @param array $fullStyle
      */
-    protected function addStyleBorder(array &$cellStyle)
+    protected function addStyleBorder(array &$cellStyle, array &$fullStyle = [])
     {
         $index = 0;
         if (isset($cellStyle['border'])) {
             if ($cellStyle['border']) {
                 $value = self::normalizeBorder($cellStyle['border']);
                 $index = $this->addElement('borders', $value);
+
+                $fullStyle['borders'] = $value;
+            }
+            else {
+                $fullStyle['border'] = $this->findElement('borders', $index);
             }
             unset($cellStyle['border']);
         }
@@ -643,17 +679,19 @@ class Style
     /**
      * @param string $numberFormat
      * @param array|null $cellStyle
+     * @param array|null $fullStyle
      *
      * @return int
      */
-    public function addCellStyle(string $numberFormat, ?array $cellStyle = [])
+    public function addCellStyle(string $numberFormat, ?array $cellStyle = [], ?array &$fullStyle = [])
     {
+        $fullStyle = [];
         if (empty($cellStyle)) {
             $cellStyle = [];
         }
-        $this->addStyleFont($cellStyle);
-        $this->addStyleFill($cellStyle);
-        $this->addStyleBorder($cellStyle);
+        $this->addStyleFont($cellStyle, $fullStyle);
+        $this->addStyleFill($cellStyle, $fullStyle);
+        $this->addStyleBorder($cellStyle, $fullStyle);
         $cellStyle['numFmtId'] = self::addToListGetIndex($this->numberFormats, $numberFormat);
 
         return $this->indexStyle($cellStyle);

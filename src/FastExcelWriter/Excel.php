@@ -408,13 +408,13 @@ class Excel
     }
 
     /**
-     * Convert letter to index
+     * Convert letter to number (ONE based)
      *
      * @param $colLetter
      *
      * @return int
      */
-    public static function colIndex($colLetter)
+    public static function colNumber($colLetter)
     {
         // Strip cell reference down to just letters
         $letters = preg_replace('/[^A-Z]/', '', $colLetter);
@@ -431,29 +431,29 @@ class Excel
     }
 
     /**
-     * Convert index to letter
+     * Convert column number to letter
      *
-     * @param int $colIndex ONE based
+     * @param int $colNumber ONE based
      *
      * @return string
      */
-    public static function colLetter(int $colIndex): string
+    public static function colLetter(int $colNumber): string
     {
         static $letters = ['',
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ',
         ];
 
-        if (isset($letters[$colIndex])) {
-            return $letters[$colIndex];
+        if (isset($letters[$colNumber])) {
+            return $letters[$colNumber];
         }
 
-        if ($colIndex > 0 && $colIndex <= self::MAX_COL) {
-            $num = $colIndex - 1;
+        if ($colNumber > 0 && $colNumber <= self::MAX_COL) {
+            $num = $colNumber - 1;
             for ($letter = ''; $num >= 0; $num = (int)($num / 26) - 1) {
                 $letter = chr($num % 26 + 0x41) . $letter;
             }
-            $letters[$colIndex] = $letter;
+            $letters[$colNumber] = $letter;
 
             return $letter;
         }
@@ -461,30 +461,30 @@ class Excel
     }
 
     /**
-     * Create cell address by row and col indexes
+     * Create cell address by row and col numbers
      *
-     * @param int $rowIndex ONE based
-     * @param int $colIndex ONE based
+     * @param int $rowNumber ONE based
+     * @param int $colNumber ONE based
      * @param bool|null $absolute
      * @param bool|null $absoluteRow
      *
      * @return string Cell label/coordinates, ex: A1, C3, AA42 (or if $absolute==true: $A$1, $C$3, $AA$42)
      */
-    public static function cellAddress(int $rowIndex, int $colIndex, ?bool $absolute = false, bool $absoluteRow = null): string
+    public static function cellAddress(int $rowNumber, int $colNumber, ?bool $absolute = false, bool $absoluteRow = null): string
     {
-        if ($rowIndex > 0 && $colIndex > 0) {
-            $letter = self::colLetter($colIndex);
+        if ($rowNumber > 0 && $colNumber > 0) {
+            $letter = self::colLetter($colNumber);
             if ($letter) {
                 if ($absolute) {
                     if (null === $absoluteRow || true === $absoluteRow) {
-                        return '$' . $letter . '$' . $rowIndex;
+                        return '$' . $letter . '$' . $rowNumber;
                     }
-                    return '$' . $letter . $rowIndex;
+                    return '$' . $letter . $rowNumber;
                 }
                 if ($absoluteRow) {
-                    return $letter . '$' . $rowIndex;
+                    return $letter . '$' . $rowNumber;
                 }
-                return $letter . $rowIndex;
+                return $letter . $rowNumber;
             }
         }
 
@@ -510,7 +510,8 @@ class Excel
                     if (isset($cell1['row'], $cell1['col'])) {
                         $rowNum1 = $cell1['row'];
                         $colNum1 = $cell1['col'];
-                    } else {
+                    }
+                    else {
                         [$rowNum1, $colNum1] = $cell1;
                     }
                     if (isset($cell2['row'], $cell2['col'])) {
@@ -540,8 +541,8 @@ class Excel
                     $matches[4] = $matches[1];
                     $matches[5] = $matches[2];
                 }
-                $colNum1 = self::colIndex($matches[1]);
-                $colNum2 = self::colIndex($matches[4]);
+                $colNum1 = self::colNumber($matches[1]);
+                $colNum2 = self::colNumber($matches[4]);
                 $rowNum1 = ($matches[2] <= self::MAX_ROW) ? (int)$matches[2] : -1;
                 $rowNum2 = ($matches[5] <= self::MAX_ROW) ? (int)$matches[5] : -1;
             }
@@ -670,13 +671,13 @@ class Excel
     /**
      * @param $range
      *
-     * @return int[]
+     * @return array
      */
-    public static function rangeIndexes($range)
+    public static function rangeRowColNumbers($range): array
     {
         $dimension = Excel::rangeDimension($range);
         if ($dimension) {
-            return ['row' => $dimension['rowNum1'], 'col' => $dimension['colNum1']];
+            return ['row' => $dimension['row'], 'col' => $dimension['col']];
         }
         return ['row' => -1, 'col' => -1];
     }
@@ -711,7 +712,10 @@ class Excel
     }
 
     /**
-     * @param int|string|null $index
+     * Returns sheet by index or name of sheet.
+     * Return the first sheet of index omitted
+     *
+     * @param int|string|null $index - index or name of sheet
      *
      * @return Sheet|null
      */
@@ -725,11 +729,13 @@ class Excel
             $keys = array_keys($this->sheets);
             if (isset($keys[--$index])) {
                 $key = $keys[$index];
-            } else {
+            }
+            else {
                 // index not found
                 throw  new Exception('Sheet #' . $index . ' not found');
             }
-        } else {
+        }
+        else {
             $key = mb_strtolower($index);
             if (!isset($this->sheets[$key])) {
                 throw  new Exception('Sheet "' . $index . '" not found');
@@ -739,6 +745,9 @@ class Excel
     }
     
     /**
+     * Removes sheet by index or name of sheet.
+     * Removes the first sheet of index omitted
+     *
      * @param int|string|null $index
      */
     public function removeSheet($index = null): void
@@ -763,6 +772,8 @@ class Excel
     }
 
     /**
+     * Returns all sheets
+     *
      * @return Sheet[]
      */
     public function getSheets()
@@ -771,7 +782,7 @@ class Excel
     }
 
     /**
-     * Save generated file
+     * Save generated XLSX-file
      *
      * @param string $fileName
      * @param bool|null $overWrite

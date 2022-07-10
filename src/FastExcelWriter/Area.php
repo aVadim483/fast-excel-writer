@@ -131,7 +131,7 @@ class Area
                     }
                     return true;
                 }
-                $idxAddress = Excel::rangeIndexes($cellAddress);
+                $idxAddress = Excel::rangeRowColNumbers($cellAddress);
             }
             else {
                 // $cellAddress is array

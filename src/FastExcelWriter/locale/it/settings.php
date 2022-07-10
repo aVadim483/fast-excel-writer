@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'INFO.DATI.TAB.PIVOT' => 'GETPIVOTDATA', //Restituisce i dati memorizzati in un rapporto di tabella pivot
         'MEMBRO.KPI.CUBO' => 'CUBEKPIMEMBER', //Restituisce il nome, la proprietà e la misura di un indicatore di prestazioni chiave (KPI) e visualizza il nome e la proprietà nella cella. Un KPI è una misura quantificabile, ad esempio l'utile lordo mensile o il fatturato trimestrale dei dipendenti, utilizzata per il monitoraggio delle prestazioni di un'organizzazione.

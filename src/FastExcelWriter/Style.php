@@ -527,33 +527,46 @@ class Style
     protected function addStyleFont(array &$cellStyle)
     {
         $index = 0;
-        if (isset($cellStyle['font'])) {
-            if ($cellStyle['font']) {
-                if (is_string($cellStyle['font'])) {
-                    if (in_array($cellStyle['font'], self::$fontStyleDefines, true)) {
-                        $cellStyle['font'] = ['style' => $cellStyle['font']];
-                    }
-                    else {
-                        $cellStyle['font'] = [];
-                    }
-                }
-                if (!empty($cellStyle['color'])) {
-                    $cellStyle['font']['color'] = $cellStyle['color'];
-                    unset($cellStyle['color']);
-                }
-                elseif (!empty($cellStyle['text-color'])) {
-                    $cellStyle['font']['color'] = $cellStyle['text-color'];
-                    unset($cellStyle['text-color']);
-                }
-                elseif (!empty($cellStyle['font-color'])) {
-                    $cellStyle['font']['color'] = $cellStyle['font-color'];
-                    unset($cellStyle['font-color']);
-                }
-
-                $value = self::normalizeFont($cellStyle['font']);
-                $index = $this->addElement('fonts', $value);
+        if (isset($cellStyle['font']) || isset($cellStyle['color']) || isset($cellStyle['text-color']) || isset($cellStyle['font-style']) || isset($cellStyle['font-size'])) {
+            if (!isset($cellStyle['font'])) {
+                $cellStyle['font'] = [];
             }
-            unset($cellStyle['font']);
+            elseif (is_string($cellStyle['font'])) {
+                if (in_array($cellStyle['font'], self::$fontStyleDefines, true)) {
+                    $cellStyle['font'] = ['style' => $cellStyle['font']];
+                }
+                else {
+                    $cellStyle['font'] = [];
+                }
+            }
+
+            if (!empty($cellStyle['color'])) {
+                $cellStyle['font']['color'] = $cellStyle['color'];
+                unset($cellStyle['color']);
+            }
+            elseif (!empty($cellStyle['text-color'])) {
+                $cellStyle['font']['color'] = $cellStyle['text-color'];
+                unset($cellStyle['text-color']);
+            }
+            elseif (!empty($cellStyle['font-color'])) {
+                $cellStyle['font']['color'] = $cellStyle['font-color'];
+                unset($cellStyle['font-color']);
+            }
+            if (!empty($cellStyle['font-style']) && empty($cellStyle['font']['style'])) {
+                $cellStyle['font']['style'] = $cellStyle['font-style'];
+                unset($cellStyle['font-style']);
+            }
+            if (!empty($cellStyle['font-size']) && empty($cellStyle['font']['size'])) {
+                $cellStyle['font']['size'] = $cellStyle['font-size'];
+                unset($cellStyle['font-size']);
+            }
+
+            $value = self::normalizeFont($cellStyle['font']);
+            $index = $this->addElement('fonts', $value);
+
+            if (isset($cellStyle['font'])) {
+                unset($cellStyle['font']);
+            }
         }
         $cellStyle['fontId'] = $index;
     }

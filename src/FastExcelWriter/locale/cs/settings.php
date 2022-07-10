@@ -1,6 +1,13 @@
 <?php
+// cs_CZ
 
 return [
+    'formats' => [
+        'money' => '#,##0.00 [$Kč];[RED]-#,##0.00 [$Kč]',
+        'date' => 'DD.MM.YY',
+        'time' => 'H:MM:SS',
+        'datetime' => 'DD.MM.YY HH:MM:SS',
+    ],
     'functions' => [
         'ZÍSKATKONTDATA' => 'GETPIVOTDATA', //Vrátí data uložená v kontingenční tabulce. Pomocí funkce ZÍSKATKONTDATA můžete načíst souhrnná data z kontingenční tabulky, pokud jsou tato data v kontingenční sestavě zobrazena.
         'CUBEKPIMEMBER' => 'CUBEKPIMEMBER', //Vrátí název, vlastnost a velikost klíčového ukazatele výkonu (KUV) a zobrazí v buňce název a vlastnost. Klíčový ukazatel výkonu je kvantifikovatelná veličina, například hrubý měsíční zisk nebo čtvrtletní obrat na zaměstnance, která se používá pro sledování výkonnosti organizace.

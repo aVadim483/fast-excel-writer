@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'HÄMTA.PIVOTDATA' => 'GETPIVOTDATA', //Returnerar data som lagrats i en pivottabellrapport
         'KUBKPIMEDLEM' => 'CUBEKPIMEMBER', //Returnerar namn, egenskap och mått för en KPI och visar namnet och egenskapen i cellen. En KPI, eller prestandaindikator, är ett kvantifierbart mått, t.ex. månatlig bruttovinst eller personalomsättning per kvartal, som används för att analysera ett företags resultat.

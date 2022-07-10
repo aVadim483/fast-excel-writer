@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'NOUDA.PIVOT.TIEDOT' => 'GETPIVOTDATA', //Palauttaa pivot-taulukkoraporttiin tallennettuja tietoja.
         'KUUTIOKPIJÄSEN' => 'CUBEKPIMEMBER', //Palauttaa suorituskykyilmaisimen (KPI) nimen, ominaisuuden sekä mitan ja näyttää nimen sekä ominaisuuden solussa. KPI on mitattavissa oleva suure, kuten kuukauden bruttotuotto tai vuosineljänneksen työntekijäkohtainen liikevaihto, joiden avulla tarkkaillaan organisaation suorituskykyä.

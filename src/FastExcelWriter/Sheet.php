@@ -681,7 +681,7 @@ class Sheet
             'row' => 1 + $this->currentRow,
             'col' => 1 + $this->currentCol++,
         ];
-        $this->_setCellData($cellAddress, $data, false, true);
+        $this->_setCellData($cellAddress, $data, false);
 
         return $this;
     }
@@ -870,7 +870,7 @@ class Sheet
             'values' => $value,
             'styles' => Style::normalize($style),
         ];
-        $this->_setCellData($cellAddress, $data, false, false, true);
+        $this->_setCellData($cellAddress, $data, false, true);
         $this->currentCol++;
 
         return $this;
@@ -1065,12 +1065,11 @@ class Sheet
      * @param string|array $cellAddress
      * @param mixed $data
      * @param bool|null $merge
-     * @param bool|null $currentRow
      * @param bool|null $changeCurrent
      *
      * @throws Exception
      */
-    protected function _setCellData($cellAddress, $data, ?bool $merge, ?bool $currentRow = false, ?bool $changeCurrent = false)
+    protected function _setCellData($cellAddress, $data, ?bool $merge, ?bool $changeCurrent = false)
     {
         $dimension = $this->_parseAddress($cellAddress);
         $row = $dimension['row'];
@@ -1082,13 +1081,13 @@ class Sheet
         if ($row === null || $col === null) {
             ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress));
         }
-        if ($row < $this->rowCount + ($currentRow ? 0 : 1)) {
+        if ($row < $this->currentRow) {
             ExceptionAddress::throwNew('Row number must be greater then written rows');
         }
 
+        $rowIdx = $row - 1;
+        $colIdx = $col - 1;
         foreach ($data as $prop => $val) {
-            $rowIdx = $row - 1;
-            $colIdx = $col - 1;
             $this->cells[$prop][$rowIdx][$colIdx] = $val;
             if ($changeCurrent && $prop === 'values') {
                 $this->currentRow = $rowIdx;
@@ -1214,45 +1213,48 @@ class Sheet
         $border = Style::normalizeBorder($style);
         // top
         if (!empty($border['top'])) {
-            $row = $dimension['rowNum1'];
-            for ($col = $dimension['colNum1']; $col <= $dimension['colNum2']; $col++) {
-                if (!empty($this->cells['styles'][$row][$col]['border']['top'])) {
-                    $this->cells['styles'][$row][$col]['border']['top'] = array_merge($this->cells['styles'][$row][$col]['border']['top'], $border['top']);
+            $rowIdx = $dimension['row'] - 1;
+            for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
+                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['top'])) {
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['top']);
                 } else {
-                    $this->cells['styles'][$row][$col]['border']['top'] = $border['top'];
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = $border['top'];
                 }
             }
         }
+
         // bottom
         if (!empty($border['bottom'])) {
-            $row = $dimension['rowNum2'];
-            for ($col = $dimension['colNum1']; $col <= $dimension['colNum2']; $col++) {
-                if (!empty($this->cells['styles'][$row][$col]['border']['bottom'])) {
-                    $this->cells['styles'][$row][$col]['border']['bottom'] = array_merge($this->cells['styles'][$row][$col]['border']['top'], $border['bottom']);
+            $rowIdx = $dimension['rowNum2'] - 1;
+            for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
+                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'])) {
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['bottom']);
                 } else {
-                    $this->cells['styles'][$row][$col]['border']['bottom'] = $border['bottom'];
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = $border['bottom'];
                 }
             }
         }
+
         // left
         if (!empty($border['left'])) {
-            $col = $dimension['colNum1'];
-            for ($row = $dimension['rowNum1']; $row <= $dimension['rowNum2']; $row++) {
-                if (!empty($this->cells['styles'][$row][$col]['border']['left'])) {
-                    $this->cells['styles'][$row][$col]['border']['left'] = array_merge($this->cells['styles'][$row][$col]['border']['left'], $border['left']);
+            $colIdx = $dimension['colNum1'] - 1;
+            for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
+                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['left'])) {
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['left'], $border['left']);
                 } else {
-                    $this->cells['styles'][$row][$col]['border']['left'] = $border['left'];
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = $border['left'];
                 }
             }
         }
+
         // right
         if (!empty($border['right'])) {
-            $col = $dimension['colNum2'];
-            for ($row = $dimension['rowNum1']; $row <= $dimension['rowNum2']; $row++) {
-                if (!empty($this->cells['styles'][$row][$col]['border']['right'])) {
-                    $this->cells['styles'][$row][$col]['border']['right'] = array_merge($this->cells['styles'][$row][$col]['border']['right'], $border['right']);
+            $colIdx = $dimension['colNum2'] - 1;
+            for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
+                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['right'])) {
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['right'], $border['right']);
                 } else {
-                    $this->cells['styles'][$row][$col]['border']['right'] = $border['right'];
+                    $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = $border['right'];
                 }
             }
         }
@@ -1290,6 +1292,10 @@ class Sheet
      */
     public function writeAreasRows($writer)
     {
+        if (!$this->areas) {
+            return $this;
+        }
+
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
             $maxRow = max(array_keys($this->cells['values']) + array_keys($this->cells['styles']));
             for ($numRow = $this->rowCount; $numRow <= $maxRow; $numRow++) {
@@ -1323,6 +1329,39 @@ class Sheet
         }
 
         return $this;
+    }
+
+
+    public function writeDataBegin($writer)
+    {
+        //if already initialized
+        if ($this->open) {
+            return;
+        }
+
+        $sheetFileName = $writer->tempFilename();
+        $this->setFileWriter($writer::makeWriteBuffer($sheetFileName));
+
+        $this->fileWriter->write('<sheetData>');
+
+        $this->open = true;
+        if ($this->areas) {
+            $this->writeAreasRows($writer);
+        }
+    }
+
+
+    public function writeDataEnd()
+    {
+        if ($this->close) {
+            return;
+        }
+        if ($this->areas) {
+            $this->writeAreas();
+        }
+        $this->nextRow();
+        $this->fileWriter->flush(true);
+        $this->fileWriter->write('</sheetData>');
     }
 
     /**

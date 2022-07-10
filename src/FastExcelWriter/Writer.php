@@ -238,14 +238,16 @@ class Writer
         if ($sheet->open) {
             return;
         }
-
+/*
         $sheetFileName = $this->tempFilename();
         $sheet->setFileWriter(self::makeWriteBuffer($sheetFileName));
 
         $sheet->fileWriter->write('<sheetData>');
 
         $sheet->open = true;
-        //$sheet->writeAreasRows($this);
+        $sheet->writeAreasRows($this);
+*/
+        $sheet->writeDataBegin($this);
 
         if ($sheet->colFormats) {
             foreach($sheet->colFormats as $colNum => $format) {
@@ -266,9 +268,12 @@ class Writer
         if ($sheet->close) {
             return;
         }
+/*
         $sheet->writeAreas();
         $sheet->fileWriter->flush(true);
         $sheet->fileWriter->write('</sheetData>');
+*/
+        $sheet->writeDataEnd();
 
         $mergedCells = $sheet->getMergedCells();
         if ($mergedCells) {

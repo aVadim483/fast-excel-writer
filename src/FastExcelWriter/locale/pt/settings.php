@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'OBTERDADOSDIN' => 'GETPIVOTDATA', //Devolve dados armazenados num relatório de Tabela Dinâmica
         'MEMBROKPICUBO' => 'CUBEKPIMEMBER', //Devolve o nome, propriedade e medição de um KPI (key performance indicator) e apresenta o nome e a propriedade na célula. Um KPI é uma medida quantificável, como, por exemplo, o lucro mensal bruto ou a rotatividade trimestral de pessoal, utilizada para monitorizar o desempenho de uma organização.

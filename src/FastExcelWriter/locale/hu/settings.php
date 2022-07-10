@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'KIMUTATÁSADATOT.VESZ' => 'GETPIVOTDATA', //A kimutatásokban tárolt adatok visszaadására használható.
         'KOCKA.FŐTELJMUT' => 'CUBEKPIMEMBER', //Egy fő teljesítménymutató (KPI) nevét, tulajdonságát és mértékegységét adja eredményül, a nevet és a tulajdonságot megjeleníti a cellában. A KPI-k számszerűsíthető mérési lehetőséget jelentenek – ilyen mutató például a havi bruttó nyereség vagy az egy alkalmazottra jutó negyedéves forgalom –, egy szervezet teljesítményének nyomonkövetésére használhatók.

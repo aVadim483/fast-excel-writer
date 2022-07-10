@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'ÖZETVERİAL' => 'GETPIVOTDATA', //Bir Özet Tablo raporunda saklanan verileri verir.
         'KÜPKPIÜYE' => 'CUBEKPIMEMBER', //Kilit performans göstergesi (KPI-Key Performance Indicator) adını, özelliğini ve ölçüsünü verir ve hücredeki ad ve özelliği gösterir. KPI, bir kurumun performansını izlemek için kullanılan aylık brüt kâr ya da üç aylık çalışan giriş çıkışları gibi ölçülebilen bir birimdir.

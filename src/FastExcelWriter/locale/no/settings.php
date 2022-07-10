@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'HENTPIVOTDATA' => 'GETPIVOTDATA', //Returnerer data som er lagret i en pivottabellrapport
         'KUBEKPIMEDLEM' => 'CUBEKPIMEMBER', //Returnerer navnet, egenskapen og målet for en viktig ytelsesindikator (KPI), og viser navnet og egenskapen i cellen. En KPI er en målbar enhet, for eksempel månedlig bruttoinntjening eller kvartalsvis inntjening per ansatt, og brukes til å overvåke ytelsen i en organisasjon.

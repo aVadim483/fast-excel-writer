@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'PIVOTDATENZUORDNEN' => 'GETPIVOTDATA', //In einem PivotTable-Bericht gespeicherte Daten werden zurückgegeben.
         'CUBEKPIELEMENT' => 'CUBEKPIMEMBER', //Gibt Name, Eigenschaft und Measure eines Key Performance Indicators (KPI) zurück und zeigt den Namen und die Eigenschaft in der Zelle an. Ein KPI ist ein quantifizierbares Maß, wie z. B. der monatliche Bruttogewinn oder die vierteljährliche Mitarbeiterfluktuation, mit dessen Hilfe das Leistungsverhalten eines Unternehmens überwacht werden kann.

@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'LIREDONNEESTABCROISDYNAMIQUE' => 'GETPIVOTDATA', //Renvoie les données stockées dans un rapport de tableau croisé dynamique.
         'MEMBREKPICUBE' => 'CUBEKPIMEMBER', //Renvoie un nom, une propriété et une mesure d’indicateur de performance clé et affiche le nom et la propriété dans la cellule. Un indicateur de performance clé est une mesure quantifiable, telle que la marge bénéficiaire brute mensuelle ou la rotation trimestrielle du personnel, utilisée pour évaluer les performances d’une entreprise.

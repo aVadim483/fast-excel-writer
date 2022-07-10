@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'WEŹDANETABELI' => 'GETPIVOTDATA', //Zwraca dane przechowywane w raporcie tabeli przestawnej.
         'ELEMENT.KPI.MODUŁU' => 'CUBEKPIMEMBER', //Zwraca nazwę, właściwość i miarę kluczowego wskaźnika wydajności (KPI) oraz wyświetla nazwę i właściwość w komórce. Wskaźnik KPI jest miarą ilościową, taką jak miesięczny zysk brutto lub kwartalna fluktuacja pracowników, używaną do monitorowania wydajności organizacji.

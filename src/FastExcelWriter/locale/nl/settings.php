@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'DRAAITABEL.OPHALEN' => 'GETPIVOTDATA', //Geeft gegevens uit een draaitabelrapport als resultaat
         'KUBUSKPILID' => 'CUBEKPIMEMBER', //Retourneert de naam, eigenschap en waarde van een KPI (prestatie-indicator) en geeft de naam en de eigenschap in de cel weer. Een KPI is een meetbare waarde, zoals de maandelijkse brutowinst of de omzet per kwartaal per werknemer, die wordt gebruikt om de prestaties van een organisatie te bewaken

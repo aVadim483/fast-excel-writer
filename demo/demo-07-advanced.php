@@ -83,7 +83,7 @@ $area
 ;
 
 /* TABLE HEADER */
-/*
+
 // Begin new area (specify left top cell)
 $area = $sheet->beginArea('A6');
 
@@ -113,7 +113,7 @@ $tableHeaderStyle = [
 
 $area->setStyle('RC:R1C9', $tableHeaderStyle);
 $area->setOuterBorder('R0C0:R1C9', Style::BORDER_THICK);
-*/
+
 $sheet->writeAreas();
 
 /*
@@ -122,7 +122,7 @@ $sheet->writeAreas();
  * 2. Style for column via setColStyle()
  * 3. Style for cells in row via writeRow($row, $rowOptions)
  */
-/*
+
 // Default style options for all next cells
 $sheet->setDefaultStyle(['vertical-align' => 'top']);
 
@@ -143,10 +143,10 @@ $sheet->setColStyle('J', ['text-wrap' => true]);
 
 // Set options for specified columns in the row
 $rowOptions = ['I' => ['format' => 'percent']];
-foreach($data as $row) {
+foreach($data as $n => $row) {
     $sheet->writeRow($row, $rowOptions);
 }
-*/
+
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';

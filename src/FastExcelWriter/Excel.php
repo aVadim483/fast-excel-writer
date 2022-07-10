@@ -193,6 +193,7 @@ class Excel
 
         if ($newLocale) {
             // set date & time patterns
+            /*
             $time = strtotime('1985-6-2 13:7:9');
             $calendar = \IntlGregorianCalendar::createInstance();
             $datePattern = (new \IntlDateFormatter($locale, \IntlDateFormatter::SHORT, \IntlDateFormatter::NONE, null, $calendar))->format($time);
@@ -205,7 +206,7 @@ class Excel
             $aFormatSettings['formats']['date'] = $datePattern;
             $aFormatSettings['formats']['time'] = $timePattern;
             $aFormatSettings['formats']['datetime'] = $datePattern . ' ' . $timePattern;
-
+            */
             // set money pattern
             $tmpLocale = setlocale(LC_MONETARY, '0');
             if (setlocale(LC_MONETARY, $newLocale)) {

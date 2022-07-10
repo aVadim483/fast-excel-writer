@@ -1,8 +1,12 @@
 <?php
+// ru_RU
 
 return [
     'formats' => [
         'money' => '#,##0.00 [$₽];[RED]-#,##0.00 [$₽]',
+        'date' => 'DD.MM.YYYY',
+        'time' => 'H:MM:SS',
+        'datetime' => 'DD.MM.YYYY HH:MM:SS',
     ],
     'functions' => [
         'ПОЛУЧИТЬ.ДАННЫЕ.СВОДНОЙ.ТАБЛИЦЫ' => 'GETPIVOTDATA', //Возвращает данные, хранящиеся в отчете сводной таблицы.

@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'formats' => [
+        'date' => 'YYYY-MM-DD',
+        'time' => 'HH:MM:SS',
+        'datetime' => 'YYYY-MM-DD HH:MM:SS',
+        'money' => '# ##0.00',
+    ],
     'functions' => [
         'HENTPIVOTDATA' => 'GETPIVOTDATA', //Returnerer data, der er lagret i en pivottabelrapport
         'KUBE.KPI.MEDLEM' => 'CUBEKPIMEMBER', //Returnerer navn, egenskab og mål for en KPI-indikator og viser navnet og egenskaben i cellen. En KPI-indikator er en målbar størrelse, f.eks. bruttooverskud pr. måned eller personaleudskiftning pr. kvartal, der bruges til at overvåge en organisations præstationer.

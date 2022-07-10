@@ -16,7 +16,7 @@ class Writer
     protected $excel;
 
     /** @var array  */
-    protected $tempFiles = [];
+    protected array $tempFiles = [];
 
     /** @var string  */
     protected $tempDir = '';
@@ -43,7 +43,9 @@ class Writer
         }
     }
 
-
+    /**
+     * Writer destructor
+     */
     public function __destruct()
     {
         if (!empty($this->tempFiles)) {
@@ -238,15 +240,7 @@ class Writer
         if ($sheet->open) {
             return;
         }
-/*
-        $sheetFileName = $this->tempFilename();
-        $sheet->setFileWriter(self::makeWriteBuffer($sheetFileName));
 
-        $sheet->fileWriter->write('<sheetData>');
-
-        $sheet->open = true;
-        $sheet->writeAreasRows($this);
-*/
         $sheet->writeDataBegin($this);
 
         if ($sheet->colFormats) {
@@ -263,16 +257,12 @@ class Writer
     /**
      * @param Sheet $sheet
      */
-    public function writeSheetDataEnd($sheet)
+    public function writeSheetDataEnd(Sheet $sheet)
     {
         if ($sheet->close) {
             return;
         }
-/*
-        $sheet->writeAreas();
-        $sheet->fileWriter->flush(true);
-        $sheet->fileWriter->write('</sheetData>');
-*/
+
         $sheet->writeDataEnd();
 
         $mergedCells = $sheet->getMergedCells();
@@ -304,12 +294,12 @@ class Writer
         $sheet->fileWriter->write('<pageMargins left="0.5" right="0.5" top="1.0" bottom="1.0" header="0.5" footer="0.5"/>');
 
         $sheet->fileWriter->write("<pageSetup  paperSize=\"1\" useFirstPageNumber=\"1\" horizontalDpi=\"0\" verticalDpi=\"0\" $pageSetupAttr r:id=\"rId1\"/>'");
-/*
+
         $sheet->fileWriter->write('<headerFooter differentFirst="false" differentOddEven="false">');
         $sheet->fileWriter->write('<oddHeader>&amp;C&amp;&quot;Times New Roman,Regular&quot;&amp;12&amp;A</oddHeader>');
         $sheet->fileWriter->write('<oddFooter>&amp;C&amp;&quot;Times New Roman,Regular&quot;&amp;12Page &amp;P</oddFooter>');
         $sheet->fileWriter->write('</headerFooter>');
-*/
+
         $sheet->fileWriter->write('</worksheet>');
         $sheet->fileWriter->flush(true);
 
@@ -328,7 +318,7 @@ class Writer
      *
      * @return string
      */
-    protected function _convertFormula($formula, $baseAddress)
+    protected function _convertFormula($formula, $baseAddress): string
     {
         static $functionNames = [];
 
@@ -386,7 +376,7 @@ class Writer
      * @param mixed $numFormatType
      * @param int|null $cellStyleIdx
      */
-    public function writeCell(WriterBuffer $file, int $rowNumber, int $colNumber, $value, $numFormatType, ?int $cellStyleIdx = 0)
+    public function _writeCell(WriterBuffer $file, int $rowNumber, int $colNumber, $value, $numFormatType, ?int $cellStyleIdx = 0)
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 

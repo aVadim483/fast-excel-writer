@@ -416,18 +416,23 @@ class Excel
      */
     public static function colNumber($colLetter)
     {
-        // Strip cell reference down to just letters
-        $letters = preg_replace('/[^A-Z]/', '', $colLetter);
-
-        if (mb_strlen($letters) >= 3 && $letters > 'XFD') {
-            return -1;
+        if (is_numeric($colLetter)) {
+            $colNumber = $colLetter;
         }
-        // Iterate through each letter, starting at the back to increment the value
-        for ($index = 0, $i = 0; $letters !== ''; $letters = substr($letters, 0, -1), $i++) {
-            $index += (ord(substr($letters, -1)) - 64) * (26 ** $i);
+        else {
+            // Strip cell reference down to just letters
+            $letters = preg_replace('/[^A-Z]/', '', strtoupper($colLetter));
+
+            if (mb_strlen($letters) >= 3 && $letters > 'XFD') {
+                return -1;
+            }
+            // Iterate through each letter, starting at the back to increment the value
+            for ($colNumber = 0, $i = 0; $letters !== ''; $letters = substr($letters, 0, -1), $i++) {
+                $colNumber += (ord(substr($letters, -1)) - 64) * (26 ** $i);
+            }
         }
 
-        return ($index <= self::MAX_COL) ? (int)$index: -1;
+        return ($colNumber <= self::MAX_COL) ? (int)$colNumber : -1;
     }
 
     /**

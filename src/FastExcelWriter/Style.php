@@ -71,9 +71,6 @@ class Style
     /** @var array  */
     protected $cellStyles = [];
 
-    /** @var array  */
-    protected $numberFormats = [];
-
     protected $elements = [];
 
     protected $elementIndexes = [];
@@ -101,6 +98,34 @@ class Style
         $this->addCellStyle('GENERAL', $defaultStyle);
         $defaultStyle['fill'] = ['pattern' => 'gray125'];
         $this->addCellStyle('GENERAL', $defaultStyle);
+    }
+
+    /**
+     * @param array $styles
+     *
+     * @return array
+     */
+    public static function mergeStyles(array $styles)
+    {
+        $result = [];
+        if ($styles) {
+            $set = [];
+            foreach ($styles as $style) {
+                if ($style) {
+                    $set[] = $style;
+                }
+            }
+            if ($set) {
+                if (count($set) === 1) {
+                    $result = reset($set);
+                }
+                else {
+                    $result = array_replace_recursive(...$set);
+                }
+
+            }
+        }
+        return $result;
     }
 
     /**
@@ -487,6 +512,8 @@ class Style
     }
 
     /**
+     * @deprecated
+     *
      * @param $haystack
      * @param $needle
      *
@@ -520,10 +547,11 @@ class Style
     /**
      * @param string $sectionName
      * @param string|array $value
+     * @param array|null $fullStyle
      *
      * @return int
      */
-    protected function addElement(string $sectionName, $value)
+    protected function addElement(string $sectionName, $value, array $fullStyle = null): int
     {
         $key = json_encode($value);
         if (isset($this->elements[$sectionName][$key])) {
@@ -534,14 +562,27 @@ class Style
             'index' => $index,
             'value' => $value,
         ];
+        if ($fullStyle) {
+            $this->elements[$sectionName][$key]['style'] = $fullStyle;
+        }
         $this->elementIndexes[$index] = $key;
 
         return $index;
     }
 
     /**
+     * @param int $index
+     *
+     * @return array
+     */
+    protected function findStyleFont(int $index): array
+    {
+        return $this->findElement('fonts', $index);
+    }
+
+    /**
      * @param array $cellStyle
-     * @param array $fullStyle
+     * @param array|null $fullStyle
      */
     protected function addStyleFont(array &$cellStyle, array &$fullStyle = [])
     {
@@ -596,8 +637,18 @@ class Style
     }
 
     /**
+     * @param int $index
+     *
+     * @return array
+     */
+    protected function findStyleFill(int $index): array
+    {
+        return $this->findElement('fills', $index);
+    }
+
+    /**
      * @param array $cellStyle
-     * @param array $fullStyle
+     * @param array|null $fullStyle
      */
     protected function addStyleFill(array &$cellStyle, array &$fullStyle = [])
     {
@@ -643,8 +694,18 @@ class Style
     }
 
     /**
+     * @param int $index
+     *
+     * @return array
+     */
+    protected function findStyleBorder(int $index): array
+    {
+        return $this->findElement('borders', $index);
+    }
+
+    /**
      * @param array $cellStyle
-     * @param array $fullStyle
+     * @param array|null $fullStyle
      */
     protected function addStyleBorder(array &$cellStyle, array &$fullStyle = [])
     {
@@ -666,24 +727,32 @@ class Style
 
     /**
      * @param array $cellStyle
+     * @param array|null $fullStyle
      *
      * @return int
      */
-    protected function indexStyle($cellStyle)
+    protected function indexStyle(array $cellStyle, array $fullStyle = []): int
     {
         self::_ksort($cellStyle);
 
-        return $this->addElement('cellXfs', $cellStyle);
+        return $this->addElement('cellXfs', $cellStyle, $fullStyle);
     }
 
-    /**
+    /*
      * @param string $numberFormat
      * @param array|null $cellStyle
      * @param array|null $fullStyle
      *
      * @return int
      */
-    public function addCellStyle(string $numberFormat, ?array $cellStyle = [], ?array &$fullStyle = [])
+    /**
+     * @param string $format
+     * @param array|null $cellStyle
+     * @param array|null $fullStyle
+     *
+     * @return int
+     */
+    public function addCellStyle(string $format, ?array $cellStyle = [], ?array &$fullStyle = [])
     {
         $fullStyle = [];
         if (empty($cellStyle)) {
@@ -692,9 +761,53 @@ class Style
         $this->addStyleFont($cellStyle, $fullStyle);
         $this->addStyleFill($cellStyle, $fullStyle);
         $this->addStyleBorder($cellStyle, $fullStyle);
-        $cellStyle['numFmtId'] = self::addToListGetIndex($this->numberFormats, $numberFormat);
 
-        return $this->indexStyle($cellStyle);
+        if ($format) {
+            $numberFormat = self::numberFormatStandardized($format);
+            $numberFormatType = self::determineNumberFormatType($numberFormat);
+            $cellStyle['numFmtId'] = $this->addElement('numFmts', $numberFormat);
+
+            $fullStyle['number_format'] = $numberFormat;
+            $fullStyle['number_format_type'] = $numberFormatType;
+        }
+        else {
+            $cellStyle['numFmtId'] = 0;
+        }
+
+        $cellXfsId = $this->indexStyle($cellStyle, $fullStyle);
+
+        $fullStyle['cellXfsId'] = $cellXfsId;
+
+        return $cellXfsId;
+    }
+
+    /**
+     * @param array $cellStyle
+     * @param array|null $fullStyle
+     *
+     * @return int
+     */
+    public function addStyle(array $cellStyle, ?array &$fullStyle = []): int
+    {
+        if (isset($cellStyle['format'])) {
+            $format = $cellStyle['format'];
+            unset($cellStyle['format']);
+        }
+        else {
+            $format = 'GENERAL';
+        }
+
+        return $this->addCellStyle($format, $cellStyle, $fullStyle);
+    }
+
+    /**
+     * @param int $index
+     *
+     * @return array
+     */
+    public function findCellStyle(int $index): array
+    {
+        return $this->findElement('cellXfs', $index);
     }
 
     /**
@@ -844,29 +957,38 @@ class Style
     }
 
     /**
+     * @deprecated
+     *
      * @param $format
      *
      * @return array
      */
     public function defineFormatType($format)
     {
+        static $defines = [];
+
         if (is_array($format)) {
             $format = reset($format);
         }
-        $numberFormat = self::numberFormatStandardized($format);
-        $numberFormatType = self::determineNumberFormatType($numberFormat);
-        $cellStyleIdx = $this->addCellStyle($numberFormat, null);
 
-        $formatType = [
-            'number_format' => $numberFormat, //contains excel format like 'YYYY-MM-DD HH:MM:SS'
-            'number_format_type' => $numberFormatType, //contains friendly format like 'datetime'
-            'default_style_idx' => $cellStyleIdx,
-        ];
+        if (!isset($defines[$format])) {
+            $numberFormat = self::numberFormatStandardized($format);
+            $numberFormatType = self::determineNumberFormatType($numberFormat);
+            $cellStyleIdx = $this->addCellStyle($numberFormat, null);
 
-        return $formatType;
+            $defines[$format] = [
+                'number_format' => $numberFormat, //contains excel format like 'YYYY-MM-DD HH:MM:SS'
+                'number_format_type' => $numberFormatType, //contains friendly format like 'datetime'
+                'default_style_idx' => $cellStyleIdx,
+            ];
+        }
+
+        return $defines[$format];
     }
 
     /**
+     * @deprecated
+     *
      * @return array
      */
     public function defaultFormatType()
@@ -954,7 +1076,10 @@ class Style
      */
     public function _getNumberFormats()
     {
-        return $this->numberFormats;
+        if (isset($this->elements['numFmts'])) {
+            return array_keys($this->elements['numFmts']);
+        }
+        return [];
     }
 }
 

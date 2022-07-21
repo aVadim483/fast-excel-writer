@@ -1,11 +1,13 @@
 <?php
+// hu_HU
 
 return [
+    'language' => 'Hungarian',
     'formats' => [
         'date' => 'YYYY-MM-DD',
         'time' => 'HH:MM:SS',
         'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'money' => '# ##0.00 [$Ft];[RED]-# ##0.00 [$Ft]',
     ],
     'functions' => [
         'KIMUTATÁSADATOT.VESZ' => 'GETPIVOTDATA', //A kimutatásokban tárolt adatok visszaadására használható.

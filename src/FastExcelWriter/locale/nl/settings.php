@@ -1,11 +1,12 @@
 <?php
 
 return [
+    'language' => 'Dutch',
     'formats' => [
         'date' => 'YYYY-MM-DD',
         'time' => 'HH:MM:SS',
         'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'money' => '# ##0.00;[RED]-# ##0.00',
     ],
     'functions' => [
         'DRAAITABEL.OPHALEN' => 'GETPIVOTDATA', //Geeft gegevens uit een draaitabelrapport als resultaat

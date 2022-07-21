@@ -2,11 +2,12 @@
 // es_ES
 
 return [
+    'language' => 'Spanish',
     'formats' => [
-        'money' => '#,##0.00 [$€];[RED]-#,##0.00 [$€]',
         'date' => 'D/M/YY',
         'time' => 'H:MM:SS',
         'datetime' => 'D/M/YY H:MM:SS',
+        'money' => '#,##0.00 [$€];[RED]-#,##0.00 [$€]',
     ],
     'functions' => [
         'IMPORTARDATOSDINAMICOS' => 'GETPIVOTDATA', //Devuelve los datos almacenados en un informe de tabla dinámica.

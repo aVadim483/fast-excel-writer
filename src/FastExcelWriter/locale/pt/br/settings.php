@@ -1,11 +1,13 @@
 <?php
+// pt_BR
 
 return [
+    'language' => 'Portuguese', // Brazil
     'formats' => [
-        'date' => 'YYYY-MM-DD',
+        'date' => 'DD/MM/YYYY',
         'time' => 'HH:MM:SS',
-        'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'datetime' => 'DD/MM/YYYY HH:MM:SS',
+        'money' => '[$R$]# ##0.00;[RED][$R$]-# ##0.00',
     ],
     'functions' => [
         'INFODADOSTABELADINÂMICA' => 'GETPIVOTDATA', //Retorna os dados armazenados em um relatório de tabela dinâmica

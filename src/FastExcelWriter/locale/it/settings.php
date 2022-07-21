@@ -1,11 +1,13 @@
 <?php
+// it_IT
 
 return [
+    'language' => 'Italian',
     'formats' => [
-        'date' => 'YYYY-MM-DD',
+        'date' => 'DD/MM/YYYY',
         'time' => 'HH:MM:SS',
-        'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'datetime' => 'DD/MM/YYYY HH:MM:SS',
+        'money' => '[$€]# ##0.00;[RED][$€]-# ##0.00',
     ],
     'functions' => [
         'INFO.DATI.TAB.PIVOT' => 'GETPIVOTDATA', //Restituisce i dati memorizzati in un rapporto di tabella pivot

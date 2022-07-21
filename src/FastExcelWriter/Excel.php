@@ -129,16 +129,9 @@ class Excel
     public function setDefaultLocale()
     {
         $this->setLocale('en');
-        $currentLocale = setlocale(LC_ALL, 0);
-        $components = explode(';', $currentLocale);
-        foreach ($components as $component) {
-            if (strpos($component, '=')) {
-                [$param, $locale] = explode('=', $component, 2);
-                if ($locale !== 'C' && strlen($locale) > 1) {
-                    $this->setLocale($locale);
-                    return;
-                }
-            }
+        $locale = \Locale::getDefault();
+        if ($locale) {
+            $this->setLocale($locale);
         }
     }
 

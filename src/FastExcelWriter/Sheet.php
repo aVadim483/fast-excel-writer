@@ -449,6 +449,15 @@ class Sheet
             }
         }
         if ($options) {
+            $keys = array_keys($options);
+            if (reset($keys) === 0) {
+                foreach ($keys as $n => $key) {
+                    if (is_int($key)) {
+                        $keys[$n] = $key + 1;
+                    }
+                }
+                $options = array_combine($keys, array_values($options));
+            }
             foreach($options as $col => $colOptions) {
                 $style = [];
                 foreach($colOptions as $optionName => $optionValue) {
@@ -838,6 +847,10 @@ class Sheet
     }
 
     /**
+     * writeHeader(['title1', 'title2', 'title3']) - texts for cells of header
+     * writeHeader(['title1' => 'text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]) - texts and formats of columns
+     * writeHeader([...]) - texts and formats of columns
+     *
      * @param array $header
      * @param array|null $options
      *
@@ -847,15 +860,21 @@ class Sheet
     {
         $rowValues = [];
         $colStyles = [];
-        $colNum = 1;
+        $colNum = 0;
         foreach($header as $key => $val) {
             if (!is_int($key)) {
                 $rowValues[$colNum] = $key;
-                $colStyles[$colNum]['format'] = $val;
+                //$colStyles[$colNum]['format'] = $val;
+                if (is_scalar($val)) {
+                    $colStyles[$colNum]['format'] = $val;
+                }
+                else {
+                    $colStyles[$colNum] = $val;
+                }
             }
             else {
                 $rowValues[$colNum] = $val;
-                $colStyles[$colNum]['format'] = null;
+                $colStyles[$colNum] = null;
             }
             $colNum++;
         }

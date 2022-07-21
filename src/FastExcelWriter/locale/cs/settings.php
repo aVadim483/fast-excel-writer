@@ -2,11 +2,12 @@
 // cs_CZ
 
 return [
+    'language' => 'Czech',
     'formats' => [
-        'money' => '#,##0.00 [$Kč];[RED]-#,##0.00 [$Kč]',
         'date' => 'DD.MM.YY',
         'time' => 'H:MM:SS',
         'datetime' => 'DD.MM.YY HH:MM:SS',
+        'money' => '#,##0.00 [$Kč];[RED]-#,##0.00 [$Kč]',
     ],
     'functions' => [
         'ZÍSKATKONTDATA' => 'GETPIVOTDATA', //Vrátí data uložená v kontingenční tabulce. Pomocí funkce ZÍSKATKONTDATA můžete načíst souhrnná data z kontingenční tabulky, pokud jsou tato data v kontingenční sestavě zobrazena.

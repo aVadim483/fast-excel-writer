@@ -1,11 +1,13 @@
 <?php
+// fi_FI@euro
 
 return [
+    'language' => 'Finnish',
     'formats' => [
-        'date' => 'YYYY-MM-DD',
+        'date' => 'DD.MM.YYYY',
         'time' => 'HH:MM:SS',
-        'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'datetime' => 'DD.MM.YYYY HH:MM:SS',
+        'money' => '#,##0.00 [$€];[RED]-#,##0.00 [$€]',
     ],
     'functions' => [
         'NOUDA.PIVOT.TIEDOT' => 'GETPIVOTDATA', //Palauttaa pivot-taulukkoraporttiin tallennettuja tietoja.

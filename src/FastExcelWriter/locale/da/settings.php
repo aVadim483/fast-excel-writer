@@ -1,11 +1,13 @@
 <?php
+// da_DK
 
 return [
+    'language' => 'Danish',
     'formats' => [
-        'date' => 'YYYY-MM-DD',
+        'date' => 'DD-MM-YYYY',
         'time' => 'HH:MM:SS',
-        'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'datetime' => 'DD-MM-YYYY HH:MM:SS',
+        'money' => '[$kr.]#,##0.00;[RED][$kr.]-#,##0.00',
     ],
     'functions' => [
         'HENTPIVOTDATA' => 'GETPIVOTDATA', //Returnerer data, der er lagret i en pivottabelrapport

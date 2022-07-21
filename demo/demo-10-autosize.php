@@ -37,7 +37,8 @@ foreach ($formats as $format) {
 }
 
 $sheet->writeHeader($formats, ['font' => 'bold', 'text-align' => 'center', 'border' => 'thin']);
-
+var_dump($formats);
+/*
 foreach ($data as $value) {
     foreach ($formats as $format) {
         // write values in one row cell by cell
@@ -46,7 +47,7 @@ foreach ($data as $value) {
     // go to the first cell of the next row
     $sheet->nextRow();
 }
-
+*/
 $excel->save($outFileName);
 
 echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';

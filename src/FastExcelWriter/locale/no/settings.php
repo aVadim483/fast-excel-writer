@@ -1,11 +1,12 @@
 <?php
 
 return [
+    'language' => 'Norwegian',
     'formats' => [
         'date' => 'YYYY-MM-DD',
         'time' => 'HH:MM:SS',
         'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'money' => '# ##0.00;[RED]-# ##0.00',
     ],
     'functions' => [
         'HENTPIVOTDATA' => 'GETPIVOTDATA', //Returnerer data som er lagret i en pivottabellrapport

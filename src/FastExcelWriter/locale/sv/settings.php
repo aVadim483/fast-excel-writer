@@ -1,11 +1,13 @@
 <?php
+// sv_SE
 
 return [
+    'language' => 'Swedish',
     'formats' => [
         'date' => 'YYYY-MM-DD',
         'time' => 'HH:MM:SS',
         'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'money' => '#,##0.00 [$kr];[RED]-#,##0.00 [$kr]',
     ],
     'functions' => [
         'HÄMTA.PIVOTDATA' => 'GETPIVOTDATA', //Returnerar data som lagrats i en pivottabellrapport

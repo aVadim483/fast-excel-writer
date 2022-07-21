@@ -934,6 +934,15 @@ class Style
         if ($numFormat === '0') {
             return 'n_numeric';
         }
+        if (preg_match('/\$(?![^"]*+")/', $numFormat)) {
+            return 'n_numeric';
+        }
+        if (preg_match('/%(?![^"]*+")/', $numFormat)) {
+            return 'n_numeric';
+        }
+        if (preg_match('/0(?![^"]*+")/', $numFormat)) {
+            return 'n_numeric';
+        }
         if (preg_match('/[H]{1,2}:[M]{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_datetime';
         }
@@ -948,15 +957,6 @@ class Style
         }
         if (preg_match('/[M]{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_date';
-        }
-        if (preg_match('/\$(?![^"]*+")/', $numFormat)) {
-            return 'n_numeric';
-        }
-        if (preg_match('/%(?![^"]*+")/', $numFormat)) {
-            return 'n_numeric';
-        }
-        if (preg_match('/0(?![^"]*+")/', $numFormat)) {
-            return 'n_numeric';
         }
         return 'n_auto';
     }

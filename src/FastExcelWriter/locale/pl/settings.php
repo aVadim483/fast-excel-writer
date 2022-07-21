@@ -1,11 +1,12 @@
 <?php
 
 return [
+    'language' => 'Polish',
     'formats' => [
         'date' => 'YYYY-MM-DD',
         'time' => 'HH:MM:SS',
         'datetime' => 'YYYY-MM-DD HH:MM:SS',
-        'money' => '# ##0.00',
+        'money' => '# ##0.00 [$zł];[RED]-# ##0.00 [$zł]',
     ],
     'functions' => [
         'WEŹDANETABELI' => 'GETPIVOTDATA', //Zwraca dane przechowywane w raporcie tabeli przestawnej.

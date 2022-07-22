@@ -774,12 +774,6 @@ class Sheet
     /**
      * Write value to the current cell and move pointer to the next cell in the row
      *
-     * $cellAddress formats:
-     *  'B5'
-     *  'B5:C7'
-     *  ['row' => 6, 'col' => 7]
-     *  [6, 7]
-     *
      * @param mixed $value
      * @param array|null $styles
      *
@@ -815,75 +809,16 @@ class Sheet
     }
 
     /**
-     * @param array|null $options
-     *
-     * @return $this
-     */
-    public function nextRow(?array $options = [])
-    {
-        $styles = $this->cells['styles'][$this->currentRow] ?? [];
-        if (empty($options)) {
-            $rowStyles = $styles;
-        }
-        elseif (empty($styles)) {
-            $rowStyles = $options;
-        }
-        else {
-            $rowStyles = array_replace_recursive($styles, $options);
-        }
-        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $rowStyles);
-
-        return $this;
-    }
-
-    /**
-     * @param array|mixed $row Values of cells
-     * @param array|null $rowOptions
-     *
-     * @return $this
-     */
-    public function writeRow($row = [], array $rowOptions = null)
-    {
-        $writer = $this->excel->getWriter();
-        $writer->writeSheetDataBegin($this);
-
-        if (!is_array($row)) {
-            $row = [$row];
-        }
-
-        $this->_writeRow($writer, $row, $rowOptions);
-        $this->currentCol = Excel::MIN_COL;
-
-        $this->currentRow++;
-
-        return $this;
-    }
-
-    /**
-     * @param int|null $rowCount
-     *
-     * @return $this
-     */
-    public function skipRow(?int $rowCount = 1)
-    {
-        for($i = 0; $i < $rowCount; $i++) {
-            $this->writeRow([null]);
-        }
-
-        return $this;
-    }
-
-    /**
      * writeHeader(['title1', 'title2', 'title3']) - texts for cells of header
      * writeHeader(['title1' => 'text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]) - texts and formats of columns
      * writeHeader([...], [...]) - texts and formats of columns and options of row
      *
      * @param array $header
-     * @param array|null $options
+     * @param array|null $rowStyle
      *
      * @return $this
      */
-    public function writeHeader(array $header, array $options = null)
+    public function writeHeader(array $header, array $rowStyle = null)
     {
         $rowValues = [];
         $colStyles = [];
@@ -905,7 +840,7 @@ class Sheet
             }
             $colNum++;
         }
-        $this->writeRow($rowValues, $options);
+        $this->writeRow($rowValues, $rowStyle);
         $this->setColOptions($colStyles);
 
         return $this;
@@ -1035,6 +970,65 @@ class Sheet
     public function getMergedCells()
     {
         return array_keys($this->mergeCells);
+    }
+
+    /**
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    public function nextRow(?array $options = [])
+    {
+        $styles = $this->cells['styles'][$this->currentRow] ?? [];
+        if (empty($options)) {
+            $rowStyles = $styles;
+        }
+        elseif (empty($styles)) {
+            $rowStyles = $options;
+        }
+        else {
+            $rowStyles = array_replace_recursive($styles, $options);
+        }
+        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $rowStyles);
+
+        return $this;
+    }
+
+    /**
+     * @param array|mixed $row Values of cells
+     * @param array|null $rowStyle
+     *
+     * @return $this
+     */
+    public function writeRow($row = [], array $rowStyle = null)
+    {
+        $writer = $this->excel->getWriter();
+        $writer->writeSheetDataBegin($this);
+
+        if (!is_array($row)) {
+            $row = [$row];
+        }
+
+        $this->_writeRow($writer, $row, $rowStyle);
+        $this->currentCol = Excel::MIN_COL;
+
+        $this->currentRow++;
+
+        return $this;
+    }
+
+    /**
+     * @param int|null $rowCount
+     *
+     * @return $this
+     */
+    public function skipRow(?int $rowCount = 1)
+    {
+        for($i = 0; $i < $rowCount; $i++) {
+            $this->writeRow([null]);
+        }
+
+        return $this;
     }
 
     /**

@@ -4,14 +4,15 @@ Jump To:
 * [Introduction](#introduction)
 * [Installation](#installation)
 * [Simple Example](#simple-example)
-* [Formulas](#formulas)
+* [Writing Cell Values](#writing-cell-values)
 * [Cell Formats](#cell-formats)
 * [Basic Cell Styles](#basic-cell-styles)
+* [Formulas](#formulas)
 * [Set Directory For Temporary Files](#set-directory-for-temporary-files)
 
 ## Introduction
 
-This library is designed to be lightweight, super fast and have minimal memory usage. 
+This library is designed to be lightweight, superfast and have minimal memory usage. 
 
 This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with just basic features supported:
 * takes UTF-8 encoded input
@@ -97,36 +98,62 @@ Also, you can download generated file to client (send to browser)
 $excel->output('download.xlsx');
 ```
 
-### Formulas
+### Writing Cell Values
 
-Formulas must start with '='. If you want to write the formula as a text, use a backslash. 
-Setting the locale allows the use of national language function names. 
-You can use both A1 and R1C1 notations in formulas
+Usually, values is written sequentially, cell by cell, row by row. Writing to a cell moves the internal pointer 
+to the next cell in the row, writing a row moves the pointer to the first cell of the next row.
 
 ```php
 use \avadim\FastExcelWriter\Excel;
 
-$excel = Excel::create(['Formulas']);
+$excel = Excel::create();
 $sheet = $excel->getSheet();
 
-// Set Russian locale
-$excel->setLocale('ru');
+// Sheet::writeCell(mixed value, ?array styles)
+// Sheet::writeTo(string address, mixed value, ?array styles)
+// Sheet::nextCell()
 
-$headRow = [];
+// Write number to A1 and pointer moves to the next cell (B1)
+$sheet->writeCell(123);
+// Write string to B1 (pointer in C1)
+$sheet->writeCell('abc');
+// Pointer moves to the next cell (D1) without value writing
+$sheet->nextCell();
+$style = [
+    'color' => '#ff0000',
+    'format' => '#,##0.00',
+    'align' => 'center',
+];
+// Write to D1 value and style
+$sheet->writeCell(0.9, $style);
+// Merge cells range
+$sheet->mergeCells('D1:F2');
+// Write to B2 and moves pointer to C2. The pointer can only move from left to right and top to bottom
+$sheet->writeTo('B2', 'value');
+// Merge C3:E3, write value to merged cells and move pointer to F3  
+$sheet->writeTo('C3:E3', 'other value');
+```
 
-$sheet->writeRow([1, random_int(100, 999), '=RC[-1]*0.1']);
-$sheet->writeRow([2, random_int(100, 999), '=RC[-1]*0.1']);
-$sheet->writeRow([3, random_int(100, 999), '=RC[-1]*0.1']);
+You can write values to rows
 
-$totalRow = [
-    'Total',
-    '=SUM(B1:B3)', // English function name
-    '=СУММ(C1:C3)', // You can use Russian function name because the locale is 'ru'
+```php
+// Sheet::writeHeader(array header, ?array rowStyle)
+// Sheet::writeRow(array row, ?array rowStyle)
+// Sheet::nextRow()
+
+// Write values to the current row and set format of columns A and B 
+$sheet->writeHeader(['title1' => '@integer', 'title2' => '@date']);
+
+$data = [
+    [184, '2022-01-23'],
+    [835, '1971-12-08'],
+    [760, '1997-05-11'],
 ];
 
-$sheet->writeRow($totalRow);
+foreach ($data as $rowData) {
+    $sheet->writeRow($rowData);
+}
 
-$excel->save('formulas.xlsx');
 
 ```
 
@@ -238,6 +265,41 @@ Other style settings
 | text-align     | 'general', 'left', 'right', 'justify', 'center' |
 | vertical-align | 'bottom', 'center', 'distributed'               |
 | text-wrap      | true, false                                     |
+
+
+### Formulas
+
+Formulas must start with '='. If you want to write the formula as a text, use a backslash.
+Setting the locale allows the use of national language function names.
+You can use both A1 and R1C1 notations in formulas
+
+```php
+use \avadim\FastExcelWriter\Excel;
+
+$excel = Excel::create(['Formulas']);
+$sheet = $excel->getSheet();
+
+// Set Russian locale
+$excel->setLocale('ru');
+
+$headRow = [];
+
+$sheet->writeRow([1, random_int(100, 999), '=RC[-1]*0.1']);
+$sheet->writeRow([2, random_int(100, 999), '=RC[-1]*0.1']);
+$sheet->writeRow([3, random_int(100, 999), '=RC[-1]*0.1']);
+
+$totalRow = [
+    'Total',
+    '=SUM(B1:B3)', // English function name
+    '=СУММ(C1:C3)', // You can use Russian function name because the locale is 'ru'
+];
+
+$sheet->writeRow($totalRow);
+
+$excel->save('formulas.xlsx');
+
+```
+
 
 ## Set Directory For Temporary Files
 The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory

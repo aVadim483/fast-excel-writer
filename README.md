@@ -1,7 +1,17 @@
 # FastExcelWriter
 
+Jump To:
+* [Introduction](#introduction)
+* [Installation](#installation)
+* [Simple Example](#simple-example)
+* [Formulas](#formulas)
+* [Cell Formats](#cell-formats)
+* [Basic Cell Styles](#basic-cell-styles)
+* [Set Directory For Temporary Files](#set-directory-for-temporary-files)
+
+## Introduction
+
 This library is designed to be lightweight, super fast and have minimal memory usage. 
-Partially based on https://github.com/mk-j/PHP_XLSXWriter, but advanced and improved.
 
 This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with just basic features supported:
 * takes UTF-8 encoded input
@@ -31,7 +41,7 @@ Use `composer` to install **FastExcelWriter** into your project:
 composer require avadim/fast-excel-writer
 ```
 
-Also you can download package and include autoload file of the library:
+Also, you can download package and include autoload file of the library:
 ```php
 require 'path/to/fast-excel-writer/src/autoload.php';
 ```
@@ -40,7 +50,7 @@ require 'path/to/fast-excel-writer/src/autoload.php';
 
 You can find usage examples below or in */demo* folder
 
-### Simple example
+### Simple Example
 ```php
 use \avadim\FastExcelWriter\Excel;
 
@@ -151,17 +161,17 @@ $excel->save('formats.xlsx');
 
 Simple cell formats map to more advanced cell formats
 
-| simple formats | format code |
-| ---------- | ---- |
-| text     | @ |
-| string   | @ |
-| integer  | 0 |
-| date     | YYYY-MM-DD |
-| datetime | YYYY-MM-DD HH:MM:SS |
-| time     | HH:MM:SS |
-| money    | [$$]#,##0.00 |
+| simple formats | format code         |
+|----------------|---------------------|
+| text           | @                   |
+| string         | @                   |
+| integer        | 0                   |
+| date           | YYYY-MM-DD          |
+| datetime       | YYYY-MM-DD HH:MM:SS |
+| time           | HH:MM:SS            |
+| money          | [$$]#,##0.00        |
 
-### Basic cell styles
+### Basic Cell Styles
 
 Font settings
 ```php
@@ -176,11 +186,11 @@ $style = [
 ];
 ```
 
-| key          | allowed values |
-| ------------ | ---- |
-| name         | Arial, Times New Roman, Courier New, Comic Sans MS |
-| size         | 8, 9, 10, 11, 12 ... |
-| style        | bold, italic, underline, strikethrough or multiple ie: 'bold,italic' |
+| key           | allowed values                                                       |
+|---------------|----------------------------------------------------------------------|
+| name          | Arial, Times New Roman, Courier New, Comic Sans MS                   |
+| size          | 8, 9, 10, 11, 12 ...                                                 |
+| style         | bold, italic, underline, strikethrough or multiple ie: 'bold,italic' |
 
 Border settings
 ```php
@@ -222,14 +232,14 @@ $style3 = [
 Other style settings
 
 | style          | allowed values                                  |
-|----------------|------------------------------------------------ |
+|----------------|-------------------------------------------------|
 | color          | #RRGGBB, ie: '#ff99cc' or '#f9c'                |
 | fill           | #RRGGBB, ie: '#eeffee' or '#efe'                |
 | text-align     | 'general', 'left', 'right', 'justify', 'center' |
 | vertical-align | 'bottom', 'center', 'distributed'               |
 | text-wrap      | true, false                                     |
 
-## Other options
+## Set Directory For Temporary Files
 The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory
 or in the current execution directory. But you can set the directory for temporary files.
 

@@ -8,7 +8,7 @@ use \avadim\FastExcelWriter\Excel;
 $timer = microtime(true);
 $excel = Excel::create(['Total']);
 
-// make new sheet
+// make new sheet with name 'Jan'
 $sheet = $excel->makeSheet('Jan');
 $sheet->setColFormat(1, 'date');
 for ($day = 1; $day <= 31; $day++) {

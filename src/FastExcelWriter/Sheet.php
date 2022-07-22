@@ -19,13 +19,13 @@ class Sheet
     protected const WIDTH_PADDING = 0.56;
 
     /** @var Excel */
-    public $book;
+    public Excel $excel;
 
-    /** @var string */
-    public $key;
+    /** @var int Index of the sheet */
+    public int $index;
 
-    /** @var int Index of sheet*/
-    public $index;
+    /** @var string Key of the sheet */
+    public string $key;
 
     public $active = false;
     public $fileName = '';
@@ -82,6 +82,29 @@ class Sheet
             'values' => [],
             'styles' => [],
         ];
+    }
+
+    /**
+     * Compatibility with previous versions
+     *
+     * @param $name
+     *
+     * @return mixed|null
+     */
+    public function __get($name)
+    {
+        if ($name === 'book') {
+            return $this->excel;
+        }
+        $trace = debug_backtrace();
+
+        trigger_error(
+            'Undefined property: ' . get_class() . '::$' . $name .
+            ' (call in file ' . $trace[0]['file'] .
+            ' on line ' . $trace[0]['line'] . ') ',
+            E_USER_NOTICE);
+
+        return null;
     }
 
     /**
@@ -313,6 +336,29 @@ class Sheet
     }
 
     /**
+     * @param array $columns
+     *
+     * @return array
+     */
+    protected function normalizeColKeys(array $columns): array
+    {
+        $keys = array_keys($columns);
+        if (reset($keys) === 0) {
+            foreach ($keys as $n => $key) {
+                if (is_int($key)) {
+                    $keys[$n] = $key + 1;
+                }
+            }
+            $result = array_combine($keys, array_values($columns));
+        }
+        else {
+            $result = $columns;
+        }
+
+        return $result;
+    }
+
+    /**
      * Set width of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
@@ -449,15 +495,7 @@ class Sheet
             }
         }
         if ($options) {
-            $keys = array_keys($options);
-            if (reset($keys) === 0) {
-                foreach ($keys as $n => $key) {
-                    if (is_int($key)) {
-                        $keys[$n] = $key + 1;
-                    }
-                }
-                $options = array_combine($keys, array_values($options));
-            }
+            $options = $this->normalizeColKeys($options);
             foreach($options as $col => $colOptions) {
                 $style = [];
                 foreach($colOptions as $optionName => $optionValue) {
@@ -481,6 +519,8 @@ class Sheet
     }
 
     /**
+     * Height of a specific line
+     *
      * @param $rowNum
      * @param $height
      *
@@ -494,7 +534,14 @@ class Sheet
         return $this;
     }
 
-    public function setRowHeights($heights)
+    /**
+     * Multiple line height
+     *
+     * @param array $heights
+     *
+     * @return $this
+     */
+    public function setRowHeights(array $heights)
     {
         foreach ($heights as $rowNum => $rowHeight) {
             $this->setRowHeight($rowNum, $rowHeight);
@@ -621,7 +668,7 @@ class Sheet
                 $cellsOptions[$rowIdx] ?? null, // runtime style of the cell
             ];
             $cellStyle = Style::mergeStyles($styleStack);
-            $cellStyleIdx = $this->book->style->addStyle($cellStyle, $resultStyle);
+            $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
 
             $numberFormat = $resultStyle['number_format'];
             $numberFormatType = $resultStyle['number_format_type'];
@@ -790,40 +837,20 @@ class Sheet
     }
 
     /**
-     * @param array|mixed $row
-     * @param array|null $options
+     * @param array|mixed $row Values of cells
+     * @param array|null $rowOptions
      *
      * @return $this
      */
-    public function writeRow($row = [], array $options = null)
+    public function writeRow($row = [], array $rowOptions = null)
     {
-        $writer = $this->book->getWriter();
+        $writer = $this->excel->getWriter();
         $writer->writeSheetDataBegin($this);
 
         if (!is_array($row)) {
             $row = [$row];
         }
 
-        // ++++++++++++++++++++++++++++
-        // splits row and cells options
-        $rowOptions = [];
-        if ($options) {
-            if (isset($options['height'])) {
-                $rowOptions['height'] = (float)$options['height'];
-                unset($options['height']);
-            }
-            if (isset($options['hidden'])) {
-                $rowOptions['hidden'] = (bool)$options['hidden'];
-                unset($options['height']);
-            }
-            if (isset($options['collapsed'])) {
-                $rowOptions['collapsed'] = (bool)$options['collapsed'];
-                unset($options['collapsed']);
-            }
-        }
-        // ----------------------------
-
-        //$this->_writeRow($writer, $row, $rowOptions, $rowCellsOptions);
         $this->_writeRow($writer, $row, $rowOptions);
         $this->currentCol = Excel::MIN_COL;
 
@@ -849,7 +876,7 @@ class Sheet
     /**
      * writeHeader(['title1', 'title2', 'title3']) - texts for cells of header
      * writeHeader(['title1' => 'text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]) - texts and formats of columns
-     * writeHeader([...]) - texts and formats of columns
+     * writeHeader([...], [...]) - texts and formats of columns and options of row
      *
      * @param array $header
      * @param array|null $options
@@ -1330,7 +1357,7 @@ class Sheet
 
     public function writeAreas()
     {
-        $writer = $this->book->getWriter();
+        $writer = $this->excel->getWriter();
         if ($this->open) {
             $this->writeAreasRows($writer);
         } else {
@@ -1447,7 +1474,7 @@ class Sheet
      */
     public function isRightToLeft()
     {
-        return $this->book->isRightToLeft();
+        return $this->excel->isRightToLeft();
     }
 }
 

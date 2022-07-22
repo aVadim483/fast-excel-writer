@@ -16,7 +16,7 @@ class Excel
     public const MIN_ROW = 0;
     public const MIN_COL = 0;
 
-    protected static $tempDir;
+    protected static string $tempDir;
 
     /** @var Writer */
     public $writer;
@@ -24,13 +24,16 @@ class Excel
     /** @var Style */
     public $style;
 
-    /** @var array Sheet[] */
-    protected $sheets = [];
+    /** @var int  */
+    protected int $maxSheetIndex = 0;
 
-    protected $metadata = [];
+    /** @var array Sheet[] */
+    protected array $sheets = [];
+
+    protected array $metadata = [];
 
     /** @var bool */
-    protected $isRightToLeft = false;
+    protected bool $isRightToLeft = false;
 
 
     /**
@@ -43,7 +46,7 @@ class Excel
         $writerOptions = [
             'excel' => $this,
         ];
-        if (self::$tempDir) {
+        if (!empty(self::$tempDir)) {
             $writerOptions['temp_dir'] = self::$tempDir;
         }
         if (isset($options['temp_dir']) && $options['temp_dir']) {
@@ -92,14 +95,13 @@ class Excel
     public static function create($sheets = null, ?array $options = [])
     {
         $excel = new self($options);
-        if (empty($sheets)) {
-            $sheets = ['Sheet1'];
+        if (is_array($sheets)) {
+            foreach ($sheets as $sheetName) {
+                $excel->makeSheet($sheetName);
+            }
         }
         else {
-            $sheets = (array)$sheets;
-        }
-        foreach ($sheets as $sheetName) {
-            $excel->makeSheet($sheetName);
+            $excel->makeSheet($sheets);
         }
 
         return $excel;
@@ -725,16 +727,27 @@ class Excel
     }
 
     /**
-     * @param $sheetName
+     * @return string
+     */
+    public function getDefaultSheetName(): string
+    {
+        return 'Sheet' . (++$this->maxSheetIndex);
+    }
+
+    /**
+     * @param string|null $sheetName
      *
      * @return Sheet
      */
-    public function makeSheet($sheetName)
+    public function makeSheet(string $sheetName = null): Sheet
     {
+        if ($sheetName === null) {
+            $sheetName = $this->getDefaultSheetName();
+        }
         $key = mb_strtolower($sheetName);
         if (!isset($this->sheets[$key])) {
             $this->sheets[$key] = new Sheet($sheetName);
-            $this->sheets[$key]->book = $this;
+            $this->sheets[$key]->excel = $this;
             $this->sheets[$key]->key = $key;
             $this->sheets[$key]->index = count($this->sheets);
             $this->sheets[$key]->xmlName = 'sheet' . $this->sheets[$key]->index . '.xml';

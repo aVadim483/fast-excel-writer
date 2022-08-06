@@ -15,7 +15,7 @@ $timer = microtime(true);
 $excel = Excel::create(['250K']);
 $sheet = $excel->getSheet();
 
-$sheet->setColFormats(['integer', 'string', '0.00', 'string', 'string']);
+$sheet->setColFormats(['@integer', '@string', '0.00', '@string', '@string']);
 
 $rowCount = 100000;
 $n = 0;

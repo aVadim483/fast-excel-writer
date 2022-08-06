@@ -30,6 +30,7 @@ for ($i = 1; $i <= $rowCount; $i++) {
         random_int(1000, 9000) / 10,
         '=RC[-1]*RC[-2]',
         random_int(1, 3) * 5 / 100,
+        '=RC[-1]*RC[-2]',
         substr($lorem, 0, random_int(11, $loremLen)),
     ];
     $data[] = $row;
@@ -67,7 +68,7 @@ $headerStyle = [
 // Begin an area for direct write
 $area = $sheet->beginArea();
 
-$cells = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1'];
+$cells = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1', 'K1'];
 foreach($cells as $cell) {
     $color = '#' . $colors[array_rand($colors)] . $colors[array_rand($colors)];
     // set background colors for specified cells
@@ -75,32 +76,32 @@ foreach($cells as $cell) {
 }
 
 // Write value to automerged cells
-$area->setValue('A2:J2', 'This is demo XLSX-sheet', $headerStyle);
+$area->setValue('A2:K2', 'This is demo XLSX-sheet', $headerStyle);
 
 $area
     ->setValue('H4', 'Date', ['text-align' => 'right'])
-    ->setValue('I4:J4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => 'datetime', 'text-align' => 'left'])
+    ->setValue('J4:K4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => '@datetime', 'text-align' => 'left'])
 ;
 
 /* TABLE HEADER */
 
 // Begin new area (specify left top cell)
 $area = $sheet->beginArea('A6');
-
-// You can use R1C1-notation,
-
+//var_dump($area->getBeginAddress()); exit;
+// You can use R1C1-notation, start position in A6
 $area
-    ->setValue('RC:R[1]C', '#')
-    ->setValue('RC1:RC2', 'People')
-    ->setValue('R1C1', 'First Name')
+    ->setValue('RC:R[1]C', '#') // Merge vertical cells
+    ->setValue('RC1:RC2', 'People') // Merge horizontal cells
+    ->setValue('R1C1', 'First Name') // Single cell
     ->setValue('R1C2', 'Last Name')
     ->setValue('RC3:R1C3', 'Birthday')
     ->setValue('RC4:R1C4', 'Age')
     ->setValue('RC5:R1C5', 'Quantity')
     ->setValue('RC6:R1C6', 'Price')
     ->setValue('RC7:R1C7', 'Cost')
-    ->setValue('RC8:R1C8', 'Tax')
-    ->setValue('RC9:R1C9', 'Description')
+    ->setValue('RC8:R1C8', 'Tax Rate')
+    ->setValue('RC9:R1C9', 'Tax Value')
+    ->setValue('RC10:R1C10', 'Description')
 ;
 
 $tableHeaderStyle = [
@@ -111,8 +112,8 @@ $tableHeaderStyle = [
     'border' => 'thin',
 ];
 
-$area->setStyle('RC:R1C9', $tableHeaderStyle);
-$area->setOuterBorder('R0C0:R1C9', Style::BORDER_THICK);
+$area->setStyle('RC:R1C10', $tableHeaderStyle);
+$area->setOuterBorder('R0C0:R1C10', Style::BORDER_THICK);
 
 $sheet->writeAreas();
 
@@ -127,25 +128,31 @@ $sheet->writeAreas();
 $sheet->setDefaultStyle(['vertical-align' => 'top']);
 
 // Set widths of columns from the first (A)
-$sheet->setColWidths([5, 16, 16, 13]);
+$sheet->setColWidths([5, 16, 16, 'auto']);
 
 // Set width of the column
-$sheet->setColWidth(['G', 'H'], 14);
+$sheet->setColWidth(['G', 'H', 'J'], 14);
 
 // Set formats of columns from the first (A); null - default format
-$sheet->setColFormats([null, '@', '@', 'date', '0', '0.00', 'money', 'money']);
+$sheet->setColFormats([null, '@', '@', '@date', '0', '0.00', '@money', '@money']);
 
-// Set width for specified column
-$sheet->setColWidth('J', 20);
-
-// Set style for specified column
-$sheet->setColStyle('J', ['text-wrap' => true]);
+// Set style and width for specified column
+$sheet->setColOptions('K', ['text-wrap' => true, 'width' => 32]);
 
 // Set options for specified columns in the row
-$rowOptions = ['I' => ['format' => 'percent']];
+$cellStyles = ['I' => ['format' => '@percent'], 'j' => ['format' => '@money']];
 foreach($data as $n => $row) {
-    $sheet->writeRow($row, $rowOptions);
+    if ($n % 2) {
+        $rowOptions = ['fill' => '#eee'];
+    }
+    else {
+        $rowOptions = null;
+    }
+    $sheet->writeRow($row, $rowOptions, $cellStyles);
 }
+
+$totalRow = [];
+$sheet->writeRow($totalRow, ['font' => 'bold', 'border-top' => 'double']);
 
 $excel->save($outFileName);
 

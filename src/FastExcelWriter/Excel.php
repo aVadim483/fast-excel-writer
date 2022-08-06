@@ -138,6 +138,33 @@ class Excel
     }
 
     /**
+     * @param string $file
+     * @param array $localeSettings
+     *
+     * @return void
+     */
+    protected function loadSettings(string $file, array &$localeSettings)
+    {
+        if ($file && is_file($file)) {
+            $localeData = include($file);
+            if (!empty($localeData['formats'])) {
+                $formats = [];
+                foreach($localeData['formats'] as $key => $val) {
+                    if ($key && is_string($key)) {
+                        $newKey = strtoupper($key);
+                        if ($newKey[0] !== '@') {
+                            $newKey = '@' . $newKey;
+                        }
+                        $formats[$newKey] = $val;
+                    }
+                }
+                $localeData['formats'] = $formats;
+            }
+            $localeSettings = array_merge($localeSettings, $localeData);
+        }
+    }
+
+    /**
      * @param string $locale
      * @param string|null $dir
      *
@@ -149,10 +176,10 @@ class Excel
         // default settings
         $aFormatSettings = [
             'formats' => [
-                'date' => 'YYYY-MM-DD',
-                'time' => 'HH:MM:SS',
-                'datetime' => 'YYYY-MM-DD HH:MM:SS',
-                'money' => '# ##0.00',
+                '@DATE' => 'YYYY-MM-DD',
+                '@TIME' => 'HH:MM:SS',
+                '@DATETIME' => 'YYYY-MM-DD HH:MM:SS',
+                '@MONEY' => '# ##0.00',
             ],
         ];
 
@@ -231,23 +258,18 @@ class Excel
                     $includeFile = $file;
                 }
             }
-            if ($includeFile && ($localeData = include($includeFile))) {
-                $localeSettings = array_merge($localeSettings, $localeData);
-            }
+
+            $this->loadSettings($includeFile, $localeSettings);
             if (strpos($locale, '_')) {
                 [$language, $country] = explode('_', $locale);
                 $file = $dir . '/' . $language . '/settings.php';
-                if (is_file($file) && ($localeData = include($file))) {
-                    $localeSettings = array_merge($localeSettings, $localeData);
-                }
+                $this->loadSettings($file, $localeSettings);
+
                 $file = $dir . '/' . $language . '/' . $country . '/settings.php';
-                if (is_file($file) && ($localeData = include($file))) {
-                    $localeSettings = array_merge($localeSettings, $localeData);
-                }
+                $this->loadSettings($file, $localeSettings);
+
                 $file = str_replace('.utf-8/', '/', $file);
-                if (is_file($file) && ($localeData = include($file))) {
-                    $localeSettings = array_merge($localeSettings, $localeData);
-                }
+                $this->loadSettings($file, $localeSettings);
             }
         }
         if ($localeSettings) {
@@ -446,12 +468,9 @@ class Excel
                 $result[] = self::colNumber($col);
             }
         }
-        elseif (is_string($colLetter) && preg_match('/^([a-z]+):([a-z]+)$/i', $colLetter, $m)) {
-            $colNum = self::colNumber($m[1]);
-            $maxNum = self::colNumber($m[2]);
-            for ($col = $colNum; $col <= $maxNum; $col++) {
-                $result[] = $col;
-            }
+        elseif (is_string($colLetter)) {
+            $letters = self::colLetterRange($colLetter);
+            $result = self::colNumberRange($letters);
         }
         else {
             $col = self::colNumber($colLetter);
@@ -480,6 +499,69 @@ class Excel
 
         return $result;
     }
+
+    /**
+     * Convert values to letters array
+     *  Array [0, 1, 2] => ['A', 'B', 'C'] If the first value is '0' then ZERO based
+     *  Array [1, 2, 3] => ['A', 'B', 'C'] If the first value is not '0' then ONE based
+     *  String 'B, E, F' => ['B', 'E', 'F']
+     *  String 'B-E, F' => ['B', 'C', 'D', 'E', 'F']
+     *  String 'B1-E8' => ['B', 'C', 'D', 'E']
+     *  String 'B1:E8' => ['B:E']
+     *
+     * @param array|string $colKeys
+     *
+     * @return array
+     */
+    public static function colLetterRange($colKeys): array
+    {
+        if ($colKeys) {
+            if (is_array($colKeys)) {
+                $key = reset($colKeys);
+                if (is_numeric($key)) {
+                    $offset = $key ? 0 : 1;
+                    $columns = [];
+                    foreach ($colKeys as $key) {
+                        $columns[] = Excel::colLetter($key + $offset);
+                    }
+                    return $columns;
+                }
+                else {
+                    $columns = $colKeys;
+                }
+                return $columns;
+            }
+            elseif (is_string($colKeys)) {
+                if (strpos($colKeys, ',')) {
+                    $colKeys = array_map('trim', explode(',', $colKeys));
+                    $columns = [];
+                    foreach ($colKeys as $col) {
+                        $columns[] = self::colLetterRange($col);
+                    }
+
+                    return array_merge(...$columns);
+                }
+                elseif (strpos($colKeys, '-')) {
+                    [$num1, $num2] = explode('-', $colKeys);
+                    $columns = [];
+                    for ($colNum = self::colNumber($num1); $colNum <= self::colNumber($num2); $colNum++) {
+                        $columns[] = self::colLetter($colNum);
+                    }
+                    return $columns;
+                }
+                elseif (preg_match('/^[1-9:]+$/', $colKeys)) {
+                    [$num1, $num2] = explode(':', $colKeys);
+                    return [self::colLetter($num1) . ':' . self::colLetter($num2)];
+                }
+                elseif (preg_match('/^[a-z1-9:]+$/i', $colKeys)) {
+                    $colKeys = preg_replace('/\d+/', '', $colKeys);
+                    return [strtoupper($colKeys)];
+                }
+            }
+        }
+        return [];
+    }
+
     /**
      * Convert column number to letter
      *
@@ -508,6 +590,36 @@ class Excel
             return $letter;
         }
         return '';
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public static function colKeysToLetters(array $data): array
+    {
+        return array_combine(Excel::colLetterRange(array_keys($data)), array_values($data));
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public static function colKeysToNumbers(array $data): array
+    {
+        return array_combine(Excel::colNumberRange(array_keys($data)), array_values($data));
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public static function colKeysToIndexes(array $data): array
+    {
+        return array_combine(Excel::colIndexRange(array_keys($data)), array_values($data));
     }
 
     /**

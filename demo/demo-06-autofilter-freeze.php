@@ -21,7 +21,7 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidths([8, 36, 8, 18]);
-$sheet->writeHeader(['Num' => 'integer', 'Str' => 'string', 'Float' => '0.00', 'Date' => 'datetime']);
+$sheet->writeHeader(['Num' => '@integer', 'Str' => '@string', 'Float' => '0.00', 'Date' => '@datetime']);
 foreach($data as $row) {
     $sheet->writeRow($row);
 }

@@ -11,6 +11,7 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $sheet->setColWidth([1, 2, 3, 4, 5, 6, 7], 4);
+$sheet->setRowHeight([1, 2, 3, 4, 5], 20);
 
 $area = $sheet->beginArea();
 
@@ -39,17 +40,18 @@ $style3 = [
         ],
         Style::BORDER_RIGHT => [
             Style::BORDER_STYLE => Style::BORDER_MEDIUM_DASH_DOT,
-            Style::BORDER_COLOR => '#f00',
+            Style::BORDER_COLOR => '#00f',
         ],
         Style::BORDER_BOTTOM => [
             Style::BORDER_STYLE => Style::BORDER_DOUBLE,
+            Style::BORDER_COLOR => '#0ff',
         ],
     ]
 ];
 
 $area->setStyle('B2', $style1);
-$area->setStyle('D2', $style2);
-$area->setStyle('F2', $style3);
+$area->setStyle('D3', $style2);
+$area->setStyle('F4', $style3);
 
 $excel->save($outFileName);
 

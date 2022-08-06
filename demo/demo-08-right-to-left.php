@@ -8,11 +8,11 @@ use \avadim\FastExcelWriter\Excel;
 $header = [
     'c1-text'   => 'text',//text
     'c2-text'   => '@',//text
-    'c3-integer' => 'integer',
+    'c3-integer' => '@integer',
     'c4-integer' => '0',
-    'c5-money'  => 'money',
+    'c5-money'  => '@money',
     'c6-price'  => '#,##0.00',//custom
-    'c7-date'   => 'date',
+    'c7-date'   => '@date',
     'c8-date'   => 'YYYY-MM-DD',
 ];
 

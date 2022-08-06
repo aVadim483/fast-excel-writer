@@ -9,7 +9,8 @@ $timer = microtime(true);
 $excel = Excel::create();
 $sheet = $excel->getSheet();
 
-$sheet->setColWidths([10, 20, 30, 40]);
+//$sheet->setColWidths([10, 20, 30, 40]);
+$sheet->setColWidths(['B' => 10, 'C' => 20, 'E' => 30, 'F' => 40]);
 $sheet->setRowHeight(2, 33);
 //$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 

@@ -10,21 +10,21 @@ $excel = Excel::create(['Total']);
 
 // make new sheet with name 'Jan'
 $sheet = $excel->makeSheet('Jan');
-$sheet->setColFormat(1, 'date');
+$sheet->setColFormat(1, '@date');
 for ($day = 1; $day <= 31; $day++) {
     $sheet->writeRow(['2020-1-' . $day, random_int(100, 999)]);
 }
 
 // make new sheet
 $sheet = $excel->makeSheet('Feb');
-$sheet->setColFormat(1, 'date');
+$sheet->setColFormat(1, '@date');
 for ($day = 1; $day <= 29; $day++) {
     $sheet->writeRow(['2020-2-' . $day, random_int(100, 999)]);
 }
 
 // make new sheet
 $sheet = $excel->makeSheet('Mar');
-$sheet->setColFormat(1, 'date');
+$sheet->setColFormat(1, '@date');
 for ($day = 1; $day <= 31; $day++) {
     $sheet->writeRow(['2020-3-' . $day, random_int(100, 999)]);
 }

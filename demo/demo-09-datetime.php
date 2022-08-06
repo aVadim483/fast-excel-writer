@@ -14,9 +14,9 @@ $data = [
 
 $formats = [
     '@',
-    'datetime',
-    'date',
-    'time',
+    '@datetime',
+    '@date',
+    '@time',
     'YYYY-MM-DD HH:MM:SS',
     'DD MMM YY',
     'H:MM'
@@ -33,7 +33,7 @@ foreach ($formats as $format) {
         'width' => 24,
     ];
 }
-$sheet->setColumns($columns);
+$sheet->setColOptions($columns);
 $sheet->writeHeader($formats, ['font' => 'bold', 'text-align' => 'center', 'border' => 'thin']);
 
 foreach ($data as $value) {
@@ -43,6 +43,11 @@ foreach ($data as $value) {
     }
     // go to the first cell of the next row
     $sheet->nextRow();
+}
+
+$currentTime = time();
+foreach ($formats as $format) {
+    $sheet->writeCell($currentTime, ['fill' => '#eee']);
 }
 
 $excel->save($outFileName);

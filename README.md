@@ -2,9 +2,11 @@
 
 Jump To:
 * [Introduction](#introduction)
-* [Installation](#installation)
+* [Changes in version 3](#changes-in-version-3)
 * [Simple Example](#simple-example)
+* [Advanced Example](#advanced-example)
 * [Writing Cell Values](#writing-cell-values)
+* [Direct Writing To Cells](#direct-writing-to-cells)
 * [Cell Formats](#cell-formats)
 * [Basic Cell Styles](#basic-cell-styles)
 * [Formulas](#formulas)
@@ -47,11 +49,50 @@ Also, you can download package and include autoload file of the library:
 require 'path/to/fast-excel-writer/src/autoload.php';
 ```
 
+## Changes In Version 3
+
+* Minimal version of PHP is 7.4.x
+* All predefined formats are now case-insensitive and must start with '@' ('@date', '@money', etc)
+* Method ```setColumns()``` was removed, use method ```setColOptions()``` instead
+* Method ```writeRow()``` has third parameters: ```writeRow($rowData, ?array $rowOptions, ?array cellOptions)```
+* You can set auto width for columns
+
 ## Usage
 
 You can find usage examples below or in */demo* folder
 
 ### Simple Example
+```php
+use \avadim\FastExcelWriter\Excel;
+
+$data = [
+    ['2003-12-31', 'James', '220'],
+    ['2003-8-23', 'Mike', '153.5'],
+    ['2003-06-01', 'John', '34.12'],
+];
+
+$excel = Excel::create(['Sheet1']);
+$sheet = $excel->getSheet();
+
+// Write heads
+$sheet->writeRow(['Date', 'Name', 'Amount']);
+
+// Write data
+foreach($data as $rowData) {
+    $rowOptions = [
+        'height' => 20,
+    ];
+    $sheet->writeRow($rowData);
+}
+
+$excel->save('simple.xlsx');
+```
+Also, you can download generated file to client (send to browser)
+```php
+$excel->output('download.xlsx');
+```
+
+### Advanced Example
 ```php
 use \avadim\FastExcelWriter\Excel;
 
@@ -74,10 +115,10 @@ $headStyle = [
 $excel = Excel::create(['Sheet1']);
 $sheet = $excel->getSheet();
 
-$sheet->writeRow($head, $headStyle);
+$sheet->writeHeader($head, $headStyle);
 
 $sheet
-    ->setColFormats(['date', 'string', '0.00'])
+    ->setColFormats(['@date', '@text', '0.00'])
     ->setColWidths([12, 14, 5]);
 
 $rowNum = 1;
@@ -157,6 +198,57 @@ foreach ($data as $rowData) {
 
 ```
 
+### Direct Writing To Cells
+
+If you need to write directly to cells, you must define the area.
+
+```php
+$area = $sheet->makeArea('B4:F12'); // Make write area from B4 to F12
+$area = $sheet->makeArea('B4:12'); // Make write area from B4 to B12
+$area = $sheet->beginArea('B4');  // Make write area from B4 to max column and max row
+
+// Set style for single cell of area (new style will replace previous)
+$area->setStyle('B4', $style1); 
+// Set additional style for single cell of area (new style wil be merged with previous)
+$area->addStyle('B4', $style2); 
+
+$area->setStyle('D4:F6', $style2); // Set style for single cell of area
+
+$area->setValue('A2:J2', 'This is demo XLSX-sheet', $headerStyle);
+
+$area
+    ->setValue('H4', 'Date', ['text-align' => 'right'])
+    ->setValue('I4:J4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => 'datetime', 'text-align' => 'left'])
+;
+
+```
+
+### Height And Width
+
+```php
+// Set height of row 2 to 33
+$sheet->setRowHeight(2, 33);
+// Set heights of several rows
+$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
+// Write row data and set height
+$sheet->writeRow($rowData, ['height' => 20]);
+
+// Set width of column D to 24
+$this->setColWidth('D', 24);
+$this->setColOptions('D', ['width' => 24]);
+// Set auto width
+$this->setColWidth('D', 'auto');
+$this->setColWidthAuto('D');
+$this->setColOptions('D', ['width' => 'auto']);
+
+// Set width of specific columns
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+$sheet->setColOptions(['B' => ['width' => 10], 'C' => ['width' => 'auto'], 'E' => ['width' => 30], 'F' => ['width' => 40]]);
+// Set width of columns from 'A'
+$sheet->setColWidths([10, 20, 30, 40]);
+
+```
+
 ### Cell Formats
 
 You can use simple and advanced formats
@@ -166,11 +258,11 @@ $excel = new \avadim\FastExcelWriter\Excel(['Formats']);
 $sheet = $excel->getSheet();
 
 $header = [
-    'created' => 'date',
-    'product_id' => 'integer',
+    'created' => '@date',
+    'product_id' => '@integer',
     'quantity' => '#,##0',
     'amount' => '#,##0.00',
-    'description' => 'string',
+    'description' => '@string',
     'tax' => '[$$]#,##0.00;[RED]-[$$]#,##0.00',
 ];
 $data = [
@@ -190,13 +282,13 @@ Simple cell formats map to more advanced cell formats
 
 | simple formats | format code         |
 |----------------|---------------------|
-| text           | @                   |
-| string         | @                   |
-| integer        | 0                   |
-| date           | YYYY-MM-DD          |
-| datetime       | YYYY-MM-DD HH:MM:SS |
-| time           | HH:MM:SS            |
-| money          | [$$]#,##0.00        |
+| @text          | @                   |
+| @string        | @                   |
+| @integer       | 0                   |
+| @date          | YYYY-MM-DD          |
+| @datetime      | YYYY-MM-DD HH:MM:SS |
+| @time          | HH:MM:SS            |
+| @money         | [$$]#,##0.00        |
 
 ### Basic Cell Styles
 
@@ -319,4 +411,4 @@ $excel = Excel::create('SheetName', ['temp_dir' => '/path/to/temp/dir']);
 ## Want to support FastExcelWriter?
 
 if you find this package useful you can support and donate to me https://www.paypal.me/VShemarov
-Or just give me star on Github :)
+Or just give me star on GitHub :)

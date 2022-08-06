@@ -40,53 +40,54 @@ class Style
     public const BORDER_LEFT        = 8;
     public const BORDER_ALL         = self::BORDER_TOP + self::BORDER_RIGHT + self::BORDER_BOTTOM + self::BORDER_LEFT;
 
-    public const BORDER_NONE            = null;
-    public const BORDER_THIN            = 'thin';
-    public const BORDER_MEDIUM          = 'medium';
-    public const BORDER_THICK           = 'thick';
-    public const BORDER_DASH_DOT        = 'dashDot';
-    public const BORDER_DASH_DOT_DOT    = 'dashDotDot';
-    public const BORDER_DASHED          = 'dashed';
-    public const BORDER_DOTTED          = 'dotted';
-    public const BORDER_DOUBLE          = 'double';
-    public const BORDER_HAIR            = 'hair';
+    public const BORDER_NONE = null;
+    public const BORDER_THIN = 'thin';
+    public const BORDER_MEDIUM = 'medium';
+    public const BORDER_THICK = 'thick';
+    public const BORDER_DASH_DOT = 'dashDot';
+    public const BORDER_DASH_DOT_DOT = 'dashDotDot';
+    public const BORDER_DASHED = 'dashed';
+    public const BORDER_DOTTED = 'dotted';
+    public const BORDER_DOUBLE = 'double';
+    public const BORDER_HAIR = 'hair';
     public const BORDER_MEDIUM_DASH_DOT = 'mediumDashDot';
     public const BORDER_MEDIUM_DASH_DOT_DOT = 'mediumDashDotDot';
-    public const BORDER_MEDIUM_DASHED   = 'mediumDashed';
-    public const BORDER_SLANT_DASH_DOT  = 'slantDashDot';
+    public const BORDER_MEDIUM_DASHED = 'mediumDashed';
+    public const BORDER_SLANT_DASH_DOT = 'slantDashDot';
 
     public const BORDER_STYLE_MIN = self::BORDER_NONE;
     public const BORDER_STYLE_MAX = self::BORDER_SLANT_DASH_DOT;
 
     protected static $instance;
 
-    protected static $fontStyleDefines = ['bold', 'italic', 'strike', 'underline'];
+    protected static array $fontStyleDefines = ['bold', 'italic', 'strike', 'underline'];
 
     /** @var array  */
-    public $localeSettings = [];
+    public array $localeSettings = [];
 
     /** @var array  */
-    public $defaultFont;
+    public array $defaultFont;
 
     /** @var array  */
-    protected $cellStyles = [];
+    protected array $cellStyles = [];
 
-    protected $elements = [];
+    protected array $elements = [];
 
-    protected $elementIndexes = [];
+    protected array $elementIndexes = [];
 
 
     /**
      * Constructor of Style
      *
-     * @param $options
+     * @param array|null $options
      */
-    public function __construct($options)
+    public function __construct(?array $options)
     {
         self::$instance = $this;
         if (isset($options['default_font'])) {
             $this->setDefaultFont($options['default_font']);
-        } else {
+        }
+        else {
             $this->setDefaultFont(['name' => 'Arial', 'size' => 10]);
         }
 
@@ -176,11 +177,11 @@ class Style
     }
 
     /**
-     * @param $localeData
+     * @param array $localeData
      *
      * @return $this
      */
-    public function setLocaleSettings($localeData)
+    public function setLocaleSettings(array $localeData)
     {
         if (!empty($localeData['functions'])) {
             uksort($localeData['functions'], static function($a, $b) {
@@ -217,7 +218,8 @@ class Style
             if ($border[0] === '#') {
                 // it's a color
                 $border = ['all' => ['color' => $border]];
-            } else {
+            }
+            else {
                 // it's a style
                 $border = ['all' => ['style' => $border]];
             }
@@ -239,9 +241,11 @@ class Style
                         if (isset($sideOptions['color'])) {
                             $resultOptions['color'] = self::normalizeColor($sideOptions['color']);
                         }
-                    } elseif ($sideOptions[0] === '#') {
+                    }
+                    elseif ($sideOptions[0] === '#') {
                         $resultOptions['color'] = self::normalizeColor($sideOptions);
-                    } else {
+                    }
+                    else {
                         $resultOptions['style'] = self::_borderStyleName($sideOptions);
                     }
                 }
@@ -266,13 +270,17 @@ class Style
                     if ($side & self::BORDER_LEFT) {
                         $result['left'] = isset($result['left']) ? array_merge($result['left'], $resultOptions) : $resultOptions;
                     }
-                } elseif ($side === 'top') {
+                }
+                elseif ($side === 'top') {
                     $result['top'] = isset($result['top']) ? array_merge($result['top'], $resultOptions) : $resultOptions;
-                } elseif ($side === 'right') {
+                }
+                elseif ($side === 'right') {
                     $result['right'] = isset($result['right']) ? array_merge($result['right'], $resultOptions) : $resultOptions;
-                } elseif ($side === 'bottom') {
+                }
+                elseif ($side === 'bottom') {
                     $result['bottom'] = isset($result['bottom']) ? array_merge($result['bottom'], $resultOptions) : $resultOptions;
-                } elseif ($side === 'left') {
+                }
+                elseif ($side === 'left') {
                     $result['left'] = isset($result['left']) ? array_merge($result['left'], $resultOptions) : $resultOptions;
                 }
             }
@@ -413,6 +421,9 @@ class Style
                         }
                         break;
                     case 'style':
+                        if (is_array($val)) {
+                            $val = implode('-', $val);
+                        }
                         if (is_string($val)) {
                             if (strpos($val, 'bold') !== false) {
                                 $result['style-bold'] = 1;
@@ -444,93 +455,103 @@ class Style
     }
 
     /**
-     * @param $style
+     * @param array $style
      *
      * @return array
      */
-    public static function normalize($style): array
+    public static function normalize(array $style): array
     {
         $result = [];
-        if (is_array($style)) {
-            foreach($style as $styleKey => $styleVal) {
-                switch ($styleKey) {
-                    case 'border':
-                        $result[$styleKey] = self::normalizeBorder($styleVal);
-                        break;
-                    case 'color':
-                    case 'text-color':
-                    case 'font-color':
-                    case 'fg-color':
-                        $result['color'] = $styleVal;
-                        break;
-                    case 'fill':
-                    case 'fill-color':
-                    case 'bg-color':
-                    case 'background-color':
-                    case 'cell-color':
-                        $result['fill'] = $styleVal;
-                        break;
-                    case 'font':
-                        $result['font'] = self::normalizeFont($styleVal);
-                        break;
-                    case 'align':
-                        if ($styleVal === 'center' || $styleVal === 'center-center') {
-                            $result['text-align'] = 'center';
-                            $result['vertical-align'] = 'center';
-                        }
-                        elseif (strpos($styleVal, '-')) {
-                            $parts = explode('-', $styleVal);
-                            if (in_array($parts[0], ['general', 'left', 'right', 'justify'])) {
-                                $result['text-align'] = $parts[0];
-                                unset($parts[0]);
-                            }
-                            if (empty($result['text-align']) && in_array($parts[1], ['general', 'left', 'right', 'justify'])) {
-                                $result['text-align'] = $parts[1];
-                                unset($parts[1]);
-                            }
-                            if (!empty($parts[0]) && in_array($parts[0], ['bottom', 'center', 'distributed', 'top'])) {
-                                $result['vertical-align'] = $parts[0];
-                            }
-                            if (!empty($parts[1]) && empty($result['vertical-align']) && in_array($parts[1], ['bottom', 'center', 'distributed', 'top'])) {
-                                $result['vertical-align'] = $parts[1];
-                                unset($parts[1]);
-                            }
-                        }
-                        break;
-                    case 'text-align':
-                    case 'halign':
-                    case 'h-align':
-                        if (in_array($styleVal, ['general', 'left', 'right', 'justify', 'center'])) {
-                            $result['text-align'] = $styleVal;
-                        }
-                        break;
-                    case 'vertical-align':
-                    case 'valign':
-                    case 'v-align':
-                        if (in_array($styleVal, ['bottom', 'center', 'distributed', 'top'])) {
-                            $result['vertical-align'] = $styleVal;
-                        }
-                        break;
-                    case 'text-wrap':
-                        $result['text-wrap'] = (bool)$styleVal;
-                        break;
-                    case 'width':
-                    case 'autofit':
-                        if ($styleVal === 'auto' || $styleVal === true) {
-                            $result['options']['width-auto'] = true;
-                        }
-                        else {
-                            $width = self::numFloat($styleVal);
-                            if (is_numeric($width) && $width > 0) {
-                                $result['width'] = $width;
-                            }
-                        }
-                        break;
-                    default:
+        foreach($style as $styleKey => $styleVal) {
+            switch ($styleKey) {
+                case 'format':
+                    if ($styleVal === 0 || $styleVal === '0') {
+                        $result[$styleKey] = '@INTEGER';
+                    }
+                    elseif ($styleVal && is_string($styleVal) && $styleVal[0] === '@') {
+                        $result[$styleKey] = strtoupper($styleVal);
+                    }
+                    else {
                         $result[$styleKey] = $styleVal;
-                }
+                    }
+                    break;
+                case 'border':
+                    $result[$styleKey] = self::normalizeBorder($styleVal);
+                    break;
+                case 'color':
+                case 'text-color':
+                case 'font-color':
+                case 'fg-color':
+                    $result['color'] = $styleVal;
+                    break;
+                case 'fill':
+                case 'fill-color':
+                case 'bg-color':
+                case 'background-color':
+                case 'cell-color':
+                    $result['fill'] = $styleVal;
+                    break;
+                case 'font':
+                    $result['font'] = self::normalizeFont($styleVal);
+                    break;
+                case 'align':
+                    if ($styleVal === 'center' || $styleVal === 'center-center') {
+                        $result['text-align'] = 'center';
+                        $result['vertical-align'] = 'center';
+                    }
+                    elseif (strpos($styleVal, '-')) {
+                        $parts = explode('-', $styleVal);
+                        if (in_array($parts[0], ['general', 'left', 'right', 'justify'])) {
+                            $result['text-align'] = $parts[0];
+                            unset($parts[0]);
+                        }
+                        if (empty($result['text-align']) && in_array($parts[1], ['general', 'left', 'right', 'justify'])) {
+                            $result['text-align'] = $parts[1];
+                            unset($parts[1]);
+                        }
+                        if (!empty($parts[0]) && in_array($parts[0], ['bottom', 'center', 'distributed', 'top'])) {
+                            $result['vertical-align'] = $parts[0];
+                        }
+                        if (!empty($parts[1]) && empty($result['vertical-align']) && in_array($parts[1], ['bottom', 'center', 'distributed', 'top'])) {
+                            $result['vertical-align'] = $parts[1];
+                            unset($parts[1]);
+                        }
+                    }
+                    break;
+                case 'text-align':
+                case 'halign':
+                case 'h-align':
+                    if (in_array($styleVal, ['general', 'left', 'right', 'justify', 'center'])) {
+                        $result['text-align'] = $styleVal;
+                    }
+                    break;
+                case 'vertical-align':
+                case 'valign':
+                case 'v-align':
+                    if (in_array($styleVal, ['bottom', 'center', 'distributed', 'top'])) {
+                        $result['vertical-align'] = $styleVal;
+                    }
+                    break;
+                case 'text-wrap':
+                    $result['text-wrap'] = (bool)$styleVal;
+                    break;
+                case 'width':
+                case 'autofit':
+                    if ($styleVal === 'auto' || $styleVal === true) {
+                        $result['options']['width-auto'] = true;
+                    }
+                    else {
+                        $width = self::numFloat($styleVal);
+                        if (is_numeric($width) && $width > 0) {
+                            $result['width'] = $width;
+                        }
+                    }
+                    break;
+                default:
+                    $result[$styleKey] = $styleVal;
             }
         }
+
         return $result;
     }
 
@@ -567,30 +588,12 @@ class Style
     }
 
     /**
-     * @deprecated
-     *
-     * @param $haystack
-     * @param $needle
-     *
-     * @return int
-     */
-    public static function addToListGetIndex(&$haystack, $needle)
-    {
-        $existingIdx = array_search($needle, $haystack, $strict = true);
-        if ($existingIdx === false) {
-            $existingIdx = count($haystack);
-            $haystack[] = $needle;
-        }
-        return $existingIdx;
-    }
-
-    /**
      * @param string $sectionName
      * @param int $index
      *
      * @return array
      */
-    protected function findElement(string $sectionName, int $index)
+    protected function findElement(string $sectionName, int $index): array
     {
         if (isset($this->elementIndexes[$index], $this->elements[$sectionName][$this->elementIndexes[$index]])) {
             return $this->elements[$sectionName][$this->elementIndexes[$index]];
@@ -643,11 +646,15 @@ class Style
     /**
      * @param array $cellStyle
      * @param array|null $fullStyle
+     *
+     * @return int
      */
-    protected function addStyleFont(array &$cellStyle, array &$fullStyle = [])
+    protected function addStyleFont(array &$cellStyle, array &$fullStyle = []): int
     {
         $index = 0;
-        if (isset($cellStyle['font']) || isset($cellStyle['color']) || isset($cellStyle['text-color']) || isset($cellStyle['font-style']) || isset($cellStyle['font-size'])) {
+        if (isset($cellStyle['font']) || isset($cellStyle['color']) || isset($cellStyle['text-color'])
+            || isset($cellStyle['font-style']) || isset($cellStyle['font-size']))
+        {
             if (!isset($cellStyle['font'])) {
                 $cellStyle['font'] = [];
             }
@@ -694,6 +701,8 @@ class Style
             $fullStyle['font'] = $this->findElement('fonts', $index);
         }
         $cellStyle['fontId'] = $index;
+
+        return $index;
     }
 
     /**
@@ -709,8 +718,10 @@ class Style
     /**
      * @param array $cellStyle
      * @param array|null $fullStyle
+     *
+     * @return int
      */
-    protected function addStyleFill(array &$cellStyle, array &$fullStyle = [])
+    protected function addStyleFill(array &$cellStyle, array &$fullStyle = []): int
     {
         $index = 0;
         $fill = [];
@@ -751,6 +762,8 @@ class Style
             $fullStyle['fill'] = $this->findElement('fills', $index);
         }
         $cellStyle['fillId'] = $index;
+
+        return $index;
     }
 
     /**
@@ -766,8 +779,10 @@ class Style
     /**
      * @param array $cellStyle
      * @param array|null $fullStyle
+     *
+     * @return int
      */
-    protected function addStyleBorder(array &$cellStyle, array &$fullStyle = [])
+    protected function addStyleBorder(array &$cellStyle, array &$fullStyle = []): int
     {
         $index = 0;
         if (isset($cellStyle['border'])) {
@@ -783,6 +798,8 @@ class Style
             unset($cellStyle['border']);
         }
         $cellStyle['borderId'] = $index;
+
+        return $index;
     }
 
     /**
@@ -809,7 +826,7 @@ class Style
      *
      * @return int
      */
-    public function addCellStyle(string $format, ?array $cellStyle = [], ?array &$fullStyle = [])
+    public function addCellStyle(string $format, ?array $cellStyle = [], ?array &$fullStyle = []): int
     {
         $fullStyle = [];
         if (empty($cellStyle)) {
@@ -873,7 +890,7 @@ class Style
      *
      * @return array
      */
-    protected function getElements(string $sectionName)
+    protected function getElements(string $sectionName): array
     {
         if (!empty($this->elements[$sectionName])) {
             $result = [];
@@ -889,7 +906,7 @@ class Style
     /**
      * @return array
      */
-    public function getStyleFonts()
+    public function getStyleFonts(): array
     {
         return $this->getElements('fonts');
     }
@@ -897,7 +914,7 @@ class Style
     /**
      * @return array
      */
-    public function getStyleFills()
+    public function getStyleFills(): array
     {
         return $this->getElements('fills');
     }
@@ -905,7 +922,7 @@ class Style
     /**
      * @return array
      */
-    public function getStyleBorders()
+    public function getStyleBorders(): array
     {
         return $this->getElements('borders');
     }
@@ -913,7 +930,7 @@ class Style
     /**
      * @return array
      */
-    public function getStyleCellXfs()
+    public function getStyleCellXfs(): array
     {
         return $this->getElements('cellXfs');
     }
@@ -923,7 +940,7 @@ class Style
      *
      * @return string
      */
-    private static function determineNumberFormatType($numFormat)
+    private static function determineNumberFormatType($numFormat): string
     {
         if ($numFormat === 'GENERAL') {
             return 'n_auto';
@@ -966,28 +983,35 @@ class Style
      *
      * @return string
      */
-    private static function numberFormatStandardized($numFormat)
+    private static function numberFormatStandardized($numFormat): string
     {
-        $stack = [];
-        if (!is_scalar($numFormat) || $numFormat === 'auto' || $numFormat === '' || $numFormat === 'GENERAL') {
+        if (!$numFormat || !is_scalar($numFormat) || $numFormat === 'auto' || $numFormat === 'GENERAL') {
             return 'GENERAL';
         }
-        if ($numFormat === 'string' || $numFormat === 'text') {
-            return '@';
-        }
-        if ($numFormat === 'integer' || $numFormat === 'int') {
+        if (is_int($numFormat)) {
             return '0';
         }
-        if ($numFormat === 'percent') {
-            return '0%';
+        if ($numFormat[0] === '@') {
+            $numFormat = strtoupper($numFormat);
+            if (strpos('@STRING', $numFormat) === 0 || strpos('@TEXT', $numFormat) === 0) {
+                return '@';
+            }
+            if (strpos('@INTEGER', $numFormat) === 0) {
+                return '0';
+            }
+            if (strpos('@PERCENT', $numFormat) === 0) {
+                return '0%';
+            }
         }
+
         while (isset(self::$instance->localeSettings['formats'][$numFormat])) {
-            if (!$numFormat || isset($stack[$numFormat])) {
+            if (!$numFormat) {
                 break;
             }
             if (isset(self::$instance->localeSettings['formats'][$numFormat])) {
                 $numFormat = self::$instance->localeSettings['formats'][$numFormat];
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -999,18 +1023,22 @@ class Style
 
             if ($ignoreUntil === '' && $c === '[') {
                 $ignoreUntil = ']';
-            } elseif ($ignoreUntil === '' && $c === '"') {
+            }
+            elseif ($ignoreUntil === '' && $c === '"') {
                 $ignoreUntil = '"';
-            } elseif ($ignoreUntil === $c) {
+            }
+            elseif ($ignoreUntil === $c) {
                 $ignoreUntil = '';
             }
 
             if ($ignoreUntil === '' && ($c === ' ' || $c === '-' || $c === '(' || $c === ')') && ($i === 0 || $numFormat[$i - 1] !== '_')) {
                 $escaped .= "\\" . $c;
-            } else {
+            }
+            else {
                 $escaped .= $c;
             }
         }
+
         return $escaped;
     }
 
@@ -1021,7 +1049,7 @@ class Style
      *
      * @return array
      */
-    public function defineFormatType($format)
+    public function defineFormatType($format): array
     {
         static $defines = [];
 
@@ -1045,94 +1073,9 @@ class Style
     }
 
     /**
-     * @deprecated
-     *
      * @return array
      */
-    public function defaultFormatType()
-    {
-        static $defaultFormatType;
-
-        if (!$defaultFormatType) {
-            $defaultFormatType = $this->defineFormatType('GENERAL');
-        }
-        return $defaultFormatType;
-    }
-
-    /**
-     * @return array
-     */
-    /*
-    public function _styleFontIndexes()
-    {
-        $fills = ['', ''];  // 2 placeholders for static xml later
-        $fonts = ['', ''];  // 2 placeholders for static xml later
-        $borders = [''];    // 1 placeholder for static xml later
-        $styleIndexes = [];
-        foreach ($this->cellStyles as $i => $cellStyleString) {
-            $semiColonPos = strpos($cellStyleString, ";");
-            $numberFormatIdx = substr($cellStyleString, 0, $semiColonPos);
-            $styleJsonString = substr($cellStyleString, $semiColonPos + 1);
-            $style = json_decode($styleJsonString, true);
-
-            $styleIndexes[$i] = ['num_fmt_idx' => $numberFormatIdx];//initialize entry
-
-            // new border settings
-            if (!empty($style['border']) && is_array($style['border'])) {
-                $borderValue = [];
-                foreach($style['border'] as $side => $options) {
-                    $borderValue[$side] = $options;
-                    if (!empty($options['color'])) {
-                        $color = Style::normaliazeColor($options['color']);
-                        if ($color) {
-                            $borderValue[$side]['color'] = $color;
-                        }
-                    }
-                }
-                $styleIndexes[$i]['border_idx'] = self::addToListGetIndex($borders, $borderValue);
-            }
-            if (!empty($style['fill'])) {
-                $color = Style::normaliazeColor($style['fill']);
-                if ($color) {
-                    $styleIndexes[$i]['fill_idx'] = self::addToListGetIndex($fills, $color);
-                }
-            }
-            if (!empty($style['text-align'])) {
-                $styleIndexes[$i]['alignment'] = true;
-                $styleIndexes[$i]['text-align'] = $style['text-align'];
-            }
-            if (!empty($style['vertical-align'])) {
-                $styleIndexes[$i]['alignment'] = true;
-                $styleIndexes[$i]['vertical-align'] = $style['vertical-align'];
-            }
-            if (!empty($style['text-wrap'])) {
-                $styleIndexes[$i]['alignment'] = true;
-                $styleIndexes[$i]['text-wrap'] = true;
-            }
-
-            $font = null;
-            if (!empty($style['font'])) {
-                $font = Style::normalizeFont($style['font']);
-            }
-            if (!$font) {
-                $font = Style::normalizeFont([]);
-            }
-            if (isset($style['color'])) {
-                $color = Style::normaliazeColor($style['color']);
-                if ($color) {
-                    $font['color'] = $color;
-                }
-            }
-            $styleIndexes[$i]['font_idx'] = self::addToListGetIndex($fonts, $font);
-        }
-        return ['fills' => $fills, 'fonts' => $fonts, 'borders' => $borders, 'styles' => $styleIndexes];
-    }
-    */
-
-    /**
-     * @return array
-     */
-    public function _getNumberFormats()
+    public function _getNumberFormats(): array
     {
         if (isset($this->elements['numFmts'])) {
             return array_keys($this->elements['numFmts']);

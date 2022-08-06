@@ -24,7 +24,6 @@
         "ext-zip": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "ext-ctype": "*",
         "ext-intl": "*"
     },
     "funding": [

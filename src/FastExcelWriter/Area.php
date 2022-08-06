@@ -12,10 +12,10 @@ use avadim\FastExcelWriter\Exception\Exception;
 class Area
 {
     /** @var Sheet */
-    protected $sheet;
+    protected Sheet $sheet;
 
     /** @var array[]  */
-    protected $coord;
+    protected array $coord;
 
     /** @var array  */
     protected $dimension = [];
@@ -24,21 +24,22 @@ class Area
     protected $range;
 
     /** @var int  */
-    protected $index = -1;
+    protected int $index = -1;
 
     /**
      * Area constructor
      *
      * @param Sheet $sheet
-     * @param string $range
+     * @param string|array $range
      */
-    public function __construct($sheet, $range)
+    public function __construct(Sheet $sheet, $range)
     {
         if (is_string($range) && preg_match('/^(-)?R(\d+)(-)?C(\d+)/i', $range)) {
             $offset = $range;
             $range = 'A' . ($sheet->rowCount + 1);
             $dimension = Excel::rangeDimensionRelative($range, $offset, true);
-        } else {
+        }
+        else {
             $dimension = Excel::rangeDimension($range, true);
         }
         if ($dimension['rowNum1'] <= $sheet->rowCount) {
@@ -57,11 +58,11 @@ class Area
     }
 
     /**
-     * @param $coord
+     * @param array $coord
      *
      * @return $this
      */
-    public function setCoord($coord)
+    public function setCoord(array $coord)
     {
         $this->coord = [];
         foreach($coord as $addr) {
@@ -77,6 +78,8 @@ class Area
     }
 
     /**
+     * Set index of area in sheet
+     *
      * @param int $index
      *
      * @return $this
@@ -89,11 +92,11 @@ class Area
     }
 
     /**
-     * Index of area in sheet
+     * Get index of area in sheet
      *
      * @return int
      */
-    public function getIndex()
+    public function getIndex(): int
     {
         return $this->index;
     }
@@ -101,9 +104,39 @@ class Area
     /**
      * @return array[]
      */
-    public function getCoord()
+    public function getCoord(): array
     {
         return $this->coord;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBeginAddress(): string
+    {
+        $coord = $this->getCoord();
+
+        return Excel::cellAddress($coord[0]['row'], $coord[0]['col']);
+    }
+
+    /**
+     * @return string
+     */
+    public function getEndAddress(): string
+    {
+        $coord = $this->getCoord();
+
+        return Excel::cellAddress($coord[1]['row'], $coord[1]['col']);
+    }
+
+    /**
+     * @return string
+     */
+    public function getOffsetAddress($offset): string
+    {
+        $coord = $this->getCoord();
+
+        return Excel::cellAddress($coord[1]['row'], $coord[1]['col']);
     }
 
     /**
@@ -113,7 +146,7 @@ class Area
      *
      * @return bool
      */
-    protected function _validateAddressRange(&$cellAddress, array &$index = null, array &$offset = null)
+    protected function _validateAddressRange(&$cellAddress, array &$index = null, array &$offset = null): bool
     {
         if ($cellAddress) {
             if (is_string($cellAddress)) {
@@ -126,7 +159,8 @@ class Area
                     $dim = Excel::rangeDimensionRelative($this->dimension['cell1'], $offset);
                     if (strpos($cellAddress, ':')) {
                         $cellAddress = $dim['cell1'] . ':' . $dim['cell2'];
-                    } else {
+                    }
+                    else {
                         $cellAddress = $dim['cell1'];
                     }
                     return true;
@@ -155,6 +189,8 @@ class Area
     }
 
     /**
+     * Write value to cell
+     *
      * setValue('A2', $value)
      * setValue(['col' => 3, 'row' => 1], $value) - equals to 'C1'
      * setValue('A2:C2', $value) - merge cells and write value
@@ -175,6 +211,8 @@ class Area
     }
 
     /**
+     * Write formula to cell
+     *
      * @param string|array $cellAddress
      * @param mixed $value
      * @param array|null $style
@@ -223,14 +261,14 @@ class Area
     }
 
     /**
-     * Set style (old styles wil be replaced)
+     * Set format of values (old styles wil be replaced)
      *
      * @param string|array $cellAddress
-     * @param $format
+     * @param string $format
      *
      * @return $this
      */
-    public function setFormat($cellAddress, $format)
+    public function setFormat($cellAddress, string $format)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
             $this->sheet->applayStyle($cellAddress, ['format' => $format], true);
@@ -239,12 +277,14 @@ class Area
     }
 
     /**
+     * Set text color
+     *
      * @param string|array $cellAddress
-     * @param $color
+     * @param string $color
      *
      * @return $this
      */
-    public function setColor($cellAddress, $color)
+    public function setColor($cellAddress, string $color)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
             $this->sheet->applayStyle($cellAddress, ['color' => $color], true);
@@ -253,12 +293,14 @@ class Area
     }
 
     /**
+     * Set background color
+     *
      * @param string|array $cellAddress
-     * @param $color
+     * @param string $color
      *
      * @return $this
      */
-    public function setBakgroundColor($cellAddress, $color)
+    public function setBackgroundColor($cellAddress, string $color)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
             $this->sheet->applayStyle($cellAddress, ['fill' => $color], true);
@@ -267,30 +309,36 @@ class Area
     }
 
     /**
+     * Set text color, alias of setColor()
+     *
      * @param string|array $cellAddress
-     * @param $color
+     * @param string $color
      *
      * @return $this
      */
-    public function setFgColor($cellAddress, $color)
+    public function setFgColor($cellAddress, string $color)
     {
         return $this->setColor($cellAddress, $color);
     }
 
     /**
+     * Set background color, alias of setBackgroundColor()
+     *
      * @param string|array $cellAddress
-     * @param $color
+     * @param string $color
      *
      * @return $this
      */
-    public function setBgColor($cellAddress, $color)
+    public function setBgColor($cellAddress, string $color)
     {
-        return $this->setBakgroundColor($cellAddress, $color);
+        return $this->setBackgroundColor($cellAddress, $color);
     }
 
     /**
-     * @param $range
-     * @param $style
+     * Set outer border
+     *
+     * @param string|array $range
+     * @param string|array $style
      *
      * @return $this
      */

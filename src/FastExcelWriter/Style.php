@@ -836,8 +836,9 @@ class Style
         $this->addStyleFill($cellStyle, $fullStyle);
         $this->addStyleBorder($cellStyle, $fullStyle);
 
+        $xfId = 0;
         if ($format) {
-            $numberFormat = self::numberFormatStandardized($format);
+            $numberFormat = self::numberFormatStandardized($format, $xfId);
             $numberFormatType = self::determineNumberFormatType($numberFormat);
             $cellStyle['numFmtId'] = $this->addElement('numFmts', $numberFormat);
 
@@ -848,6 +849,7 @@ class Style
         else {
             $cellStyle['numFmtId'] = 0;
         }
+        $cellStyle['xfId'] = $xfId;
 
         $cellXfsId = $this->indexStyle($cellStyle, $fullStyle);
 
@@ -980,10 +982,11 @@ class Style
 
     /**
      * @param $numFormat
+     * @param int|null $xfId
      *
      * @return string
      */
-    private static function numberFormatStandardized($numFormat): string
+    private static function numberFormatStandardized($numFormat, ?int &$xfId = 0): string
     {
         if (!$numFormat || !is_scalar($numFormat) || $numFormat === 'auto' || $numFormat === 'GENERAL') {
             return 'GENERAL';
@@ -1001,6 +1004,10 @@ class Style
             }
             if (strpos('@PERCENT', $numFormat) === 0) {
                 return '0%';
+            }
+            if (strpos('@URL', $numFormat) === 0) {
+                $xfId = 1;
+                return 'GENERAL';
             }
         }
 

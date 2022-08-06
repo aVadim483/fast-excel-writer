@@ -32,6 +32,9 @@ class Sheet
     public $sheetName = '';
     public $xmlName = '';
 
+    public $fileRels = '';
+    public $xmlRels = '';
+
     public $rowCount = 0;
     public $colCount = 0;
 
@@ -45,29 +48,31 @@ class Sheet
     public $absoluteAutoFilter = '';
 
     // ZERO based
-    public $colWidths = [];
-    public $colFormulas = [];
-    public $colStyles = [];
+    public array $colWidths = [];
+    public array $colFormulas = [];
+    public array $colStyles = [];
 
     // ZERO based
-    public $rowHeights = [];
-    public $rowStyles = [];
+    public array $rowHeights = [];
+    public array $rowStyles = [];
 
     protected $currentRow = Excel::MIN_ROW;
     protected $currentCol = Excel::MIN_COL;
 
     // ZERO based
-    protected $cells = [];
+    protected array $cells = [];
 
-    public $open = false;
-    public $close = false;
+    public bool $open = false;
+    public bool $close = false;
 
-    protected $mergeCells = [];
-    protected $totalArea = [];
-    protected $areas = [];
-    protected $defaultStyle = [];
+    protected array $mergeCells = [];
+    protected array $totalArea = [];
+    protected array $areas = [];
+    protected array $defaultStyle = [];
 
-    protected $pageOptions = [];
+    protected array $pageOptions = [];
+    protected array $externalLinks = [];
+    protected int $externalLinksCount = 0;
 
     /**
      * Sheet constructor
@@ -117,6 +122,7 @@ class Sheet
         if (!$this->fileWriter) {
             $this->fileWriter = $fileWriter;
             $this->fileName = $fileWriter->getFileName();
+            $this->fileRels = $this->fileName . '.rels';
         }
 
         return $this;
@@ -131,6 +137,7 @@ class Sheet
     {
         $this->fileWriter = $fileWriter;
         $this->fileName = $fileWriter->getFileName();
+        $this->fileRels = $this->fileName . '.rels';
 
         return $this;
     }
@@ -711,7 +718,7 @@ class Sheet
                         $this->colStyles[$colIdx] ?? null, // defined style of column
                         $this->rowStyles[$rowIdx] ?? null, // defined style of row
                         $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
-                        $rowOptions ?? null, // runtime style of tje row
+                        $rowOptions ?? null, // runtime style of the row
                         $cellsOptions[$colIdx] ?? null, // runtime style of the cell
                 ];
                 $cellStyle = Style::mergeStyles($styleStack);
@@ -724,6 +731,9 @@ class Sheet
                     $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
                 }
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+                if (!empty($cellStyle['format']) && $cellStyle['format'] === '@URL' && filter_var($cellValue, FILTER_VALIDATE_URL)) {
+                    $this->externalLinks[++$this->externalLinksCount] = $cellValue;
+                }
                 $colIdx++;
                 if ($colIdx > $this->colCount) {
                     $this->colCount = $colIdx;
@@ -1034,17 +1044,9 @@ class Sheet
      */
     public function nextRow(?array $options = [])
     {
-        $styles = $this->cells['styles'][$this->currentRow] ?? [];
-        if (empty($options)) {
-            $rowStyles = $styles;
-        }
-        elseif (empty($styles)) {
-            $rowStyles = $options;
-        }
-        else {
-            $rowStyles = array_replace_recursive($styles, $options);
-        }
-        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $rowStyles);
+        $cellStyles = $this->cells['styles'][$this->currentRow] ?? [];
+        $rowStyles = $options ?? [];
+        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $rowStyles, $cellStyles);
 
         return $this;
     }

@@ -35,6 +35,8 @@ class Excel
     /** @var bool */
     protected bool $isRightToLeft = false;
 
+    protected array $sharedStrings = [];
+    protected int $sharedStringsCount = 0;
 
     /**
      * Excel constructor
@@ -828,6 +830,42 @@ class Excel
             $rowOffset2,
             $colOffset2,
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public static function makeUid(): string
+    {
+        $uid = preg_replace('/[^A-F0-9]/', '', strtoupper(uniqid('', true) . md5(microtime())));
+
+        return substr($uid, 0, 8) . '-' . substr($uid, 8, 4) . '-4' . substr($uid, 13, 3)
+            . '-A' . substr($uid, 17, 3) . '-' . substr($uid, 20, 12);
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return int
+     */
+    public function addSharedString(string $string): int
+    {
+        if (!isset($this->sharedStrings[$string])) {
+            $this->sharedStrings[$string] = ['id' => $this->sharedStringsCount++, 'count' => 1];
+        }
+        else {
+            $this->sharedStrings[$string]['count']++;
+        }
+
+        return $this->sharedStrings[$string]['id'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getSharedStrings(): array
+    {
+        return $this->sharedStrings;
     }
 
     /**

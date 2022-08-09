@@ -56,8 +56,8 @@ class Sheet
     public array $rowHeights = [];
     public array $rowStyles = [];
 
-    protected $currentRow = Excel::MIN_ROW;
-    protected $currentCol = Excel::MIN_COL;
+    protected int $currentRow = Excel::MIN_ROW;
+    protected int $currentCol = Excel::MIN_COL;
 
     // ZERO based
     protected array $cells = [];
@@ -71,6 +71,7 @@ class Sheet
     protected array $defaultStyle = [];
 
     protected array $pageOptions = [];
+
     protected array $externalLinks = [];
     protected int $externalLinksCount = 0;
 
@@ -140,6 +141,33 @@ class Sheet
         $this->fileRels = $this->fileName . '.rels';
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExternalLinks(): array
+    {
+        return $this->externalLinks;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getXmlRels()
+    {
+        if ($this->externalLinks) {
+            $result = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+            $result .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+            foreach ($this->externalLinks as $id => $data) {
+                $result .= '<Relationship Id="rId' . $id . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' . $data['link'] . '" TargetMode="External"/>';
+            }
+            $result .= '</Relationships>';
+
+            return $result;
+        }
+
+        return null;
     }
 
     /**
@@ -672,6 +700,23 @@ class Sheet
     }
 
     /**
+     * @param string $address
+     * @param string $link
+     *
+     * @return int
+     */
+    protected function _addExternalLink(string $address, string $link): int
+    {
+        $this->externalLinks[++$this->externalLinksCount] = [
+            'cell' => $address,
+            'link' => $link,
+            'uid' => Excel::makeUid(),
+        ];
+
+        return $this->excel->addSharedString($link);
+    }
+
+    /**
      * @param Writer $writer
      * @param array|null $row Values of all cells of row (incl. empty)
      * @param array|null $rowOptions Specified style for the row
@@ -710,7 +755,7 @@ class Sheet
         }
 
         if ($row) {
-            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" outlineLevel="0" ' . $rowAttr . '>');
+            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '>');
             $rowIdx = $this->rowCount;
             foreach ($row as $colIdx => $cellValue) {
                 $styleStack = [
@@ -730,10 +775,12 @@ class Sheet
                 if (!empty($cellStyle['options']['width-auto'])) {
                     $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
                 }
-                $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+
                 if (!empty($cellStyle['format']) && $cellStyle['format'] === '@URL' && filter_var($cellValue, FILTER_VALIDATE_URL)) {
-                    $this->externalLinks[++$this->externalLinksCount] = $cellValue;
+                    $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $cellValue);
                 }
+
+                $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
                 $colIdx++;
                 if ($colIdx > $this->colCount) {
                     $this->colCount = $colIdx;
@@ -742,7 +789,7 @@ class Sheet
             $this->fileWriter->write('</row>');
         }
         else {
-            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" outlineLevel="0" ' . $rowAttr . '/>');
+            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '/>');
         }
         $this->rowCount++;
     }
@@ -754,7 +801,7 @@ class Sheet
      *
      * @return float
      */
-    protected function _calcWidth(string $str, $fontSize, ?bool $numFormat = false)
+    protected function _calcWidth(string $str, $fontSize, ?bool $numFormat = false): float
     {
         if ($numFormat && strpos($str, ';')) {
             $lenArray = [];

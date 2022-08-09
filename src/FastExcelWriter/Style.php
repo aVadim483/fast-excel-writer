@@ -839,7 +839,7 @@ class Style
         $xfId = 0;
         if ($format) {
             $numberFormat = self::numberFormatStandardized($format, $xfId);
-            $numberFormatType = self::determineNumberFormatType($numberFormat);
+            $numberFormatType = self::determineNumberFormatType($numberFormat, $format);
             $cellStyle['numFmtId'] = $this->addElement('numFmts', $numberFormat);
 
             $fullStyle['format'] = $format;
@@ -938,12 +938,17 @@ class Style
     }
 
     /**
-     * @param $numFormat
+     * @param string $numFormat
+     * @param string|null $format
      *
      * @return string
      */
-    private static function determineNumberFormatType($numFormat): string
+    private static function determineNumberFormatType(string $numFormat, string $format = null): string
     {
+        if ($format === '@URL') {
+            //return 'n_shared_string';
+            return 'n_auto';
+        }
         if ($numFormat === 'GENERAL') {
             return 'n_auto';
         }

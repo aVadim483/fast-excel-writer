@@ -43,10 +43,13 @@ class Sheet
 
     public ?WriterBuffer $fileWriter = null;
 
+    public array $defaultStyle = [];
+
     // ZERO based
     public int $freezeRows = 0;
     public int $freezeColumns = 0;
-    public int $autoFilter = 0;
+
+    public $autoFilter = null;
     public string $absoluteAutoFilter = '';
 
     // ZERO based
@@ -70,12 +73,13 @@ class Sheet
     protected array $mergeCells = [];
     protected array $totalArea = [];
     protected array $areas = [];
-    protected array $defaultStyle = [];
 
     protected array $pageOptions = [];
 
     protected array $externalLinks = [];
     protected int $externalLinksCount = 0;
+
+    protected array $lastAddress = ['rowIdx' => 0, 'colIdx' => 0];
 
     /**
      * Sheet constructor
@@ -90,6 +94,7 @@ class Sheet
             'values' => [],
             'styles' => [],
         ];
+        $this->_setCellData('A1', '', [], false);
     }
 
     /**
@@ -363,7 +368,8 @@ class Sheet
         if ($row >= 0) {
             if (empty($row)) {
                 $this->autoFilter = false;
-            } else {
+            }
+            else {
                 $this->autoFilter = Excel::cellAddress($row, $col);
             }
         }
@@ -680,42 +686,15 @@ class Sheet
     }
 
     /**
-     * @param $style
-     *
-     * @return $this
-     */
-    public function setDefaultStyle($style)
-    {
-        if ($style) {
-            $this->defaultStyle = Style::normalize($style);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDefaultStyle()
-    {
-        return $this->defaultStyle;
-    }
-
-    /**
      * @param string $address
      * @param string $link
-     *
-     * @return int
      */
-    protected function _addExternalLink(string $address, string $link): int
+    protected function _addExternalLink(string $address, string $link)
     {
         $this->externalLinks[++$this->externalLinksCount] = [
             'cell' => $address,
             'link' => $link,
-            'uid' => Excel::makeUid(),
         ];
-
-        return $this->excel->addSharedString($link);
     }
 
     /**
@@ -761,14 +740,39 @@ class Sheet
             $rowIdx = $this->rowCount;
             foreach ($row as $colIdx => $cellValue) {
                 $styleStack = [
-                        $this->defaultStyle ?? null, // default style of sheet
-                        $this->colStyles[$colIdx] ?? null, // defined style of column
-                        $this->rowStyles[$rowIdx] ?? null, // defined style of row
-                        $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
-                        $rowOptions ?? null, // runtime style of the row
-                        $cellsOptions[$colIdx] ?? null, // runtime style of the cell
+                    $this->excel->style->defaultStyle ?? null, // default style of workbook
+                    (!empty($cellStyle['hyperlink']) && !empty($this->excel->style->hyperlinkStyle)) ? $this->excel->style->hyperlinkStyle : null,
+                    $this->defaultStyle ?? null, // default style of sheet
+                    $this->colStyles[$colIdx] ?? null, // defined style of column
+                    $this->rowStyles[$rowIdx] ?? null, // defined style of row
+                    $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
+                    $rowOptions ?? null, // runtime style of the row
+                    $cellsOptions[$colIdx] ?? null, // runtime style of the cell
                 ];
                 $cellStyle = Style::mergeStyles($styleStack);
+                if (!empty($cellStyle['format']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']])) {
+                    $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']], $cellStyle]);
+                }
+
+                if (isset($cellStyle['hyperlink'])) {
+                    if (!empty($cellStyle['hyperlink'])) {
+                        if (is_string($cellStyle['hyperlink'])) {
+                            $link = $cellStyle['hyperlink'];
+                        }
+                        else {
+                            $link = $cellValue;
+                        }
+                        $cellValue = [
+                            'shared_value' => $cellValue,
+                            'shared_index' => $this->excel->addSharedString($cellValue),
+                        ];
+                        $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
+                        if (!empty($this->excel->style->hyperlinkStyle)) {
+                            $cellStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $cellStyle]);
+                        }
+                    }
+                    unset($cellStyle['hyperlink']);
+                }
                 $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
 
                 $numberFormat = $resultStyle['number_format'];
@@ -776,10 +780,6 @@ class Sheet
 
                 if (!empty($cellStyle['options']['width-auto'])) {
                     $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
-                }
-
-                if (!empty($cellStyle['format']) && $cellStyle['format'] === '@URL' && filter_var($cellValue, FILTER_VALIDATE_URL)) {
-                    $cellValue = $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $cellValue);
                 }
 
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
@@ -866,14 +866,15 @@ class Sheet
 
         if ($cellValue) {
             $fontSize = $style['font']['size'] ?? 10;
-            $key = '[[[' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $cellValue . ']]]';
+            $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
+            $key = '[[[' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
             if (isset($cache[$key])) {
                 $len = $cache[$key];
             }
             else {
-                $len = $this->_calcWidth($cellValue, $fontSize);
+                $len = $this->_calcWidth($value, $fontSize);
                 if ($numberFormat !== 'GENERAL') {
-                    $numberFormat = $this->_formatValue($cellValue, $numberFormat);
+                    $numberFormat = $this->_formatValue($value, $numberFormat);
                     $len = max($len, $this->_calcWidth(str_replace('\\', '', $numberFormat), $fontSize, true));
                 }
                 $cache[$key] = $len;
@@ -882,6 +883,26 @@ class Sheet
                 $this->colWidths[$colNum] = $len;
             }
         }
+    }
+
+    /**
+     * @param array $style
+     *
+     * @return $this
+     */
+    public function setDefaultStyle(array $style)
+    {
+        $this->defaultStyle = $style;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefaultStyle(): array
+    {
+        return $this->defaultStyle;
     }
 
     /**
@@ -1254,7 +1275,7 @@ class Sheet
     }
 
     /**
-     * @param string|array $cellAddress
+     * @param string|array|null $cellAddress
      * @param mixed $values
      * @param mixed $styles
      * @param bool|null $merge
@@ -1264,22 +1285,30 @@ class Sheet
      */
     protected function _setCellData($cellAddress, $values, $styles, ?bool $merge, ?bool $changeCurrent = false)
     {
-        $dimension = $this->_parseAddress($cellAddress);
-        $row = $dimension['row'];
-        $col = $dimension['col'];
-        if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
-            $this->mergeCells($dimension['range']);
+        if (null === $cellAddress) {
+            $rowIdx = $this->lastAddress['rowIdx'];
+            $colIdx = $this->lastAddress['colIdx'];
+        }
+        else {
+            $dimension = $this->_parseAddress($cellAddress);
+            $row = $dimension['row'];
+            $col = $dimension['col'];
+            if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
+                $this->mergeCells($dimension['range']);
+            }
+
+            if ($row === null || $col === null) {
+                ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress));
+            }
+            if ($row < $this->currentRow) {
+                ExceptionAddress::throwNew('Row number must be greater then written rows');
+            }
+            $rowIdx = $row - 1;
+            $colIdx = $col - 1;
+
+            $this->lastAddress = ['rowIdx' => $rowIdx, 'colIdx' => $colIdx];
         }
 
-        if ($row === null || $col === null) {
-            ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress));
-        }
-        if ($row < $this->currentRow) {
-            ExceptionAddress::throwNew('Row number must be greater then written rows');
-        }
-
-        $rowIdx = $row - 1;
-        $colIdx = $col - 1;
         if ($values !== null) {
             $this->cells['values'][$rowIdx][$colIdx] = $values;
             if ($changeCurrent) {

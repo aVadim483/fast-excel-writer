@@ -21,9 +21,6 @@ class Writer
     /** @var string */
     protected $tempDir = '';
 
-    // Experimental option but it does not work now
-    private bool $linksEnabled = true;
-
     /**
      * Writer constructor
      *
@@ -154,7 +151,7 @@ class Writer
         $xmlRels = [];
         foreach ($sheets as $sheet) {
             $xml = $sheet->getXmlRels();
-            if ($xml && $this->linksEnabled) {
+            if ($xml) {
                 $xmlRels['xl/worksheets/_rels/' . $sheet->xmlName . '.rels'] = $xml;
             }
             $zip->addFile($sheet->fileName, 'xl/worksheets/' . $sheet->xmlName);
@@ -381,7 +378,7 @@ class Writer
         //$sheet->fileWriter->write('<printOptions headings="false" gridLines="false" gridLinesSet="true" horizontalCentered="false" verticalCentered="false"/>');
 
         $links = $sheet->getExternalLinks();
-        if ($links && $this->linksEnabled) {
+        if ($links) {
             $sheet->fileWriter->write('<hyperlinks>');
             foreach ($links as $id => $data) {
                 $sheet->fileWriter->write('<hyperlink ref="' . $data['cell'] . '" r:id="rId' . $id . '" />');
@@ -478,7 +475,10 @@ class Writer
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 
-        if (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
+        if (is_array($value) && isset($value['shared_index'])) {
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value['shared_index'] . '</v></c>');
+        }
+        elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');
         }
         elseif (is_string($value) && $value[0] === '=') {
@@ -691,7 +691,7 @@ class Writer
                         $file->write('<i val="true"/>');
                     }
                     if (!empty($font['style-underline'])) {
-                        $file->write('<u val="single"/>');
+                        $file->write('<u val="' . $font['style-underline'] . '"/>');
                     }
                     if (!empty($font['style-strike'])) {
                         $file->write('<strike val="true"/>');

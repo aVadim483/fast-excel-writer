@@ -77,10 +77,11 @@ foreach($cells as $cell) {
 
 // Write value to automerged cells
 $area->setValue('A2:K2', 'This is demo XLSX-sheet', $headerStyle);
+$area->setValue('E3:I3', 'avadim/fast-excel-writer', ['hyperlink' => 'https://github.com/aVadim483/fast-excel-writer', 'align'=>'center']);
 
 $area
-    ->setValue('H4', 'Date', ['text-align' => 'right'])
-    ->setValue('J4:K4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => '@datetime', 'text-align' => 'left'])
+    ->setValue('J4', 'Date:', ['text-align' => 'right'])
+    ->setValue('K4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => '@datetime', 'text-align' => 'left'])
 ;
 
 /* TABLE HEADER */

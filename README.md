@@ -291,7 +291,6 @@ Simple cell formats map to more advanced cell formats
 | @datetime      | YYYY-MM-DD HH:MM:SS |
 | @time          | HH:MM:SS            |
 | @money         | [$$]#,##0.00        |
-| @url           | <active hyperlink>  |
 
 ### Basic Cell Styles
 
@@ -396,7 +395,19 @@ $excel->save('formulas.xlsx');
 ```
 
 ## Hyperlinks
-If you want insert URLs as active hyperlinks use format ```@url``` 
+You can insert URLs as active hyperlinks 
+
+```php
+// Write URL as simple string (not hyperlink)
+$sheet->writeCell('https://google.com');
+
+// Write URL as an active hyperlink
+$sheet->writeCell('https://google.com', ['hyperlink' => true]);
+
+// Write text with an active hyperlink
+$sheet->writeCell('Google', ['hyperlink' => 'https://google.com']);
+
+```
 
 ## Set Directory For Temporary Files
 The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory

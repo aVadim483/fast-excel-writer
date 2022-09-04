@@ -392,7 +392,7 @@ class Excel
     /**
      * @return bool
      */
-    public function isRightToLeft()
+    public function isRightToLeft(): bool
     {
         return $this->isRightToLeft;
     }
@@ -404,9 +404,23 @@ class Excel
      *
      * @return $this
      */
-    public function setFont($font)
+    public function setDefaultFont($font)
     {
-        $this->style->setDefaultFont($font);
+        $this->style->setDefaultFont(['GENERAL' => $font]);
+
+        return $this;
+    }
+
+    /**
+     * Set default
+     *
+     * @param $font
+     *
+     * @return $this
+     */
+    public function setDefaultStyle($font)
+    {
+        $this->style->setDefaultFont(['GENERAL' => $font]);
 
         return $this;
     }
@@ -832,20 +846,6 @@ class Excel
             $rowOffset2,
             $colOffset2,
         ];
-    }
-
-    /**
-     * @return string
-     */
-    public static function makeUid(): string
-    {
-        return strtoupper(\Ramsey\Uuid\Uuid::uuid4()->toString());
-        /*
-        $uid = preg_replace('/[^A-F0-9]/', '', strtoupper(uniqid('', true) . md5(microtime())));
-
-        return substr($uid, 0, 8) . '-' . substr($uid, 8, 4) . '-4' . substr($uid, 13, 3)
-            . '-A' . substr($uid, 17, 3) . '-' . substr($uid, 20, 12);
-        */
     }
 
     /**

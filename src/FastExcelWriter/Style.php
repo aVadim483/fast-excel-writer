@@ -62,14 +62,17 @@ class Style
 
     protected static array $fontStyleDefines = ['bold', 'italic', 'strike', 'underline'];
 
-    /** @var array  */
     public array $localeSettings = [];
 
-    /** @var array  */
-    public array $defaultFont;
+    public array $defaultFont = [];
 
-    /** @var array  */
-    protected array $cellStyles = [];
+    public array $defaultStyle = [];
+
+    /** @var array Specified styles for hyperlinks */
+    public array $hyperlinkStyle = [];
+
+    /** @var array Specified styles for formats '@...'  */
+    public array $defaultFormatStyles = [];
 
     protected array $elements = [];
 
@@ -84,21 +87,38 @@ class Style
     public function __construct(?array $options)
     {
         self::$instance = $this;
-        if (isset($options['default_font'])) {
-            $this->setDefaultFont($options['default_font']);
-        }
-        else {
-            $this->setDefaultFont(['name' => 'Arial', 'size' => 10]);
-        }
-
+        $defaultFont = [
+            'name' => 'Arial',
+            'size' => 10,
+        ];
         $defaultStyle = [
             'font' => $this->defaultFont,
             'fill' => 'none',
             'border' => 'none',
         ];
+        $defaultFormatStyles = [];
+        $hyperlinkStyle = [
+            'font' => ['color' => '0563C1', 'underline' => true],
+        ];
+
+        if (isset($options['default_font'])) {
+            foreach($options['default_font'] as $key => $font) {
+                $key = strtoupper($key);
+                if (isset($defaultFont[$key])) {
+                    $defaultFont[$key] = array_merge($defaultFont[$key], $font);
+                }
+            }
+        }
+
+        $this->setDefaultFont($defaultFont);
+        $this->setDefaultStyle($defaultStyle);
         $this->addCellStyle('GENERAL', $defaultStyle);
-        $defaultStyle['fill'] = ['pattern' => 'gray125'];
-        $this->addCellStyle('GENERAL', $defaultStyle);
+
+        //$defaultStyle['fill'] = ['pattern' => 'gray125'];
+        //$this->addCellStyle('GENERAL', $defaultStyle);
+
+        $this->hyperlinkStyle = $hyperlinkStyle;
+        $this->defaultFormatStyles = $defaultFormatStyles;
     }
 
     /**
@@ -172,6 +192,18 @@ class Style
             $font['family'] = $fontFamily;
         }
         $this->defaultFont = $font;
+
+        return $this;
+    }
+
+    /**
+     * @param array $style
+     *
+     * @return $this
+     */
+    public function setDefaultStyle(array $style)
+    {
+        $this->defaultStyle = $style;
 
         return $this;
     }
@@ -366,7 +398,7 @@ class Style
      */
     protected static function _getFamilyFont($fontName): array
     {
-        $defaultFonts = [
+        $defaultFontsNames = [
             'Times New Roman' => [
                 'name' => 'Times New Roman',
                 'family' => 1,
@@ -385,7 +417,7 @@ class Style
             ],
         ];
 
-        foreach ($defaultFonts as $name => $defFont) {
+        foreach ($defaultFontsNames as $name => $defFont) {
             if (strcasecmp($fontName, $name) === 0) {
                 return [$defFont['name'], $defFont['family']];
             }
@@ -683,6 +715,32 @@ class Style
                 $cellStyle['font']['style'] = $cellStyle['font-style'];
                 unset($cellStyle['font-style']);
             }
+
+            if (!empty($cellStyle['font-underline'])) {
+                if (is_numeric($cellStyle['font-underline']) && $cellStyle['font-underline'] >= 1 && $cellStyle['font-underline'] <= 2) {
+                    $cellStyle['font']['style-underline'] = ($cellStyle['font-underline'] == 1) ? 'single' : 'double';
+                }
+                elseif (is_bool($cellStyle['font-underline'])) {
+                    $cellStyle['font']['style-underline'] = 'single';
+                }
+                elseif (is_string($cellStyle['font-underline']) && in_array($cellStyle['font-underline'], ['single', 'double'])) {
+                    $cellStyle['font']['style-underline'] = $cellStyle['font-underline'];
+                }
+                unset($cellStyle['font-underline']);
+            }
+            if (!empty($cellStyle['font-bold'])) {
+                $cellStyle['font']['style-bold'] = 1;
+                unset($cellStyle['font-bold']);
+            }
+            if (!empty($cellStyle['font-italic'])) {
+                $cellStyle['font']['style-italic'] = 1;
+                unset($cellStyle['font-italic']);
+            }
+            if (!empty($cellStyle['font-strike'])) {
+                $cellStyle['font']['style-strike'] = 1;
+                unset($cellStyle['font-strike']);
+            }
+
             if (!empty($cellStyle['font-size']) && empty($cellStyle['font']['size'])) {
                 $cellStyle['font']['size'] = $cellStyle['font-size'];
                 unset($cellStyle['font-size']);
@@ -1008,10 +1066,6 @@ class Style
             }
             if (strpos('@PERCENT', $numFormat) === 0) {
                 return '0%';
-            }
-            if (strpos('@URL', $numFormat) === 0) {
-                $xfId = 1;
-                return 'GENERAL';
             }
         }
 

@@ -946,8 +946,7 @@ class Style
     private static function determineNumberFormatType(string $numFormat, string $format = null): string
     {
         if ($format === '@URL') {
-            //return 'n_shared_string';
-            return 'n_auto';
+            return 'n_shared_string';
         }
         if ($numFormat === 'GENERAL') {
             return 'n_auto';
@@ -967,19 +966,19 @@ class Style
         if (preg_match('/0(?![^"]*+")/', $numFormat)) {
             return 'n_numeric';
         }
-        if (preg_match('/[H]{1,2}:[M]{1,2}(?![^"]*+")/i', $numFormat)) {
+        if (preg_match('/H{1,2}:M{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_datetime';
         }
-        if (preg_match('/[M]{1,2}:[S]{1,2}(?![^"]*+")/i', $numFormat)) {
+        if (preg_match('/M{1,2}:S{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_datetime';
         }
-        if (preg_match('/[Y]{2,4}(?![^"]*+")/i', $numFormat)) {
+        if (preg_match('/Y{2,4}(?![^"]*+")/i', $numFormat)) {
             return 'n_date';
         }
-        if (preg_match('/[D]{1,2}(?![^"]*+")/i', $numFormat)) {
+        if (preg_match('/D{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_date';
         }
-        if (preg_match('/[M]{1,2}(?![^"]*+")/i', $numFormat)) {
+        if (preg_match('/M{1,2}(?![^"]*+")/i', $numFormat)) {
             return 'n_date';
         }
         return 'n_auto';

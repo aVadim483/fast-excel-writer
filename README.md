@@ -10,6 +10,7 @@ Jump To:
 * [Cell Formats](#cell-formats)
 * [Basic Cell Styles](#basic-cell-styles)
 * [Formulas](#formulas)
+* [Hyperlinks](#hyperlinks)
 * [Set Directory For Temporary Files](#set-directory-for-temporary-files)
 
 ## Introduction
@@ -56,6 +57,7 @@ require 'path/to/fast-excel-writer/src/autoload.php';
 * Method ```setColumns()``` was removed, use method ```setColOptions()``` instead
 * Method ```writeRow()``` has third parameters: ```writeRow($rowData, ?array $rowOptions, ?array cellOptions)```
 * You can set auto width for columns
+* Active hyperlinks supported
 
 ## Usage
 
@@ -289,6 +291,7 @@ Simple cell formats map to more advanced cell formats
 | @datetime      | YYYY-MM-DD HH:MM:SS |
 | @time          | HH:MM:SS            |
 | @money         | [$$]#,##0.00        |
+| @url           | <active hyperlink>  |
 
 ### Basic Cell Styles
 
@@ -392,6 +395,8 @@ $excel->save('formulas.xlsx');
 
 ```
 
+## Hyperlinks
+If you want insert URLs as active hyperlinks use format ```@url``` 
 
 ## Set Directory For Temporary Files
 The library uses temporary files to generate the XLSX-file. If not specified, they are created in the system temporary directory

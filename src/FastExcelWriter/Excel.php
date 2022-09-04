@@ -30,6 +30,8 @@ class Excel
     /** @var array Sheet[] */
     protected array $sheets = [];
 
+    protected array $themes = [];
+
     protected array $metadata = [];
 
     /** @var bool */
@@ -837,10 +839,13 @@ class Excel
      */
     public static function makeUid(): string
     {
+        return strtoupper(\Ramsey\Uuid\Uuid::uuid4()->toString());
+        /*
         $uid = preg_replace('/[^A-F0-9]/', '', strtoupper(uniqid('', true) . md5(microtime())));
 
         return substr($uid, 0, 8) . '-' . substr($uid, 8, 4) . '-4' . substr($uid, 13, 3)
             . '-A' . substr($uid, 17, 3) . '-' . substr($uid, 20, 12);
+        */
     }
 
     /**
@@ -866,6 +871,14 @@ class Excel
     public function getSharedStrings(): array
     {
         return $this->sharedStrings;
+    }
+
+    /**
+     * @return array
+     */
+    public function getThemes(): array
+    {
+        return $this->themes;
     }
 
     /**

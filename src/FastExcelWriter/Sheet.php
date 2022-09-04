@@ -27,25 +27,27 @@ class Sheet
     /** @var string Key of the sheet */
     public string $key;
 
-    public $active = false;
-    public $fileName = '';
-    public $sheetName = '';
-    public $xmlName = '';
+    /** @var string $relId Id of the relationship */
+    public string $relId;
 
-    public $fileRels = '';
-    public $xmlRels = '';
+    public bool $active = false;
+    public string $fileName = '';
+    public string $sheetName = '';
+    public string $xmlName = '';
 
-    public $rowCount = 0;
-    public $colCount = 0;
+    public string $fileRels = '';
+    public string $xmlRels = '';
 
-    /** @var WriterBuffer */
-    public $fileWriter = null;
+    public int $rowCount = 0;
+    public int $colCount = 0;
+
+    public ?WriterBuffer $fileWriter = null;
 
     // ZERO based
-    public $freezeRows = 0;
-    public $freezeColumns = 0;
-    public $autoFilter = 0;
-    public $absoluteAutoFilter = '';
+    public int $freezeRows = 0;
+    public int $freezeColumns = 0;
+    public int $autoFilter = 0;
+    public string $absoluteAutoFilter = '';
 
     // ZERO based
     public array $colWidths = [];
@@ -777,7 +779,7 @@ class Sheet
                 }
 
                 if (!empty($cellStyle['format']) && $cellStyle['format'] === '@URL' && filter_var($cellValue, FILTER_VALIDATE_URL)) {
-                    $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $cellValue);
+                    $cellValue = $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $cellValue);
                 }
 
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
@@ -808,6 +810,7 @@ class Sheet
             foreach (explode(';', $str) as $part) {
                 $lenArray[] = $this->_calcWidth($part, $fontSize);
             }
+
             return max(...$lenArray);
         }
 
@@ -893,7 +896,7 @@ class Sheet
      */
     public function writeCell($value, array $styles = null)
     {
-        $styles = $styles ? Style::normalize($styles) : null;
+        $styles = $styles ? Style::normalize($styles) : [];
         if ($this->currentRow < $this->rowCount) {
             $this->currentRow = $this->rowCount;
         }
@@ -1114,7 +1117,15 @@ class Sheet
             $row = [$row];
         }
 
-        $cellStyles = $cellStyles ? Excel::colKeysToIndexes($cellStyles) : null;
+        if (is_array($cellStyles)) {
+            $key = array_key_first($cellStyles);
+            if (!is_int($key)) {
+                $cellStyles = Excel::colKeysToIndexes($cellStyles);
+            }
+        }
+        else {
+            $cellStyles = null;
+        }
         $this->_writeRow($writer, $row, $rowStyle, $cellStyles);
         $this->currentCol = Excel::MIN_COL;
 
@@ -1410,7 +1421,8 @@ class Sheet
             for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
                 if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['top'])) {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['top']);
-                } else {
+                }
+                else {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = $border['top'];
                 }
             }
@@ -1422,7 +1434,8 @@ class Sheet
             for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
                 if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'])) {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['bottom']);
-                } else {
+                }
+                else {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = $border['bottom'];
                 }
             }
@@ -1434,7 +1447,8 @@ class Sheet
             for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
                 if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['left'])) {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['left'], $border['left']);
-                } else {
+                }
+                else {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = $border['left'];
                 }
             }
@@ -1446,7 +1460,8 @@ class Sheet
             for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
                 if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['right'])) {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['right'], $border['right']);
-                } else {
+                }
+                else {
                     $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = $border['right'];
                 }
             }
@@ -1573,7 +1588,7 @@ class Sheet
     /**
      * @return string
      */
-    public function maxCell()
+    public function maxCell(): string
     {
         return Excel::cellAddress($this->rowCount, $this->colCount);
     }

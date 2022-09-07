@@ -130,12 +130,7 @@ class Style
     {
         $result = [];
         if ($styles) {
-            $set = [];
-            foreach ($styles as $style) {
-                if ($style) {
-                    $set[] = $style;
-                }
-            }
+            $set = array_filter($styles);
             if ($set) {
                 if (count($set) === 1) {
                     $result = reset($set);
@@ -242,7 +237,7 @@ class Style
      */
     public static function normalizeBorder($border): ?array
     {
-        if (empty($border)) {
+        if (empty($border) || $border === 'none') {
             return null;
         }
 
@@ -355,7 +350,7 @@ class Style
             if (!empty($fill['pattern'])) {
                 $result['patternFill']['_attributes']['patternType'] = $fill['pattern'];
             }
-            self::_ksort($result);
+            //self::_ksort($result);
         }
 
         return $result;
@@ -437,51 +432,50 @@ class Style
         if (!empty($font)) {
             if (is_string($font)) {
                 if (in_array($font, self::$fontStyleDefines, true)) {
-                    $font = ['style' => $font];
-                }
-                else {
-                    $font = [];
+                    $result['style'] = $font;
                 }
             }
-            foreach($font as $key => $val) {
-                switch ($key) {
-                    case 'name':
-                        [$fontName, $fontFamily] = self::_getFamilyFont($font['name']);
-                        if ($fontFamily) {
-                            $result['name'] = $fontName;
-                            $result['family'] = $fontFamily;
-                        }
-                        break;
-                    case 'style':
-                        if (is_array($val)) {
-                            $val = implode('-', $val);
-                        }
-                        if (is_string($val)) {
-                            if (strpos($val, 'bold') !== false) {
-                                $result['style-bold'] = 1;
+            else {
+                foreach($font as $key => $val) {
+                    switch ($key) {
+                        case 'name':
+                            [$fontName, $fontFamily] = self::_getFamilyFont($font['name']);
+                            if ($fontFamily) {
+                                $result['name'] = $fontName;
+                                $result['family'] = $fontFamily;
                             }
-                            if (strpos($val, 'italic') !== false) {
-                                $result['style-italic'] = 1;
+                            break;
+                        case 'style':
+                            if (is_array($val)) {
+                                $val = implode('-', $val);
                             }
-                            if (strpos($val, 'strike') !== false) {
-                                $result['style-strike'] = 1;
+                            if (is_string($val)) {
+                                if (strpos($val, 'bold') !== false) {
+                                    $result['style-bold'] = 1;
+                                }
+                                if (strpos($val, 'italic') !== false) {
+                                    $result['style-italic'] = 1;
+                                }
+                                if (strpos($val, 'strike') !== false) {
+                                    $result['style-strike'] = 1;
+                                }
+                                if (strpos($val, 'underline') !== false) {
+                                    $result['style-underline'] = 1;
+                                }
                             }
-                            if (strpos($val, 'underline') !== false) {
-                                $result['style-underline'] = 1;
-                            }
-                        }
-                        break;
-                    case 'size':
-                        $result['size'] = (float)$val;
-                        break;
-                    case 'color':
-                        $result['color'] = ['rgb' => self::normalizeColor($val)];
-                        break;
-                    default:
-                        $result[$key] = $val;
+                            break;
+                        case 'size':
+                            $result['size'] = (float)$val;
+                            break;
+                        case 'color':
+                            $result['color'] = ['rgb' => self::normalizeColor($val)];
+                            break;
+                        default:
+                            $result[$key] = $val;
+                    }
                 }
+                self::_ksort($result);
             }
-            self::_ksort($result);
         }
         return $result;
     }

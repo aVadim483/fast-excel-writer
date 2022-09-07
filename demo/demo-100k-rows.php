@@ -17,7 +17,7 @@ $sheet = $excel->getSheet();
 
 $sheet->setColFormats(['@integer', '@string', '0.00', '@string', '@string']);
 
-$rowCount = 100000;
+$rowCount = $_GET['count'] ? (int)$_GET['count'] : 100000;
 $n = 0;
 for($i = 0; $i < $rowCount; $i++) {
     $s1 = substr($s, mt_rand() % 400, mt_rand() % 5 + 5);

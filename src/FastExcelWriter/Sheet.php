@@ -736,13 +736,19 @@ class Sheet
         }
 
         if ($row) {
+            if ($this->defaultStyle) {
+                $generalStyle = Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]);
+                $hyperlinkStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]);
+            }
+            else {
+                $generalStyle = $this->excel->style->defaultStyle;
+                $hyperlinkStyle = $this->excel->style->hyperlinkStyle;
+            }
             $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '>');
             $rowIdx = $this->rowCount;
             foreach ($row as $colIdx => $cellValue) {
                 $styleStack = [
-                    $this->excel->style->defaultStyle ?? null, // default style of workbook
-                    (!empty($cellStyle['hyperlink']) && !empty($this->excel->style->hyperlinkStyle)) ? $this->excel->style->hyperlinkStyle : null,
-                    $this->defaultStyle ?? null, // default style of sheet
+                    !empty($cellsOptions[$colIdx]['hyperlink']) ? $hyperlinkStyle : $generalStyle,
                     $this->colStyles[$colIdx] ?? null, // defined style of column
                     $this->rowStyles[$rowIdx] ?? null, // defined style of row
                     $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
@@ -960,7 +966,6 @@ class Sheet
         foreach($header as $key => $val) {
             if (!is_int($key)) {
                 $rowValues[$colNum] = $key;
-                //$colStyles[$colNum]['format'] = $val;
                 if (is_scalar($val)) {
                     $colStyles[$colNum]['format'] = $val;
                 }

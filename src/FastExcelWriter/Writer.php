@@ -531,12 +531,12 @@ class Writer
     }
 
     /**
-     * @param array $border
+     * @param array|null $border
      * @param string $side
      *
      * @return string
      */
-    protected function _makeBorderSideTag(array $border, string $side)
+    protected function _makeBorderSideTag(?array $border, string $side): string
     {
         if (empty($border[$side]) || empty($border[$side]['style'])) {
             $tag = "<$side/>";
@@ -557,15 +557,20 @@ class Writer
      *
      * @return string
      */
-    protected function _makeBordersTag(array $borders)
+    protected function _makeBordersTag(array $borders): string
     {
         $tag = '<borders count="' . (count($borders)) . '">';
         foreach ($borders as $border) {
             $tag .= '<border diagonalDown="false" diagonalUp="false">';
-            $tag .= $this->_makeBorderSideTag($border, 'left');
-            $tag .= $this->_makeBorderSideTag($border, 'right');
-            $tag .= $this->_makeBorderSideTag($border, 'top');
-            $tag .= $this->_makeBorderSideTag($border, 'bottom');
+            if (!$border) {
+                $tag .= '<left/><right/><top/><bottom/>';
+            }
+            else {
+                $tag .= $this->_makeBorderSideTag($border, 'left');
+                $tag .= $this->_makeBorderSideTag($border, 'right');
+                $tag .= $this->_makeBorderSideTag($border, 'top');
+                $tag .= $this->_makeBorderSideTag($border, 'bottom');
+            }
             $tag .= '<diagonal/>';
             $tag .= '</border>';
         }

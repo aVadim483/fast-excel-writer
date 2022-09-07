@@ -462,6 +462,7 @@ class Sheet
                 }
             }
         }
+        $this->clearSummary();
 
         return $this;
     }
@@ -490,6 +491,7 @@ class Sheet
                 }
             }
         }
+        $this->clearSummary();
 
         return $this;
     }
@@ -545,6 +547,7 @@ class Sheet
                 }
             }
         }
+        $this->clearSummary();
 
         return $this;
     }
@@ -585,6 +588,7 @@ class Sheet
     public function setColFormat($col, $format)
     {
         $this->setColStyle($col, ['format' => $format]);
+        $this->clearSummary();
 
         return $this;
     }
@@ -918,6 +922,16 @@ class Sheet
         }
     }
 
+    protected function clearSummary()
+    {
+        if ($this->sheetStylesSummary) {
+            $this->sheetStylesSummary = [];
+        }
+        if ($this->colStylesSummary) {
+            $this->colStylesSummary = [];
+        }
+    }
+
     /**
      * @param array $style
      *
@@ -926,6 +940,7 @@ class Sheet
     public function setDefaultStyle(array $style)
     {
         $this->defaultStyle = $style;
+        $this->clearSummary();
 
         return $this;
     }

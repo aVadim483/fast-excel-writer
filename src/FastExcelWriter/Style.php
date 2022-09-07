@@ -65,6 +65,7 @@ class Style
     public array $localeSettings = [];
 
     public array $defaultFont = [];
+    protected int $defaultFontId = -1;
 
     public array $defaultStyle = [];
 
@@ -646,7 +647,7 @@ class Style
         if (isset($this->elements[$sectionName][$key])) {
             return $this->elements[$sectionName][$key]['index'];
         }
-        $index = empty($this->elements[$sectionName]) ? 0 : count($this->elements[$sectionName]);
+        $index = isset($this->elements[$sectionName]) ? count($this->elements[$sectionName]) : 0;
         $this->elements[$sectionName][$key] = [
             'index' => $index,
             'value' => $value,
@@ -740,8 +741,18 @@ class Style
                 unset($cellStyle['font-size']);
             }
 
-            $value = self::normalizeFont($cellStyle['font']);
-            $index = $this->addElement('fonts', $value);
+            if ($cellStyle['font']) {
+                $value = self::normalizeFont($cellStyle['font']);
+                $index = $this->addElement('fonts', $value);
+            }
+            else {
+                // optimization fir default font
+                $value = self::$instance->defaultFont;
+                if (self::$instance->defaultFontId < 0) {
+                    self::$instance->defaultFontId = $this->addElement('fonts', $value);
+                }
+                $index = self::$instance->defaultFontId;
+            }
 
             if (isset($cellStyle['font'])) {
                 unset($cellStyle['font']);

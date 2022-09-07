@@ -45,6 +45,8 @@ class Sheet
 
     public array $defaultStyle = [];
 
+    protected array $sheetStylesSummary = [];
+
     // ZERO based
     public int $freezeRows = 0;
     public int $freezeColumns = 0;
@@ -56,6 +58,8 @@ class Sheet
     public array $colWidths = [];
     public array $colFormulas = [];
     public array $colStyles = [];
+
+    protected array $colStylesSummary = [];
 
     // ZERO based
     public array $rowHeights = [];
@@ -736,20 +740,43 @@ class Sheet
         }
 
         if ($row) {
-            if ($this->defaultStyle) {
-                $generalStyle = Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]);
-                $hyperlinkStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]);
-            }
-            else {
-                $generalStyle = $this->excel->style->defaultStyle;
-                $hyperlinkStyle = $this->excel->style->hyperlinkStyle;
+            if (empty($this->sheetStylesSummary)) {
+                if ($this->defaultStyle) {
+                    $this->sheetStylesSummary = [
+                        'general' => Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]),
+                        'hyperlink' => Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]),
+                    ];
+                }
+                else {
+                    $this->sheetStylesSummary = [
+                        'general' => $this->excel->style->defaultStyle,
+                        'hyperlink' => $this->excel->style->hyperlinkStyle,
+                    ];
+                }
             }
             $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '>');
             $rowIdx = $this->rowCount;
             foreach ($row as $colIdx => $cellValue) {
+                if (!isset($this->colStylesSummary[$colIdx])) {
+                    if (!isset($this->colStyles[$colIdx])) {
+                        $this->colStylesSummary[$colIdx] = $this->sheetStylesSummary;
+                    }
+                    else {
+                        $this->colStylesSummary[$colIdx] = [
+                            'general' => Style::mergeStyles([
+                                $this->sheetStylesSummary['general'],
+                                $this->colStyles[$colIdx],
+                            ]),
+                            'hyperlink' => Style::mergeStyles([
+                                $this->sheetStylesSummary['hyperlink'],
+                                $this->colStyles[$colIdx],
+                            ]),
+                        ];
+                    }
+                }
+
                 $styleStack = [
-                    !empty($cellsOptions[$colIdx]['hyperlink']) ? $hyperlinkStyle : $generalStyle,
-                    $this->colStyles[$colIdx] ?? null, // defined style of column
+                    !empty($cellsOptions[$colIdx]['hyperlink']) ? $this->colStylesSummary[$colIdx]['hyperlink'] : $this->colStylesSummary[$colIdx]['general'],
                     $this->rowStyles[$rowIdx] ?? null, // defined style of row
                     $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
                     $rowOptions ?? null, // runtime style of the row

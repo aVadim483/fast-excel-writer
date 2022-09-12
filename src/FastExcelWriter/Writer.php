@@ -580,56 +580,6 @@ class Writer
     }
 
     /**
-     * @param string $name
-     * @param array|null $data
-     *
-     * @return string
-     */
-    protected function _makeTag(string $name, ?array $data): string
-    {
-        $tag = '<' . $name;
-        if (!empty($data['_attributes'])) {
-            foreach ($data['_attributes'] as $key => $val) {
-                $tag .= ' ' . $key . '="' . $val . '"';
-            }
-        }
-        if (empty($data['_children'])) {
-            $tag .= '/>';
-        } else {
-            $tag .= '>';
-            foreach ($data['_children'] as $key => $val) {
-                $tag .= $this->_makeTag($key, $val);
-            }
-            $tag .= '</' . $name . '>';
-        }
-
-        return $tag;
-    }
-
-    /**
-     * @param string $name
-     * @param array|null $data
-     *
-     * @return string
-     */
-    protected function _makeFillTag(string $name, ?array $data): string
-    {
-        if (!empty($data['_children'])) {
-            // orders of children is very important!
-            $children = [];
-            if (!empty($data['_children']['fgColor'])) {
-                $children['fgColor'] = $data['_children']['fgColor'];
-            }
-            if (!empty($data['_children']['bgColor'])) {
-                $children['bgColor'] = $data['_children']['bgColor'];
-            }
-            $data['_children'] = $children;
-        }
-
-        return $this->_makeTag($name, $data);
-    }
-
-    /**
      * @return bool|string
      */
     protected function _writeStylesXML()
@@ -672,36 +622,8 @@ class Writer
         else {
             $file->write('<fonts count="' . count($fonts) . '">');
             foreach ($fonts as $font) {
-                if (!empty($font)) { //fonts have 2 empty placeholders in array to offset the 4 static xml entries above
-                    $file->write('<font>');
-                    $file->write('<name val="' . $font['name'] . '"/><charset val="1"/><family val="' . (int)$font['family'] . '"/>');
-                    $file->write('<sz val="' . (int)$font['size'] . '"/>');
-                    if (!empty($font['color'])) {
-                        if (is_array($font['color'])) {
-                            $s = '<color';
-                            foreach ($font['color'] as $key => $val) {
-                                $s .= ' ' . $key . '="' . $val . '"';
-                            }
-                            $s .= '/>';
-                            $file->write($s);
-                        }
-                        else {
-                            $file->write('<color rgb="' . $font['color'] . '"/>');
-                        }
-                    }
-                    if (!empty($font['style-bold'])) {
-                        $file->write('<b val="true"/>');
-                    }
-                    if (!empty($font['style-italic'])) {
-                        $file->write('<i val="true"/>');
-                    }
-                    if (!empty($font['style-underline'])) {
-                        $file->write('<u val="' . $font['style-underline'] . '"/>');
-                    }
-                    if (!empty($font['style-strike'])) {
-                        $file->write('<strike val="true"/>');
-                    }
-                    $file->write('</font>');
+                if (!empty($font)) {
+                    $file->write($font['tag']);
                 }
             }
             $file->write('</fonts>');
@@ -716,13 +638,8 @@ class Writer
         else {
             $file->write('<fills count="' . count($fills) . '">');
             foreach ($fills as $fill) {
-                if (!empty($fill['patternFill'])) {
-                    $file->write('<fill>');
-                    $file->write($this->_makeFillTag('patternFill', $fill['patternFill']));
-                    $file->write('</fill>');
-                }
+                $file->write($fill['tag']);
             }
-
             $file->write('</fills>');
         }
 
@@ -733,7 +650,12 @@ class Writer
             $file->write('<borders count="0"/>');
         }
         else {
-            $file->write($this->_makeBordersTag($borders));
+            //$file->write($this->_makeBordersTag($borders));
+            $file->write('<borders count="' . (count($borders)) . '">');
+            foreach ($borders as $border) {
+                $file->write($border['tag']);
+            }
+            $file->write('</borders>');
         }
 
         //// +++++++++++

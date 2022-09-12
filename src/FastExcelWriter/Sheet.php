@@ -781,12 +781,25 @@ class Sheet
 
                 $styleStack = [
                     !empty($cellsOptions[$colIdx]['hyperlink']) ? $this->colStylesSummary[$colIdx]['hyperlink'] : $this->colStylesSummary[$colIdx]['general'],
-                    $this->rowStyles[$rowIdx] ?? null, // defined style of row
-                    $this->cells['styles'][$rowIdx][$colIdx] ?? null, // defined style of cell
-                    $rowOptions ?? null, // runtime style of the row
-                    $cellsOptions[$colIdx] ?? null, // runtime style of the cell
                 ];
-                $cellStyle = Style::mergeStyles($styleStack);
+                if (!empty($this->rowStyles[$rowIdx])) {
+                    $styleStack[] = $this->rowStyles[$rowIdx];
+                }
+                if (!empty($this->cells['styles'][$rowIdx][$colIdx])) {
+                    $styleStack[] = $this->cells['styles'][$rowIdx][$colIdx];
+                }
+                if (!empty($rowOptions)) {
+                    $styleStack[] = $rowOptions;
+                }
+                if (!empty($cellsOptions[$colIdx])) {
+                    $styleStack[] = $cellsOptions[$colIdx];
+                }
+                if (count($styleStack)) {
+                    $cellStyle = Style::mergeStyles($styleStack);
+                }
+                else {
+                    $cellStyle = $styleStack[0];
+                }
                 if (!empty($cellStyle['format']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']])) {
                     $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']], $cellStyle]);
                 }
@@ -902,7 +915,7 @@ class Sheet
         static $cache = [];
 
         if ($cellValue) {
-            $fontSize = $style['font']['size'] ?? 10;
+            $fontSize = $style['font']['val']['size'] ?? 10;
             $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
             $key = '[[[' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
             if (isset($cache[$key])) {
@@ -1490,55 +1503,53 @@ class Sheet
         if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
-        $border = Style::normalizeBorder($style);
-        // top
-        if (!empty($border['top'])) {
-            $rowIdx = $dimension['row'] - 1;
-            for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
-                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['top'])) {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['top']);
-                }
-                else {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['top'] = $border['top'];
-                }
-            }
-        }
-
-        // bottom
-        if (!empty($border['bottom'])) {
-            $rowIdx = $dimension['rowNum2'] - 1;
-            for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
-                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'])) {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['top'], $border['bottom']);
-                }
-                else {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom'] = $border['bottom'];
+        $border = Style::borderOptions($style);
+        foreach ($border as $side => $sideOptions) {
+            if ($side & Style::BORDER_LEFT) {
+                $colIdx = $dimension['colNum1'] - 1;
+                for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
+                    if (!empty($sideOptions['style'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['left']['style'] = $sideOptions['style'];
+                    }
+                    if (!empty($sideOptions['color'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['left']['color'] = $sideOptions['color'];
+                    }
                 }
             }
-        }
 
-        // left
-        if (!empty($border['left'])) {
-            $colIdx = $dimension['colNum1'] - 1;
-            for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
-                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['left'])) {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['left'], $border['left']);
-                }
-                else {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['left'] = $border['left'];
+            if ($side & Style::BORDER_RIGHT) {
+                $colIdx = $dimension['colNum2'] - 1;
+                for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
+                    if (!empty($sideOptions['style'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['right']['style'] = $sideOptions['style'];
+                    }
+                    if (!empty($sideOptions['color'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['right']['color'] = $sideOptions['color'];
+                    }
                 }
             }
-        }
 
-        // right
-        if (!empty($border['right'])) {
-            $colIdx = $dimension['colNum2'] - 1;
-            for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
-                if (!empty($this->cells['styles'][$rowIdx][$colIdx]['border']['right'])) {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = array_merge($this->cells['styles'][$rowIdx][$colIdx]['border']['right'], $border['right']);
+            if ($side & Style::BORDER_TOP) {
+                $rowIdx = $dimension['row'] - 1;
+                for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
+                    if (!empty($sideOptions['style'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['top']['style'] = $sideOptions['style'];
+                    }
+                    if (!empty($sideOptions['color'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['top']['color'] = $sideOptions['color'];
+                    }
                 }
-                else {
-                    $this->cells['styles'][$rowIdx][$colIdx]['border']['right'] = $border['right'];
+            }
+
+            if ($side & Style::BORDER_BOTTOM) {
+                $rowIdx = $dimension['rowNum2'] - 1;
+                for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
+                    if (!empty($sideOptions['style'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom']['style'] = $sideOptions['style'];
+                    }
+                    if (!empty($sideOptions['color'])) {
+                        $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom']['color'] = $sideOptions['color'];
+                    }
                 }
             }
         }

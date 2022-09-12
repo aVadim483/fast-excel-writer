@@ -34,10 +34,10 @@ class Style
     public const BORDER_STYLE       = 'style';
     public const BORDER_COLOR       = 'color';
 
-    public const BORDER_TOP         = 1;
+    public const BORDER_LEFT        = 1;
     public const BORDER_RIGHT       = 2;
-    public const BORDER_BOTTOM      = 4;
-    public const BORDER_LEFT        = 8;
+    public const BORDER_TOP         = 4;
+    public const BORDER_BOTTOM      = 8;
     public const BORDER_ALL         = self::BORDER_TOP + self::BORDER_RIGHT + self::BORDER_BOTTOM + self::BORDER_LEFT;
 
     public const BORDER_NONE = null;
@@ -115,8 +115,8 @@ class Style
         $this->setDefaultStyle($defaultStyle);
         $this->addCellStyle('GENERAL', $defaultStyle);
 
-        //$defaultStyle['fill'] = ['pattern' => 'gray125'];
-        //$this->addCellStyle('GENERAL', $defaultStyle);
+        $defaultStyle['fill'] = ['pattern' => 'gray125'];
+        $this->addCellStyle('GENERAL', $defaultStyle);
 
         $this->hyperlinkStyle = $hyperlinkStyle;
         $this->defaultFormatStyles = $defaultFormatStyles;
@@ -187,7 +187,7 @@ class Style
             $font['name'] = $fontName;
             $font['family'] = $fontFamily;
         }
-        $this->defaultFont = $font;
+        $this->defaultFont = self::normalizeFont($font);
 
         return $this;
     }
@@ -226,6 +226,51 @@ class Style
         return $this;
     }
 
+    public static function borderOptions($border)
+    {
+        $result = [];
+        if (is_scalar($border)) {
+            if ($border[0] === '#') {
+                // it's a color
+                $result = [Style::BORDER_ALL => ['color' => $border]];
+            }
+            else {
+                // it's a style
+                $result = [Style::BORDER_ALL => ['style' => $border]];
+            }
+        }
+        else {
+            foreach($border as $side => $sideOptions) {
+                if (!is_numeric($side)) {
+                    switch (strtolower($side)) {
+                        case 'all':
+                            $result[self::BORDER_ALL] = $sideOptions;
+                            break;
+                        case 'left':
+                            $result[self::BORDER_LEFT] = $sideOptions;
+                            break;
+                        case 'right':
+                            $result[self::BORDER_RIGHT] = $sideOptions;
+                            break;
+                        case 'top':
+                            $result[self::BORDER_TOP] = $sideOptions;
+                            break;
+                        case 'bottom':
+                            $result[self::BORDER_BOTTOM] = $sideOptions;
+                            break;
+                        default:
+                            // nothing
+                    }
+                }
+                elseif ($side & self::BORDER_ALL) {
+                    $result[$side] = $sideOptions;
+                }
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Examples:
      *  'thin' -> all sides are thin
@@ -238,83 +283,105 @@ class Style
      */
     public static function normalizeBorder($border): ?array
     {
-        if (empty($border) || $border === 'none') {
-            return null;
-        }
+        $result = [
+            'val' => [
+                'left' => ['style' => null, 'color' => null],
+                'right' => ['style' => null, 'color' => null],
+                'top' => ['style' => null, 'color' => null],
+                'bottom' => ['style' => null, 'color' => null],
+            ],
+            'tag' => [
+                'border' => '<border diagonalDown="false" diagonalUp="false">',
+                'left' => '<left/>',
+                'right' => '<right/>',
+                'top' => '<top/>',
+                'bottom' => '<bottom/>',
+                'diagonal' => '<diagonal/>',
+                '/border' => '</border>',
+            ],
+        ];
 
-        if (is_scalar($border)) {
-            if ($border[0] === '#') {
-                // it's a color
-                $border = ['all' => ['color' => $border]];
-            }
-            else {
-                // it's a style
-                $border = ['all' => ['style' => $border]];
-            }
-        }
-
-        $result = [];
-        if (is_array($border)) {
-            /**
-             * @var string|array $side
-             * @var string|array $sideOptions
-             */
+        if (!empty($border) && $border !== 'none') {
+            $border = self::borderOptions($border);
             foreach($border as $side => $sideOptions) {
-                $resultOptions = [];
-                if ($sideOptions) {
-                    if (is_array($sideOptions)) {
-                        if (isset($sideOptions['style'])) {
-                            $resultOptions['style'] = self::_borderStyleName($sideOptions['style']);
+                if ($side & self::BORDER_LEFT) {
+                    $style = isset($sideOptions['style']) ? self::_borderStyleName($sideOptions['style']) : null;
+                    $color = isset($sideOptions['color']) ? self::normalizeColor($sideOptions['color']) : null;
+                    if ($style || $color) {
+                        if ($style) {
+                            $result['val']['left']['style'] = $style;
                         }
-                        if (isset($sideOptions['color'])) {
-                            $resultOptions['color'] = self::normalizeColor($sideOptions['color']);
+                        $result['tag']['left'] = '<left' . ($style ? ' style="' . $style . '"' : '');
+                        if ($color) {
+                            $result['val']['left']['color'] = $color;
+                            $result['tag']['left'] .= '><color rgb="' . $color . '"/></left>';
                         }
-                    }
-                    elseif ($sideOptions[0] === '#') {
-                        $resultOptions['color'] = self::normalizeColor($sideOptions);
-                    }
-                    else {
-                        $resultOptions['style'] = self::_borderStyleName($sideOptions);
+                        else {
+                            $result['tag']['left'] .= '/>';
+                        }
                     }
                 }
 
-                if (!is_numeric($side)) {
-                    $side = strtolower($side);
-                    if ($side === 'all') {
-                        $side = self::BORDER_ALL;
+                if ($side & self::BORDER_RIGHT) {
+                    $style = isset($sideOptions['style']) ? self::_borderStyleName($sideOptions['style']) : null;
+                    $color = isset($sideOptions['color']) ? self::normalizeColor($sideOptions['color']) : null;
+                    if ($style || $color) {
+                        if ($style) {
+                            $result['val']['right']['style'] = $style;
+                        }
+                        $result['tag']['right'] = '<right' . ($style ? ' style="' . $style . '"' : '');
+                        if ($color) {
+                            $result['val']['right']['color'] = $color;
+                            $result['tag']['right'] .= '><color rgb="' . $color . '"/></right>';
+                        }
+                        else {
+                            $result['tag']['right'] .= '/>';
+                        }
                     }
                 }
-                if (is_numeric($side)) {
-                    $side = (int)$side;
-                    if ($side & self::BORDER_TOP) {
-                        $result['top'] = isset($result['top']) ? array_merge($result['top'], $resultOptions) : $resultOptions;
+
+                if ($side & self::BORDER_TOP) {
+                    $style = isset($sideOptions['style']) ? self::_borderStyleName($sideOptions['style']) : null;
+                    $color = isset($sideOptions['color']) ? self::normalizeColor($sideOptions['color']) : null;
+                    if ($style || $color) {
+                        if ($style) {
+                            $result['val']['top']['style'] = $style;
+                        }
+                        $result['tag']['top'] = '<top' . ($style ? ' style="' . $style . '"' : '');
+                        if ($color) {
+                            $result['val']['top']['color'] = $color;
+                            $result['tag']['top'] .= '><color rgb="' . $color . '"/></top>';
+                        }
+                        else {
+                            $result['tag']['top'] .= '/>';
+                        }
                     }
-                    if ($side & self::BORDER_RIGHT) {
-                        $result['right'] = isset($result['right']) ? array_merge($result['right'], $resultOptions) : $resultOptions;
+                }
+
+                if ($side & self::BORDER_BOTTOM) {
+                    $style = isset($sideOptions['style']) ? self::_borderStyleName($sideOptions['style']) : null;
+                    $color = isset($sideOptions['color']) ? self::normalizeColor($sideOptions['color']) : null;
+                    if ($style || $color) {
+                        if ($style) {
+                            $result['val']['bottom']['style'] = $style;
+                        }
+                        $result['tag']['bottom'] = '<bottom' . ($style ? ' style="' . $style . '"' : '');
+                        if ($color) {
+                            $result['val']['bottom']['color'] = $color;
+                            $result['tag']['bottom'] .= '><color rgb="' . $color . '"/></bottom>';
+                        }
+                        else {
+                            $result['tag']['bottom'] .= '/>';
+                        }
                     }
-                    if ($side & self::BORDER_BOTTOM) {
-                        $result['bottom'] = isset($result['bottom']) ? array_merge($result['bottom'], $resultOptions) : $resultOptions;
-                    }
-                    if ($side & self::BORDER_LEFT) {
-                        $result['left'] = isset($result['left']) ? array_merge($result['left'], $resultOptions) : $resultOptions;
-                    }
                 }
-                elseif ($side === 'top') {
-                    $result['top'] = isset($result['top']) ? array_merge($result['top'], $resultOptions) : $resultOptions;
-                }
-                elseif ($side === 'right') {
-                    $result['right'] = isset($result['right']) ? array_merge($result['right'], $resultOptions) : $resultOptions;
-                }
-                elseif ($side === 'bottom') {
-                    $result['bottom'] = isset($result['bottom']) ? array_merge($result['bottom'], $resultOptions) : $resultOptions;
-                }
-                elseif ($side === 'left') {
-                    $result['left'] = isset($result['left']) ? array_merge($result['left'], $resultOptions) : $resultOptions;
-                }
+
             }
-            self::_ksort($result);
         }
-        return $result ?: null;
+
+        $result['tag'] = implode('', $result['tag']);
+
+        return $result;
     }
 
     /**
@@ -324,9 +391,8 @@ class Style
      */
     public static function normalizeFill($fill): array
     {
-        $result = [
-            'patternFill' => ['_attributes' => ['patternType' => 'none']],
-        ];
+        $result = [];
+
         if (!empty($fill) && $fill !== 'none') {
             $fillColor = null;
             if (!empty($fill['fill']) && is_string($fill['fill']) && $fill['fill'] !== 'none') {
@@ -339,20 +405,31 @@ class Style
                 $fillColor = self::normalizeColor($fill['background-color']);
             }
 
-            if ($fillColor) {
-                $result['patternFill'] = [
-                    '_attributes' => ['patternType' => 'solid'],
-                    '_children' => [
-                        'fgColor' => ['_attributes' => ['rgb' => $fillColor]],
-                        'bgColor' => ['_attributes' => ['indexed' => 64]],
-                    ],
-                ];
+            if (!empty($fillColor)) {
+                if (!empty($fill['pattern'])) {
+                    $result['val']['pattern'] = $fill['pattern'];
+                    $result['tag']['patternFill'] = '<patternFill patternType="' . $fill['pattern'] . '">';
+                }
+                else {
+                    $result['val']['pattern'] = 'solid';
+                    $result['tag']['patternFill'] = '<patternFill patternType="solid">';
+                }
+                $result['tag']['fgColor'] = '<fgColor rgb="' . $fillColor . '"/>';
+                $result['tag']['bgColor'] = '<bgColor indexed="64"/>';
+                $result['tag']['/patternFill'] = '</patternFill>';
             }
-            if (!empty($fill['pattern'])) {
-                $result['patternFill']['_attributes']['patternType'] = $fill['pattern'];
+            else {
+                if (!empty($fill['pattern'])) {
+                    $result['val']['pattern'] = $fill['pattern'];
+                    $result['tag']['patternFill'] = '<patternFill patternType="' . $fill['pattern'] . '"/>';
+                }
+                else {
+                    $result['val']['pattern'] = 'none';
+                    $result['tag']['patternFill'] = '<patternFill patternType="none"/>';
+                }
             }
-            //self::_ksort($result);
         }
+        $result['tag'] = '<fill>' . implode('', $result['tag']) . '</fill>';
 
         return $result;
     }
@@ -423,61 +500,69 @@ class Style
 
     /**
      * @param array|string $font
+     * @param string|null $key
      *
      * @return array
      */
-    public static function normalizeFont($font): array
+    public static function normalizeFont($font, string &$key = null): array
     {
         $result = self::$instance->defaultFont;
-
-        if (!empty($font)) {
-            if (is_string($font)) {
-                if (in_array($font, self::$fontStyleDefines, true)) {
-                    $result['style'] = $font;
-                }
+        $result['tag'] = [];
+        if (is_string($font)) {
+            if (in_array($font, self::$fontStyleDefines, true)) {
+                $font = ['style' => $font];
             }
             else {
-                foreach($font as $key => $val) {
-                    switch ($key) {
-                        case 'name':
-                            [$fontName, $fontFamily] = self::_getFamilyFont($font['name']);
-                            if ($fontFamily) {
-                                $result['name'] = $fontName;
-                                $result['family'] = $fontFamily;
-                            }
-                            break;
-                        case 'style':
-                            if (is_array($val)) {
-                                $val = implode('-', $val);
-                            }
-                            if (is_string($val)) {
-                                if (strpos($val, 'bold') !== false) {
-                                    $result['style-bold'] = 1;
-                                }
-                                if (strpos($val, 'italic') !== false) {
-                                    $result['style-italic'] = 1;
-                                }
-                                if (strpos($val, 'strike') !== false) {
-                                    $result['style-strike'] = 1;
-                                }
-                                if (strpos($val, 'underline') !== false) {
-                                    $result['style-underline'] = 1;
-                                }
-                            }
-                            break;
-                        case 'size':
-                            $result['size'] = (float)$val;
-                            break;
-                        case 'color':
-                            $result['color'] = ['rgb' => self::normalizeColor($val)];
-                            break;
-                        default:
-                            $result[$key] = $val;
-                    }
-                }
-                self::_ksort($result);
+                $font = [];
             }
         }
+        if (!empty($font['name'])) {
+            [$fontName, $fontFamily] = self::_getFamilyFont($font['name']);
+            $result['val']['name'] = $fontName;
+            $result['tag']['name'] = '<name val="' . $fontName . '"/><charset val="1"/><family val="' . (int)$fontFamily . '"/>';
+        }
+        if (!empty($font['size'])) {
+            $size = (int)$font['size'];
+            if ($size > 0) {
+                $result['val']['name'] = $size;
+                $result['tag']['size'] = '<sz val="' . $size . '"/>';
+            }
+        }
+        if (!empty($font['color'])) {
+            $color = self::normalizeColor($font['color']);
+            if ($color) {
+                $result['val']['name'] = $color;
+                $result['tag']['color'] = '<color rgb="' . $color . '"/>';
+            }
+        }
+        if (!empty($font['style'])) {
+            if (is_array($font['style'])) {
+                $val = implode('-', $font['style']);
+            }
+            else {
+                $val = (string)$font['style'];
+            }
+            if ($val) {
+                if (strpos($val, 'bold') !== false) {
+                    $result['val']['style-bold'] = 1;
+                    $result['tag']['style-bold'] = '<b/>';
+                }
+                if (strpos($val, 'italic') !== false) {
+                    $result['val']['style-italic'] = 1;
+                    $result['tag']['style-italic'] = '<i/>';
+                }
+                if (strpos($val, 'strike') !== false) {
+                    $result['val']['style-strike'] = 1;
+                    $result['tag']['style-strike'] = '<strike/>';
+                }
+                if (strpos($val, 'underline') !== false) {
+                    $result['val']['style-underline'] = 1;
+                    $result['tag']['style-underline'] = '<u/>';
+                }
+            }
+        }
+        $result['tag'] = '<font>' . implode('', $result['tag']) . '</font>';
+
         return $result;
     }
 
@@ -503,7 +588,8 @@ class Style
                     }
                     break;
                 case 'border':
-                    $result[$styleKey] = self::normalizeBorder($styleVal);
+                    //$result[$styleKey] = self::normalizeBorder($styleVal);
+                    $result[$styleKey] = self::borderOptions($styleVal);
                     break;
                 case 'color':
                 case 'text-color':
@@ -519,7 +605,7 @@ class Style
                     $result['fill'] = $styleVal;
                     break;
                 case 'font':
-                    $result['font'] = self::normalizeFont($styleVal);
+                    $result['font'] = $styleVal;
                     break;
                 case 'align':
                     if ($styleVal === 'center' || $styleVal === 'center-center') {
@@ -641,6 +727,9 @@ class Style
         if (is_string($value)) {
             $key = $value;
         }
+        elseif (isset($value['tag'])) {
+            $key = $value['tag'];
+        }
         else {
             $key = json_encode($value);
         }
@@ -746,7 +835,7 @@ class Style
                 $index = $this->addElement('fonts', $value);
             }
             else {
-                // optimization fir default font
+                // optimization for default font
                 $value = self::$instance->defaultFont;
                 if (self::$instance->defaultFontId < 0) {
                     self::$instance->defaultFontId = $this->addElement('fonts', $value);
@@ -877,7 +966,7 @@ class Style
             $fullStyle['options'] = $cellStyle['options'];
             unset($cellStyle['options']);
         }
-        self::_ksort($cellStyle);
+        //self::_ksort($cellStyle);
 
         return $this->addElement('cellXfs', $cellStyle, $fullStyle);
     }
@@ -895,11 +984,22 @@ class Style
         if (empty($cellStyle)) {
             $cellStyle = [];
         }
+        if (!isset($cellStyle['numFmtId'])) {
+            $cellStyle['numFmtId'] = 0;
+        }
+        if (!isset($cellStyle['fillId'])) {
+            $cellStyle['fillId'] = 0;
+        }
+        if (!isset($cellStyle['borderId'])) {
+            $cellStyle['borderId'] = 0;
+        }
+        if (!isset($cellStyle['xfId'])) {
+            $cellStyle['xfId'] = 0;
+        }
         $this->addStyleFont($cellStyle, $fullStyle);
         $this->addStyleFill($cellStyle, $fullStyle);
         $this->addStyleBorder($cellStyle, $fullStyle);
 
-        $xfId = 0;
         if ($format) {
             $numberFormat = self::numberFormatStandardized($format, $xfId);
             $numberFormatType = self::determineNumberFormatType($numberFormat, $format);
@@ -909,10 +1009,6 @@ class Style
             $fullStyle['number_format'] = $numberFormat;
             $fullStyle['number_format_type'] = $numberFormatType;
         }
-        else {
-            $cellStyle['numFmtId'] = 0;
-        }
-        $cellStyle['xfId'] = $xfId;
 
         $cellXfsId = $this->indexStyle($cellStyle, $fullStyle);
 

@@ -115,6 +115,7 @@ class Writer
         $sheets = $this->excel->getSheets();
         foreach ($sheets as $sheet) {
             if (!$sheet->open) {
+                // open and write areas
                 $this->writeSheetDataBegin($sheet);
             }
             $this->writeSheetDataEnd($sheet);//making sure all footers have been written

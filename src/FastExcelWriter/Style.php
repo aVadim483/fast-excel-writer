@@ -471,7 +471,7 @@ class Style
      */
     protected static function _getFamilyFont($fontName): array
     {
-        $defaultFontsNames = [
+        static $defaultFontsNames = [
             'Times New Roman' => [
                 'name' => 'Times New Roman',
                 'family' => 1,
@@ -495,7 +495,13 @@ class Style
                 return [$defFont['name'], $defFont['family']];
             }
         }
-        return [null, null];
+
+        $defaultFontsNames[$fontName] = [
+            'name' => $fontName,
+            'family' => 0,
+        ];
+
+        return [$fontName, $defaultFontsNames[$fontName]['family']];
     }
 
     /**

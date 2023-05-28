@@ -1,3 +1,8 @@
+[![Latest Stable Version](http://poser.pugx.org/avadim/fast-excel-writer/v)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![Total Downloads](http://poser.pugx.org/avadim/fast-excel-writer/downloads)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![License](http://poser.pugx.org/avadim/fast-excel-writer/license)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![PHP Version Require](http://poser.pugx.org/avadim/fast-excel-writer/require/php)](https://packagist.org/packages/avadim/fast-excel-writer)
+
 # FastExcelWriter
 
 Jump To:
@@ -27,7 +32,7 @@ This library creates Excel compatible spreadsheets in XLSX format (Office 2007+)
 **FastExcelWriter** vs **PhpSpreadsheet**
 
 **PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.
-**FastExcelWriter** can only write and only in xlsx format, but does it very fast 
+**FastExcelWriter** can only write and only in XLSX format, but does it very fast 
 and with minimal memory usage.
 
 **FastExcelWriter**:
@@ -426,5 +431,9 @@ $excel = Excel::create('SheetName', ['temp_dir' => '/path/to/temp/dir']);
 
 ## Want to support FastExcelWriter?
 
-if you find this package useful you can support and donate to me https://www.paypal.me/VShemarov
+if you find this package useful you can support and donate to me for a cup of coffee:
+
+* USDT (TRC20) TSsUFvJehQBJCKeYgNNR1cpswY6JZnbZK7
+* USDT (ERC20) 0x5244519D65035aF868a010C2f68a086F473FC82b
+
 Or just give me star on GitHub :)

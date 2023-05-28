@@ -83,7 +83,7 @@ class Sheet
     protected array $externalLinks = [];
     protected int $externalLinksCount = 0;
 
-    protected array $lastAddress = ['rowIdx' => 0, 'colIdx' => 0];
+    protected array $lastTouch = [];
 
     /**
      * Sheet constructor
@@ -99,6 +99,14 @@ class Sheet
             'styles' => [],
         ];
         $this->_setCellData('A1', '', [], false);
+        $this->lastTouch = [
+            'cell' => [
+                'row_idx' => 0,
+                'col_idx' => 0,
+            ],
+            'row' => [],
+        ];
+        $this->withLastCell();
     }
 
     /**
@@ -165,7 +173,7 @@ class Sheet
     /**
      * @return string|null
      */
-    public function getXmlRels()
+    public function getXmlRels(): ?string
     {
         if ($this->externalLinks) {
             $result = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
@@ -706,12 +714,12 @@ class Sheet
     }
 
     /**
-     * @param Writer $writer
+     * @param Writer|null $writer
      * @param array|null $row Values of all cells of row (incl. empty)
      * @param array|null $rowOptions Specified style for the row
      * @param array|null $cellsOptions Styles of all cells of row (incl. empty)
      */
-    protected function _writeRow(Writer $writer, array $row = [], array $rowOptions = null, array $cellsOptions = null)
+    protected function _writeRow(?Writer $writer, array $row = [], array $rowOptions = null, array $cellsOptions = null)
     {
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
@@ -832,6 +840,9 @@ class Sheet
                     $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
                 }
 
+                if (!$writer) {
+                    $writer = $this->excel->getWriter();
+                }
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
                 $colIdx++;
                 if ($colIdx > $this->colCount) {
@@ -978,7 +989,7 @@ class Sheet
      */
     public function writeCell($value, array $styles = null)
     {
-        $styles = $styles ? Style::normalize($styles) : [];
+        ///-- $styles = $styles ? Style::normalize($styles) : [];
         if ($this->currentRow < $this->rowCount) {
             $this->currentRow = $this->rowCount;
         }
@@ -1043,6 +1054,28 @@ class Sheet
     }
 
     /**
+     * @param string|array $cellAddress
+     *
+     * @return array|bool
+     */
+    protected function _moveTo(&$cellAddress)
+    {
+        $address = $this->_parseAddress($cellAddress);
+        if (!isset($address['row'], $address['col'])) {
+            ExceptionAddress::throwNew('Wrong cell address %s', print_r($address));
+        }
+        else {
+            $cellAddress = $address;
+        }
+
+        while ($this->currentRow < $cellAddress['row'] - 1) {
+            $this->nextRow();
+        }
+
+        return $address;
+    }
+
+    /**
      * Write value to the specified cell and move pointer to the next cell in the row
      *
      * $cellAddress formats:
@@ -1057,21 +1090,11 @@ class Sheet
      *
      * @return $this
      */
-    public function writeTo($cellAddress, $value, ?array $styles = [])
+    public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
     {
-        $address = $this->_parseAddress($cellAddress);
-        if (!isset($address['row'], $address['col'])) {
-            ExceptionAddress::throwNew('Wrong cell address %s', print_r($address));
-        }
-        else {
-            $cellAddress = $address;
-        }
+        $address = $this->_moveTo($cellAddress);
 
-        while ($this->currentRow < $cellAddress['row'] - 1) {
-            $this->nextRow();
-        }
-
-        $styles = $styles ? Style::normalize($styles) : null;
+        ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true, true);
         if (isset($address['width'], $address['range']) && $address['width'] > 1) {
             $this->mergeCells($address['range']);
@@ -1163,23 +1186,44 @@ class Sheet
     /**
      * @return array
      */
-    public function getMergedCells()
+    public function getMergedCells(): array
     {
         return array_keys($this->mergeCells);
     }
 
     /**
-     * @param array|null $options
+     * @param Writer|null $writer
+     * @param array|null $row
+     * @param array|null $rowStyle
+     * @param array|null $cellStyles
      *
-     * @return $this
+     * @return void
      */
-    public function nextRow(?array $options = [])
+    protected function _flashRow(?Writer $writer, array $row = [], array $rowStyle = null, array $cellStyles = null)
     {
-        $cellStyles = $this->cells['styles'][$this->currentRow] ?? [];
-        $rowStyles = $options ?? [];
-        $this->writeRow($this->cells['values'][$this->currentRow] ?? [], $rowStyles, $cellStyles);
+        if (!$writer) {
+            $writer = $this->excel->getWriter();
+        }
+        if (!$this->open) {
+            $writer->writeSheetDataBegin($this);
+        }
 
-        return $this;
+        $this->_writeRow($writer, $row, $rowStyle, $cellStyles);
+    }
+
+    /**
+     * @return void
+     */
+    protected function _writeTempRow()
+    {
+        if (!empty($this->lastTouch['row'])) {
+            $this->_flashRow(null, $this->lastTouch['row']['values'], $this->lastTouch['row']['style'], $this->lastTouch['row']['cell_styles']);
+            $this->currentCol = Excel::MIN_COL;
+
+            $this->currentRow++;
+
+            $this->lastTouch['row'] = [];
+        }
     }
 
     /**
@@ -1189,15 +1233,13 @@ class Sheet
      *
      * @return $this
      */
-    public function writeRow(array $row = [], array $rowStyle = null, array $cellStyles = null)
+    public function writeRow(array $row = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
-        $writer = $this->excel->getWriter();
-        $writer->writeSheetDataBegin($this);
+        $this->_writeTempRow();
 
         if (!is_array($row)) {
             $row = [$row];
         }
-
         if (is_array($cellStyles)) {
             $key = array_key_first($cellStyles);
             if (!is_int($key)) {
@@ -1207,9 +1249,29 @@ class Sheet
         else {
             $cellStyles = null;
         }
-        $this->_writeRow($writer, $row, $rowStyle, $cellStyles);
-        $this->currentCol = Excel::MIN_COL;
 
+        if ($row || $rowStyle || $cellStyles) {
+            $this->lastTouch['row'] = ['row_idx' => $this->currentRow, 'values' => $row, 'style' => $rowStyle, 'cell_styles' => $cellStyles];
+        }
+        else {
+            $this->currentRow++;
+            $this->lastTouch['row'] = [];
+        }
+        $this->withLastRow();
+
+        return $this;
+    }
+
+    /**
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    public function nextRow(?array $options = []): Sheet
+    {
+        $cellStyles = $this->cells['styles'][$this->currentRow] ?? [];
+        $rowStyles = $options ?? [];
+        $this->_flashRow(null, $this->cells['values'][$this->currentRow] ?? [], $rowStyles, $cellStyles);
         $this->currentRow++;
 
         return $this;
@@ -1220,10 +1282,11 @@ class Sheet
      *
      * @return $this
      */
-    public function skipRow(?int $rowCount = 1)
+    public function skipRow(?int $rowCount = 1): Sheet
     {
-        for($i = 0; $i < $rowCount; $i++) {
-            $this->writeRow([]);
+        for ($i = 0; $i < $rowCount; $i++) {
+            $this->_flashRow(null, []);
+            $this->currentRow++;
         }
 
         return $this;
@@ -1234,7 +1297,7 @@ class Sheet
      *
      * @return Area
      */
-    public function makeArea(string $range)
+    public function makeArea(string $range): Area
     {
         $area = new Area($this, $range);
 
@@ -1269,7 +1332,7 @@ class Sheet
      *
      * @return Area
      */
-    public function beginArea(string $cellAddress = null)
+    public function beginArea(string $cellAddress = null): Area
     {
         if (null === $cellAddress) {
             $cellAddress = 'A' . ($this->rowCount + 1);
@@ -1346,8 +1409,8 @@ class Sheet
     protected function _setCellData($cellAddress, $values, $styles, ?bool $merge, ?bool $changeCurrent = false)
     {
         if (null === $cellAddress) {
-            $rowIdx = $this->lastAddress['rowIdx'];
-            $colIdx = $this->lastAddress['colIdx'];
+            $rowIdx = $this->lastTouch['cell']['row_idx'];
+            $colIdx = $this->lastTouch['cell']['col_idx'];
         }
         else {
             $dimension = $this->_parseAddress($cellAddress);
@@ -1358,7 +1421,7 @@ class Sheet
             }
 
             if ($row === null || $col === null) {
-                ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress));
+                ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress, 1));
             }
             if ($row < $this->currentRow) {
                 ExceptionAddress::throwNew('Row number must be greater then written rows');
@@ -1366,7 +1429,7 @@ class Sheet
             $rowIdx = $row - 1;
             $colIdx = $col - 1;
 
-            $this->lastAddress = ['rowIdx' => $rowIdx, 'colIdx' => $colIdx];
+            $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];
         }
 
         if ($values !== null) {
@@ -1394,9 +1457,9 @@ class Sheet
      *
      * @return $this
      */
-    public function setValue($cellAddress, $value, ?array $styles = null)
+    public function setValue($cellAddress, $value, ?array $styles = null): Sheet
     {
-        $styles = $styles ? Style::normalize($styles) : null;
+        ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true);
 
         return $this;
@@ -1415,7 +1478,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setFormula($cellAddress, $value, array $styles = null)
+    public function setFormula($cellAddress, $value, array $styles = null): Sheet
     {
         if (empty($value)) {
             $value = null;
@@ -1424,7 +1487,7 @@ class Sheet
             $value = '=' . $value;
         }
 
-        $styles = $styles ? Style::normalize($styles) : null;
+        ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true);
 
         return $this;
@@ -1437,13 +1500,13 @@ class Sheet
      *
      * @return $this
      */
-    public function applayStyle(string $cellAddress, $style, ?bool $mergeStyles = false)
+    public function applyStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
     {
         $dimension = $this->_rangeDimension($cellAddress);
         if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
-        $style = Style::normalize($style);
+        ///-- $style = Style::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
             for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {
                 if ($mergeStyles && isset($this->cells['styles'][$row][$col])) {
@@ -1451,6 +1514,9 @@ class Sheet
                 }
                 else {
                     $this->cells['styles'][$row][$col] = $style;
+                }
+                if (!isset($this->cells['values'][$row][$col])) {
+                    $this->cells['values'][$row][$col] = '';
                 }
             }
         }
@@ -1464,9 +1530,9 @@ class Sheet
      *
      * @return $this
      */
-    public function setStyle(string $cellAddr, array $style)
+    public function setStyle(string $cellAddr, array $style): Sheet
     {
-        return $this->applayStyle($cellAddr, $style, false);
+        return $this->applyStyle($cellAddr, $style, false);
     }
 
     /**
@@ -1475,9 +1541,9 @@ class Sheet
      *
      * @return $this
      */
-    public function addStyle(string $cellAddr, array $style)
+    public function addStyle(string $cellAddr, array $style): Sheet
     {
-        return $this->applayStyle($cellAddr, $style, true);
+        return $this->applyStyle($cellAddr, $style, true);
     }
 
     /**
@@ -1486,10 +1552,198 @@ class Sheet
      *
      * @return $this
      */
-    public function setFormat(string $cellAddr, string $format)
+    public function setFormat(string $cellAddr, string $format): Sheet
     {
-        return $this->applayStyle($cellAddr, ['format' => $format], true);
+        return $this->applyStyle($cellAddr, ['format' => $format], true);
     }
+
+    /**
+     * @param string $key
+     * @param mixed $val
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    protected function _tempOptions(string $key, $val, ?bool $append = false): Sheet
+    {
+        if ($this->lastTouch['ref'] === 'row') {
+            $this->lastTouch['row']['row_idx'] = $this->currentRow;
+            if ($append && !empty($this->lastTouch['row']['style'][$key])) {
+                if (!is_array($this->lastTouch['row']['style'][$key])) {
+                    $this->lastTouch['row']['style'][$key] = [$this->lastTouch['row']['style'][$key]];
+                }
+                $this->lastTouch['row']['style'][$key][] = $val;
+            }
+            else {
+                $this->lastTouch['row']['style'][$key] = $val;
+            }
+        }
+        else {
+            $rowIdx = $this->lastTouch['cell']['row_idx'];
+            $colIdx = $this->lastTouch['cell']['col_idx'];
+
+            if ($append && !empty($this->cells['styles'][$rowIdx][$colIdx][$key])) {
+                if (!is_array($this->cells['styles'][$rowIdx][$colIdx][$key])) {
+                    $this->cells['styles'][$rowIdx][$colIdx][$key] = [$this->cells['styles'][$rowIdx][$colIdx][$key]];
+                }
+                $this->cells['styles'][$rowIdx][$colIdx][$key][] = $val;
+            }
+            else {
+                $this->cells['styles'][$rowIdx][$colIdx][$key] = $val;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withLastCell(): Sheet
+    {
+        $this->lastTouch['ref'] = 'cell';
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withLastRow(): Sheet
+    {
+        $this->lastTouch['ref'] = 'row';
+
+        return $this;
+    }
+
+    /**
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function fillColor(string $color): Sheet
+    {
+        return $this->_tempOptions('fill', $color);
+    }
+
+    // +++ font styles +++ //
+
+    /**
+     * @param string $fontName
+     *
+     * @return $this
+     */
+    public function fontName(string $fontName): Sheet
+    {
+        return $this->_tempOptions('font-name', $fontName);
+    }
+
+    /**
+     * @param float $fontSize
+     *
+     * @return $this
+     */
+    public function fontSize(float $fontSize): Sheet
+    {
+        return $this->_tempOptions('font-size', $fontSize);
+    }
+
+    /**
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function fontColor(string $color): Sheet
+    {
+        return $this->_tempOptions('font-color', $color);
+    }
+
+    /**
+     * @param string $fontStyle
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    public function fontStyle(string $fontStyle, ?bool $append = false): Sheet
+    {
+        return $this->_tempOptions('font-style', $fontStyle, $append);
+    }
+
+    /**
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    public function fontStyleBold(?bool $append = false): Sheet
+    {
+        return $this->_tempOptions('font-style', 'bold', $append);
+    }
+
+    /**
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    public function fontStyleItalic(?bool $append = false): Sheet
+    {
+        return $this->_tempOptions('font-style', 'italic', $append);
+    }
+
+    /**
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    public function fontStyleUnderline(?bool $append = false): Sheet
+    {
+        return $this->_tempOptions('font-style', 'underline', $append);
+    }
+
+    /**
+     * @param bool|null $append
+     *
+     * @return $this
+     */
+    public function fontStyleStrikethrough(?bool $append = false): Sheet
+    {
+        return $this->_tempOptions('font-style', 'strikethrough', $append);
+    }
+
+    // --- font styles --- //
+
+    // +++ text options +++ //
+
+    /**
+     * @param string $textAlign
+     *
+     * @return $this
+     */
+    public function textAlign(string $textAlign): Sheet
+    {
+        return $this->_tempOptions('text-align', $textAlign);
+    }
+
+    /**
+     * @param string $verticalAlign
+     *
+     * @return $this
+     */
+    public function verticalAlign(string $verticalAlign): Sheet
+    {
+        return $this->_tempOptions('vertical-align', $verticalAlign);
+    }
+
+    /**
+     * @param bool $textWrap
+     *
+     * @return $this
+     */
+    public function textWrap(bool $textWrap): Sheet
+    {
+        return $this->_tempOptions('text-wrap', $textWrap);
+    }
+
+    // --- text options --- //
 
     /**
      * @param string $range
@@ -1497,7 +1751,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setOuterBorder(string $range, $style)
+    public function setOuterBorder(string $range, $style): Sheet
     {
         $dimension = $this->_rangeDimension($range);
         if ($dimension['rowNum1'] <= $this->rowCount) {
@@ -1667,7 +1921,8 @@ class Sheet
         if ($this->areas) {
             $this->writeAreas();
         }
-        $this->nextRow();
+        //$this->nextRow();
+        $this->_writeTempRow();
         $this->fileWriter->flush(true);
         $this->fileWriter->write('</sheetData>');
     }

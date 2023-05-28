@@ -271,7 +271,7 @@ class Area
     public function setFormat($cellAddress, string $format)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applayStyle($cellAddress, ['format' => $format], true);
+            $this->sheet->applyStyle($cellAddress, ['format' => $format], true);
         }
         return $this;
     }
@@ -287,7 +287,7 @@ class Area
     public function setColor($cellAddress, string $color)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applayStyle($cellAddress, ['color' => $color], true);
+            $this->sheet->applyStyle($cellAddress, ['color' => $color], true);
         }
         return $this;
     }
@@ -303,7 +303,7 @@ class Area
     public function setBackgroundColor($cellAddress, string $color)
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applayStyle($cellAddress, ['fill' => $color], true);
+            $this->sheet->applyStyle($cellAddress, ['fill' => $color], true);
         }
         return $this;
     }

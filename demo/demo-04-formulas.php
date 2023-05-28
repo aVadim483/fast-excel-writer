@@ -29,7 +29,10 @@ for ($i = 0; $i < 20; $i++) {
 }
 
 $cnt2 = $sheet->rowCount;
-$row = ['Total', "=SUM(B$cnt1:B$cnt2)", "=AVERAGE(C$cnt1:C$cnt2)"];
+$totals = [
+    ['Total', "=SUM(B$cnt1:B$cnt2)"],
+    ['Average', '', "=ROUND(AVERAGE(C$cnt1:C$cnt2),1)"]
+];
 $rowOptions = [
     Style::FONT => [
         Style::FONT_STYLE => Style::FONT_STYLE_BOLD,
@@ -37,7 +40,8 @@ $rowOptions = [
     Style::BORDER => [Style::BORDER_TOP => Style::BORDER_DOUBLE],
 ];
 
-$sheet->writeRow($row, $rowOptions);
+$sheet->writeRow($totals[0], $rowOptions);
+$sheet->writeRow($totals[1], $rowOptions);
 
 $excel->save($outFileName);
 

@@ -708,9 +708,18 @@ class Style
      */
     protected function findElement(string $sectionName, int $index): array
     {
-        if (isset($this->elementIndexes[$index], $this->elements[$sectionName][$this->elementIndexes[$index]])) {
-            return $this->elements[$sectionName][$this->elementIndexes[$index]];
+        /* */
+        if (isset($this->elementIndexes[$sectionName][$index], $this->elements[$sectionName][$this->elementIndexes[$sectionName][$index]])) {
+            return $this->elements[$sectionName][$this->elementIndexes[$sectionName][$index]];
         }
+        /* */
+        /* * /
+        foreach ($this->elements[$sectionName] as $key => $val) {
+            if ($val['index'] === $index) {
+                return $val;
+            }
+        }
+        /* */
 
         return [];
     }
@@ -744,7 +753,7 @@ class Style
         if ($fullStyle) {
             $this->elements[$sectionName][$key]['style'] = $fullStyle;
         }
-        $this->elementIndexes[$index] = $key;
+        $this->elementIndexes[$sectionName][$index] = $key;
 
         return $index;
     }
@@ -904,14 +913,17 @@ class Style
             unset($cellStyle['fg-color']);
         }
 
+        if (!empty($this->elements['fills']) && count($fill) === 1 && isset($fill['fill']) && $fill['fill'] === 'none') {
+            $fill = [];
+        }
         if ($fill) {
             $value = self::normalizeFill($fill);
             $index = $this->addElement('fills', $value);
 
             $fullStyle['fills'] = $value;
         }
-        else {
-            $fullStyle['fill'] = $this->findElement('fills', $index);
+        if (!isset($fullStyle['fills'])) {
+            $fullStyle['fills'] = $this->findElement('fills', $index);
         }
         $cellStyle['fillId'] = $index;
 
@@ -938,14 +950,14 @@ class Style
     {
         $index = 0;
         if (isset($cellStyle['border'])) {
-            if ($cellStyle['border']) {
+            if ($cellStyle['border'] && (empty($this->elements['borders']) || $cellStyle['border'] !== 'none')) {
                 $value = self::normalizeBorder($cellStyle['border']);
                 $index = $this->addElement('borders', $value);
 
                 $fullStyle['borders'] = $value;
             }
             else {
-                $fullStyle['border'] = $this->findElement('borders', $index);
+                $fullStyle['borders'] = $this->findElement('borders', $index);
             }
             unset($cellStyle['border']);
         }

@@ -388,7 +388,7 @@ class Writer
 
         $sheet->fileWriter->write('<pageMargins left="0.5" right="0.5" top="1.0" bottom="1.0" header="0.5" footer="0.5"/>');
 
-        $sheet->fileWriter->write("<pageSetup  paperSize=\"1\" useFirstPageNumber=\"1\" horizontalDpi=\"0\" verticalDpi=\"0\" $pageSetupAttr />'");
+        $sheet->fileWriter->write("<pageSetup  paperSize=\"1\" useFirstPageNumber=\"1\" horizontalDpi=\"0\" verticalDpi=\"0\" $pageSetupAttr />");
 
         $sheet->fileWriter->write('<headerFooter differentFirst="false" differentOddEven="false">');
         $sheet->fileWriter->write('<oddHeader/>');

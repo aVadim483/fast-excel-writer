@@ -11,13 +11,15 @@ for ($j = 0; $j < 16192; $j++) {
     $s .= $chars[mt_rand() % 36];
 }
 
+$countK = $_GET['count'] ? (int)$_GET['count'] : 100;
+$rowCount = $countK * 1024;
+
 $timer = microtime(true);
-$excel = Excel::create(['250K']);
+$excel = Excel::create([$countK . 'K']);
 $sheet = $excel->getSheet();
 
 $sheet->setColFormats(['@integer', '@string', '0.00', '@string', '@string']);
 
-$rowCount = $_GET['count'] ? (int)$_GET['count'] : 100000;
 $n = 0;
 for($i = 0; $i < $rowCount; $i++) {
     $s1 = substr($s, mt_rand() % 400, mt_rand() % 5 + 5);
@@ -30,7 +32,11 @@ for($i = 0; $i < $rowCount; $i++) {
 
 $excel->save($outFileName);
 
-echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec', "<br>\n";
+$time = round(microtime(true) - $timer, 3);
+
+echo 'elapsed time: ', $time, ' sec', "<br>\n";
 echo 'memory peak usage: ', memory_get_peak_usage(true), "<br>\n";
+echo 'total rows: ', $rowCount, "<br>\n";
+echo 'speed: ', round($rowCount / $time, 3), " rows/sec<br>\n";
 
 // EOF

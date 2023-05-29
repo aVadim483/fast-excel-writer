@@ -2326,7 +2326,8 @@ class Sheet
      */
     public function applyFontStyle(string $fontStyle, ?bool $append = false): Sheet
     {
-        $this->_setOptions([], 'font-style', $fontStyle);
+        $key = 'font-style-' . strtolower($fontStyle);
+        $this->_setOptions([], $key, 1, $append);
 
         return $this;
     }
@@ -2371,7 +2372,7 @@ class Sheet
      *
      * @return $this
      */
-    public function aaplyFontColor(string $fontColor): Sheet
+    public function applyFontColor(string $fontColor): Sheet
     {
         $this->_setOptions([], 'font-color', $fontColor);
 
@@ -2387,7 +2388,7 @@ class Sheet
      */
     public function applyColor(string $color): Sheet
     {
-        return $this->aaplyFontColor($color);
+        return $this->applyFontColor($color);
     }
 
     /**
@@ -2429,7 +2430,7 @@ class Sheet
      */
     public function applyVerticalAlign(string $verticalAlign): Sheet
     {
-        return $this->_setOptions([], 'vertical-align', $verticalAlign);
+        return $this->_setOptions([], 'text-vertical-align', $verticalAlign);
     }
 
     /**

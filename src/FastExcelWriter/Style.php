@@ -127,7 +127,7 @@ class Style
      *
      * @return array
      */
-    public static function mergeStyles(array $styles)
+    public static function mergeStyles(array $styles): array
     {
         $result = [];
         if ($styles) {

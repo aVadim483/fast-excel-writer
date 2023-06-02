@@ -106,7 +106,7 @@ $area
 ;
 
 $tableHeaderStyle = [
-    'font' => ['style' => 'bold'],
+    'font' => ['style' => 'bold', 'name' => 'Impact'],
     'fill' => '#eee',
     'text-align' => 'center',
     'vertical-align' => 'center',

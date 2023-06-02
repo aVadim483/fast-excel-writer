@@ -495,7 +495,13 @@ class Style
                 return [$defFont['name'], $defFont['family']];
             }
         }
-        return [null, null];
+
+        $defaultFontsNames[$fontName] = [
+            'name' => $fontName,
+            'family' => 0,
+        ];
+
+        return [$fontName, $defaultFontsNames[$fontName]['family']];
     }
 
     /**

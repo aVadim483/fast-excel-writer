@@ -618,7 +618,7 @@ class Writer
         //// <fonts/>
         $fonts = $this->excel->style->getStyleFonts();
         if (!$fonts) {
-            $file->write('<numFmts count="0"/>');
+            $file->write('<fonts count="0"/>');
         }
         else {
             $file->write('<fonts count="' . count($fonts) . '">');
@@ -651,7 +651,6 @@ class Writer
             $file->write('<borders count="0"/>');
         }
         else {
-            //$file->write($this->_makeBordersTag($borders));
             $file->write('<borders count="' . (count($borders)) . '">');
             foreach ($borders as $border) {
                 $file->write($border['tag']);
@@ -663,12 +662,6 @@ class Writer
         // <cellStyleXfs/>
         $cellStyleXfs = [
             '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>',
-            //'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
-            //'<xf numFmtId="9" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
-            //'<xf numFmtId="41" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
-            //'<xf numFmtId="42" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
-            //'<xf numFmtId="43" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
-            //'<xf numFmtId="44" fontId="0" fillId="0" borderId="0" applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false"/>',
         ];
         $file->write('<cellStyleXfs count="' . count($cellStyleXfs) . '">');
         foreach ($cellStyleXfs as $cellStyleXf) {
@@ -687,33 +680,33 @@ class Writer
         else {
             $file->write('<cellXfs count="' . count($cellXfs) . '">');
             foreach ($cellXfs as $cellXf) {
-                $xfAttr = 'applyFont="true" ';
-                if (!empty($cellXf['alignment'])) {
-                    $xfAttr .= 'applyAlignment="true" ';
-                }
-                if (isset($cellXf['border_idx'])) {
-                    $xfAttr .= 'applyBorder="true" ';
-                }
                 $alignmentAttr = '';
-                if (!empty($cellXf['text-align'])) {
-                    $alignmentAttr .= ' horizontal="' . $cellXf['text-align'] . '"';
+                if (!empty($cellXf['format']['text-align'])) {
+                    $alignmentAttr .= ' horizontal="' . $cellXf['format']['text-align'] . '"';
                 }
-                if (!empty($cellXf['vertical-align'])) {
-                    $alignmentAttr .= ' vertical="' . $cellXf['vertical-align'] . '"';
+                if (!empty($cellXf['format']['vertical-align'])) {
+                    $alignmentAttr .= ' vertical="' . $cellXf['format']['vertical-align'] . '"';
                 }
-                if (!empty($cellXf['text-wrap'])) {
+                if (!empty($cellXf['format']['text-wrap'])) {
                     $alignmentAttr .= ' wrapText="true"';
                 }
-                $xfId = $cellXf['xfId'] ?? 0;
+
+                $xfAttr = 'applyFont="true" ';
+                if (isset($cellXf['_border_id'])) {
+                    $xfAttr .= 'applyBorder="true" ';
+                }
+
+                $xfId = $cellXf['_xf_id'] ?? 0;
                 if ($alignmentAttr) {
-                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['borderId'] . '" fillId="' . $cellXf['fillId'] . '" '
-                        . 'fontId="' . $cellXf['fontId'] . '" numFmtId="' . (164 + $cellXf['numFmtId']) . '" xfId="' . $xfId . '">');
+                    $xfAttr .= 'applyAlignment="true" ';
+                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
+                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_Id']) . '" xfId="' . $xfId . '">');
                     $file->write('	<alignment ' . $alignmentAttr . '/>');
                     $file->write('</xf>');
                 }
                 else {
-                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['borderId'] . '" fillId="' . $cellXf['fillId'] . '" '
-                        . 'fontId="' . $cellXf['fontId'] . '" numFmtId="' . (164 + $cellXf['numFmtId']) . '" xfId="' . $xfId . '" />');
+                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
+                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_Id']) . '" xfId="' . $xfId . '" />');
                 }
             }
 
@@ -742,7 +735,7 @@ class Writer
 
         //// +++++++++++
         // <tableStyles/>
-        $file->write('<tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/>');
+        $file->write('<tableStyles count="0"/>');
 
         $file->write('</styleSheet>');
         $file->close();

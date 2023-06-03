@@ -101,7 +101,7 @@ class Sheet
             'values' => [],
             'styles' => [],
         ];
-        $this->_setCellData('A1', '', [], false);
+        $this->_setCellData('A1', '', null, false);
         $this->lastTouch = [
             'cell' => [
                 'row_idx' => 0,
@@ -147,7 +147,7 @@ class Sheet
      *
      * @return $this
      */
-    public function setFileWriter($fileWriter)
+    public function setFileWriter(WriterBuffer $fileWriter): Sheet
     {
         if (!$this->fileWriter) {
             $this->fileWriter = $fileWriter;
@@ -163,7 +163,7 @@ class Sheet
      *
      * @return $this
      */
-    public function resetFileWriter($fileWriter)
+    public function resetFileWriter(WriterBuffer $fileWriter): Sheet
     {
         $this->fileWriter = $fileWriter;
         $this->fileName = $fileWriter->getFileName();
@@ -258,9 +258,29 @@ class Sheet
     }
 
     /**
+     * Set page orientation as Portrait
+     *
+     * @return $this
+     */
+    public function pagePortrait(): Sheet
+    {
+        return $this->setPageOptions('orientation', 'portrait');
+    }
+
+    /**
      * @return $this
      */
     public function pageOrientationLandscape(): Sheet
+    {
+        return $this->setPageOptions('orientation', 'landscape');
+    }
+
+    /**
+     * Set page orientation as Landscape
+     *
+     * @return $this
+     */
+    public function pageLandscape(): Sheet
     {
         return $this->setPageOptions('orientation', 'landscape');
     }
@@ -464,15 +484,25 @@ class Sheet
             $options = $this->normalizeColKeys($options);
             foreach($options as $col => $colOptions) {
                 $style = [];
-                foreach($colOptions as $optionName => $optionValue) {
-                    if ($optionName === 'width') {
-                        $this->setColWidth($col, $optionValue);
-                    }
-                    elseif ($optionName === 'formula') {
-                        $this->setColFormula($col, $optionValue);
+                if (isset($colOptions['options']['width'])) {
+                    $this->setColWidth($col, $colOptions['options']['width']);
+                }
+                foreach($colOptions as $optionName => $optionValues) {
+                    if (is_array($optionValues)) {
+                        foreach ($optionValues as $key => $val) {
+                            if ($key === 'width') {
+                                $this->setColWidth($col, $val);
+                            }
+                            elseif ($key === 'formula') {
+                                $this->setColFormula($col, $val);
+                            }
+                            else {
+                                $style[$optionName][$key] = $val;
+                            }
+                        }
                     }
                     else {
-                        $style[$optionName] = $optionValue;
+                        $style[$optionName] = $optionValues;
                     }
                 }
                 if ($style) {
@@ -697,11 +727,12 @@ class Sheet
         }
         foreach ($options as $rowNum => $rowOptions) {
             $rowIdx = (int)$rowNum - 1;
-            if (isset($rowOptions['height'])) {
-                $this->setRowHeight($rowNum, $rowOptions['height']);
-                unset($rowOptions['height']);
-            }
             if ($rowOptions) {
+                $rowOptions = Style::normalize($rowOptions);
+                if (isset($rowOptions['height'])) {
+                    $this->setRowHeight($rowNum, $rowOptions['height']);
+                    unset($rowOptions['height']);
+                }
                 if (isset($this->rowStyles[$rowIdx])) {
                     $this->rowStyles[$rowIdx] = array_replace_recursive($this->rowStyles[$rowIdx], $rowOptions);
                 }
@@ -731,8 +762,10 @@ class Sheet
      * @param array|null $rowOptions Specified style for the row
      * @param array|null $cellsOptions Styles of all cells of row (incl. empty)
      */
-    protected function _writeRow(?Writer $writer, array $row = [], array $rowOptions = null, array $cellsOptions = null)
+    protected function _writeRow(?Writer $writer, array $row = [], array $rowOptions = [], array $cellsOptions = [])
     {
+        static $_styleCache = [];
+
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
             $height = $rowOptions['height'];
@@ -767,14 +800,14 @@ class Sheet
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
-                        'general' => Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]),
-                        'hyperlink' => Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]),
+                        'general_style' => Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]),
+                        'hyperlink_style' => Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]),
                     ];
                 }
                 else {
                     $this->sheetStylesSummary = [
-                        'general' => $this->excel->style->defaultStyle,
-                        'hyperlink' => $this->excel->style->hyperlinkStyle,
+                        'general_style' => $this->excel->style->defaultStyle,
+                        'hyperlink_style' => $this->excel->style->hyperlinkStyle,
                     ];
                 }
             }
@@ -787,41 +820,44 @@ class Sheet
                     }
                     else {
                         $this->colStylesSummary[$colIdx] = [
-                            'general' => Style::mergeStyles([
-                                $this->sheetStylesSummary['general'],
+                            'general_style' => Style::mergeStyles([
+                                $this->sheetStylesSummary['general_style'],
                                 $this->colStyles[$colIdx],
                             ]),
-                            'hyperlink' => Style::mergeStyles([
-                                $this->sheetStylesSummary['hyperlink'],
+                            'hyperlink_style' => Style::mergeStyles([
+                                $this->sheetStylesSummary['hyperlink_style'],
                                 $this->colStyles[$colIdx],
                             ]),
                         ];
                     }
                 }
 
-                $styleStack = [
-                    !empty($cellsOptions[$colIdx]['hyperlink']) ? $this->colStylesSummary[$colIdx]['hyperlink'] : $this->colStylesSummary[$colIdx]['general'],
-                ];
+                $styleStack = [];
+                $baseStyle = !empty($cellsOptions[$colIdx]['hyperlink']) ? $this->colStylesSummary[$colIdx]['hyperlink_style'] : $this->colStylesSummary[$colIdx]['general_style'];
+                if ($baseStyle) {
+                    $styleStack = [$baseStyle];
+                }
+
                 if (!empty($this->rowStyles[$rowIdx])) {
                     $styleStack[] = $this->rowStyles[$rowIdx];
                 }
                 if (!empty($this->cells['styles'][$rowIdx][$colIdx])) {
                     $styleStack[] = $this->cells['styles'][$rowIdx][$colIdx];
                 }
-                if (!empty($rowOptions)) {
+                if ($rowOptions) {
                     $styleStack[] = $rowOptions;
                 }
                 if (!empty($cellsOptions[$colIdx])) {
                     $styleStack[] = $cellsOptions[$colIdx];
                 }
-                if (count($styleStack)) {
+                if (count($styleStack) > 1) {
                     $cellStyle = Style::mergeStyles($styleStack);
                 }
                 else {
-                    $cellStyle = $styleStack[0];
+                    $cellStyle = $styleStack ? $styleStack[0] : [];
                 }
-                if (!empty($cellStyle['format']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']])) {
-                    $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']], $cellStyle]);
+                if (!empty($cellStyle['format']['num_format']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['num_format']])) {
+                    $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['num_format']], $cellStyle]);
                 }
 
                 if (isset($cellStyle['hyperlink'])) {
@@ -843,7 +879,15 @@ class Sheet
                     }
                     unset($cellStyle['hyperlink']);
                 }
-                $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
+                $styleHash = json_encode($cellStyle);
+                if (!isset($_styleCache[$styleHash])) {
+                    $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
+                    $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
+                }
+                else {
+                    $resultStyle = $_styleCache[$styleHash]['result_style'];
+                    $cellStyleIdx = $_styleCache[$styleHash]['style_idx'];
+                }
 
                 $numberFormat = $resultStyle['number_format'];
                 $numberFormatType = $resultStyle['number_format_type'];
@@ -977,8 +1021,8 @@ class Sheet
      */
     public function setDefaultStyle(array $style): Sheet
     {
-        $this->defaultStyle = $style;
         $this->clearSummary();
+        $this->defaultStyle = Style::normalize($style);
 
         return $this;
     }
@@ -992,6 +1036,115 @@ class Sheet
     {
         return $this->defaultStyle;
     }
+
+    // ++++++++++++++++++++ //
+    // +++ DEFAULT FONT +++ //
+
+    /**
+     * @param string|array $font
+     *
+     * @return $this
+     */
+    public function setDefaultFont($font): Sheet
+    {
+        $normStyle = Style::normalizeFont($font);
+        if (isset($normStyle['font'])) {
+            if (isset($this->defaultStyle['font'])) {
+                $this->defaultStyle['font'] = array_replace($this->defaultStyle['font'], $normStyle['font']);
+            }
+            else {
+                $this->defaultStyle['font'] = $normStyle['font'];
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $fontName
+     *
+     * @return $this
+     */
+    public function setDefaultFontName(string $fontName): Sheet
+    {
+        $this->defaultStyle['font']['font-name'] = $fontName;
+
+        return $this;
+    }
+
+    /**
+     * @param int $fontSize
+     *
+     * @return $this
+     */
+    public function setDefaultFontSize(int $fontSize): Sheet
+    {
+        $this->defaultStyle['font']['font-size'] = $fontSize;
+
+        return $this;
+    }
+
+    /**
+     * @param string $fontStyle
+     *
+     * @return $this
+     */
+    public function setDefaultFontStyle(string $fontStyle): Sheet
+    {
+        $key = 'font-style-' . strtolower($fontStyle);
+        $this->defaultStyle['font'][$key] = 1;
+
+        return $this;
+    }
+
+    public function setDefaultFontStyleBold(): Sheet
+    {
+        return $this->applyFontStyle('bold');
+    }
+
+    /**
+     * @return $this
+     */
+    public function setDefaultFontStyleItalic(): Sheet
+    {
+        return $this->applyFontStyle('italic');
+    }
+
+    /**
+     * @param bool|null $double
+     *
+     * @return $this
+     */
+    public function setDefaultFontStyleUnderline(?bool $double = false): Sheet
+    {
+        $this->defaultStyle['font']['font-style-underline'] = ['font-style-underline' => $double ? 2 : 1];
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setDefaultFontStyleStrikethrough(): Sheet
+    {
+        return $this->applyFontStyle('strikethrough');
+    }
+
+    /**
+     * @param string $fontColor
+     *
+     * @return $this
+     */
+    public function setDefaultFontColor(string $fontColor): Sheet
+    {
+        $this->defaultStyle['font']['font-style-underline'] = ['font-color' => $fontColor];
+
+        return $this;
+    }
+
+    // --- DEFAULT FONT --- //
+    // ---------------------//
+
 
     /**
      * Write value to the current cell and move pointer to the next cell in the row
@@ -1012,12 +1165,12 @@ class Sheet
         if ($this->currentRow < $this->rowCount) {
             $this->currentRow = $this->rowCount;
         }
+        $this->withLastCell();
         $cellAddress = [
             'row' => 1 + $this->currentRow,
             'col' => 1 + $this->currentCol++,
         ];
         $this->_setCellData($cellAddress, $value, $styles, false);
-        $this->withLastCell();
 
         return $this;
     }
@@ -1122,6 +1275,7 @@ class Sheet
     public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
     {
         $address = $this->_moveTo($cellAddress);
+        $this->withLastCell();
 
         ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true, true);
@@ -1132,7 +1286,6 @@ class Sheet
         else {
             $this->currentCol++;
         }
-        $this->withLastCell();
 
         return $this;
     }
@@ -1229,7 +1382,13 @@ class Sheet
     protected function _writeCurrentRow()
     {
         $writer = $this->excel->getWriter();
-        for ($rowIdx = $this->rowCount; $rowIdx <= $this->currentRow; $rowIdx++) {
+        $maxRow = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : 0,
+            $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : 0);
+        if ($maxRow < $this->currentRow) {
+            $maxRow = $this->currentRow;
+        }
+
+        for ($rowIdx = $this->rowCount; $rowIdx <= $maxRow; $rowIdx++) {
             if (isset($this->cells['values'][$rowIdx])) {
                 $values = $this->cells['values'][$rowIdx];
                 unset($this->cells['values'][$rowIdx]);
@@ -1242,14 +1401,14 @@ class Sheet
                 unset($this->cells['styles'][$rowIdx]);
             }
             else {
-                $styles = null;
+                $styles = [];
             }
             if ($values || $styles) {
                 if (!$this->open) {
                     $writer->writeSheetDataBegin($this);
                 }
 
-                $this->_writeRow($writer, $values, $this->rowStyles[$rowIdx] ?? null, $styles);
+                $this->_writeRow($writer, $values, [], $styles);
             }
             else {
                 $this->rowCount++;
@@ -1290,7 +1449,7 @@ class Sheet
             }
         }
         else {
-            $cellStyles = null;
+            $cellStyles = [];
         }
 
         if ($rowStyle) {
@@ -1298,30 +1457,16 @@ class Sheet
         }
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
-        if ($cellStyles) {
-            $keys = array_keys($cellStyles);
-            if ($rowValues) {
-                $keys = array_unique($keys, array_keys($rowValues));
-                sort($keys);
-            }
-            foreach ($keys as $colIdx) {
+        $maxColIdx = max($cellStyles ? max(array_keys($cellStyles)) : 0, $rowValues ? max(array_keys($rowValues)) : 0);
+        for ($colIdx = 0; $colIdx <= $maxColIdx; $colIdx++) {
+            if (isset($rowValues[$colIdx]) || $cellStyles[$colIdx]) {
                 if ($this->lastTouch['area']['col_idx1'] === -1) {
                     $this->lastTouch['area']['col_idx1'] = $colIdx;
                 }
                 $this->lastTouch['area']['col_idx2'] = $colIdx;
                 $this->_setCellData(null, $rowValues[$colIdx] ?? null, $cellStyles[$colIdx] ?? null);
             }
-        }
-        elseif ($rowValues) {
-            foreach ($rowValues as $colIdx => $value) {
-                if ($this->lastTouch['area']['col_idx1'] === -1) {
-                    $this->lastTouch['area']['col_idx1'] = $colIdx;
-                }
-                $this->lastTouch['area']['col_idx2'] = $colIdx;
-                $this->currentCol = $this->lastTouch['cell']['col_idx'] = $colIdx;
-                $this->_setCellData(null, $value);
-            }
-            $this->currentCol++;
+            $this->lastTouch['cell']['col_idx'] = ++$this->currentCol;
         }
         $this->withLastRow();
 
@@ -1421,9 +1566,9 @@ class Sheet
     /**
      * @param $cellAddress
      *
-     * @return array|bool
+     * @return array
      */
-    protected function _parseAddress($cellAddress)
+    protected function _parseAddress($cellAddress): ?array
     {
         if (is_array($cellAddress) && isset($cellAddress['row'], $cellAddress['col'])) {
             return $cellAddress;
@@ -1451,9 +1596,9 @@ class Sheet
      * @param int|null $colOffset
      * @param int|null $rowOffset
      *
-     * @return array|bool
+     * @return array|null
      */
-    protected function _rangeDimension(string $cellAddress, ?int $colOffset = 1, ?int $rowOffset = 1)
+    protected function _rangeDimension(string $cellAddress, ?int $colOffset = 1, ?int $rowOffset = 1): ?array
     {
         if (preg_match('/^R\[?(-?\d+)?\]?C/', $cellAddress)) {
             // relative address
@@ -1485,30 +1630,37 @@ class Sheet
             $colIdx = $this->lastTouch['cell']['col_idx'];
         }
         else {
-            if (isset($cellAddress['row'], $cellAddress['col'])) {
-                $row = $cellAddress['row'];
-                $col = $cellAddress['col'];
-                $dimension = $cellAddress;
+            if (isset($cellAddress['row_idx'], $cellAddress['col_idx'])) {
+                $rowIdx = $cellAddress['row_idx'];
+                $colIdx = $cellAddress['col_idx'];
+                $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx];
             }
             else {
-                $dimension = $this->_parseAddress($cellAddress);
-                $row = $dimension['row'];
-                $col = $dimension['col'];
-                if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
-                    $this->mergeCells($dimension['range']);
+                if (isset($cellAddress['row'], $cellAddress['col'])) {
+                    $row = $cellAddress['row'];
+                    $col = $cellAddress['col'];
+                    $dimension = $cellAddress;
                 }
-            }
+                else {
+                    $dimension = $this->_parseAddress($cellAddress);
+                    $row = $dimension['row'];
+                    $col = $dimension['col'];
+                    if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
+                        $this->mergeCells($dimension['range']);
+                    }
+                }
 
-            if ($row === null || $col === null) {
-                ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress, 1));
-            }
-            if ($row < $this->currentRow) {
-                ExceptionAddress::throwNew('Row number must be greater then written rows');
-            }
-            $rowIdx = $row - 1;
-            $colIdx = $col - 1;
+                if ($row === null || $col === null) {
+                    ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress, 1));
+                }
+                if ($row < $this->currentRow) {
+                    ExceptionAddress::throwNew('Row number must be greater then written rows');
+                }
+                $rowIdx = $row - 1;
+                $colIdx = $col - 1;
 
-            $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];
+                $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];
+            }
         }
 
         if ($value !== null) {
@@ -1522,8 +1674,9 @@ class Sheet
                 $this->currentCol = $colIdx;
             }
         }
-        if ($styles !== null) {
-            $this->cells['styles'][$rowIdx][$colIdx] = $styles;
+        if ($styles) {
+            //$this->cells['styles'][$rowIdx][$colIdx] = $styles;
+            $this->cells['styles'][$rowIdx][$colIdx] = Style::normalize($styles);
         }
     }
 
@@ -1587,13 +1740,13 @@ class Sheet
      *
      * @return $this
      */
-    public function applyStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
+    public function setStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
     {
         $dimension = $this->_rangeDimension($cellAddress);
         if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
-        ///-- $style = Style::normalize($style);
+        $style = Style::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
             for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {
                 if ($mergeStyles && isset($this->cells['styles'][$row][$col])) {
@@ -1617,20 +1770,9 @@ class Sheet
      *
      * @return $this
      */
-    public function setStyle(string $cellAddr, array $style): Sheet
-    {
-        return $this->applyStyle($cellAddr, $style, false);
-    }
-
-    /**
-     * @param string $cellAddr
-     * @param array $style
-     *
-     * @return $this
-     */
     public function addStyle(string $cellAddr, array $style): Sheet
     {
-        return $this->applyStyle($cellAddr, $style, true);
+        return $this->setStyle($cellAddr, $style, true);
     }
 
     /**
@@ -1641,102 +1783,7 @@ class Sheet
      */
     public function setFormat(string $cellAddr, string $format): Sheet
     {
-        return $this->applyStyle($cellAddr, ['format' => $format], true);
-    }
-
-    /**
-     * @param array $addr
-     * @param string $key
-     * @param mixed $val
-     * @param bool|null $append
-     *
-     * @return $this
-     */
-    protected function _setOptions(array $addr, string $key, $val, ?bool $append = false): Sheet
-    {
-        if ($addr) {
-            $rowIdx = $addr['row_idx'];
-            $colIdx = $addr['col_idx'];
-            $ref = 'cell';
-        }
-        else {
-            $rowIdx = $this->lastTouch['cell']['row_idx'];
-            $colIdx = $this->lastTouch['cell']['col_idx'];
-            $ref = $this->lastTouch['ref'];
-        }
-
-        if ($ref === 'cell') {
-            if ($append && !empty($this->cells['styles'][$rowIdx][$colIdx][$key])) {
-                if (!is_array($this->cells['styles'][$rowIdx][$colIdx][$key])) {
-                    $this->cells['styles'][$rowIdx][$colIdx][$key] = [$this->cells['styles'][$rowIdx][$colIdx][$key]];
-                }
-                foreach ($val as $k => $v) {
-                    $this->cells['styles'][$rowIdx][$colIdx][$key][$k] = $v;
-                }
-            }
-            else {
-                $this->cells['styles'][$rowIdx][$colIdx][$key] = $val;
-            }
-        }
-        else {
-            $rowIdx = $this->lastTouch['row']['row_idx'];
-            if ($append && !empty($this->rowStyles[$rowIdx][$key])) {
-                if (!is_array($this->rowStyles[$rowIdx][$key])) {
-                    $this->rowStyles[$rowIdx][$key] = [$this->rowStyles[$rowIdx][$key]];
-                }
-                if (!is_array($val)) {
-                    $this->rowStyles[$rowIdx][$key][] = $val;
-                }
-                else {
-                    foreach ($val as $k => $v) {
-                        $this->rowStyles[$rowIdx][$key][$k] = $v;
-                    }
-                }
-            }
-            else {
-                $this->rowStyles[$rowIdx][$key] = $val;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function withLastCell(): Sheet
-    {
-        $this->lastTouch['cell'] = [
-            'row_idx' => $this->currentRow,
-            'col_idx' => $this->currentCol,
-        ];
-        $this->lastTouch['row'] = [
-            'row_idx' => $this->currentRow,
-        ];
-        $this->lastTouch['area'] = [
-            'row_idx1' => $this->currentRow,
-            'row_idx2' => $this->currentRow,
-            'col_idx1' => $this->currentCol,
-            'col_idx2' => $this->currentCol,
-        ];
-        $this->lastTouch['ref'] = 'cell';
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function withLastRow(): Sheet
-    {
-        $this->lastTouch['cell'] = [
-            'row_idx' => $this->currentRow,
-            'col_idx' => $this->currentCol,
-        ];
-        $this->lastTouch['row'] = ['row_idx' => $this->currentRow];
-        $this->lastTouch['ref'] = 'row';
-
-        return $this;
+        return $this->setStyle($cellAddr, ['format' => $format], true);
     }
 
     /**
@@ -1747,60 +1794,9 @@ class Sheet
      */
     public function setOuterBorder(string $range, $style): Sheet
     {
-        $dimension = $this->_rangeDimension($range);
-        if ($dimension['rowNum1'] <= $this->rowCount) {
-            throw new Exception('Row number must be greater then written rows');
-        }
-        $border = Style::borderOptions($style);
-        foreach ($border as $side => $sideOptions) {
-            if ($side & Style::BORDER_LEFT) {
-                $colIdx = $dimension['colNum1'] - 1;
-                for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
-                    if (!empty($sideOptions['style'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['left']['style'] = $sideOptions['style'];
-                    }
-                    if (!empty($sideOptions['color'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['left']['color'] = $sideOptions['color'];
-                    }
-                }
-            }
+        $borderStyle = Style::borderOptions($style);
+        $this->withRange($range)->applyOuterBorder($borderStyle['border-left-style'], $borderStyle['border-left-color']);
 
-            if ($side & Style::BORDER_RIGHT) {
-                $colIdx = $dimension['colNum2'] - 1;
-                for ($rowIdx = $dimension['rowNum1'] - 1; $rowIdx < $dimension['rowNum2']; $rowIdx++) {
-                    if (!empty($sideOptions['style'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['right']['style'] = $sideOptions['style'];
-                    }
-                    if (!empty($sideOptions['color'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['right']['color'] = $sideOptions['color'];
-                    }
-                }
-            }
-
-            if ($side & Style::BORDER_TOP) {
-                $rowIdx = $dimension['row'] - 1;
-                for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
-                    if (!empty($sideOptions['style'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['top']['style'] = $sideOptions['style'];
-                    }
-                    if (!empty($sideOptions['color'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['top']['color'] = $sideOptions['color'];
-                    }
-                }
-            }
-
-            if ($side & Style::BORDER_BOTTOM) {
-                $rowIdx = $dimension['rowNum2'] - 1;
-                for ($colIdx = $dimension['colNum1'] - 1; $colIdx < $dimension['colNum2']; $colIdx++) {
-                    if (!empty($sideOptions['style'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom']['style'] = $sideOptions['style'];
-                    }
-                    if (!empty($sideOptions['color'])) {
-                        $this->cells['styles'][$rowIdx][$colIdx]['border']['bottom']['color'] = $sideOptions['color'];
-                    }
-                }
-            }
-        }
 
         return $this;
     }
@@ -1813,7 +1809,8 @@ class Sheet
         $writer = $this->excel->getWriter();
         if ($this->open) {
             $this->writeAreasRows($writer);
-        } else {
+        }
+        else {
             $writer->writeSheetDataBegin($this);
         }
         return $this;
@@ -1852,8 +1849,8 @@ class Sheet
                     if ($rowValues && ($keyMax = max(array_keys($rowValues))) > $colMax) {
                         $colMax = $keyMax;
                     }
-                    $rowStyles = $this->cells['styles'][$numRow] ?? [];
-                    if ($rowStyles && ($keyMax = max(array_keys($rowStyles))) > $colMax) {
+                    $cellStyles = $this->cells['styles'][$numRow] ?? [];
+                    if ($cellStyles && ($keyMax = max(array_keys($cellStyles))) > $colMax) {
                         $colMax = $keyMax;
                     }
 
@@ -1861,15 +1858,15 @@ class Sheet
                         if (!isset($rowValues[$numCol])) {
                             $rowValues[$numCol] = null;
                         }
-                        if (!isset($rowStyles[$numCol])) {
-                            $rowStyles[$numCol] = [];
+                        if (!isset($cellStyles[$numCol])) {
+                            $cellStyles[$numCol] = [];
                         }
                     }
                     // array of all values
                     ksort($rowValues);
                     // array of all styles
-                    ksort($rowStyles);
-                    $this->_writeRow($writer, array_values($rowValues), null, array_values($rowStyles));
+                    ksort($cellStyles);
+                    $this->_writeRow($writer, array_values($rowValues), [], $cellStyles ? array_values($cellStyles) : []);
                 }
                 else {
                     $this->_writeRow($writer, [null]);
@@ -1877,6 +1874,9 @@ class Sheet
             }
             $this->clearAreas();
         }
+        $this->currentRow = $this->rowCount;
+        $this->currentCol = 0;
+        $this->withLastCell();
 
         return $this;
     }
@@ -1937,260 +1937,377 @@ class Sheet
         return $this->excel->isRightToLeft();
     }
 
+    /**
+     * @param array $addr
+     * @param string $key
+     * @param array $options
+     * @param bool|null $replace
+     *
+     * @return void
+     */
+    protected function _setStyleOptions(array $addr, string $key, array $options, ?bool $replace = false)
+    {
+        if ($addr) {
+            $rowIdx = $addr['row_idx'];
+            $colIdx = $addr['col_idx'];
+            $ref = 'cell';
+        }
+        else {
+            $rowIdx = $this->lastTouch['cell']['row_idx'];
+            $colIdx = $this->lastTouch['cell']['col_idx'];
+            $ref = $this->lastTouch['ref'];
+        }
+
+        if ($ref === 'cell') {
+            if ($replace || !isset($this->cells['styles'][$rowIdx][$colIdx][$key])) {
+                $this->cells['styles'][$rowIdx][$colIdx][$key] = $options;
+            }
+            else {
+                $this->cells['styles'][$rowIdx][$colIdx][$key] = array_replace_recursive($this->cells['styles'][$rowIdx][$colIdx][$key], $options);
+            }
+            if (!isset($this->cells['values'][$rowIdx][$colIdx])) {
+                $this->cells['values'][$rowIdx][$colIdx] = '';
+            }
+        }
+        elseif ($ref === 'area') {
+            for ($rowIdx = $this->lastTouch['area']['row_idx1']; $rowIdx <= $this->lastTouch['area']['row_idx2']; $rowIdx++) {
+                for ($colIdx = $this->lastTouch['area']['col_idx1']; $colIdx <= $this->lastTouch['area']['col_idx2']; $colIdx++) {
+                    if ($replace || !isset($this->cells['styles'][$rowIdx][$colIdx][$key])) {
+                        $this->cells['styles'][$rowIdx][$colIdx][$key] = $options;
+                    }
+                    else {
+                        $this->cells['styles'][$rowIdx][$colIdx][$key] = array_replace_recursive($this->cells['styles'][$rowIdx][$colIdx][$key], $options);
+                    }
+                    if (!isset($this->cells['values'][$rowIdx][$colIdx])) {
+                        $this->cells['values'][$rowIdx][$colIdx] = '';
+                    }
+                }
+            }
+        }
+        else {
+            $rowIdx = $this->lastTouch['row']['row_idx'];
+            if ($replace || !isset($this->rowStyles[$rowIdx][$key])) {
+                $this->rowStyles[$rowIdx][$key] = $options;
+            }
+            else {
+                $this->rowStyles[$rowIdx][$key] = array_replace_recursive($this->rowStyles[$rowIdx][$key], $options);
+            }
+        }
+    }
+
+    /**
+     * Select last written cell for applying
+     *
+     * @return $this
+     */
+    public function withLastCell(): Sheet
+    {
+        $this->lastTouch['row'] = [
+            'row_idx' => $this->currentRow,
+        ];
+        if (isset($this->cells['values'][$this->currentRow])) {
+            $maxCol = max(array_keys($this->cells['values'][$this->currentRow]));
+        }
+        else {
+            $maxCol = 0;
+        }
+        $this->lastTouch['cell'] = [
+            'row_idx' => $this->currentRow,
+            'col_idx' => $maxCol,
+        ];
+        $this->lastTouch['area'] = [
+            'row_idx1' => $this->currentRow,
+            'row_idx2' => $this->currentRow,
+            'col_idx1' => $maxCol,
+            'col_idx2' => $maxCol,
+        ];
+        $this->lastTouch['ref'] = 'cell';
+
+        return $this;
+    }
+
+    /**
+     * Select last written row for applying
+     *
+     * @return $this
+     */
+    public function withLastRow(): Sheet
+    {
+        $this->lastTouch['cell'] = [
+            'row_idx' => $this->currentRow,
+            'col_idx' => $this->currentCol,
+        ];
+        $this->lastTouch['row'] = ['row_idx' => $this->currentRow];
+        $this->lastTouch['ref'] = 'row';
+
+        return $this;
+    }
+
+    /**
+     * Select custom range for applying
+     *
+     * @param array|string $range
+     *
+     * @return $this
+     */
+    public function withRange($range): Sheet
+    {
+        $dimension = self::_rangeDimension($range);
+        if ($dimension['rowNum1'] <= $this->rowCount) {
+            throw new Exception('Row number must be greater then written rows');
+        }
+
+        $this->lastTouch['area'] = [
+            'row_idx1' => $dimension['rowNum1'] - 1,
+            'row_idx2' => $dimension['rowNum2'] - 1,
+            'col_idx1' => $dimension['colNum1'] - 1,
+            'col_idx2' => $dimension['colNum2'] - 1,
+        ];
+        $this->lastTouch['ref'] = 'area';
+
+        return $this;
+    }
+
+
     // === DESIGN STYLES === /
 
     /**
      * Sets all borders style
      *
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorder(string $style, string $color): Sheet
+    public function applyBorder(string $style, ?string $color = '#000000'): Sheet
     {
         $options = [
-            Style::BORDER_TOP => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
-            Style::BORDER_RIGHT => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
-            Style::BORDER_BOTTOM => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
-            Style::BORDER_LEFT => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
+            'border-left-style' => $style,
+            'border-left-color' => $color,
+            'border-right-style' => $style,
+            'border-right-color' => $color,
+            'border-top-style' => $style,
+            'border-top-color' => $color,
+            'border-bottom-style' => $style,
+            'border-bottom-color' => $color,
+            'border-diagonal-up' => 0,
+            'border-diagonal-down' => 0,
         ];
-        $this->_setOptions([], Style::BORDER, $options, true);
+
+        $this->_setStyleOptions([], Style::BORDER, $options, true);
 
         return $this;
     }
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderTop(string $style, string $color): Sheet
+    public function applyBorderLeft(string $style, ?string $color = '#000000'): Sheet
     {
         $options = [
-            Style::BORDER_TOP => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
+            'border-left-style' => $style,
+            'border-left-color' => $color,
         ];
-        $this->_setOptions([], Style::BORDER, $options, true);
+        for ($rowIdx = $this->lastTouch['area']['row_idx1']; $rowIdx <= $this->lastTouch['area']['row_idx2']; $rowIdx++) {
+            $addr = [
+                'row_idx' => $rowIdx,
+                'col_idx' => $this->lastTouch['area']['col_idx1'],
+            ];
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
+        }
 
         return $this;
     }
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderRight(string $style, string $color): Sheet
+    public function applyBorderRight(string $style, ?string $color = '#000000'): Sheet
     {
         $options = [
-            Style::BORDER_RIGHT => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
+            'border-right-style' => $style,
+            'border-right-color' => $color,
         ];
-        $this->_setOptions([], Style::BORDER, $options, true);
+        for ($rowIdx = $this->lastTouch['area']['row_idx1']; $rowIdx <= $this->lastTouch['area']['row_idx2']; $rowIdx++) {
+            $addr = [
+                'row_idx' => $rowIdx,
+                'col_idx' => $this->lastTouch['area']['col_idx2'],
+            ];
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
+        }
 
         return $this;
     }
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderBottom(string $style, string $color): Sheet
+    public function applyBorderTop(string $style, ?string $color = '#000000'): Sheet
     {
         $options = [
-            Style::BORDER_BOTTOM => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
+            'border-top-style' => $style,
+            'border-top-color' => $color,
         ];
-        $this->_setOptions([], Style::BORDER, $options, true);
+        for ($colIdx = $this->lastTouch['area']['col_idx1']; $colIdx <= $this->lastTouch['area']['col_idx2']; $colIdx++) {
+            $addr = [
+                'row_idx' => $this->lastTouch['area']['row_idx1'],
+                'col_idx' => $colIdx,
+            ];
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
+        }
 
         return $this;
     }
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderLeft(string $style, string $color): Sheet
+    public function applyBorderBottom(string $style, ?string $color = '#000000'): Sheet
     {
         $options = [
-            Style::BORDER_LEFT => [
-                Style::BORDER_STYLE => $style,
-                Style::BORDER_COLOR => $color,
-            ],
+            'border-bottom-style' => $style,
+            'border-bottom-color' => $color,
         ];
-        $this->_setOptions([], Style::BORDER, $options, true);
+        for ($colIdx = $this->lastTouch['area']['col_idx1']; $colIdx <= $this->lastTouch['area']['col_idx2']; $colIdx++) {
+            $addr = [
+                'row_idx' => $this->lastTouch['area']['row_idx2'],
+                'col_idx' => $colIdx,
+            ];
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
+        }
 
         return $this;
     }
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderOuter(string $style, string $color): Sheet
+    public function applyOuterBorder(string $style, ?string $color = '#000000'): Sheet
     {
         if ($this->lastTouch['area']['row_idx1'] === $this->lastTouch['area']['row_idx2']
             && $this->lastTouch['area']['col_idx1'] === $this->lastTouch['area']['col_idx2']) {
             $options = [
-                Style::BORDER_TOP => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_RIGHT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_BOTTOM => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_LEFT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-left-style' => $style,
+                'border-left-color' => $color,
+                'border-right-style' => $style,
+                'border-right-color' => $color,
+                'border-top-style' => $style,
+                'border-top-color' => $color,
+                'border-bottom-style' => $style,
+                'border-bottom-color' => $color,
             ];
             $addr = [
                 'row_idx' => $this->lastTouch['area']['row_idx1'],
                 'col_idx' => $this->lastTouch['area']['col_idx1'],
             ];
-            $this->_setOptions($addr, Style::BORDER, $options, true);
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
         }
         else {
-            $options = [
-                Style::BORDER_LEFT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_TOP => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-            ];
-            $addr = [
-                'row_idx' => $this->lastTouch['area']['row_idx1'],
-                'col_idx' => $this->lastTouch['area']['col_idx1'],
-            ];
-            $this->_setOptions($addr, Style::BORDER, $options, true);
+            $rowMin = $this->lastTouch['area']['row_idx1'];
+            $rowMax = $this->lastTouch['area']['row_idx2'];
+            $colMin = $this->lastTouch['area']['col_idx1'];
+            $colMax = $this->lastTouch['area']['col_idx2'];
 
             $options = [
-                Style::BORDER_TOP => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_RIGHT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-left-style' => $style,
+                'border-left-color' => $color,
+                'border-top-style' => $style,
+                'border-top-color' => $color,
             ];
             $addr = [
-                'row_idx' => $this->lastTouch['area']['row_idx1'],
-                'col_idx' => $this->lastTouch['area']['col_idx2'],
+                'row_idx' => $rowMin,
+                'col_idx' => $colMin,
             ];
-            $this->_setOptions($addr, Style::BORDER, $options, true);
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
 
             $options = [
-                Style::BORDER_RIGHT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_BOTTOM => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-top-style' => $style,
+                'border-top-color' => $color,
+                'border-right-style' => $style,
+                'border-right-color' => $color,
             ];
             $addr = [
-                'row_idx' => $this->lastTouch['area']['row_idx2'],
-                'col_idx' => $this->lastTouch['area']['col_idx2'],
+                'row_idx' => $rowMin,
+                'col_idx' => $colMax,
             ];
-            $this->_setOptions($addr, Style::BORDER, $options, true);
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
 
             $options = [
-                Style::BORDER_BOTTOM => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_LEFT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-right-style' => $style,
+                'border-right-color' => $color,
+                'border-bottom-style' => $style,
+                'border-bottom-color' => $color,
             ];
             $addr = [
-                'row_idx' => $this->lastTouch['area']['row_idx2'],
-                'col_idx' => $this->lastTouch['area']['col_idx1'],
+                'row_idx' => $rowMax,
+                'col_idx' => $colMax,
             ];
-            $this->_setOptions($addr, Style::BORDER, $options, true);
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
 
-            if ($this->lastTouch['area']['col_idx2'] - $this->lastTouch['area']['col_idx1'] > 1) {
+            $options = [
+                'border-bottom-style' => $style,
+                'border-bottom-color' => $color,
+                'border-left-style' => $style,
+                'border-left-color' => $color,
+            ];
+            $addr = [
+                'row_idx' => $rowMax,
+                'col_idx' => $colMin,
+            ];
+            $this->_setStyleOptions($addr, Style::BORDER, $options);
+
+            if ($colMax - $colMin > 1) {
                 $options1 = [
-                    Style::BORDER_TOP => [
-                        Style::BORDER_STYLE => $style,
-                        Style::BORDER_COLOR => $color,
-                    ],
+                    'border-top-style' => $style,
+                    'border-top-color' => $color,
                 ];
                 $options2 = [
-                    Style::BORDER_BOTTOM => [
-                        Style::BORDER_STYLE => $style,
-                        Style::BORDER_COLOR => $color,
-                    ],
+                    'border-bottom-style' => $style,
+                    'border-bottom-color' => $color,
                 ];
-                for ($colIdx = $this->lastTouch['area']['col_idx1'] + 1; $colIdx < $this->lastTouch['area']['col_idx2']; $colIdx++) {
+                for ($colIdx = $colMin + 1; $colIdx < $colMax; $colIdx++) {
                     $addr['col_idx'] = $colIdx;
-                    $addr['row_idx'] = $this->lastTouch['area']['row_idx1'];
-                    $this->_setOptions($addr, Style::BORDER, $options1, true);
-                    $addr['row_idx'] = $this->lastTouch['area']['row_idx2'];
-                    $this->_setOptions($addr, Style::BORDER, $options2, true);
+                    $addr['row_idx'] = $rowMin;
+                    $this->_setStyleOptions($addr, Style::BORDER, $options1);
+
+                    $addr['row_idx'] = $rowMax;
+                    $this->_setStyleOptions($addr, Style::BORDER, $options2);
                 }
             }
 
-
-            if ($this->lastTouch['area']['row_idx2'] - $this->lastTouch['area']['row_idx1'] > 1) {
+            if ($rowMax - $rowMin > 1) {
                 $options1 = [
-                    Style::BORDER_LEFT => [
-                        Style::BORDER_STYLE => $style,
-                        Style::BORDER_COLOR => $color,
-                    ],
+                    'border-left-style' => $style,
+                    'border-left-color' => $color,
                 ];
                 $options2 = [
-                    Style::BORDER_RIGHT => [
-                        Style::BORDER_STYLE => $style,
-                        Style::BORDER_COLOR => $color,
-                    ],
+                    'border-right-style' => $style,
+                    'border-right-color' => $color,
                 ];
-                for ($rowIdx = $this->lastTouch['area']['row_idx1'] + 1; $rowIdx < $this->lastTouch['area']['row_idx2']; $rowIdx++) {
+                for ($rowIdx = $rowMin + 1; $rowIdx < $rowMax; $rowIdx++) {
                     $addr['row_idx'] = $rowIdx;
-                    $addr['col_idx'] = $this->lastTouch['area']['col_idx1'];
-                    $this->_setOptions($addr, Style::BORDER, $options1, true);
-                    $addr['col_idx'] = $this->lastTouch['area']['col_idx2'];
-                    $this->_setOptions($addr, Style::BORDER, $options2, true);
+                    $addr['col_idx'] = $colMin;
+                    $this->_setStyleOptions($addr, Style::BORDER, $options1);
+                    $addr['col_idx'] = $colMax;
+                    $this->_setStyleOptions($addr, Style::BORDER, $options2);
                 }
             }
+
         }
 
         return $this;
@@ -2198,71 +2315,55 @@ class Sheet
 
     /**
      * @param string $style
-     * @param string $color
+     * @param string|null $color
      *
      * @return $this
      */
-    public function applyBorderInner(string $style, string $color): Sheet
+    public function applyInnerBorder(string $style, ?string $color = '#000000'): Sheet
     {
         if ($this->lastTouch['area']['row_idx1'] < $this->lastTouch['area']['row_idx2']
             || $this->lastTouch['area']['col_idx1'] < $this->lastTouch['area']['col_idx2']) {
 
+            $rowMin = $this->lastTouch['area']['row_idx1'];
+            $rowMax = $this->lastTouch['area']['row_idx2'];
+            $colMin = $this->lastTouch['area']['col_idx1'];
+            $colMax = $this->lastTouch['area']['col_idx2'];
+
             $options = [
-                Style::BORDER_RIGHT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-right-style' => $style,
+                'border-right-color' => $color,
             ];
-            for ($colIdx = $this->lastTouch['area']['col_idx1']; $colIdx < $this->lastTouch['area']['col_idx2']; $colIdx++) {
+            for ($colIdx = $colMin; $colIdx < $colMax; $colIdx++) {
                 $addr = [
-                    'row_idx' => $this->lastTouch['area']['row_idx1'],
+                    'row_idx' => $rowMax,
                     'col_idx' => $colIdx,
                 ];
-                $this->_setOptions($addr, Style::BORDER, $options, true);
-                $addr = [
-                    'row_idx' => $this->lastTouch['area']['row_idx2'],
-                    'col_idx' => $colIdx,
-                ];
-                $this->_setOptions($addr, Style::BORDER, $options, true);
+                $this->_setStyleOptions($addr, 'border', $options);
             }
 
             $options1 = [
-                Style::BORDER_TOP => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_RIGHT => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_BOTTOM => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-right-style' => $style,
+                'border-right-color' => $color,
+                'border-bottom-style' => $style,
+                'border-bottom-color' => $color,
             ];
             $options2 = [
-                Style::BORDER_TOP => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
-                Style::BORDER_BOTTOM => [
-                    Style::BORDER_STYLE => $style,
-                    Style::BORDER_COLOR => $color,
-                ],
+                'border-bottom-style' => $style,
+                'border-bottom-color' => $color,
             ];
-            for ($rowIdx = $this->lastTouch['area']['row_idx1']; $rowIdx < $this->lastTouch['area']['row_idx2']; $rowIdx++) {
-                for ($colIdx = $this->lastTouch['area']['col_idx1']; $colIdx < $this->lastTouch['area']['col_idx2']; $colIdx++) {
+            for ($rowIdx = $rowMin; $rowIdx < $rowMax; $rowIdx++) {
+                for ($colIdx = $colMin; $colIdx < $colMax; $colIdx++) {
                     $addr = [
                         'row_idx' => $rowIdx,
                         'col_idx' => $colIdx,
                     ];
-                    $this->_setOptions($addr, Style::BORDER, $options1, true);
+                    $this->_setStyleOptions($addr, 'border', $options1);
                 }
                 $addr = [
                     'row_idx' => $rowIdx,
                     'col_idx' => $this->lastTouch['area']['col_idx2'],
                 ];
-                $this->_setOptions($addr, Style::BORDER, $options2, true);
+                $this->_setStyleOptions($addr, 'border', $options2);
             }
         }
 
@@ -2279,16 +2380,18 @@ class Sheet
      */
     public function applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null): Sheet
     {
-        $this->_setOptions([], 'font-name', $fontName);
+        $font = ['name' => $fontName];
         if ($fontSize) {
-            $this->_setOptions([], 'font-size', $fontSize);
+            $font = ['size' => $fontSize];
         }
         if ($fontStyle) {
-            $this->_setOptions([], 'font-style', $fontStyle);
+            $font = ['style' => $fontStyle];
         }
         if ($fontColor) {
-            $this->_setOptions([], 'font-color', $fontColor);
+            $font = ['color' => $fontColor];
         }
+
+        $this->_setStyleOptions([], 'font', $font);
 
         return $this;
     }
@@ -2301,7 +2404,7 @@ class Sheet
      */
     public function applyFontName(string $fontName): Sheet
     {
-        $this->_setOptions([], 'font-name', $fontName);
+        $this->_setStyleOptions([], 'font', ['font-name' => $fontName]);
 
         return $this;
     }
@@ -2313,58 +2416,54 @@ class Sheet
      */
     public function applyFontSize(float $fontSize): Sheet
     {
-        $this->_setOptions([], 'font-size', $fontSize);
+        $this->_setStyleOptions([], 'font', ['font-size' => $fontSize]);
 
         return $this;
     }
 
     /**
      * @param string $fontStyle
-     * @param bool|null $append
      *
      * @return $this
      */
-    public function applyFontStyle(string $fontStyle, ?bool $append = false): Sheet
+    public function applyFontStyle(string $fontStyle): Sheet
     {
-        $key = 'font-style-' . strtolower($fontStyle);
-        $this->_setOptions([], $key, 1, $append);
+        $this->_setStyleOptions([], 'font', ['font-style-' . strtolower($fontStyle) => 1]);
 
         return $this;
     }
 
-    public function applyFontStyleBold(?bool $append = false): Sheet
+    public function applyFontStyleBold(): Sheet
     {
-        return $this->applyFontStyle('bold', $append);
+        return $this->applyFontStyle('bold');
     }
 
     /**
-     * @param bool|null $append
-     *
      * @return $this
      */
-    public function applyFontStyleItalic(?bool $append = false): Sheet
+    public function applyFontStyleItalic(): Sheet
     {
-        return $this->applyFontStyle('italic', $append);
+        return $this->applyFontStyle('italic');
     }
 
     /**
-     * @param bool|null $append
+     * @param bool|null $double
      *
      * @return $this
      */
-    public function applyFontStyleUnderline(?bool $append = false): Sheet
+    public function applyFontStyleUnderline(?bool $double = false): Sheet
     {
-        return $this->applyFontStyle('underline', $append);
+        $this->_setStyleOptions([], 'font', ['font-style-underline' => $double ? 2 : 1]);
+
+        return $this;
     }
 
     /**
-     * @param bool|null $append
-     *
      * @return $this
      */
-    public function applyFontStyleStrikethrough(?bool $append = false): Sheet
+    public function applyFontStyleStrikethrough(): Sheet
     {
-        return $this->applyFontStyle('strikethrough', $append);
+        return $this->applyFontStyle('strikethrough');
     }
 
     /**
@@ -2374,7 +2473,7 @@ class Sheet
      */
     public function applyFontColor(string $fontColor): Sheet
     {
-        $this->_setOptions([], 'font-color', $fontColor);
+        $this->_setStyleOptions([], 'font', ['font-color' => $fontColor]);
 
         return $this;
     }
@@ -2392,16 +2491,6 @@ class Sheet
     }
 
     /**
-     * @param string $color
-     *
-     * @return $this
-     */
-    public function applyBackgroundColor(string $color): Sheet
-    {
-        return $this->_setOptions([], 'background-color', $color);
-    }
-
-    /**
      * Alias of 'backgroundColor()'
      *
      * @param string $color
@@ -2410,17 +2499,36 @@ class Sheet
      */
     public function applyFillColor(string $color): Sheet
     {
-        return $this->applyBackgroundColor($color);
+        $this->_setStyleOptions([], 'fill', ['fill-color' => $color]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function applyBgColor(string $color): Sheet
+    {
+        return $this->applyFillColor($color);
     }
 
     /**
      * @param string $textAlign
+     * @param string|null $verticalAlign
      *
      * @return $this
      */
-    public function applyTextAlign(string $textAlign): Sheet
+    public function applyTextAlign(string $textAlign, ?string $verticalAlign = null): Sheet
     {
-        return $this->_setOptions([], 'text-align', $textAlign);
+        $options = ['text-align' => $textAlign];
+        if ($verticalAlign !== null) {
+            $options['vertical-align'] = $verticalAlign;
+        }
+        $this->_setStyleOptions([], 'format', $options);
+
+        return $this;
     }
 
     /**
@@ -2430,7 +2538,19 @@ class Sheet
      */
     public function applyVerticalAlign(string $verticalAlign): Sheet
     {
-        return $this->_setOptions([], 'text-vertical-align', $verticalAlign);
+        $this->_setStyleOptions([], 'format', ['vertical-align' => $verticalAlign]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function applyTextCenter(): Sheet
+    {
+        $this->_setStyleOptions([], 'format', ['text-align' => 'center', 'vertical-align' => 'center']);
+
+        return $this;
     }
 
     /**
@@ -2440,8 +2560,23 @@ class Sheet
      */
     public function applyTextWrap(bool $textWrap): Sheet
     {
-        return $this->_setOptions([], 'text-wrap', $textWrap);
+        $this->_setStyleOptions([], 'format', ['text-wrap' => 1]);
+
+        return $this;
     }
+
+    /**
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function applyTextColor(string $color): Sheet
+    {
+        $this->_setStyleOptions([], 'font', ['font-color' => $color]);
+
+        return $this;
+    }
+
 
 }
 

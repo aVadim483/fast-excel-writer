@@ -315,7 +315,7 @@ $style = [
 | key           | allowed values                                                       |
 |---------------|----------------------------------------------------------------------|
 | name          | Arial, Times New Roman, Courier New, Comic Sans MS                   |
-| size          | 8, 9, 10, 11, 12 ...                                                 |
+| size          | 8, 9, 10, 11, 12 ... (numeric value)                                 |
 | style         | bold, italic, underline, strikethrough or multiple ie: 'bold,italic' |
 
 Border settings

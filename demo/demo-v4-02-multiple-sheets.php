@@ -37,6 +37,9 @@ $sheet->writeRow(['Mar 2020', '=SUM(Mar!B:B)']);
 
 $excel->save($outFileName);
 
-echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+echo '<b>', basename(__FILE__, '.php'), "</b><br>\n<br>\n";
+echo 'out filename: ', $outFileName, "<br>\n";
+echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec', "<br>\n";
+echo 'memory peak usage: ', memory_get_peak_usage(true), "<br>\n";
 
 // EOF

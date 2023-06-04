@@ -30,7 +30,7 @@ for ($i = 0; $i < 20; $i++) {
 
 $cnt2 = $sheet->rowCount;
 $totals = [
-    ['Total', "=SUM(B$cnt1:B$cnt2)"],
+    ['Total', "=SUM(B$cnt1:B$cnt2)", ''],
     ['Average', '', "=ROUND(AVERAGE(C$cnt1:C$cnt2),1)"]
 ];
 $rowOptions = [
@@ -45,6 +45,9 @@ $sheet->writeRow($totals[1], $rowOptions);
 
 $excel->save($outFileName);
 
-echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec';
+echo '<b>', basename(__FILE__, '.php'), "</b><br>\n<br>\n";
+echo 'out filename: ', $outFileName, "<br>\n";
+echo 'elapsed time: ', round(microtime(true) - $timer, 3), ' sec', "<br>\n";
+echo 'memory peak usage: ', memory_get_peak_usage(true), "<br>\n";
 
 // EOF

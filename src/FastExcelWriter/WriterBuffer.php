@@ -57,9 +57,9 @@ class WriterBuffer
     }
 
     /**
-     * @param bool $force
+     * @param bool|null $force
      */
-    public function flush($force = false)
+    public function flush(?bool $force = false)
     {
         if ($this->buffer || $force) {
             if (!$this->fd) {

@@ -416,13 +416,13 @@ class Excel
     /**
      * Set default
      *
-     * @param $font
+     * @param array $style
      *
      * @return $this
      */
-    public function setDefaultStyle($font): Excel
+    public function setDefaultStyle(array $style): Excel
     {
-        $this->style->setDefaultFont(['GENERAL' => $font]);
+        $this->style->setDefaultStyle($style);
 
         return $this;
     }
@@ -503,7 +503,7 @@ class Excel
     }
 
     /**
-     * Convert letter range to array of numbers (ONE based)
+     * Convert letter range to array of numbers (ZERO based)
      *
      * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
      *
@@ -811,9 +811,9 @@ class Excel
      * @param array|string $range
      * @param bool|null $exception
      *
-     * @return array|bool
+     * @return array|null
      */
-    public static function rangeDimension($range, ?bool $exception = false)
+    public static function rangeDimension($range, ?bool $exception = false): ?array
     {
         return self::rangeDimensionRelative($range, null, $exception);
     }
@@ -924,10 +924,10 @@ class Excel
     }
 
     /**
-     * Returns sheet by index or name of sheet.
-     * Return the first sheet of index omitted
+     * Returns sheet by number or name of sheet.
+     * Return the first sheet if number or name omitted
      *
-     * @param int|string|null $index - index or name of sheet
+     * @param int|string|null $index - number or name of sheet
      *
      * @return Sheet|null
      */
@@ -944,7 +944,7 @@ class Excel
             }
             else {
                 // index not found
-                throw  new Exception('Sheet #' . $index . ' not found');
+                throw  new Exception('Sheet #' . ++$index . ' not found');
             }
         }
         else {
@@ -955,7 +955,7 @@ class Excel
         }
         return $this->sheets[$key] ?? null;
     }
-    
+
     /**
      * Removes sheet by index or name of sheet.
      * Removes the first sheet of index omitted

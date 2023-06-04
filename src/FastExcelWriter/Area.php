@@ -18,7 +18,7 @@ class Area
     protected array $coord;
 
     /** @var array  */
-    protected $dimension = [];
+    protected array $dimension = [];
 
     /** @var string */
     protected $range;
@@ -62,7 +62,7 @@ class Area
      *
      * @return $this
      */
-    public function setCoord(array $coord)
+    public function setCoord(array $coord): Area
     {
         $this->coord = [];
         foreach($coord as $addr) {
@@ -84,7 +84,7 @@ class Area
      *
      * @return $this
      */
-    public function setIndex(int $index)
+    public function setIndex(int $index): Area
     {
         $this->index = $index;
 
@@ -201,7 +201,7 @@ class Area
      *
      * @return $this
      */
-    public function setValue($cellAddress, $value, ?array $style = null)
+    public function setValue($cellAddress, $value, ?array $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setValue($cellAddress, $value, $style);
@@ -219,7 +219,7 @@ class Area
      *
      * @return $this
      */
-    public function setFormula($cellAddress, $value, array $style = null)
+    public function setFormula($cellAddress, $value, array $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setFormula($cellAddress, $value, $style);
@@ -236,7 +236,7 @@ class Area
      *
      * @return $this
      */
-    public function setStyle($cellAddress, array $style)
+    public function setStyle($cellAddress, array $style): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setStyle($cellAddress, $style);
@@ -252,7 +252,7 @@ class Area
      *
      * @return $this
      */
-    public function addStyle($cellAddress, array $style)
+    public function addStyle($cellAddress, array $style): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->addStyle($cellAddress, $style);
@@ -268,10 +268,10 @@ class Area
      *
      * @return $this
      */
-    public function setFormat($cellAddress, string $format)
+    public function setFormat($cellAddress, string $format): Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applyStyle($cellAddress, ['format' => $format], true);
+            $this->sheet->setStyle($cellAddress, ['format' => $format], true);
         }
         return $this;
     }
@@ -284,10 +284,10 @@ class Area
      *
      * @return $this
      */
-    public function setColor($cellAddress, string $color)
+    public function setColor($cellAddress, string $color): Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applyStyle($cellAddress, ['color' => $color], true);
+            $this->sheet->setStyle($cellAddress, ['font-color' => $color], true);
         }
         return $this;
     }
@@ -300,10 +300,10 @@ class Area
      *
      * @return $this
      */
-    public function setBackgroundColor($cellAddress, string $color)
+    public function setBackgroundColor($cellAddress, string $color): Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress)) {
-            $this->sheet->applyStyle($cellAddress, ['fill' => $color], true);
+            $this->sheet->setStyle($cellAddress, ['fill-color' => $color], true);
         }
         return $this;
     }
@@ -316,7 +316,7 @@ class Area
      *
      * @return $this
      */
-    public function setFgColor($cellAddress, string $color)
+    public function setFgColor($cellAddress, string $color): Area
     {
         return $this->setColor($cellAddress, $color);
     }
@@ -329,7 +329,7 @@ class Area
      *
      * @return $this
      */
-    public function setBgColor($cellAddress, string $color)
+    public function setBgColor($cellAddress, string $color): Area
     {
         return $this->setBackgroundColor($cellAddress, $color);
     }
@@ -342,7 +342,7 @@ class Area
      *
      * @return $this
      */
-    public function setOuterBorder($range, $style)
+    public function setOuterBorder($range, $style): Area
     {
         if (is_string($range) && $this->_validateAddressRange($range)) {
             $this->sheet->setOuterBorder($range, $style);

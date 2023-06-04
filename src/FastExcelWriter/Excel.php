@@ -416,13 +416,13 @@ class Excel
     /**
      * Set default
      *
-     * @param $font
+     * @param array $style
      *
      * @return $this
      */
-    public function setDefaultStyle($font): Excel
+    public function setDefaultStyle(array $style): Excel
     {
-        $this->style->setDefaultFont(['GENERAL' => $font]);
+        $this->style->setDefaultStyle($style);
 
         return $this;
     }
@@ -503,7 +503,7 @@ class Excel
     }
 
     /**
-     * Convert letter range to array of numbers (ONE based)
+     * Convert letter range to array of numbers (ZERO based)
      *
      * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
      *

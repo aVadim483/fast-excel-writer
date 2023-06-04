@@ -1,6 +1,6 @@
-# FastExcelWriter
+## FastExcelWriter - Sheets
 
-## Sheets
+### Create, Select and Remove Sheet
 
 ```php
 // Create workbook with three named sheets 
@@ -18,7 +18,13 @@ $sheet = $excel->getSheet(3);
 // make new sheet with name 'Total'
 $sheet = $excel->makeSheet('Total');
 
+$sheet->setName($sheetName);
+
+// Removes the specified sheet
+$excel->removeSheet('Total');
 ```
+
+### Sheet Settings
 
 ```php
 $sheet->setDefaultFont($font);
@@ -33,9 +39,20 @@ $sheet->setDefaultFontColor($font);
 
 ```
 
-pagePortrait()
-pageLandscape()
-pageFitToWidth(1)  // fit width to 1 page
-pageFitToHeight(1);// fit height to 1 page
-->setFreeze('B2')
-->setAutofilter(1);
+### Page Settings
+
+```php
+$sheet->pagePortrait();
+$sheet->pageLandscape();
+$sheet->pageFitToWidth(1); // fit width to 1 page
+$sheet->pageFitToHeight(1);// fit height to 1 page
+```
+
+### Freeze Panes and Autofilter
+
+```php
+$sheet->setFreeze('B2');
+$sheet->setAutofilter(1);
+```
+
+Returns to [README.md](/README.md)

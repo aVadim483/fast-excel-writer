@@ -31,6 +31,8 @@ class Style
     public const TEXT_ALIGN_CENTER  = 'center';
     public const TEXT_ALIGN_RIGHT   = 'right';
 
+    public const FILL_COLOR         = 'fill-color';
+
     public const BORDER             = 'border';
 
     public const BORDER_SIDE        = 1;

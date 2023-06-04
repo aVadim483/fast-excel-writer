@@ -449,7 +449,7 @@ class Sheet
      * Call examples:
      *  setColOptions('B', ['width' = 20]) - options for column 'B'
      *  setColOptions('B:D', ['width' = 'auto']) - options for range of columns
-     *  setColOptions(['B' => ['width' = 20], 'C' => ['color' = '#f00']]) - options for several columns 'B' and 'C'
+     *  setColOptions(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]) - options for several columns 'B' and 'C'
      *
      * @param mixed $arg1
      * @param array|null $arg2
@@ -458,6 +458,10 @@ class Sheet
      */
     public function setColOptions($arg1, array $arg2 = null): Sheet
     {
+        if ($this->currentCol) {
+            $this->_writeCurrentRow();
+        }
+
         if ($arg2 === null) {
             $options = array_combine(Excel::colLetterRange(array_keys($arg1)), array_values($arg1));
             foreach ($options as $col => $colOptions) {
@@ -513,6 +517,19 @@ class Sheet
         $this->clearSummary();
 
         return $this;
+    }
+
+    /**
+     * Alias for setColOptions()
+     *
+     * @param $arg1
+     * @param array|null $arg2
+     *
+     * @return $this
+     */
+    public function setColStyles($arg1, array $arg2 = null): Sheet
+    {
+        return $this->setColOptions($arg1, $arg2);
     }
 
     /**
@@ -583,6 +600,10 @@ class Sheet
      */
     public function setColStyle($col, $style): Sheet
     {
+        if ($this->currentCol) {
+            $this->_writeCurrentRow();
+        }
+
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
@@ -610,6 +631,10 @@ class Sheet
      */
     public function setColFormula($col, string $formula): Sheet
     {
+        if ($this->currentCol) {
+            $this->_writeCurrentRow();
+        }
+
         $colIndexes = Excel::colIndexRange($col);
         if ($formula) {
             if ($formula[0] !== '=') {
@@ -698,8 +723,8 @@ class Sheet
 
     /**
      * setRowOptions(3, ['height' = 20]) - options for row number 3
-     * setRowOptions([3 => ['height' = 20], 4 => ['color' = '#f00']]) - options for several rows
-     * setRowOptions('2:5', ['color' = '#f00']) - options for range of rows
+     * setRowOptions([3 => ['height' = 20], 4 => ['font-color' = '#f00']]) - options for several rows
+     * setRowOptions('2:5', ['font-color' = '#f00']) - options for range of rows
      *
      * @param mixed $arg1
      * @param array|null $arg2
@@ -742,6 +767,11 @@ class Sheet
             }
         }
         return $this;
+    }
+
+    public function setRowStyles($arg1, array $arg2 = null): Sheet
+    {
+        return $this->setRowOptions($arg1, $arg2);
     }
 
     /**
@@ -1189,18 +1219,18 @@ class Sheet
 
     /**
      * writeHeader(['title1', 'title2', 'title3']) - texts for cells of header
-     * writeHeader(['title1' => 'text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]) - texts and formats of columns
-     * writeHeader([...], [...]) - texts and formats of columns and options of row
+     * writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]) - texts and formats of columns
+     * writeHeader([<cell values>], [<row styles>], [<col styles>]) - texts and formats of columns and options of row
      *
      * @param array $header
      * @param array|null $rowStyle
+     * @param array|null $colStyles
      *
      * @return $this
      */
-    public function writeHeader(array $header, array $rowStyle = null): Sheet
+    public function writeHeader(array $header, array $rowStyle = null, ?array $colStyles = []): Sheet
     {
         $rowValues = [];
-        $colStyles = [];
         $colNum = 0;
         foreach($header as $key => $val) {
             if (!is_int($key)) {
@@ -1209,7 +1239,7 @@ class Sheet
                     $colStyles[$colNum]['format'] = $val;
                 }
                 else {
-                    $colStyles[$colNum] = $val;
+                    $colStyles[$colNum] = isset($colStyles[$colNum]) ? array_replace_recursive($colStyles[$colNum], $val) : $val;
                 }
             }
             else {
@@ -1220,7 +1250,8 @@ class Sheet
         }
         $this->writeRow($rowValues, $rowStyle);
         if ($colStyles) {
-            $this->setColOptions($colStyles);
+            // column styles for next rows
+            $this->colStyles[-1] = $colStyles;
         }
 
         return $this;
@@ -1229,9 +1260,9 @@ class Sheet
     /**
      * @param string|array $cellAddress
      *
-     * @return array|bool
+     * @return array
      */
-    protected function _moveTo(&$cellAddress)
+    protected function _moveTo(&$cellAddress): ?array
     {
         $address = $this->_parseAddress($cellAddress);
         if (!isset($address['row'], $address['col'])) {
@@ -1418,9 +1449,13 @@ class Sheet
             }
         }
 
-        $this->currentCol = Excel::MIN_COL;
+        $this->currentCol = 0;
         $this->currentRow++;
 
+        if (isset($this->colStyles[-1])) {
+            $this->setColOptions($this->colStyles[-1]);
+            unset($this->colStyles[-1]);
+        }
         $this->withLastCell();
     }
 
@@ -1769,6 +1804,20 @@ class Sheet
     }
 
     /**
+     * Alias for setStyle()
+     *
+     * @param string $cellAddress
+     * @param $style
+     * @param bool|null $mergeStyles
+     *
+     * @return $this
+     */
+    public function setCellStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
+    {
+        return $this->setStyle($cellAddress, $style, $mergeStyles);
+    }
+
+    /**
      * @param string $cellAddr
      * @param array $style
      *
@@ -2042,6 +2091,12 @@ class Sheet
             'col_idx' => $this->currentCol,
         ];
         $this->lastTouch['row'] = ['row_idx' => $this->currentRow];
+        $this->lastTouch['area'] = [
+            'row_idx1' => $this->currentRow,
+            'row_idx2' => $this->currentRow,
+            'col_idx1' => $this->currentCol,
+            'col_idx2' => $this->currentCol,
+        ];
         $this->lastTouch['ref'] = 'row';
 
         return $this;
@@ -2074,6 +2129,20 @@ class Sheet
 
 
     // === DESIGN STYLES === /
+
+    /**
+     * Sets height to the current row
+     *
+     * @param float $height
+     *
+     * @return $this
+     */
+    public function applyRowHeight(float $height): Sheet
+    {
+        $this->setRowHeight($this->currentRow + 1, $height);
+
+        return $this;
+    }
 
     /**
      * Sets all borders style
@@ -2384,15 +2453,15 @@ class Sheet
      */
     public function applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null): Sheet
     {
-        $font = ['name' => $fontName];
+        $font = ['font-name' => $fontName];
         if ($fontSize) {
-            $font = ['size' => $fontSize];
+            $font = ['font-size' => $fontSize];
         }
         if ($fontStyle) {
-            $font = ['style' => $fontStyle];
+            $font = ['font-style' => $fontStyle];
         }
         if ($fontColor) {
-            $font = ['color' => $fontColor];
+            $font = ['font-color' => $fontColor];
         }
 
         $this->_setStyleOptions([], 'font', $font);

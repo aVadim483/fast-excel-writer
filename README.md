@@ -314,7 +314,7 @@ $style = [
 
 | key           | allowed values                                                       |
 |---------------|----------------------------------------------------------------------|
-| name          | Arial, Times New Roman, Courier New, Comic Sans MS                   |
+| name          | Any font installed on the computer (default Arial)                   |
 | size          | 8, 9, 10, 11, 12 ...                                                 |
 | style         | bold, italic, underline, strikethrough or multiple ie: 'bold,italic' |
 

@@ -58,12 +58,25 @@ class Style
     public const BORDER_MEDIUM_DASHED = 'mediumDashed';
     public const BORDER_SLANT_DASH_DOT = 'slantDashDot';
 
+    public const BORDER_STYLE_NONE = null;
+    public const BORDER_STYLE_THIN = 'thin';
+    public const BORDER_STYLE_MEDIUM = 'medium';
+    public const BORDER_STYLE_THICK = 'thick';
+    public const BORDER_STYLE_DASH_DOT = 'dashDot';
+    public const BORDER_STYLE_DASH_DOT_DOT = 'dashDotDot';
+    public const BORDER_STYLE_DASHED = 'dashed';
+    public const BORDER_STYLE_DOTTED = 'dotted';
+    public const BORDER_STYLE_DOUBLE = 'double';
+    public const BORDER_STYLE_HAIR = 'hair';
+    public const BORDER_STYLE_MEDIUM_DASH_DOT = 'mediumDashDot';
+    public const BORDER_STYLE_MEDIUM_DASH_DOT_DOT = 'mediumDashDotDot';
+    public const BORDER_STYLE_MEDIUM_DASHED = 'mediumDashed';
+    public const BORDER_STYLE_SLANT_DASH_DOT = 'slantDashDot';
+
     public const BORDER_STYLE_MIN = self::BORDER_NONE;
     public const BORDER_STYLE_MAX = self::BORDER_SLANT_DASH_DOT;
 
     protected static $instance;
-
-    protected static array $fontStyleDefines = ['bold', 'italic', 'strike', 'underline'];
 
     public array $localeSettings = [];
 
@@ -82,6 +95,11 @@ class Style
 
     protected array $elementIndexes = [];
 
+    protected static array $fontStyleDefines = ['bold', 'italic', 'strike', 'underline'];
+
+    protected static array $borderStyleDefines = [self::BORDER_STYLE_THIN, self::BORDER_STYLE_MEDIUM, self::BORDER_STYLE_THICK, self::BORDER_STYLE_DASH_DOT,
+        self::BORDER_STYLE_DASH_DOT_DOT, self::BORDER_STYLE_DASHED, self::BORDER_STYLE_DOTTED, self::BORDER_STYLE_DOUBLE, self::BORDER_STYLE_HAIR,
+        self::BORDER_STYLE_MEDIUM_DASH_DOT, self::BORDER_STYLE_MEDIUM_DASH_DOT_DOT, self::BORDER_STYLE_MEDIUM_DASHED, self::BORDER_STYLE_SLANT_DASH_DOT];
 
     /**
      * Constructor of Style
@@ -288,44 +306,54 @@ class Style
         }
         else {
             foreach($border as $side => $sideOptions) {
+                if ($sideOptions === null) {
+                    $style = 'none';
+                }
+                elseif (is_string($sideOptions) && in_array($sideOptions, self::$borderStyleDefines)) {
+                    $style = $sideOptions;
+                }
+                else {
+                    $style = $sideOptions['style'] ?? 'thin';
+                }
+                $color = $sideOptions['color'] ?? '#000000';
                 if (!is_numeric($side)) {
                     switch (strtolower($side)) {
                         case 'all':
                             $result = [
-                                'border-left-style' => $sideOptions['style'] ?? 'thin',
-                                'border-left-color' => $sideOptions['color'] ?? '#000000',
-                                'border-right-style' => $sideOptions['style'] ?? 'thin',
-                                'border-right-color' => $sideOptions['color'] ?? '#000000',
-                                'border-top-style' => $sideOptions['style'] ?? 'thin',
-                                'border-top-color' => $sideOptions['color'] ?? '#000000',
-                                'border-bottom-style' => $sideOptions['style'] ?? 'thin',
-                                'border-bottom-color' => $sideOptions['color'] ?? '#000000',
+                                'border-left-style' => $style,
+                                'border-left-color' => $color,
+                                'border-right-style' => $style,
+                                'border-right-color' => $color,
+                                'border-top-style' => $style,
+                                'border-top-color' => $color,
+                                'border-bottom-style' => $style,
+                                'border-bottom-color' => $color,
                                 'border-diagonal-up' => 0,
                                 'border-diagonal-down' => 0,
                             ];
                             break;
                         case 'left':
                             $result = [
-                                'border-left-style' => $sideOptions['style'] ?? 'thin',
-                                'border-left-color' => $sideOptions['color'] ?? '#000000',
+                                'border-left-style' => $style,
+                                'border-left-color' => $color,
                             ];
                             break;
                         case 'right':
                             $result = [
-                                'border-right-style' => $sideOptions['style'] ?? 'thin',
-                                'border-right-color' => $sideOptions['color'] ?? '#000000',
+                                'border-right-style' => $style,
+                                'border-right-color' => $color,
                             ];
                             break;
                         case 'top':
                             $result = [
-                                'border-top-style' => $sideOptions['style'] ?? 'thin',
-                                'border-top-color' => $sideOptions['color'] ?? '#000000',
+                                'border-top-style' => $style,
+                                'border-top-color' => $color,
                             ];
                             break;
                         case 'bottom':
                             $result = [
-                                'border-bottom-style' => $sideOptions['style'] ?? 'thin',
-                                'border-bottom-color' => $sideOptions['color'] ?? '#000000',
+                                'border-bottom-style' => $style,
+                                'border-bottom-color' => $color,
                             ];
                             break;
                         default:
@@ -333,22 +361,21 @@ class Style
                     }
                 }
                 else {
-                    $result = [];
                     if ($side & self::BORDER_LEFT) {
-                        $result['border-left-style'] = $sideOptions['style'] ?? 'thin';
-                        $result['border-left-color'] = $sideOptions['color'] ?? '#000000';
+                        $result['border-left-style'] = $style;
+                        $result['border-left-color'] = $color;
                     }
                     if ($side & self::BORDER_RIGHT) {
-                        $result['border-right-style'] = $sideOptions['style'] ?? 'thin';
-                        $result['border-right-color'] = $sideOptions['color'] ?? '#000000';
+                        $result['border-right-style'] = $style;
+                        $result['border-right-color'] = $color;
                     }
                     if ($side & self::BORDER_TOP) {
-                        $result['border-top-style'] = $sideOptions['style'] ?? 'thin';
-                        $result['border-top-color'] = $sideOptions['color'] ?? '#000000';
+                        $result['border-top-style'] = $style;
+                        $result['border-top-color'] = $color;
                     }
                     if ($side & self::BORDER_BOTTOM) {
-                        $result['border-bottom-style'] = $sideOptions['style'] ?? 'thin';
-                        $result['border-bottom-color'] = $sideOptions['color'] ?? '#000000';
+                        $result['border-bottom-style'] = $style;
+                        $result['border-bottom-color'] = $color;
                     }
                 }
             }
@@ -631,7 +658,7 @@ class Style
             }
         }
 
-        $style = ($font['style'] ?? null);
+        $style = $font['font-style'] ?? ($font['style'] ?? null);
         if ($style) {
             if (is_array($style)) {
                 $val = implode('-', $style);
@@ -745,7 +772,12 @@ class Style
 
                 case 'font':
                     if (is_string($styleVal)) {
-                        $result['font']['font-name'] = $styleVal;
+                        if (in_array($styleVal, self::$fontStyleDefines)) {
+                            $result['font']['font-style'] = $styleVal;
+                        }
+                        else {
+                            $result['font']['font-name'] = $styleVal;
+                        }
                     }
                     elseif (is_array($styleVal)) {
                         $result['font'] = $styleVal;

@@ -1453,7 +1453,11 @@ class Sheet
         }
 
         if ($rowStyle) {
+            $rowStyle = Style::normalize($rowStyle);
             $this->rowStyles[$this->currentRow] = $rowStyle;
+            if (isset($rowStyle['options']['height'])) {
+                $this->setRowHeight($this->currentRow + 1, $rowStyle['options']['height']);
+            }
         }
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
@@ -1486,7 +1490,6 @@ class Sheet
             $this->rowStyles[$this->currentRow] = $options;
         }
         $this->_writeCurrentRow();
-        $this->withLastRow();
 
         return $this;
     }
@@ -1746,6 +1749,7 @@ class Sheet
         if ($dimension['rowNum1'] <= $this->rowCount) {
             throw new Exception('Row number must be greater then written rows');
         }
+        $oldStyle = $style;
         $style = Style::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
             for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {

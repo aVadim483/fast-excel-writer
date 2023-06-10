@@ -1040,7 +1040,7 @@ class Excel
      *
      * @param string|null $name
      */
-    public function output(string $name = null)
+    public function download(string $name = null)
     {
         $tmpFile = $this->writer->tempFilename();
         $this->save($tmpFile);
@@ -1061,6 +1061,17 @@ class Excel
         readfile($tmpFile);
     }
 
+    /**
+     * Alias of download()
+     *
+     * @param string|null $name
+     *
+     * @return void
+     */
+    public function output(string $name = null)
+    {
+        $this->download($name);
+    }
 }
 
  // EOF

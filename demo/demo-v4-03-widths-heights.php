@@ -14,9 +14,14 @@ $sheet->setColWidths(['B' => 10, 'C' => 20, 'E' => 30, 'F' => 40]);
 $sheet->setRowHeight(2, 33);
 //$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 
-$sheet->writeRow([300, 234, 456, 789], ['height' => 20]);
+// Write row width default height
 $sheet->writeRow([300, 234, 456, 789]);
-$sheet->writeRow([300, 234, 456, 789], ['height' => 40]);
+
+// Write row with specified height
+$sheet->writeRow([300, 234, 456, 789], ['height' => 20]);
+
+// Write row with specified height - other way (preferred)
+$sheet->writeRow([300, 234, 456, 789])->applyRowHeight(40);
 
 $excel->save($outFileName);
 

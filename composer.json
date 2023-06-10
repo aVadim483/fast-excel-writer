@@ -27,6 +27,10 @@
         "ext-mbstring": "*",
         "ext-intl": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "avadim/fast-excel-reader": "^2.2"
+    },
     "funding": [
         {
             "type": "other",

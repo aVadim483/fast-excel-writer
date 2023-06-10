@@ -23,9 +23,9 @@ class Style
     public const STYLE              = 'style';
     public const WIDTH              = 'width';
 
-    public const TEXT_WRAP          = 'text-wrap';
-    public const TEXT_ALIGN         = 'text-align';
-    public const VERTICAL_ALIGN     = 'vertical-align';
+    public const TEXT_WRAP          = 'format-text-wrap';
+    public const TEXT_ALIGN         = 'format-align-horizontal';
+    public const VERTICAL_ALIGN     = 'format-align-vertical';
 
     public const TEXT_ALIGN_LEFT    = 'left';
     public const TEXT_ALIGN_CENTER  = 'center';
@@ -321,6 +321,9 @@ class Style
                 if (!is_numeric($side)) {
                     switch (strtolower($side)) {
                         case 'all':
+                        case 'style':
+                        case 'border-style':
+                        case 'border-style-all':
                             $result = [
                                 'border-left-style' => $style,
                                 'border-left-color' => $color,
@@ -738,38 +741,31 @@ class Style
             switch ($styleKey) {
                 case 'format':
                     if ($styleVal === 0 || $styleVal === '0') {
-                        $result['format']['num_format'] = '@INTEGER';
+                        $result['format']['format-pattern'] = '@INTEGER';
                     }
                     elseif ($styleVal) {
                         if (is_array($styleVal)) {
                             $result['format'] = $styleVal;
                         }
                         elseif (is_string($styleVal) && $styleVal[0] === '@') {
-                            $result['format']['num_format'] = strtoupper($styleVal);
+                            $result['format']['format-pattern'] = strtoupper($styleVal);
                         }
                         else {
-                            $result['format']['num_format'] = $styleVal;
+                            $result['format']['format-pattern'] = $styleVal;
                         }
                     }
                     break;
 
                 case 'border':
-                    //$result[$styleKey] = self::normalizeBorder($styleVal);
-                    $result['border'] = self::borderOptions($styleVal);
-                    break;
-
                 case 'border-style':
-                    $result['border']['border-left-style'] = $styleVal;
-                    $result['border']['border-right-style'] = $styleVal;
-                    $result['border']['border-top-style'] = $styleVal;
-                    $result['border']['border-bottom-style'] = $styleVal;
-                    break;
-
                 case 'border-color':
-                    $result['border']['border-left-color'] = $styleVal;
-                    $result['border']['border-right-color'] = $styleVal;
-                    $result['border']['border-top-color'] = $styleVal;
-                    $result['border']['border-bottom-color'] = $styleVal;
+                    $border = self::borderOptions($styleVal);
+                    if (isset($result['border'])) {
+                        $result['border'] = array_replace($result['border'], $border);
+                    }
+                    else {
+                        $result['border'] = $border;
+                    }
                     break;
 
                 case 'font':
@@ -825,48 +821,54 @@ class Style
                     break;
 
                 case 'align':
+                case 'alignment':
                     if ($styleVal === 'center' || $styleVal === 'center-center') {
-                        $result['format']['text-align'] = 'center';
-                        $result['format']['vertical-align'] = 'center';
+                        $result['format']['format-align-horizontal'] = 'center';
+                        $result['format']['format-align-vertical'] = 'center';
                     }
                     elseif (strpos($styleVal, '-')) {
                         $parts = explode('-', $styleVal);
                         if (in_array($parts[0], ['general', 'left', 'right', 'justify'])) {
-                            $result['format']['text-align'] = $parts[0];
+                            $result['format']['format-align-horizontal'] = $parts[0];
                             unset($parts[0]);
                         }
-                        if (empty($result['text-align']) && in_array($parts[1], ['general', 'left', 'right', 'justify'])) {
-                            $result['format']['text-align'] = $parts[1];
+                        if (empty($result['format-align-horizontal']) && in_array($parts[1], ['general', 'left', 'right', 'justify'])) {
+                            $result['format']['format-align-horizontal'] = $parts[1];
                             unset($parts[1]);
                         }
                         if (!empty($parts[0]) && in_array($parts[0], ['bottom', 'center', 'distributed', 'top'])) {
-                            $result['format']['vertical-align'] = $parts[0];
+                            $result['format']['format-align-vertical'] = $parts[0];
                         }
                         if (!empty($parts[1]) && empty($result['vertical-align']) && in_array($parts[1], ['bottom', 'center', 'distributed', 'top'])) {
-                            $result['format']['vertical-align'] = $parts[1];
+                            $result['format']['format-align-vertical'] = $parts[1];
                             unset($parts[1]);
                         }
                     }
                     break;
 
                 case 'text-align':
+                case 'format-align-horizontal':
+                case 'format-alignment-horizontal':
                     if (in_array($styleVal, ['general', 'left', 'right', 'justify', 'center'])) {
-                        $result['format']['text-align'] = $styleVal;
+                        $result['format']['format-align-horizontal'] = $styleVal;
                     }
                     break;
 
                 case 'vertical-align':
+                case 'format-align-vertical':
+                case 'format-alignment-vertical':
                     if (in_array($styleVal, ['bottom', 'center', 'distributed', 'top'])) {
-                        $result['format']['vertical-align'] = $styleVal;
+                        $result['format']['format-align-vertical'] = $styleVal;
                     }
                     break;
 
                 case 'text-wrap':
-                    $result['format']['text-wrap'] = (bool)$styleVal;
+                case 'format-text-wrap':
+                    $result['format']['format-text-wrap'] = (bool)$styleVal;
                     break;
 
                 case 'width':
-                case 'autofit':
+                case 'col-width':
                     if ($styleVal === 'auto' || $styleVal === true) {
                         $result['options']['width-auto'] = true;
                     }
@@ -879,6 +881,7 @@ class Style
                     break;
 
                 case 'height':
+                case 'row-height':
                     $height = self::numFloat($styleVal);
                     if (is_numeric($height) && $height > 0) {
                         $result['options']['height'] = $height;
@@ -1254,7 +1257,7 @@ class Style
             $numberFormatType = self::determineNumberFormatType($numberFormat, $numFormat);
             $cellStyle['_num_fmt_Id'] = $this->addElement('numFmts', $numberFormat);
 
-            $fullStyle['format']['num_format'] = $numFormat;
+            $fullStyle['format']['format-pattern'] = $numFormat;
             $fullStyle['number_format'] = $numberFormat;
             $fullStyle['number_format_type'] = $numberFormatType;
         }
@@ -1277,9 +1280,9 @@ class Style
      */
     public function addStyle(array $cellStyle, ?array &$fullStyle = []): int
     {
-        if (isset($cellStyle['format']['num_format'])) {
-            $numFormat = $cellStyle['format']['num_format'];
-            unset($cellStyle['format']['num_format']);
+        if (isset($cellStyle['format']['format-pattern'])) {
+            $numFormat = $cellStyle['format']['format-pattern'];
+            unset($cellStyle['format']['format-pattern']);
         }
         else {
             $numFormat = 'GENERAL';

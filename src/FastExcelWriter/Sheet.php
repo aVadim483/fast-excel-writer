@@ -116,7 +116,7 @@ class Sheet
             ],
             'ref' => 'cell',
         ];
-        $this->withLastCell();
+        $this->_touchEnd(0, 0, 'cell');
     }
 
     /**
@@ -886,8 +886,8 @@ class Sheet
                 else {
                     $cellStyle = $styleStack ? $styleStack[0] : [];
                 }
-                if (!empty($cellStyle['format']['num_format']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['num_format']])) {
-                    $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['num_format']], $cellStyle]);
+                if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']])) {
+                    $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
                 }
 
                 if (isset($cellStyle['hyperlink'])) {
@@ -1195,12 +1195,14 @@ class Sheet
         if ($this->currentRow < $this->rowCount) {
             $this->currentRow = $this->rowCount;
         }
-        $this->withLastCell();
+        //$this->withLastCell();
         $cellAddress = [
             'row' => 1 + $this->currentRow,
-            'col' => 1 + $this->currentCol++,
+            'col' => 1 + $this->currentCol,
         ];
         $this->_setCellData($cellAddress, $value, $styles, false);
+        $this->_touchEnd($this->currentRow, $this->currentCol, 'cell');
+        ++$this->currentCol;
 
         return $this;
     }
@@ -1306,7 +1308,8 @@ class Sheet
     public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
     {
         $address = $this->_moveTo($cellAddress);
-        $this->withLastCell();
+        $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
+        //$this->withLastCell();
 
         ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true, true);
@@ -1317,6 +1320,7 @@ class Sheet
         else {
             $this->currentCol++;
         }
+        $this->_touchEnd($address['rowIndex'], $address['colIndex'], 'cell');
 
         return $this;
     }
@@ -1412,51 +1416,53 @@ class Sheet
      */
     protected function _writeCurrentRow()
     {
-        $writer = $this->excel->getWriter();
-        $maxRow = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : 0,
-            $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : 0);
-        if ($maxRow < $this->currentRow) {
-            $maxRow = $this->currentRow;
-        }
+        if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
+            $writer = $this->excel->getWriter();
+            $maxRow = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : 0,
+                $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : 0);
+            if ($maxRow < $this->currentRow) {
+                $maxRow = $this->currentRow;
+            }
 
-        for ($rowIdx = $this->rowCount; $rowIdx <= $maxRow; $rowIdx++) {
-            if (isset($this->cells['values'][$rowIdx])) {
-                $values = $this->cells['values'][$rowIdx];
-                unset($this->cells['values'][$rowIdx]);
-            }
-            else {
-                $values = [];
-            }
-            if (isset($this->cells['styles'][$rowIdx])) {
-                $styles = $this->cells['styles'][$rowIdx];
-                unset($this->cells['styles'][$rowIdx]);
-            }
-            else {
-                $styles = [];
-            }
-            if ($values || $styles) {
-                if (!$this->open) {
-                    $writer->writeSheetDataBegin($this);
+            for ($rowIdx = $this->rowCount; $rowIdx <= $maxRow; $rowIdx++) {
+                if (isset($this->cells['values'][$rowIdx])) {
+                    $values = $this->cells['values'][$rowIdx];
+                    unset($this->cells['values'][$rowIdx]);
                 }
+                else {
+                    $values = [];
+                }
+                if (isset($this->cells['styles'][$rowIdx])) {
+                    $styles = $this->cells['styles'][$rowIdx];
+                    unset($this->cells['styles'][$rowIdx]);
+                }
+                else {
+                    $styles = [];
+                }
+                if ($values || $styles) {
+                    if (!$this->open) {
+                        $writer->writeSheetDataBegin($this);
+                    }
 
-                $this->_writeRow($writer, $values, [], $styles);
+                    $this->_writeRow($writer, $values, [], $styles);
+                }
+                else {
+                    $this->rowCount++;
+                }
+                if (isset($this->rowStyles[$rowIdx])) {
+                    unset($this->rowStyles[$rowIdx]);
+                }
             }
-            else {
-                $this->rowCount++;
+
+            $this->currentCol = 0;
+            $this->currentRow++;
+
+            if (isset($this->colStyles[-1])) {
+                $this->setColOptions($this->colStyles[-1]);
+                unset($this->colStyles[-1]);
             }
-            if (isset($this->rowStyles[$rowIdx])) {
-                unset($this->rowStyles[$rowIdx]);
-            }
+            $this->withLastCell();
         }
-
-        $this->currentCol = 0;
-        $this->currentRow++;
-
-        if (isset($this->colStyles[-1])) {
-            $this->setColOptions($this->colStyles[-1]);
-            unset($this->colStyles[-1]);
-        }
-        $this->withLastCell();
     }
 
     /**
@@ -1497,8 +1503,9 @@ class Sheet
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
         $maxColIdx = max($cellStyles ? max(array_keys($cellStyles)) : 0, $rowValues ? max(array_keys($rowValues)) : 0);
+        $this->_touchStart($this->currentRow, 0, 'row');
         for ($colIdx = 0; $colIdx <= $maxColIdx; $colIdx++) {
-            if (isset($rowValues[$colIdx]) || $cellStyles[$colIdx]) {
+            if (isset($rowValues[$colIdx]) || isset($cellStyles[$colIdx])) {
                 if ($this->lastTouch['area']['col_idx1'] === -1) {
                     $this->lastTouch['area']['col_idx1'] = $colIdx;
                 }
@@ -1507,7 +1514,9 @@ class Sheet
             }
             $this->lastTouch['cell']['col_idx'] = ++$this->currentCol;
         }
-        $this->withLastRow();
+        $this->_touchEnd($this->currentRow, $maxColIdx, 'row');
+
+        //$this->withLastRow();
 
         return $this;
     }
@@ -1713,7 +1722,6 @@ class Sheet
             }
         }
         if ($styles) {
-            //$this->cells['styles'][$rowIdx][$colIdx] = $styles;
             $this->cells['styles'][$rowIdx][$colIdx] = Style::normalize($styles);
         }
     }
@@ -1929,6 +1937,7 @@ class Sheet
         }
         $this->currentRow = $this->rowCount;
         $this->currentCol = 0;
+        $this->_touchEnd($this->currentRow, $this->currentCol, 'cell');
         $this->withLastCell();
 
         return $this;
@@ -1969,7 +1978,10 @@ class Sheet
             $this->writeAreas();
         }
 
-        $this->_writeCurrentRow();
+        if ($this->currentCol) {
+            $this->_writeCurrentRow();
+        }
+
         $this->fileWriter->flush(true);
         $this->fileWriter->write('</sheetData>');
     }
@@ -2049,12 +2061,68 @@ class Sheet
     }
 
     /**
+     * @param int $row
+     * @param int $col
+     * @param string|null $ref
+     *
+     * @return void
+     */
+    protected function _touchStart(int $row, int $col, ?string $ref = null)
+    {
+        $this->lastTouch['row'] = [
+            'row_idx' => $row,
+        ];
+        $this->lastTouch['cell'] = [
+            'row_idx' => $row,
+            'col_idx' => $col,
+        ];
+        $this->lastTouch['area'] = [
+            'row_idx1' => $row,
+            'row_idx2' => $row,
+            'col_idx1' => $col,
+            'col_idx2' => $col,
+        ];
+        if ($ref) {
+            $this->lastTouch['ref'] = $ref;
+        }
+    }
+
+    /**
+     * @param int $row
+     * @param int $col
+     * @param string|null $ref
+     *
+     * @return void
+     */
+    protected function _touchEnd(int $row, int $col, ?string $ref = null)
+    {
+        $this->lastTouch['row'] = [
+            'row_idx' => $row,
+        ];
+        $this->lastTouch['cell'] = [
+            'row_idx' => $row,
+            'col_idx' => $col,
+        ];
+        $this->lastTouch['area']['row_idx2'] = $row;
+        $this->lastTouch['area']['col_idx2'] = $col;
+
+        if ($ref) {
+            $this->lastTouch['ref'] = $ref;
+            if ($ref === 'cell') {
+                $this->lastTouch['area']['row_idx1'] = $row;
+                $this->lastTouch['area']['col_idx1'] = $col;
+            }
+        }
+    }
+
+    /**
      * Select last written cell for applying
      *
      * @return $this
      */
     public function withLastCell(): Sheet
     {
+        /*
         $this->lastTouch['row'] = [
             'row_idx' => $this->currentRow,
         ];
@@ -2074,6 +2142,7 @@ class Sheet
             'col_idx1' => $maxCol,
             'col_idx2' => $maxCol,
         ];
+        */
         $this->lastTouch['ref'] = 'cell';
 
         return $this;
@@ -2086,6 +2155,7 @@ class Sheet
      */
     public function withLastRow(): Sheet
     {
+        /*
         $this->lastTouch['cell'] = [
             'row_idx' => $this->currentRow,
             'col_idx' => $this->currentCol,
@@ -2097,6 +2167,7 @@ class Sheet
             'col_idx1' => $this->currentCol,
             'col_idx2' => $this->currentCol,
         ];
+        */
         $this->lastTouch['ref'] = 'row';
 
         return $this;
@@ -2595,9 +2666,9 @@ class Sheet
      */
     public function applyTextAlign(string $textAlign, ?string $verticalAlign = null): Sheet
     {
-        $options = ['text-align' => $textAlign];
+        $options = ['format-align-horizontal' => $textAlign];
         if ($verticalAlign !== null) {
-            $options['vertical-align'] = $verticalAlign;
+            $options['format-align-vertical'] = $verticalAlign;
         }
         $this->_setStyleOptions([], 'format', $options);
 
@@ -2621,7 +2692,7 @@ class Sheet
      */
     public function applyTextCenter(): Sheet
     {
-        $this->_setStyleOptions([], 'format', ['text-align' => 'center', 'vertical-align' => 'center']);
+        $this->_setStyleOptions([], 'format', ['format-align-horizontal' => 'center', 'format-align-vertical' => 'center']);
 
         return $this;
     }
@@ -2633,7 +2704,7 @@ class Sheet
      */
     public function applyTextWrap(bool $textWrap): Sheet
     {
-        $this->_setStyleOptions([], 'format', ['text-wrap' => 1]);
+        $this->_setStyleOptions([], 'format', ['format-text-wrap' => 1]);
 
         return $this;
     }

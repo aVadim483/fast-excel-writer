@@ -23,7 +23,8 @@ $rowOptions = [
 $sheet->writeRow($row, $rowOptions);
 $cnt1 = $sheet->rowCount + 1;
 
-for ($i = 0; $i < 20; $i++) {
+$max = 20;
+for ($i = 0; $i < $max; $i++) {
     $row = [$i, random_int(100, 999), '=RC[-1]*0.1'];
     $sheet->writeRow($row);
 }
@@ -41,7 +42,9 @@ $rowOptions = [
 ];
 
 $sheet->writeRow($totals[0], $rowOptions);
-$sheet->writeRow($totals[1], $rowOptions);
+$sheet->writeRow($totals[1])
+    ->applyFontStyleBold()
+    ->applyBorderTop(Style::BORDER_DOUBLE);
 
 $excel->save($outFileName);
 

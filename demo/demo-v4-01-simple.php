@@ -36,7 +36,7 @@ $excel = Excel::create();
 // Get the first sheet;
 $sheet = $excel->getSheet();
 
-$rowOptions = ['font' => 'bold'];
+$rowOptions = ['font-style' => 'bold'];
 // Write header:
 //    $header - values for cells of the first row and options for columns
 //    $rowOptions - options of header row

@@ -35,8 +35,8 @@ $excel->save();
 // Saves workbook to specified file 
 $excel->save($filename);
 
-// Send workbook to the browser
-$excel->output('name.xlsx');
+// Download generated file to client (send to browser)
+$excel->download('name.xlsx');
 
 ```
 

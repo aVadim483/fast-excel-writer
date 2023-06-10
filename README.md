@@ -38,7 +38,7 @@ Jump To:
   * [Apply Fonts](/docs/04-styles.md#apply-fonts)
   * [Apply Colors](/docs/04-styles.md#apply-colors)
   * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
-* [Want to support FastExcelWriter?](#want-to-support-fastexcelwriter)
+* [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 
 ## Introduction
 
@@ -124,7 +124,7 @@ $excel->save('simple.xlsx');
 ```
 Also, you can download generated file to client (send to browser)
 ```php
-$excel->output('download.xlsx');
+$excel->download('download.xlsx');
 ```
 
 ### Advanced Example
@@ -224,7 +224,7 @@ $sheet->setColWidths([10, 20, 30, 40]);
 
 ```
 
-## Want to support FastExcelWriter?
+## Do you want to support FastExcelWriter?
 
 if you find this package useful you can support and donate to me for a cup of coffee:
 

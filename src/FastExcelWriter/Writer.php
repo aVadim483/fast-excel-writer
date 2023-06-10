@@ -681,13 +681,13 @@ class Writer
             $file->write('<cellXfs count="' . count($cellXfs) . '">');
             foreach ($cellXfs as $cellXf) {
                 $alignmentAttr = '';
-                if (!empty($cellXf['format']['text-align'])) {
-                    $alignmentAttr .= ' horizontal="' . $cellXf['format']['text-align'] . '"';
+                if (!empty($cellXf['format']['format-align-horizontal'])) {
+                    $alignmentAttr .= ' horizontal="' . $cellXf['format']['format-align-horizontal'] . '"';
                 }
-                if (!empty($cellXf['format']['vertical-align'])) {
-                    $alignmentAttr .= ' vertical="' . $cellXf['format']['vertical-align'] . '"';
+                if (!empty($cellXf['format']['format-align-vertical'])) {
+                    $alignmentAttr .= ' vertical="' . $cellXf['format']['format-align-vertical'] . '"';
                 }
-                if (!empty($cellXf['format']['text-wrap'])) {
+                if (!empty($cellXf['format']['format-text-wrap'])) {
                     $alignmentAttr .= ' wrapText="true"';
                 }
 

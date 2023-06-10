@@ -9,31 +9,31 @@ $timer = microtime(true);
 $excel = Excel::create(['Total']);
 
 // make new sheet with name 'Jan'
-$sheet = $excel->makeSheet('Jan');
-$sheet->setColFormat(1, '@date');
+$sheet1 = $excel->makeSheet('Jan');
+$sheet1->setColFormat(1, '@date');
 for ($day = 1; $day <= 31; $day++) {
-    $sheet->writeRow(['2020-1-' . $day, random_int(100, 999)]);
+    $sheet1->writeRow(['2020-1-' . $day, random_int(100, 999)]);
 }
 
 // make new sheet
-$sheet = $excel->makeSheet('Feb');
-$sheet->setColFormat(1, '@date');
+$sheet2 = $excel->makeSheet('Feb');
+$sheet2->setColFormat(1, '@date');
 for ($day = 1; $day <= 29; $day++) {
-    $sheet->writeRow(['2020-2-' . $day, random_int(100, 999)]);
+    $sheet2->writeRow(['2020-2-' . $day, random_int(100, 999)]);
 }
 
 // make new sheet
-$sheet = $excel->makeSheet('Mar');
-$sheet->setColFormat(1, '@date');
+$sheet3 = $excel->makeSheet('Mar');
+$sheet3->setColFormat(1, '@date');
 for ($day = 1; $day <= 31; $day++) {
-    $sheet->writeRow(['2020-3-' . $day, random_int(100, 999)]);
+    $sheet3->writeRow(['2020-3-' . $day, random_int(100, 999)]);
 }
 
-$sheet = $excel->getSheet('Total');
+$sheet0 = $excel->getSheet('Total');
 
-$sheet->writeRow(['Jan 2020', '=SUM(Jan!B:B)']);
-$sheet->writeRow(['Feb 2020', '=SUM(Feb!B:B)']);
-$sheet->writeRow(['Mar 2020', '=SUM(Mar!B:B)']);
+$sheet0->writeRow(['Jan 2020', '=SUM(Jan!B:B)']);
+$sheet0->writeRow(['Feb 2020', '=SUM(Feb!B:B)']);
+$sheet0->writeRow(['Mar 2020', '=SUM(Mar!B:B)']);
 
 $excel->save($outFileName);
 

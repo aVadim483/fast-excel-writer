@@ -307,7 +307,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('GENERAL', $style['format-pattern']);
         $this->assertEquals(1, $style['format-wrap-text']);
 
-        //unlink($testFileName);
+        unlink($testFileName);
     }
 
 }

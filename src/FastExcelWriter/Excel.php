@@ -114,6 +114,16 @@ class Excel
     }
 
     /**
+     * @param string $sheetName
+     *
+     * @return Sheet
+     */
+    public static function createSheet(string $sheetName): Sheet
+    {
+        return new Sheet($sheetName);
+    }
+
+    /**
      * Set dir for temporary files
      *
      * @param $tempDir
@@ -911,7 +921,7 @@ class Excel
         }
         $key = mb_strtolower($sheetName);
         if (!isset($this->sheets[$key])) {
-            $this->sheets[$key] = new Sheet($sheetName);
+            $this->sheets[$key] = static::createSheet($sheetName);
             $this->sheets[$key]->excel = $this;
             $this->sheets[$key]->key = $key;
             $this->sheets[$key]->index = count($this->sheets);

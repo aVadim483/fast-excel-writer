@@ -1668,10 +1668,11 @@ class Sheet
      * @param bool|null $merge
      * @param bool|null $changeCurrent
      *
-     * @throws Exception
+     * @return array
      */
     protected function _setCellData($cellAddress, $value, $styles = null, ?bool $merge = false, ?bool $changeCurrent = false)
     {
+        $dimension = [];
         if (null === $cellAddress) {
             $rowIdx = $this->lastTouch['cell']['row_idx'];
             $colIdx = $this->lastTouch['cell']['col_idx'];
@@ -1706,7 +1707,13 @@ class Sheet
                 $rowIdx = $row - 1;
                 $colIdx = $col - 1;
 
+                $rowCnt = isset($dimension['rowNum1'], $dimension['rowNum2']) ? $dimension['rowNum2'] - $dimension['colNum1'] : 0;
+                $colCnt = isset($dimension['colNum1'], $dimension['colNum2']) ? $dimension['colNum2'] - $dimension['colNum1'] : 0;
+
                 $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];
+                $this->lastTouch['area']['col_idx1'] = $colIdx;
+                $this->lastTouch['area']['row_idx2'] = $rowIdx + $rowCnt;
+                $this->lastTouch['area']['col_idx2'] = $colIdx + $colCnt;
             }
         }
 
@@ -1724,6 +1731,8 @@ class Sheet
         if ($styles) {
             $this->cells['styles'][$rowIdx][$colIdx] = Style::normalize($styles);
         }
+
+        return $dimension;
     }
 
     /**
@@ -1743,8 +1752,21 @@ class Sheet
      */
     public function setValue($cellAddress, $value, ?array $styles = null): Sheet
     {
-        ///-- $styles = $styles ? Style::normalize($styles) : null;
-        $this->_setCellData($cellAddress, $value, $styles, true);
+        $dimension = $this->_setCellData($cellAddress, $value, $styles, true);
+        if (isset($dimension['rowNum1'], $dimension['rowNum2'], $dimension['colNum1'], $dimension['colNum2'])) {
+            $rowCnt = $dimension['rowNum2'] - $dimension['colNum1'];
+            $colCnt = $dimension['colNum2'] - $dimension['colNum1'];
+
+            if ($rowCnt === 0 && $colCnt === 0) {
+                $this->lastTouch['row'] = 'cell';
+            }
+            elseif ($rowCnt === 0) {
+                $this->lastTouch['row'] = 'row';
+            }
+            else {
+                $this->lastTouch['row'] = 'area';
+            }
+        }
 
         return $this;
     }

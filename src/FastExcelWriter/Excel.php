@@ -101,13 +101,18 @@ class Excel
     public static function create($sheets = null, ?array $options = []): Excel
     {
         $excel = new self($options);
-        if (is_array($sheets)) {
-            foreach ($sheets as $sheetName) {
-                $excel->makeSheet($sheetName);
+        if ($sheets) {
+            if (is_array($sheets)) {
+                foreach ($sheets as $sheetName) {
+                    $excel->makeSheet($sheetName);
+                }
+            }
+            else {
+                $excel->makeSheet((string)$sheets);
             }
         }
         else {
-            $excel->makeSheet($sheets);
+            $excel->makeSheet();
         }
 
         return $excel;
@@ -1036,13 +1041,16 @@ class Excel
      *
      * @param string|null $fileName
      * @param bool|null $overWrite
+     *
+     * @return bool
      */
     public function save(?string $fileName = null, ?bool $overWrite = true)
     {
         if (!$fileName && $this->fileName) {
             $fileName = $this->fileName;
         }
-        $this->writer->saveToFile($fileName, $overWrite, $this->getMetadata());
+
+        return $this->writer->saveToFile($fileName, $overWrite, $this->getMetadata());
     }
 
     /**

@@ -7,6 +7,32 @@ use avadim\FastExcelWriter\Exception\Exception;
 /**
  * Class Area
  *
+ * @method Area applyRowHeight(float $height)
+ * @method Area applyBorder(string $style, ?string $color = '#000000')
+ * @method Area applyBorderLeft(string $style, ?string $color = '#000000')
+ * @method Area applyBorderRight(string $style, ?string $color = '#000000')
+ * @method Area applyBorderTop(string $style, ?string $color = '#000000')
+ * @method Area applyBorderBottom(string $style, ?string $color = '#000000')
+ * @method Area applyOuterBorder(string $style, ?string $color = '#000000')
+ * @method Area applyInnerBorder(string $style, ?string $color = '#000000')
+ * @method Area applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null)
+ * @method Area applyFontName(string $fontName)
+ * @method Area applyFontSize(float $fontSize)
+ * @method Area applyFontStyle(string $fontStyle)
+ * @method Area applyFontStyleBold()
+ * @method Area applyFontStyleItalic()
+ * @method Area applyFontStyleUnderline(?bool $double = false)
+ * @method Area applyFontStyleStrikethrough()
+ * @method Area applyFontColor(string $fontColor)
+ * @method Area applyColor(string $color)
+ * @method Area applyFillColor(string $color)
+ * @method Area applyBgColor(string $color)
+ * @method Area applyTextAlign(string $textAlign, ?string $verticalAlign = null)
+ * @method Area applyVerticalAlign(string $verticalAlign)
+ * @method Area applyTextCenter()
+ * @method Area applyTextWrap(bool $textWrap)
+ * @method Area applyTextColor(string $color)
+ *
  * @package avadim\FastExcelWriter
  */
 class Area
@@ -350,6 +376,19 @@ class Area
         return $this;
     }
 
+    public function __call(string $name, array $arguments)
+    {
+        if (strpos($name, 'apply') === 0 && method_exists($this->sheet, $name)) {
+            call_user_func_array([$this->sheet, $name], $arguments);
+
+            return $this;
+        }
+
+        $trace = debug_backtrace();
+        $error = 'Uncaught Error: Call to undefined method ' . get_class() . '::' . $name
+            . ' (called in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'] . ')';
+        throw new \Exception($error);
+    }
 }
 
 // EOF

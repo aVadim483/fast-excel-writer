@@ -310,4 +310,27 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+
+    public function testExcelWriter3()
+    {
+        $testFileName = __DIR__ . '/test3.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $sheet = $excel->getSheet();
+
+        $area = $sheet->beginArea();
+        $area->setValue('a2:e2', 'Title')
+            ->applyFontSize(24);
+
+        $excel->save($testFileName);
+        $this->assertTrue(file_exists($testFileName));
+
+        $this->excelReader = ExcelReader::open($testFileName);
+        $this->cells = $this->excelReader->readRows(false, null, true);
+
+        unlink($testFileName);
+    }
 }

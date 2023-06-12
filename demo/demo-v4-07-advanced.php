@@ -76,7 +76,12 @@ foreach($cells as $cell) {
 }
 
 // Write value to automerged cells
-$area->setValue('A2:K2', 'This is demo XLSX-sheet', $headerStyle);
+//$area->setValue('A2:K2', 'This is demo XLSX-sheet', $headerStyle);
+$area->setValue('A2:K2', 'This is demo XLSX-sheet')
+    ->applyFontStyleBold()
+    ->applyFontSize(24)
+    ->applyTextCenter();
+
 $area->setValue('E3:I3', 'avadim/fast-excel-writer', ['hyperlink' => 'https://github.com/aVadim483/fast-excel-writer', 'align'=>'center']);
 
 $area

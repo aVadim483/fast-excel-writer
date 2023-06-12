@@ -62,13 +62,13 @@ class Area
     {
         if (is_string($range) && preg_match('/^(-)?R(\d+)(-)?C(\d+)/i', $range)) {
             $offset = $range;
-            $range = 'A' . ($sheet->rowCount + 1);
+            $range = 'A' . ($sheet->rowCountWritten + 1);
             $dimension = Excel::rangeDimensionRelative($range, $offset, true);
         }
         else {
             $dimension = Excel::rangeDimension($range, true);
         }
-        if ($dimension['rowNum1'] <= $sheet->rowCount) {
+        if ($dimension['rowNum1'] <= $sheet->rowCountWritten) {
             throw new Exception("Cannot make area range $range (row number must be greater then written rows)");
         }
 
@@ -376,6 +376,28 @@ class Area
         return $this;
     }
 
+    /**
+     * @param array|string $range
+     *
+     * @return $this
+     */
+    public function withRange($range): Area
+    {
+        if ($this->_validateAddressRange($range)) {
+            $this->sheet->withRange($range);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param array $arguments
+     *
+     * @return $this
+     *
+     * @throws \Exception
+     */
     public function __call(string $name, array $arguments)
     {
         if (strpos($name, 'apply') === 0 && method_exists($this->sheet, $name)) {

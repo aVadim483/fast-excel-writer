@@ -1044,7 +1044,7 @@ class Excel
      *
      * @return bool
      */
-    public function save(?string $fileName = null, ?bool $overWrite = true)
+    public function save(?string $fileName = null, ?bool $overWrite = true): bool
     {
         if (!$fileName && $this->fileName) {
             $fileName = $this->fileName;

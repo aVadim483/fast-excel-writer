@@ -41,8 +41,11 @@ class Sheet
     public bool $open = false;
     public bool $close = false;
 
-    public int $rowCount = 0;
-    public int $colCount = 0;
+    // written rows of sheet
+    public int $rowCountWritten = 0;
+
+    // written cols of row
+    public int $colCountWritten = 0;
 
     public ?WriterBuffer $fileWriter = null;
 
@@ -231,7 +234,7 @@ class Sheet
      */
     public function setPageOptions(string $option, $value): Sheet
     {
-        if ($this->rowCount) {
+        if ($this->rowCountWritten) {
             throw new Exception('Cannot set page settings after rows writing');
         }
         $this->pageOptions[$option] = $value;
@@ -796,12 +799,16 @@ class Sheet
     {
         static $_styleCache = [];
 
+        if ($this->rowCountWritten === 0) {
+            $_styleCache = [];
+        }
+
         $rowAttr = '';
         if (!empty($rowOptions['height'])) {
             $height = $rowOptions['height'];
         }
-        elseif (isset($this->rowHeights[$this->rowCount])) {
-            $height = $this->rowHeights[$this->rowCount];
+        elseif (isset($this->rowHeights[$this->rowCountWritten])) {
+            $height = $this->rowHeights[$this->rowCountWritten];
         }
         else {
             $height = null;
@@ -841,8 +848,8 @@ class Sheet
                     ];
                 }
             }
-            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '>');
-            $rowIdx = $this->rowCount;
+            $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '>');
+            $rowIdx = $this->rowCountWritten;
             foreach ($row as $colIdx => $cellValue) {
                 if (!isset($this->colStylesSummary[$colIdx])) {
                     if (!isset($this->colStyles[$colIdx])) {
@@ -909,6 +916,7 @@ class Sheet
                     }
                     unset($cellStyle['hyperlink']);
                 }
+
                 $styleHash = json_encode($cellStyle);
                 if (!isset($_styleCache[$styleHash])) {
                     $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
@@ -931,16 +939,16 @@ class Sheet
                 }
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
                 $colIdx++;
-                if ($colIdx > $this->colCount) {
-                    $this->colCount = $colIdx;
+                if ($colIdx > $this->colCountWritten) {
+                    $this->colCountWritten = $colIdx;
                 }
             }
             $this->fileWriter->write('</row>');
         }
         else {
-            $this->fileWriter->write('<row r="' . ($this->rowCount + 1) . '" ' . $rowAttr . '/>');
+            $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '/>');
         }
-        $this->rowCount++;
+        $this->rowCountWritten++;
     }
 
     /**
@@ -1192,8 +1200,8 @@ class Sheet
             $this->_writeCurrentRow();
         }
         ///-- $styles = $styles ? Style::normalize($styles) : [];
-        if ($this->currentRow < $this->rowCount) {
-            $this->currentRow = $this->rowCount;
+        if ($this->currentRow < $this->rowCountWritten) {
+            $this->currentRow = $this->rowCountWritten;
         }
         //$this->withLastCell();
         $cellAddress = [
@@ -1270,7 +1278,7 @@ class Sheet
         if (!isset($address['row'], $address['col'])) {
             ExceptionAddress::throwNew('Wrong cell address %s', print_r($address, 1));
         }
-        elseif ($address['row'] <= $this->rowCount) {
+        elseif ($address['row'] <= $this->rowCountWritten) {
             ExceptionAddress::throwNew('Row number must be greater then written rows');
         }
         else {
@@ -1373,7 +1381,7 @@ class Sheet
     public function mergeRelCells($rangeSet): Sheet
     {
         if (is_int($rangeSet)) {
-            $rangeSet = 'A' . $this->rowCount . ':' . Excel::colLetter($rangeSet)  . $this->rowCount;
+            $rangeSet = 'A' . $this->rowCountWritten . ':' . Excel::colLetter($rangeSet)  . $this->rowCountWritten;
         }
         foreach((array)$rangeSet as $range) {
             if (isset($this->mergeCells[$range]) || empty($range)) {
@@ -1418,44 +1426,47 @@ class Sheet
     {
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
             $writer = $this->excel->getWriter();
-            $maxRow = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : 0,
-                $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : 0);
-            if ($maxRow < $this->currentRow) {
-                $maxRow = $this->currentRow;
+            if (!$this->open) {
+                $writer->writeSheetDataBegin($this);
             }
+            $maxRowIdx = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : -1,
+                $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : -1);
+            if ($maxRowIdx >= 0) {
+                // has values or styles
+                if ($maxRowIdx < $this->currentRow) {
+                    $maxRowIdx = $this->currentRow;
+                }
 
-            for ($rowIdx = $this->rowCount; $rowIdx <= $maxRow; $rowIdx++) {
-                if (isset($this->cells['values'][$rowIdx])) {
-                    $values = $this->cells['values'][$rowIdx];
-                    unset($this->cells['values'][$rowIdx]);
-                }
-                else {
-                    $values = [];
-                }
-                if (isset($this->cells['styles'][$rowIdx])) {
-                    $styles = $this->cells['styles'][$rowIdx];
-                    unset($this->cells['styles'][$rowIdx]);
-                }
-                else {
-                    $styles = [];
-                }
-                if ($values || $styles) {
-                    if (!$this->open) {
-                        $writer->writeSheetDataBegin($this);
+                for ($rowIdx = $this->rowCountWritten; $rowIdx <= $maxRowIdx; $rowIdx++) {
+                    if (isset($this->cells['values'][$rowIdx])) {
+                        $values = $this->cells['values'][$rowIdx];
+                        unset($this->cells['values'][$rowIdx]);
                     }
-
-                    $this->_writeRow($writer, $values, [], $styles);
+                    else {
+                        $values = [];
+                    }
+                    if (isset($this->cells['styles'][$rowIdx])) {
+                        $styles = $this->cells['styles'][$rowIdx];
+                        unset($this->cells['styles'][$rowIdx]);
+                    }
+                    else {
+                        $styles = [];
+                    }
+                    if ($values || $styles) {
+                        $this->_writeRow($writer, $values, [], $styles);
+                    }
+                    else {
+                        //$this->rowCount++;
+                        $this->_writeRow($writer, [], [], []);
+                    }
+                    if (isset($this->rowStyles[$rowIdx])) {
+                        unset($this->rowStyles[$rowIdx]);
+                    }
                 }
-                else {
-                    $this->rowCount++;
-                }
-                if (isset($this->rowStyles[$rowIdx])) {
-                    unset($this->rowStyles[$rowIdx]);
-                }
+                $this->currentRow++;
             }
 
             $this->currentCol = 0;
-            $this->currentRow++;
 
             if (isset($this->colStyles[-1])) {
                 $this->setColOptions($this->colStyles[-1]);
@@ -1476,7 +1487,7 @@ class Sheet
      */
     public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
-        if ($this->currentCol) {
+        if ($this->currentCol || $this->areas) {
             $this->_writeCurrentRow();
         }
 
@@ -1599,15 +1610,25 @@ class Sheet
     public function beginArea(string $cellAddress = null): Area
     {
         if (null === $cellAddress) {
-            $cellAddress = 'A' . ($this->rowCount + 1);
+            $cellAddress = 'A' . ($this->rowCountWritten + 1);
         }
         $dimension = Excel::rangeDimension($cellAddress, true);
-        if ($dimension['rowNum1'] <= $this->rowCount) {
+        if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception("Cannot make area from $cellAddress (row number must be greater then written rows)");
         }
         $maxCell = Excel::cellAddress(Excel::MAX_ROW, Excel::MAX_COL);
 
         return $this->makeArea($cellAddress . ':' . $maxCell);
+    }
+
+    /**
+     * @return $this
+     */
+    public function endAreas(): Sheet
+    {
+        $this->_writeCurrentRow();
+
+        return $this;
     }
 
     /**
@@ -1650,7 +1671,7 @@ class Sheet
         if (preg_match('/^R\[?(-?\d+)?\]?C/', $cellAddress)) {
             // relative address
             $relAddress = $cellAddress;
-            $cellAddress = Excel::colLetter($colOffset) . ($this->rowCount + $rowOffset);
+            $cellAddress = Excel::colLetter($colOffset) . ($this->rowCountWritten + $rowOffset);
             $dimension = Excel::rangeDimensionRelative($cellAddress, $relAddress, true);
         }
         else {
@@ -1767,6 +1788,7 @@ class Sheet
                 $this->lastTouch['row'] = 'area';
             }
         }
+        $this->lastTouch['row'] = 'area';
 
         return $this;
     }
@@ -1811,7 +1833,7 @@ class Sheet
     public function setStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
     {
         $dimension = $this->_rangeDimension($cellAddress);
-        if ($dimension['rowNum1'] <= $this->rowCount) {
+        if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater then written rows');
         }
         $oldStyle = $style;
@@ -1904,7 +1926,7 @@ class Sheet
      */
     public function clearAreas(): Sheet
     {
-        $this->cells = [];
+        $this->cells = ['values' => [], 'styles' => []];
         $this->areas = [];
         $this->totalArea = [];
 
@@ -1925,7 +1947,7 @@ class Sheet
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
             $maxRow = max(array_keys($this->cells['values']) + array_keys($this->cells['styles']));
             // writes row by row
-            for ($numRow = $this->rowCount; $numRow <= $maxRow; $numRow++) {
+            for ($numRow = $this->rowCountWritten; $numRow <= $maxRow; $numRow++) {
                 if (isset($this->cells['values'][$numRow]) || isset($this->cells['styles'][$numRow])) {
                     $colMax = 0;
                     $rowValues = $this->cells['values'][$numRow] ?? [];
@@ -1957,7 +1979,7 @@ class Sheet
             }
             $this->clearAreas();
         }
-        $this->currentRow = $this->rowCount;
+        $this->currentRow = $this->rowCountWritten;
         $this->currentCol = 0;
         $this->_touchEnd($this->currentRow, $this->currentCol, 'cell');
         $this->withLastCell();
@@ -2013,7 +2035,7 @@ class Sheet
      */
     public function maxCell(): string
     {
-        return Excel::cellAddress($this->rowCount, $this->colCount);
+        return Excel::cellAddress($this->rowCountWritten, $this->colCountWritten);
     }
 
     /**
@@ -2205,7 +2227,7 @@ class Sheet
     public function withRange($range): Sheet
     {
         $dimension = self::_rangeDimension($range);
-        if ($dimension['rowNum1'] <= $this->rowCount) {
+        if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater then written rows');
         }
 

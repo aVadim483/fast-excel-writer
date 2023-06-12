@@ -103,6 +103,9 @@ class Style
         self::BORDER_STYLE_DASH_DOT_DOT, self::BORDER_STYLE_DASHED, self::BORDER_STYLE_DOTTED, self::BORDER_STYLE_DOUBLE, self::BORDER_STYLE_HAIR,
         self::BORDER_STYLE_MEDIUM_DASH_DOT, self::BORDER_STYLE_MEDIUM_DASH_DOT_DOT, self::BORDER_STYLE_MEDIUM_DASHED, self::BORDER_STYLE_SLANT_DASH_DOT];
 
+
+    public array $_styleCache = [];
+
     /**
      * Constructor of Style
      *
@@ -1274,11 +1277,11 @@ class Style
 
     /**
      * @param array $cellStyle
-     * @param array|null $fullStyle
+     * @param array|null $resultStyle
      *
      * @return int
      */
-    public function addStyle(array $cellStyle, ?array &$fullStyle = []): int
+    public function addStyle(array $cellStyle, ?array &$resultStyle = []): int
     {
         if (isset($cellStyle['format']['format-pattern'])) {
             $numFormat = $cellStyle['format']['format-pattern'];
@@ -1287,8 +1290,7 @@ class Style
         else {
             $numFormat = 'GENERAL';
         }
-
-        return $this->addCellStyle($numFormat, $cellStyle, $fullStyle);
+        return $this->addCellStyle($numFormat, $cellStyle, $resultStyle);
     }
 
     /**

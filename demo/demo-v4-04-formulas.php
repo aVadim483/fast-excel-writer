@@ -21,7 +21,7 @@ $rowOptions = [
 ];
 
 $sheet->writeRow($row, $rowOptions);
-$cnt1 = $sheet->rowCount + 1;
+$cnt1 = $sheet->rowCountWritten + 1;
 
 $max = 20;
 for ($i = 0; $i < $max; $i++) {
@@ -29,7 +29,7 @@ for ($i = 0; $i < $max; $i++) {
     $sheet->writeRow($row);
 }
 
-$cnt2 = $sheet->rowCount;
+$cnt2 = $sheet->rowCountWritten;
 $totals = [
     ['Total', "=SUM(B$cnt1:B$cnt2)", ''],
     ['Average', '', "=ROUND(AVERAGE(C$cnt1:C$cnt2),1)"]

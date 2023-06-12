@@ -20,7 +20,17 @@ final class FastExcelWriterTest extends TestCase
         return $this->cells[$m[2]][$m[1]]['v'] ?? null;
     }
 
-    protected function getStyle($cell, $flat = false)
+    protected function getValues($cells): array
+    {
+        $result = [];
+        foreach ($cells as $cell) {
+            $result[] = $this->getValue($cell);
+        }
+
+        return $result;
+    }
+
+    protected function getStyle($cell, $flat = false): array
     {
         preg_match('/^(\w+)(\d+)$/', strtoupper($cell), $m);
         $styleIdx = $this->cells[$m[2]][$m[1]]['s'] ?? null;
@@ -40,6 +50,33 @@ final class FastExcelWriterTest extends TestCase
         }
 
         return [];
+    }
+
+    protected function defaultStyle(): array
+    {
+        return [
+            'font-name' => 'Arial',
+            'font-charset' => '1',
+            'font-family' => '2',
+            'font-size' => '10',
+            'fill-pattern' => 'none',
+            'border-left-style' => null,
+            'border-right-style' => null,
+            'border-top-style' => null,
+            'border-bottom-style' => null,
+            'border-diagonal-style' => null,
+            'format-num-id' => 164,
+            'format-pattern' => 'GENERAL',
+        ];
+
+    }
+
+
+    protected function checkDefaultStyle($style)
+    {
+        foreach ($this->defaultStyle() as $key => $val) {
+            $this->assertEquals($val, $style[$key]);
+        }
     }
 
     public function testExcelWriter1()
@@ -85,6 +122,7 @@ final class FastExcelWriterTest extends TestCase
                 ->applyRowHeight(24)
             ;
         }
+        $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0]);
 
         $excel->save($testFileName);
 
@@ -110,6 +148,8 @@ final class FastExcelWriterTest extends TestCase
 
         $this->assertEquals('thin', $style['border']['border-left-style']);
         $this->assertEquals('#000000', $style['border']['border-left-color']);
+
+        $this->checkDefaultStyle($this->getStyle('a7', true));
 
         unlink($testFileName);
 
@@ -323,9 +363,34 @@ final class FastExcelWriterTest extends TestCase
 
         $area = $sheet->beginArea();
         $title = 'Title';
-        $area->setValue('a2:e2', $title)
+        $area->setValue('a2:c2', $title)
             ->applyFontSize(24)
-            ->applyFontStyleBold();
+            ->applyFontStyleBold()
+        //    ->applyTextCenter()
+        ;
+
+        $area
+            ->setValue('a4:a5', 'a4:a5')
+            ->setValue('b4:c4', 'b4:c4')
+            ->setValue('d4', 'd4')
+            ->setValue('c5', 'c5')
+            ->setValue('b5', 'b5')
+        ;
+        $area->withRange('a4:d5')
+            ->applyBgColor('#ccc')
+            ->applyFontStyleBold()
+            ->applyOuterBorder('thin')
+            ->applyInnerBorder('thick');
+        $sheet->endAreas();
+
+        $data = [
+            ['A', 'B', 'C', 'D'],
+            ['AA', 'BB', 'CC', 'DD'],
+            ['AAA', 'BBB', 'CCC', 'DDD'],
+        ];
+        foreach ($data as $rowData) {
+            $sheet->writeRow($rowData);
+        }
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
@@ -333,11 +398,19 @@ final class FastExcelWriterTest extends TestCase
         $this->excelReader = ExcelReader::open($testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
+        $value = $this->getValue('a1');
+        $this->assertEquals('', (string)$value);
+        $this->checkDefaultStyle($this->getStyle('a1', true));
+
         $this->assertEquals($title, $this->getValue('a2'));
 
         $style = $this->getStyle('a2', true);
         $this->assertEquals('24', $style['font-size']);
         $this->assertEquals(1, $style['font-style-bold']);
+
+        $this->assertEquals($data[0], $this->getValues(['A6', 'B6', 'C6', 'D6']));
+        $this->assertEquals($data[1], $this->getValues(['A7', 'B7', 'C7', 'D7']));
+        $this->assertEquals($data[2], $this->getValues(['A8', 'B8', 'C8', 'D8']));
 
         unlink($testFileName);
     }

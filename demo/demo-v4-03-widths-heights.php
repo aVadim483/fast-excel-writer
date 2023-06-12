@@ -9,19 +9,26 @@ $timer = microtime(true);
 $excel = Excel::create();
 $sheet = $excel->getSheet();
 
+$heights = [
+    2 => 25,
+    3 => 50,
+];
+
 //$sheet->setColWidths([10, 20, 30, 40]);
-$sheet->setColWidths(['B' => 10, 'C' => 20, 'E' => 30, 'F' => 40]);
-$sheet->setRowHeight(2, 33);
+$sheet->setColWidths(['A' => 40, 'B' => 30, 'C' => 20, 'D' => 10]);
+$sheet->setRowHeight(2, $heights[2]);
 //$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 
+$rowNum = 0;
 // Write row width default height
-$sheet->writeRow([300, 234, 456, 789]);
+$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789]);
 
 // Write row with specified height
-$sheet->writeRow([300, 234, 456, 789], ['height' => 20]);
+$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789]);
 
 // Write row with specified height - other way (preferred)
-$sheet->writeRow([300, 234, 456, 789])->applyRowHeight(40);
+$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789])
+    ->applyRowHeight($heights[$rowNum]);
 
 $excel->save($outFileName);
 

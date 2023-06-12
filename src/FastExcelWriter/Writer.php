@@ -273,7 +273,7 @@ class Writer
         }
         $fileWriter->write('</sheetPr>');
 
-        if ($sheet->rowCount + $sheet->colCount === 0) {
+        if ($sheet->rowCountWritten + $sheet->colCountWritten === 0) {
             $fileWriter->write('<dimension ref="A1"/>');
         } else {
             $maxCell = $sheet->maxCell();
@@ -362,7 +362,7 @@ class Writer
 
         if ($sheet->autoFilter) {
             $minCell = $sheet->autoFilter;
-            $maxCell = Excel::cellAddress($sheet->rowCount, $sheet->colCount);
+            $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
             $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
@@ -816,7 +816,7 @@ class Writer
             $sheetName = self::sanitizeSheetName($sheet->sheetName);
             $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
             if ($sheet->absoluteAutoFilter) {
-                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCount, $sheet->colCount, true);
+                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
                 $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheetName . '\'!' . $filterRange . '</definedName>';
             }
             $i++;

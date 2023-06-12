@@ -15,14 +15,14 @@ final class FastExcelWriterTest extends TestCase
 
     protected function getValue($cell)
     {
-        preg_match('/^(\w+)(\d+)$/', $cell, $m);
+        preg_match('/^(\w+)(\d+)$/', strtoupper($cell), $m);
 
         return $this->cells[$m[2]][$m[1]]['v'] ?? null;
     }
 
     protected function getStyle($cell, $flat = false)
     {
-        preg_match('/^(\w+)(\d+)$/', $cell, $m);
+        preg_match('/^(\w+)(\d+)$/', strtoupper($cell), $m);
         $styleIdx = $this->cells[$m[2]][$m[1]]['s'] ?? null;
         if ($styleIdx !== null) {
             $style = $this->excelReader->getCompleteStyleByIdx($styleIdx);
@@ -322,14 +322,22 @@ final class FastExcelWriterTest extends TestCase
         $sheet = $excel->getSheet();
 
         $area = $sheet->beginArea();
-        $area->setValue('a2:e2', 'Title')
-            ->applyFontSize(24);
+        $title = 'Title';
+        $area->setValue('a2:e2', $title)
+            ->applyFontSize(24)
+            ->applyFontStyleBold();
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
 
         $this->excelReader = ExcelReader::open($testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
+
+        $this->assertEquals($title, $this->getValue('a2'));
+
+        $style = $this->getStyle('a2', true);
+        $this->assertEquals('24', $style['font-size']);
+        $this->assertEquals(1, $style['font-style-bold']);
 
         unlink($testFileName);
     }

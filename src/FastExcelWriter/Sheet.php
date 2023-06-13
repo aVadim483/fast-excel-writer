@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exception\Exception;
 use avadim\FastExcelWriter\Exception\ExceptionAddress;
+use avadim\FastExcelWriter\Exception\ExceptionRangeName;
 
 /**
  * Class Sheet
@@ -33,6 +34,7 @@ class Sheet
     public bool $active = false;
     public string $fileName = '';
     public string $sheetName = '';
+    public string $sanitizedSheetName = '';
     public string $xmlName = '';
 
     public string $fileRels = '';
@@ -90,6 +92,9 @@ class Sheet
     protected int $externalLinksCount = 0;
 
     protected array $lastTouch = [];
+
+    protected array $namedRanges = [];
+
 
     /**
      * Sheet constructor
@@ -212,6 +217,7 @@ class Sheet
     public function setName(string $sheetName): Sheet
     {
         $this->sheetName = $sheetName;
+        $this->sanitizedSheetName = Writer::sanitizeSheetName($sheetName);
 
         return $this;
     }
@@ -2242,6 +2248,46 @@ class Sheet
         return $this;
     }
 
+    /**
+     * Define named range
+     *
+     * @param string $range
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function addNamedRange(string $range, string $name): Sheet
+    {
+        $dimension = self::_rangeDimension($range);
+        if (isset($dimension['absAddress'])) {
+            if (!preg_match('/^\w+$/u', $name)) {
+                ExceptionRangeName::throwNew('Wrong name for range');
+            }
+            if (mb_strlen($name) > 255) {
+                ExceptionRangeName::throwNew('Name for range cannot be more then 255');
+            }
+            foreach ($this->excel->getSheets() as $sheet) {
+                foreach ($sheet->getNamedRanges() as $range) {
+                    if (mb_strtolower($range['name']) === mb_strtolower($name)) {
+                        ExceptionRangeName::throwNew('Named range "' . $name . '" already exists on sheet "' . $sheet->sheetName . '"');
+                    }
+                }
+            }
+            $this->namedRanges[] = ['range' => $dimension['absAddress'], 'name' => $name];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns named ranges with full addresses
+     *
+     * @return array
+     */
+    public function getNamedRanges(): array
+    {
+        return $this->namedRanges;
+    }
 
     // === DESIGN STYLES === /
 

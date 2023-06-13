@@ -12,6 +12,8 @@ Jump To:
 * [Changes in version 4](#changes-in-version-4)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
+* [Height And Width](#height-and-width)
+* [Define Named Ranges](#define-named-ranges)
 * [Workbook](/docs/01-workbook.md)
   * [Workbook settings](/docs/01-workbook.md#workbook-settings)
   * [Sets metadata of workbook](/docs/01-workbook.md#sets-metadata-of-workbook)
@@ -42,7 +44,7 @@ Jump To:
 
 ## Introduction
 
-This library is designed to be lightweight, superfast and have minimal memory usage. 
+This library is designed to be lightweight, super-fast and requires minimal memory usage.
 
 This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with just basic features supported:
 * Takes UTF-8 encoded input
@@ -117,7 +119,7 @@ foreach($data as $rowData) {
     $rowOptions = [
         'height' => 20,
     ];
-    $sheet->writeRow($rowData);
+    $sheet->writeRow($rowData, $rowOptions);
 }
 
 $excel->save('simple.xlsx');
@@ -189,9 +191,9 @@ foreach($data as $rowData) {
         'height' => 20,
     ];
     if ($rowNum % 2) {
-        $rowOptions['fill'] = '#eee';
+        $rowOptions['fill-color'] = '#eee';
     }
-    $sheet->writeRow($rowData);
+    $sheet->writeRow($rowData, $rowOptions);
 }
 
 $excel->save('simple.xlsx');
@@ -218,9 +220,39 @@ $this->setColOptions('D', ['width' => 'auto']);
 
 // Set width of specific columns
 $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
-$sheet->setColOptions(['B' => ['width' => 10], 'C' => ['width' => 'auto'], 'E' => ['width' => 30], 'F' => ['width' => 40]]);
+$colOptions = [
+    'B' => ['width' => 10], 
+    'C' => ['width' => 'auto'], 
+    'E' => ['width' => 30], 
+    'F' => ['width' => 40],
+];
+$sheet->setColOptions($colOptions);
 // Set width of columns from 'A'
 $sheet->setColWidths([10, 20, 30, 40]);
+
+```
+
+### Define Named Ranges
+
+FastExcelWriter supports _named ranges_ and does not support _named formulae_.
+A _named ranges_ provides a name reference to a cell or a range of cells.
+All _named ranges_ are added to the workbook so all names must be unique, but you can define _named ranges_ in a sheet or in a workbook.
+
+Also range names must start with a letter or underscore, have no spaces, and be no longer than 255 characters.
+
+```php
+$excel = Excel::create();
+$excel->setFileName($outFileName);
+$sheet = $excel->getSheet();
+
+// Named a single cell
+$sheet->addNamedRange('B2', 'cell_name');
+
+// Named range in a sheet
+$sheet->addNamedRange('c2:e3', 'range_name');
+
+// Add named range in a workbook (sheet name required)
+$excel->addNamedRange('Sheet1!A1:F5', 'A1_F5');
 
 ```
 

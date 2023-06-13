@@ -813,15 +813,20 @@ class Writer
         $xmlText .= '<sheets>';
         $definedNames = '';
         foreach ($sheets as $sheet) {
-            $sheetName = self::sanitizeSheetName($sheet->sheetName);
-            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
+            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
             if ($sheet->absoluteAutoFilter) {
                 $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
-                $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheetName . '\'!' . $filterRange . '</definedName>';
+                $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheet->sanitizedSheetName . '\'!' . $filterRange . '</definedName>';
+                //                <definedName name="_xlnm._FilterDatabase" localSheetId="1" hidden="1">Лист1!$A$1:$B$1</definedName>
             }
             $i++;
         }
         $xmlText .= '</sheets>';
+        foreach ($sheets as $sheet) {
+            foreach ($sheet->getNamedRanges() as $range) {
+                $definedNames .= '<definedName name="' . self::xmlSpecialChars($range['name']) . '">\'' . $sheet->sanitizedSheetName . '\'!' . $range['range'] . '</definedName>';
+            }
+        }
 
         if ($definedNames) {
             $xmlText .= '<definedNames>' . $definedNames . '</definedNames>';
@@ -940,7 +945,7 @@ class Writer
      */
     public static function sanitizeSheetName($sheetName): string
     {
-        static $badChars = '\\/?*:[]';
+        static $badChars  = '\\/?*:[]';
         static $goodChars = '        ';
 
         $sheetName = strtr($sheetName, $badChars, $goodChars);

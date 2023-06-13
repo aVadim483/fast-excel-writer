@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exception\Exception;
+use avadim\FastExcelWriter\Exception\ExceptionRangeName;
 
 /**
  * Class Excel
@@ -793,13 +794,22 @@ class Excel
                 $rowNum1 = $rowNum2;
                 $rowNum2 = $idx;
             }
-            $cell1 = Excel::colLetter($colNum1) . $rowNum1;
-            $cell2 = Excel::colLetter($colNum2) . $rowNum2;
+            $letter1 = Excel::colLetter($colNum1);
+            $letter2 = Excel::colLetter($colNum2);
+            $cell1 = $letter1 . $rowNum1;
+            $cell2 = $letter2 . $rowNum2;
             $localRange = $cell1 . ':' . $cell2;
             $width = $colNum2 - $colNum1 + 1;
             $height = $rowNum2 - $rowNum1 + 1;
+            if ($cell1 === $cell2) {
+                $address = ($sheetName ? $sheetName . '!' : '') . '$' . $letter1 . '$' . $rowNum1;
+            }
+            else {
+                $address = ($sheetName ? $sheetName . '!' : '') . '$' . $letter1 . '$' . $rowNum1 . ':$' . $letter2 . '$' . $rowNum2;
+            }
 
             return [
+                'absAddress' => $address,
                 'range' => ($sheetName ? $sheetName . '!' : '') . $localRange,
                 'sheet' => $sheetName,
                 'cell1' => $cell1,
@@ -1007,6 +1017,20 @@ class Excel
     public function getSheets(): array
     {
         return $this->sheets;
+    }
+
+    public function addNamedRange(string $range, string $name)
+    {
+        if (strpos($range, '!')) {
+            [$sheetName, $range] = explode('!', $range);
+            $sheet = $this->getSheet($sheetName);
+            if ($sheet) {
+                $sheet->addNamedRange($range, $name);
+
+                return $this;
+            }
+        }
+        ExceptionRangeName::throwNew('Sheet name not defined in range address');
     }
 
     /**

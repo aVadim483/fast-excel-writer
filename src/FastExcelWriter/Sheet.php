@@ -2667,6 +2667,13 @@ class Sheet
         return $this;
     }
 
+	public function applyTextRotation(int $degrees): Sheet
+	{
+		$this->_setStyleOptions([], 'format', [ 'format-text-rotation' => $degrees ] );
+
+		return $this;
+	}
+
     public function applyFontStyleBold(): Sheet
     {
         return $this->applyFontStyle('bold');

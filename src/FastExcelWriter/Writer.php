@@ -847,6 +847,9 @@ class Writer
             $file->write('<cellXfs count="' . count($cellXfs) . '">');
             foreach ($cellXfs as $cellXf) {
                 $alignmentAttr = '';
+                if (!empty($cellXf['format']['format-text-rotation'])) {
+                    $alignmentAttr .= ' textRotation="' . $cellXf['format']['format-text-rotation'] . '"';
+                }
                 if (!empty($cellXf['format']['format-align-horizontal'])) {
                     $alignmentAttr .= ' horizontal="' . $cellXf['format']['format-align-horizontal'] . '"';
                 }

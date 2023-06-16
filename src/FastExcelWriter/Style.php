@@ -823,6 +823,10 @@ class Style
                     $result['fill']['fill-pattern'] = $styleVal;
                     break;
 
+                case 'text-rotation':
+                    $result['format']['format-text-rotation'] = (int) $styleVal;
+                    break;
+
                 case 'align':
                 case 'alignment':
                     if ($styleVal === 'center' || $styleVal === 'center-center') {

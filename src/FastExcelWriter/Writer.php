@@ -649,7 +649,6 @@ class Writer
         }
         elseif (is_string($value) && $value[0] === '=') {
             // formula
-            //$value = '_xlfn.' . $this->_convertFormula(substr($value, 1), [$rowNumber, $colNumber]);
             $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><f>' . self::xmlSpecialChars($value) . '</f></c>');
         }

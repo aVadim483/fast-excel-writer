@@ -417,9 +417,6 @@ class Writer
                     $error = $zip->getStatusString();
                 }
             }
-            if ($files) {
-                // save old style shape
-            }
         }
 
         return $files;

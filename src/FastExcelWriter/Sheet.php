@@ -1819,7 +1819,7 @@ class Sheet
                 $this->lastTouch['row'] = 'area';
             }
         }
-        $this->lastTouch['row'] = 'area';
+        //$this->lastTouch['row'] = 'area';
 
         return $this;
     }

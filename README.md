@@ -14,7 +14,7 @@ Jump To:
 * [Advanced Example](#advanced-example)
 * [Height And Width](#height-and-width)
 * [Define Named Ranges](#define-named-ranges)
-* [Define Named Ranges](#define-named-ranges)
+* [Adding Notes](#adding-notes)
 * [Workbook](/docs/01-workbook.md)
   * [Workbook settings](/docs/01-workbook.md#workbook-settings)
   * [Sets metadata of workbook](/docs/01-workbook.md#sets-metadata-of-workbook)
@@ -259,7 +259,10 @@ $excel->addNamedRange('Sheet1!A1:F5', 'A1_F5');
 
 ###  Adding Notes
 
-Notes are old style comments in Excel (notes on a light yellow background). You can add notes to any cells
+There are currently two types of comments in Excel - **comments** and **notes** 
+(see [The difference between threaded comments and notes](https://support.microsoft.com/en-us/office/the-difference-between-threaded-comments-and-notes-75a51eec-4092-42ab-abf8-7669077b7be3).
+Notes are old style comments in Excel (text on a light yellow background). 
+You can add notes to any cells using method ```addNote()```
 
 ```php
 

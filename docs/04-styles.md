@@ -160,6 +160,6 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyVerticalAlign(string $verticalAlign)
 * applyTextCenter()
 * applyTextWrap(bool $textWrap)
-* applyTextRotation(int $degrees)
+* applyTextRotation(int $degrees) (thanks to @jarrod-colluco)
 
 Returns to [README.md](/README.md)

@@ -2316,18 +2316,29 @@ class Sheet
 
     /**
      * @param string $cell
-     * @param string $comment
+     * @param string|null $comment
      *
      * @return $this
      */
-    public function addNote(string $cell, string $comment): Sheet
+    public function addNote(string $cell, ?string $comment = null): Sheet
     {
-        $dimension = self::_rangeDimension($cell);
-        if (isset($dimension['cell1'])) {
+        if (func_num_args() === 1) {
+            $comment = $cell;
+            $rowIdx = $this->lastTouch['cell']['row_idx'];
+            $colIdx = $this->lastTouch['cell']['col_idx'];
+            $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
+        }
+        else {
+            $dimension = self::_rangeDimension($cell);
+            $cell = $dimension['cell1'];
+            $rowIdx = $dimension['rowIndex'];
+            $colIdx = $dimension['colIndex'];
+        }
+        if ($cell) {
             $this->notes[] = [
-                'cell' => $dimension['cell1'],
-                'row_index' => $dimension['rowIndex'],
-                'col_index' => $dimension['colIndex'],
+                'cell' => $cell,
+                'row_index' => $rowIdx,
+                'col_index' => $colIdx,
                 'text' => $comment,
                 'style' => [
                     'width' => '96pt',

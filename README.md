@@ -14,6 +14,7 @@ Jump To:
 * [Advanced Example](#advanced-example)
 * [Height And Width](#height-and-width)
 * [Define Named Ranges](#define-named-ranges)
+* [Define Named Ranges](#define-named-ranges)
 * [Workbook](/docs/01-workbook.md)
   * [Workbook settings](/docs/01-workbook.md#workbook-settings)
   * [Sets metadata of workbook](/docs/01-workbook.md#sets-metadata-of-workbook)
@@ -253,6 +254,23 @@ $sheet->addNamedRange('c2:e3', 'range_name');
 
 // Add named range in a workbook (sheet name required)
 $excel->addNamedRange('Sheet1!A1:F5', 'A1_F5');
+
+```
+
+###  Adding Notes
+
+Notes are old style comments in Excel (notes on a light yellow background). You can add notes to any cells
+
+```php
+
+$sheet->writeCell('Text to A1');
+$sheet->addNote('A1', 'This is a note for cell A1');
+
+$sheet->writeCell('Text to B1')->addNote('This is a note for B1');
+$sheet->writeTo('C4', 'Text to C4')->addNote('Note for C1');
+
+
+$sheet->addNote('E4:F8', 'This note will added to E4');
 
 ```
 

@@ -15,22 +15,22 @@ class WriterBuffer
     protected $fd = null;
 
     /** @var string  */
-    protected $buffer = '';
+    protected string $buffer = '';
 
     /** @var bool  */
-    protected $checkUtf8 = false;
+    protected ?bool $checkUtf8 = false;
 
-    protected $fileName;
-    protected $openFlags;
-    protected $limit = 8191;
+    protected string $fileName;
+    protected ?string $openFlags;
+    protected int $limit = 8191;
 
     /**
      * WriterBuffer constructor.
-     * @param        $filename
-     * @param string $openFlags
-     * @param bool   $checkUtf8
+     * @param string $filename
+     * @param string|null $openFlags
+     * @param bool|null $checkUtf8
      */
-    public function __construct($filename, $openFlags = 'wb', $checkUtf8 = false)
+    public function __construct(string $filename, ?string $openFlags = 'wb', ?bool $checkUtf8 = false)
     {
         $this->fileName = $filename;
         $this->openFlags = $openFlags;

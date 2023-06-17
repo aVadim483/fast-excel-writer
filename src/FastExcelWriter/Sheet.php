@@ -32,8 +32,13 @@ class Sheet
     public string $relId;
 
     public bool $active = false;
-    public string $fileName = '';
+
+    /** @var string Temporary file */
+    public string $fileTempName = '';
+
+    /** @var string Real sheet name */
     public string $sheetName = '';
+
     public string $sanitizedSheetName = '';
     public string $xmlName = '';
 
@@ -88,12 +93,19 @@ class Sheet
 
     protected array $pageOptions = [];
 
+
+    protected int $relationshipId = 0;
+
+    protected array $relationships = [];
+
     protected array $externalLinks = [];
-    protected int $externalLinksCount = 0;
 
     protected array $lastTouch = [];
 
     protected array $namedRanges = [];
+
+
+    protected array $notes = [];
 
 
     /**
@@ -159,8 +171,8 @@ class Sheet
     {
         if (!$this->fileWriter) {
             $this->fileWriter = $fileWriter;
-            $this->fileName = $fileWriter->getFileName();
-            $this->fileRels = $this->fileName . '.rels';
+            $this->fileTempName = $fileWriter->getFileName();
+            $this->fileRels = $this->fileTempName . '.rels';
         }
 
         return $this;
@@ -174,8 +186,8 @@ class Sheet
     public function resetFileWriter(WriterBuffer $fileWriter): Sheet
     {
         $this->fileWriter = $fileWriter;
-        $this->fileName = $fileWriter->getFileName();
-        $this->fileRels = $this->fileName . '.rels';
+        $this->fileTempName = $fileWriter->getFileName();
+        $this->fileRels = $this->fileTempName . '.rels';
 
         return $this;
     }
@@ -185,7 +197,7 @@ class Sheet
      */
     public function getExternalLinks(): array
     {
-        return $this->externalLinks;
+        return $this->relationships['links'] ?? [];
     }
 
     /**
@@ -193,11 +205,23 @@ class Sheet
      */
     public function getXmlRels(): ?string
     {
-        if ($this->externalLinks) {
+        if ($this->relationships) {
             $result = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $result .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
-            foreach ($this->externalLinks as $id => $data) {
-                $result .= '<Relationship Id="rId' . $id . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' . $data['link'] . '" TargetMode="External"/>';
+            if (isset($this->relationships['links'])) {
+                foreach ($this->relationships['links'] as $rId => $data) {
+                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '" TargetMode="External"/>';
+                }
+            }
+            if (isset($this->relationships['comments'])) {
+                foreach ($this->relationships['comments'] as $rId => $data) {
+                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '"/>';
+                }
+            }
+            if (isset($this->relationships['legacyDrawing'])) {
+                foreach ($this->relationships['legacyDrawing'] as $rId => $data) {
+                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '"/>';
+                }
             }
             $result .= '</Relationships>';
 
@@ -789,9 +813,10 @@ class Sheet
      */
     protected function _addExternalLink(string $address, string $link)
     {
-        $this->externalLinks[++$this->externalLinksCount] = [
+        $this->relationships['links'][++$this->relationshipId] = [
             'cell' => $address,
             'link' => $link,
+            'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
         ];
     }
 
@@ -2287,6 +2312,66 @@ class Sheet
     public function getNamedRanges(): array
     {
         return $this->namedRanges;
+    }
+
+    /**
+     * @param string $cell
+     * @param string $comment
+     *
+     * @return $this
+     */
+    public function addNote(string $cell, string $comment): Sheet
+    {
+        $dimension = self::_rangeDimension($cell);
+        if (isset($dimension['cell1'])) {
+            $this->notes[] = [
+                'cell' => $dimension['cell1'],
+                'row_index' => $dimension['rowIndex'],
+                'col_index' => $dimension['colIndex'],
+                'text' => $comment,
+                'style' => [
+                    'width' => '96pt',
+                    'height' => '55.5pt',
+                    'margin_left' => '59.25pt',
+                    'margin_top' => '1.5pt',
+                ],
+            ];
+            if (!isset($this->relationships['legacyDrawing'])) {
+                $file = 'vmlDrawing' . $this->index . '.vml';
+                $this->relationships['legacyDrawing'][++$this->relationshipId] = [
+                    'file' => $file,
+                    'link' => '../drawings/' . $file,
+                    'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing',
+                ];
+            }
+            if (!isset($this->relationships['comments'])) {
+                $file = 'comments' . $this->index . '.xml';
+                $this->relationships['comments'][++$this->relationshipId] = [
+                    'file' => $file,
+                    'link' => '../' . $file,
+                    'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments',
+                ];
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getNotes(): array
+    {
+        return $this->notes;
+    }
+
+    public function getLegacyDrawing()
+    {
+        if (isset($this->relationships['legacyDrawing'])) {
+            return array_key_first($this->relationships['legacyDrawing']);
+        }
+
+        return 0;
     }
 
     // === DESIGN STYLES === /

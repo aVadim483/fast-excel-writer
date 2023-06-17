@@ -139,6 +139,18 @@ class Excel
         self::$tempDir = $tempDir;
     }
 
+    public static function generateUuid(): string
+    {
+        // xxxxxxxx-xxxx-4xxx-[8-B]xxx-xxxxxxxxxxxx
+        $hash = md5(microtime());
+        $uuid = substr($hash, 0, 8) . '-' . substr($hash, 8, 4)
+            . '-4' . dechex(random_int(256, 4095))
+            . '-' . dechex(random_int(8, 11)) . dechex(random_int(256, 4095))
+            . '-' . substr($hash, 12, 12);
+
+        return strtoupper($uuid);
+    }
+
     /**
      * @param $string
      */

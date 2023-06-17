@@ -93,6 +93,16 @@ class Style
     /** @var array Specified styles for formats '@...'  */
     public array $defaultFormatStyles = [];
 
+    public array $indexedColors = ['00000000',
+        '00FFFFFF', '00FF0000', '0000FF00', '000000FF', '00FFFF00', '00FF00FF', '0000FFFF', '00000000', '00FFFFFF',
+        '00FF0000', '0000FF00', '000000FF', '00FFFF00', '00FF00FF', '0000FFFF', '00800000', '00008000', '00000080',
+        '00808000', '00800080', '00008080', '00C0C0C0', '00808080', '009999FF', '00993366', '00FFFFCC', '00CCFFFF',
+        '00660066', '00FF8080', '000066CC', '00CCCCFF', '00000080', '00FF00FF', '00FFFF00', '0000FFFF', '00800080',
+        '00800000', '00008080', '000000FF', '0000CCFF', '00CCFFFF', '00CCFFCC', '00FFFF99', '0099CCFF', '00FF99CC',
+        '00CC99FF', '00E3E3E3', '003366FF', '0033CCCC', '0099CC00', '00FFCC00', '00FF9900', '00FF6600', '00666699',
+        '00969696', '00003366', '00339966', '00003300', '00333300', '00993300', '00993366', '00333399', '00333333',
+    ];
+
     protected array $elements = [];
 
     protected array $elementIndexes = [];
@@ -102,6 +112,7 @@ class Style
     protected static array $borderStyleDefines = [self::BORDER_STYLE_THIN, self::BORDER_STYLE_MEDIUM, self::BORDER_STYLE_THICK, self::BORDER_STYLE_DASH_DOT,
         self::BORDER_STYLE_DASH_DOT_DOT, self::BORDER_STYLE_DASHED, self::BORDER_STYLE_DOTTED, self::BORDER_STYLE_DOUBLE, self::BORDER_STYLE_HAIR,
         self::BORDER_STYLE_MEDIUM_DASH_DOT, self::BORDER_STYLE_MEDIUM_DASH_DOT_DOT, self::BORDER_STYLE_MEDIUM_DASHED, self::BORDER_STYLE_SLANT_DASH_DOT];
+
 
 
     public array $_styleCache = [];

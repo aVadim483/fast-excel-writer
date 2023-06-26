@@ -2317,10 +2317,11 @@ class Sheet
     /**
      * @param string $cell
      * @param string|null $comment
+     * @param array $noteStyle
      *
      * @return $this
      */
-    public function addNote(string $cell, ?string $comment = null, $noteStyle = []): Sheet
+    public function addNote(string $cell, ?string $comment = null, array $noteStyle = []): Sheet
     {
         if (func_num_args() === 1) {
             $comment = $cell;

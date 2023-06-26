@@ -2321,13 +2321,17 @@ class Sheet
      *
      * @return $this
      */
-    public function addNote(string $cell, ?string $comment = null, array $noteStyle = []): Sheet
+    public function addNote(string $cell, $comment = null, array $noteStyle = []): Sheet
     {
-        if (func_num_args() === 1 || func_num_args() === 2 && $comment === null ) {
+        if (func_num_args() === 1 || func_num_args() === 2 && is_array( $comment ) ) {
             $comment = $cell;
             $rowIdx = $this->lastTouch['cell']['row_idx'];
             $colIdx = $this->lastTouch['cell']['col_idx'];
             $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
+
+			if ( func_num_args() === 2 && is_array( $comment ) ) {
+				$noteStyle = $comment;
+			}
         }
         else {
             $dimension = self::_rangeDimension($cell);

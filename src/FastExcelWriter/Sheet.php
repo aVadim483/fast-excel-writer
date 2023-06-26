@@ -2320,7 +2320,7 @@ class Sheet
      *
      * @return $this
      */
-    public function addNote(string $cell, ?string $comment = null): Sheet
+    public function addNote(string $cell, ?string $comment = null, $noteStyle = []): Sheet
     {
         if (func_num_args() === 1) {
             $comment = $cell;
@@ -2340,12 +2340,12 @@ class Sheet
                 'row_index' => $rowIdx,
                 'col_index' => $colIdx,
                 'text' => $comment,
-                'style' => [
+                'style' => array_merge( [
                     'width' => '96pt',
                     'height' => '55.5pt',
                     'margin_left' => '59.25pt',
                     'margin_top' => '1.5pt',
-                ],
+                ], $noteStyle ),
             ];
             if (!isset($this->relationships['legacyDrawing'])) {
                 $file = 'vmlDrawing' . $this->index . '.vml';

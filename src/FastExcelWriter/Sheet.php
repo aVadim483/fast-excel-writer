@@ -2316,7 +2316,7 @@ class Sheet
 
     /**
      * @param string $cell
-     * @param string|null $comment
+     * @param string|array|null $comment
      * @param array $noteStyle
      *
      * @return $this

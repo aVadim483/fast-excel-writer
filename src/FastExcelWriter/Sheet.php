@@ -2323,7 +2323,7 @@ class Sheet
      */
     public function addNote(string $cell, ?string $comment = null, array $noteStyle = []): Sheet
     {
-        if (func_num_args() === 1) {
+        if (func_num_args() === 1 || func_num_args() === 2 && $comment === null ) {
             $comment = $cell;
             $rowIdx = $this->lastTouch['cell']['row_idx'];
             $colIdx = $this->lastTouch['cell']['col_idx'];

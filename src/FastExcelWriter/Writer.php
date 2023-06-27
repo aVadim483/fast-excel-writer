@@ -431,28 +431,19 @@ class Writer
             $comments = $sheet->getNotes();
             if ($comments) {
                 $xmlDrawing = '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"  xmlns:x="urn:schemas-microsoft-com:office:excel">';
-                $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">';
+                $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
                 $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
+                $xmlDrawing .= '<v:fill color="#0000FF"/>';
                 $xmlDrawing .= '</v:shapetype>';
                 foreach ($comments as $comment) {
                     $id = 1024 + (++$drawingCnt);
-                    /*
                     $style = 'position:absolute;margin-left:' . $comment['style']['margin_left'] . ';margin-top:'  . $comment['style']['margin_top'] . ';'
-                        . 'width:'  . $comment['style']['width'] . ';height:'  . $comment['style']['height'] . ';z-index:1;'
-                        . 'visibility:hidden';
-                    */
-                    $marginLeft = number_format(1.5 + 48.65 * ($comment['col_index'] + 1), 2, '.', '') . 'pt';
-                    if ($comment['row_index'] === 0) {
-                        $marginTop = '1.5pt';
+                        . 'width:'  . $comment['style']['width'] . ';height:'  . $comment['style']['height'] . ';z-index:1;';
+                    if (empty($comment['style']['show'])) {
+                        $style .= 'visibility:hidden';
                     }
-                    else {
-                        $marginTop = number_format(-4.2 + 14.4 * $comment['row_index'], 2, '.', '') . 'pt';
-                    }
-                    $style = 'position:absolute;margin-left:' . $marginLeft . ';margin-top:'  . $marginTop . ';'
-                        . 'width:'  . $comment['style']['width'] . ';height:'  . $comment['style']['height'] . ';z-index:1;'
-                        . 'visibility:hidden';
-                    $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '" fillcolor="#FFFFE1" o:insetmode="auto">';
-                    $xmlDrawing .= '<v:fill color2="#FFFFE1"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
+                    $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '" fillcolor="' . $comment['style']['fill_color'] . '" o:insetmode="auto">';
+                    $xmlDrawing .= '<v:fill color2="' . $comment['style']['fill_color'] . '"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
                     $xmlDrawing .= '<v:textbox style="mso-direction-alt:auto">';
                     $xmlDrawing .= '<div style="text-align:' . ($this->excel->isRightToLeft() ? 'right' : 'left') . '"/>';
                     $xmlDrawing .= '</v:textbox>';
@@ -471,8 +462,9 @@ class Writer
                 }
             }
         }
-
+        return $files;
     }
+
     /**
      * @param $zip
      *
@@ -518,7 +510,7 @@ class Writer
             'xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"',
             //'xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"',
             //'xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"',
-            'xr:uid="{00000000-0001-0000-0000-000000000000}"',
+            'xr:uid="{' . Excel::generateUuid() . '}"',
         ];
         $xmlns = implode(' ', $xmlnsLinks);
         $fileWriter->write('<worksheet ' . $xmlns . '>');

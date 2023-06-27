@@ -19,6 +19,16 @@ class Sheet
     protected const WIDTH_DOTS_SYMBOLS = 0.20;
     protected const WIDTH_PADDING = 0.56;
 
+    // constants for notes
+    protected const NOTE_LEFT_OFFSET = 1.5;
+    protected const NOTE_LEFT_INC = 48.65;
+    protected const NOTE_TOP_OFFSET = -4.2;
+    protected const NOTE_TOP_INC = 14.4;
+    protected const NOTE_DEFAULT_TOP = '1.5pt';
+    protected const NOTE_DEFAULT_WIDTH = '96pt';
+    protected const NOTE_DEFAULT_HEIGHT = '55.5pt';
+    protected const NOTE_DEFAULT_COLOR = '#FFFFE1';
+
     /** @var Excel */
     public Excel $excel;
 
@@ -2315,6 +2325,10 @@ class Sheet
     }
 
     /**
+     * Add note to the sheet
+     * $sheet->addNote('A1', $noteText, $noteStyle)
+     * $sheet->writeCell($cellValue)->addNote($noteText, $noteStyle)
+     *
      * @param string $cell
      * @param string|array|null $comment
      * @param array $noteStyle
@@ -2323,15 +2337,14 @@ class Sheet
      */
     public function addNote(string $cell, $comment = null, array $noteStyle = []): Sheet
     {
-        if (func_num_args() === 1 || func_num_args() === 2 && is_array( $comment ) ) {
+        if (func_num_args() === 1 || (func_num_args() === 2 && is_array( $comment )) ) {
+            if ( func_num_args() === 2) {
+                $noteStyle = $comment;
+            }
             $comment = $cell;
             $rowIdx = $this->lastTouch['cell']['row_idx'];
             $colIdx = $this->lastTouch['cell']['col_idx'];
             $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
-
-			if ( func_num_args() === 2 && is_array( $comment ) ) {
-				$noteStyle = $comment;
-			}
         }
         else {
             $dimension = self::_rangeDimension($cell);
@@ -2340,16 +2353,33 @@ class Sheet
             $colIdx = $dimension['colIndex'];
         }
         if ($cell) {
-            $this->notes[] = [
+            $marginLeft = number_format(self::NOTE_LEFT_OFFSET + self::NOTE_LEFT_INC * ($colIdx + 1), 2, '.', '') . 'pt';
+            if ($rowIdx === 0) {
+                $marginTop = self::NOTE_DEFAULT_TOP;
+            }
+            else {
+                $marginTop = number_format(self::NOTE_TOP_OFFSET + self::NOTE_TOP_INC * $rowIdx, 2, '.', '') . 'pt';
+            }
+            if (!empty($noteStyle['fill_color'])) {
+                $noteStyle['fill_color'] = '#' . substr(Style::normalizeColor($noteStyle['fill_color']), 2);
+            }
+            if (!empty($noteStyle['width']) && (is_int($noteStyle['width']) || is_float($noteStyle['width']))) {
+                $noteStyle['width'] = number_format($noteStyle['width'], 2, '.', '') . 'pt';
+            }
+            if (!empty($noteStyle['height']) && (is_int($noteStyle['height']) || is_float($noteStyle['height']))) {
+                $noteStyle['height'] = number_format($noteStyle['height'], 2, '.', '') . 'pt';
+            }
+            $this->notes[$cell] = [
                 'cell' => $cell,
                 'row_index' => $rowIdx,
                 'col_index' => $colIdx,
                 'text' => $comment,
                 'style' => array_merge( [
-                    'width' => '96pt',
-                    'height' => '55.5pt',
-                    'margin_left' => '59.25pt',
-                    'margin_top' => '1.5pt',
+                    'width' => self::NOTE_DEFAULT_WIDTH,
+                    'height' => self::NOTE_DEFAULT_HEIGHT,
+                    'margin_left' => $marginLeft,
+                    'margin_top' => $marginTop,
+                    'fill_color' => self::NOTE_DEFAULT_COLOR,
                 ], $noteStyle ),
             ];
             if (!isset($this->relationships['legacyDrawing'])) {

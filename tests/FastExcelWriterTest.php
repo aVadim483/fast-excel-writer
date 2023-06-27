@@ -414,4 +414,34 @@ final class FastExcelWriterTest extends TestCase
 
         unlink($testFileName);
     }
+
+    public function testExcelWriterNotes()
+    {
+        $testFileName = __DIR__ . '/test_note.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $sheet = $excel->getSheet();
+
+        $sheet->writeCell('Text to A1');
+        $sheet->addNote('A1', 'This is a note for cell A1');
+
+        $sheet->addNote('b2', 'This is a note for cell B2', ['width' => '200pt', 'fill_color' => 'f99']);
+        $sheet->addNote('c3', 'This is a note for cell C3', ['width' => '200pt', 'height' => '100pt']);
+        $sheet->addNote('D4', 'Note for D4', ['width' => 200, 'height' => 300, 'fill_color' => '#FEDCBA', 'show' => true]);
+
+        $sheet->writeCell('Text to d4')->addNote('This is a note for D4');
+        $sheet->writeTo('e5', 'Text to E5')->addNote('Note for C1', ['width' => '200pt', 'height' => '100pt']);
+
+
+        $sheet->addNote('E4:F8', 'This note will added to E4');
+
+        $excel->save($testFileName);
+        $this->assertTrue(file_exists($testFileName));
+
+
+        unlink($testFileName);
+    }
 }

@@ -2316,17 +2316,22 @@ class Sheet
 
     /**
      * @param string $cell
-     * @param string|null $comment
+     * @param string|array|null $comment
+     * @param array $noteStyle
      *
      * @return $this
      */
-    public function addNote(string $cell, ?string $comment = null): Sheet
+    public function addNote(string $cell, $comment = null, array $noteStyle = []): Sheet
     {
-        if (func_num_args() === 1) {
+        if (func_num_args() === 1 || func_num_args() === 2 && is_array( $comment ) ) {
             $comment = $cell;
             $rowIdx = $this->lastTouch['cell']['row_idx'];
             $colIdx = $this->lastTouch['cell']['col_idx'];
             $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
+
+			if ( func_num_args() === 2 && is_array( $comment ) ) {
+				$noteStyle = $comment;
+			}
         }
         else {
             $dimension = self::_rangeDimension($cell);
@@ -2340,12 +2345,12 @@ class Sheet
                 'row_index' => $rowIdx,
                 'col_index' => $colIdx,
                 'text' => $comment,
-                'style' => [
+                'style' => array_merge( [
                     'width' => '96pt',
                     'height' => '55.5pt',
                     'margin_left' => '59.25pt',
                     'margin_top' => '1.5pt',
-                ],
+                ], $noteStyle ),
             ];
             if (!isset($this->relationships['legacyDrawing'])) {
                 $file = 'vmlDrawing' . $this->index . '.vml';

@@ -81,14 +81,14 @@ $number = Excel::colNumber('C'); // => 3
 $number = Excel::colNumber('BZ'); // => 78
 
 // Convert letter to index (ZERO based)
-$number = Excel::colNumber('C'); // => 2
-$number = Excel::colNumber('BZ'); // => 77
+$number = Excel::colIndex('C'); // => 2
+$number = Excel::colIndex('BZ'); // => 77
 
-// Reverse conversion - from number to letter
+// Reverse conversion - from number to letter (ONE based)
 $letter = Excel::colLetter(3); // => 'C'
 $letter = Excel::colLetter(78); // => 'BZ'
 
-// Make address from row and column
+// Make address from row and column (ONE based)
 $address = Excel::cellAddress(8, 12); // => 'L8'
 $address = Excel::cellAddress(8, 12, true); // => '$L$8'
 $address = Excel::cellAddress(8, 12, true, false); // => '$L8'

@@ -84,6 +84,9 @@ class Sheet
 
     protected array $colStylesSummary = [];
 
+    // special styles by field names
+    protected array $fieldStyles = [];
+
     // ZERO based
     public array $rowHeights = [];
     public array $rowStyles = [];
@@ -723,6 +726,46 @@ class Sheet
             foreach ($formats as $col => $format) {
                 $this->setColFormat($col, $format);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $styles
+     *
+     * @return $this
+     */
+    public function setFieldStyles(array $styles): Sheet
+    {
+        if ($styles) {
+            foreach ($styles as $field => $style) {
+                $style = Style::normalize($style);
+                if (empty($this->fieldStyles[$field])) {
+                    $this->fieldStyles[$field] = $style;
+                }
+                else {
+                    $this->fieldStyles[$field] = array_merge_recursive($this->fieldStyles[$field], $style);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $formats
+     *
+     * @return $this
+     */
+    public function setFieldFormats(array $formats): Sheet
+    {
+        if ($formats) {
+            $styles = [];
+            foreach ($formats as $field => $format) {
+                $styles[$field] = Style::normalize(['format' => $format]);
+            }
+            $this->setFieldStyles($styles);
         }
 
         return $this;
@@ -1533,7 +1576,12 @@ class Sheet
         }
 
         if (!is_array($rowValues)) {
+            $rowFieldNames = [0];
             $rowValues = [$rowValues];
+        }
+        else {
+            $rowFieldNames = array_keys($rowValues);
+            $rowValues = array_values($rowValues);
         }
         if (is_array($cellStyles)) {
             $key = array_key_first($cellStyles);
@@ -1562,7 +1610,19 @@ class Sheet
                     $this->lastTouch['area']['col_idx1'] = $colIdx;
                 }
                 $this->lastTouch['area']['col_idx2'] = $colIdx;
-                $this->_setCellData(null, $rowValues[$colIdx] ?? null, $cellStyles[$colIdx] ?? null);
+                if (isset($this->fieldStyles[$rowFieldNames[$colIdx]]) && isset($cellStyles[$colIdx])) {
+                    $cellComboStyle = array_merge_recursive($this->fieldStyles[$rowFieldNames[$colIdx]], $cellStyles[$colIdx]);
+                }
+                elseif (isset($this->fieldStyles[$rowFieldNames[$colIdx]])) {
+                    $cellComboStyle = $this->fieldStyles[$rowFieldNames[$colIdx]];
+                }
+                elseif (isset($cellStyles[$colIdx])) {
+                    $cellComboStyle = $cellStyles[$colIdx];
+                }
+                else {
+                    $cellComboStyle = null;
+                }
+                $this->_setCellData(null, $rowValues[$colIdx] ?? null, $cellComboStyle);
             }
             $this->lastTouch['cell']['col_idx'] = ++$this->currentCol;
         }
@@ -2362,6 +2422,9 @@ class Sheet
             }
             if (!empty($noteStyle['fill_color'])) {
                 $noteStyle['fill_color'] = '#' . substr(Style::normalizeColor($noteStyle['fill_color']), 2);
+            }
+            elseif (!empty($noteStyle['bg_color'])) {
+                $noteStyle['fill_color'] = '#' . substr(Style::normalizeColor($noteStyle['bg_color']), 2);
             }
             if (!empty($noteStyle['width']) && (is_int($noteStyle['width']) || is_float($noteStyle['width']))) {
                 $noteStyle['width'] = number_format($noteStyle['width'], 2, '.', '') . 'pt';

@@ -54,6 +54,8 @@ This library creates Excel compatible spreadsheets in XLSX format (Office 2007+)
 * Supports basic column, row and cell styling
 * You can set the height of the rows and the width of the columns (including auto width calculation)
 
+And if you are Laravel-developer then you can use special Laravel edition -
+[FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel).
 
 ### **FastExcelWriter** vs **PhpSpreadsheet**
 

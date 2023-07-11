@@ -168,7 +168,7 @@ class Style
         $index = $this->addElement('borders', $styleVal);
 
         $styleVal = [
-            '_num_fmt_Id' => 0,
+            '_num_fmt_id' => 0,
             '_font_id' => 0,
             '_fill_id' => 0,
             '_border_id' => 0,
@@ -1268,19 +1268,19 @@ class Style
             $cellStyle['_xf_id'] = 0;
         }
 
-        if ($numFormat && !isset($cellStyle['_num_fmt_Id'])) {
-            $cellStyle['_num_fmt_Id'] = 0;
+        if ($numFormat && !isset($cellStyle['_num_fmt_id'])) {
+            $cellStyle['_num_fmt_id'] = 0;
 
             $numberFormat = self::numberFormatStandardized($numFormat, $xfId);
             $numberFormatType = self::determineNumberFormatType($numberFormat, $numFormat);
-            $cellStyle['_num_fmt_Id'] = $this->addElement('numFmts', $numberFormat);
+            $cellStyle['_num_fmt_id'] = $this->addElement('numFmts', $numberFormat);
 
             $fullStyle['format']['format-pattern'] = $numFormat;
             $fullStyle['number_format'] = $numberFormat;
             $fullStyle['number_format_type'] = $numberFormatType;
         }
         else {
-            $cellStyle['_num_fmt_Id'] = 0;
+            $cellStyle['_num_fmt_id'] = 0;
         }
 
         $cellXfsId = $this->addXfs($cellStyle, $fullStyle);
@@ -1416,6 +1416,14 @@ class Style
     }
 
     /**
+     * @see https://support.microsoft.com/en-au/office/number-format-codes-5026bbd6-04bc-48cd-bf33-80f18b4eae68#ID0EDN
+     *
+     * #,###.00_);[Red](#,###.00);0.00;"gross receipts for "@
+     * 1 - for positive numbers
+     * 2 - for negative numbers
+     * 3 - for zeros
+     * 4 - for text
+     *
      * @param $numFormat
      * @param int|null $xfId
      *
@@ -1430,7 +1438,7 @@ class Style
             return '0';
         }
         if ($numFormat[0] === '@') {
-            $numFormat = strtoupper($numFormat);
+            $numFormat = trim(strtoupper($numFormat));
             if (strpos('@STRING', $numFormat) === 0 || strpos('@TEXT', $numFormat) === 0) {
                 return '@';
             }
@@ -1440,6 +1448,7 @@ class Style
             if (strpos('@PERCENT', $numFormat) === 0) {
                 return '0%';
             }
+            return '@';
         }
 
         while (isset(self::$instance->localeSettings['formats'][$numFormat])) {
@@ -1469,7 +1478,11 @@ class Style
                 $ignoreUntil = '';
             }
 
-            if ($ignoreUntil === '' && ($c === ' ' || $c === '-' || $c === '(' || $c === ')') && ($i === 0 || $numFormat[$i - 1] !== '_')) {
+            //if ($ignoreUntil === '' && ($c === ' ' || $c === '-' || $c === '(' || $c === ')') && ($i === 0 || $numFormat[$i - 1] !== '_')) {
+            if ($ignoreUntil === '' && $c === ' ' && ($i === 0 || ($numFormat[$i - 1] !== '_' && $numFormat[$i - 1] !== '*'))) {
+                $escaped .= "\\" . $c;
+            }
+            elseif ($ignoreUntil === '' && $c === '-' && ($i === 0 || $numFormat[$i - 1] === ']' || $numFormat[$i - 1] === ';')) {
                 $escaped .= "\\" . $c;
             }
             else {

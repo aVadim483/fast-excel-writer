@@ -966,13 +966,13 @@ class Writer
                 if ($alignmentAttr) {
                     $xfAttr .= 'applyAlignment="true" ';
                     $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
-                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_Id']) . '" xfId="' . $xfId . '">');
+                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_id']) . '" xfId="' . $xfId . '">');
                     $file->write('	<alignment ' . $alignmentAttr . '/>');
                     $file->write('</xf>');
                 }
                 else {
                     $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
-                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_Id']) . '" xfId="' . $xfId . '" />');
+                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_id']) . '" xfId="' . $xfId . '" />');
                 }
             }
 

@@ -1377,15 +1377,15 @@ class Sheet
             if (!is_int($key)) {
                 $rowValues[$colNum] = $key;
                 if (is_scalar($val)) {
-                    $colStyles[$colNum]['format'] = $val;
+                    $colStyles[$colNum + $this->offsetCol]['format'] = $val;
                 }
                 else {
-                    $colStyles[$colNum] = isset($colStyles[$colNum]) ? array_replace_recursive($colStyles[$colNum], $val) : $val;
+                    $colStyles[$colNum + $this->offsetCol] = isset($colStyles[$colNum + $this->currentCol]) ? array_replace_recursive($colStyles[$colNum + $this->currentCol], $val) : $val;
                 }
             }
             else {
                 $rowValues[$colNum] = $val;
-                $colStyles[$colNum] = null;
+                $colStyles[$colNum + $this->offsetCol] = null;
             }
             $colNum++;
         }

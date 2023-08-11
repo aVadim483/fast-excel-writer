@@ -64,7 +64,7 @@ $timer = microtime(true);
 $excel = Excel::create(['pikachu']);
 $sheet = $excel->getSheet();
 
-$cols = array_fill(1, count($map[0]), 2.2);
+$cols = array_fill(0, count($map[0]), 2.2);
 $sheet->setColWidths($cols);
 
 foreach ($map as $row) {

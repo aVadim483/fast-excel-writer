@@ -69,6 +69,27 @@ foreach ($data as $rowData) {
     $sheet->writeRow($rowData);
 }
 
+```
+Also, you can define the top left cell for writing  
+```php
+$excel = Excel::create();
+$sheet = $excel->getSheet();
+
+// The first row is 3, all rows start in column B
+$sheet->setTopLeftCell('B3');
+
+// Write header values to the current row and set format of columns A and B 
+$sheet->writeHeader(['title1' => '@integer', 'title2' => '@date'])->applyFontStyleBold();;
+
+$data = [
+    [184, '2022-01-23'],
+    [835, '1971-12-08'],
+    [760, '1997-05-11'],
+];
+
+foreach ($data as $rowData) {
+    $sheet->writeRow($rowData);
+}
 
 ```
 

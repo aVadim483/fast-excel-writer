@@ -287,11 +287,11 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $style = $this->getStyle('A1');
-        //$this->assertEquals('#CCCC99', $style['fill']['fill-color']);
-        //$style = $this->getStyle('B1');
-        //$this->assertEquals('#CC99CC', $style['fill']['fill-color']);
-        //$style = $this->getStyle('C1');
-        //$this->assertEquals('#99CCCC', $style['fill']['fill-color']);
+        $this->assertEquals('#CCCC99', $style['fill']['fill-color']);
+        $style = $this->getStyle('B1');
+        $this->assertEquals('#CC99CC', $style['fill']['fill-color']);
+        $style = $this->getStyle('C1');
+        $this->assertEquals('#99CCCC', $style['fill']['fill-color']);
 
         $value = $this->getValue('A2');
         $this->assertEquals('This is test XLSX-sheet', $value);

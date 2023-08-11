@@ -550,27 +550,26 @@ class Excel
 
     /**
      * Convert values to letters array
-     *  Array [0, 1, 2] => ['A', 'B', 'C'] If the first value is '0' then ZERO based
-     *  Array [1, 2, 3] => ['A', 'B', 'C'] If the first value is not '0' then ONE based
+     *  Array [0, 1, 2] => ['A', 'B', 'C']
      *  String 'B, E, F' => ['B', 'E', 'F']
      *  String 'B-E, F' => ['B', 'C', 'D', 'E', 'F']
      *  String 'B1-E8' => ['B', 'C', 'D', 'E']
      *  String 'B1:E8' => ['B:E']
      *
      * @param array|string $colKeys
+     * @param int|null $baseNum 0 or 1
      *
      * @return array
      */
-    public static function colLetterRange($colKeys): array
+    public static function colLetterRange($colKeys, ?int $baseNum = 0): array
     {
         if ($colKeys) {
             if (is_array($colKeys)) {
                 $key = reset($colKeys);
                 if (is_numeric($key)) {
-                    $offset = $key ? 0 : 1;
                     $columns = [];
                     foreach ($colKeys as $key) {
-                        $columns[] = Excel::colLetter($key + $offset);
+                        $columns[] = Excel::colLetter($key + (1 - $baseNum));
                     }
                     return $columns;
                 }

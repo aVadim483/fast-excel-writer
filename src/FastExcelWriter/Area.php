@@ -52,6 +52,10 @@ class Area
     /** @var int  */
     protected int $index = -1;
 
+    protected int $currentColNum;
+
+    protected int $currentRowNum;
+
     /**
      * Area constructor
      *
@@ -79,8 +83,11 @@ class Area
             ['row' => $this->dimension['rowNum2'], 'col' => $this->dimension['colNum2']]
         ];
         $this->range = $this->dimension['range'];
+        $this->currentRowNum = $this->dimension['rowNum1'];
+        $this->currentColNum = $this->dimension['colNum1'];
 
         $this->setCoord($coord);
+        $this->moveTo($dimension['cell1']);
     }
 
     /**
@@ -95,7 +102,8 @@ class Area
             if (isset($addr['row'], $addr['col'])) {
                 $row = $addr['row'];
                 $col = $addr['col'];
-            } else {
+            }
+            else {
                 [$row, $col] = $addr;
             }
             $this->coord[] = ['row' => $row, 'col' => $col];
@@ -386,6 +394,77 @@ class Area
         if ($this->_validateAddressRange($range)) {
             $this->sheet->withRange($range);
         }
+
+        return $this;
+    }
+
+    /**
+     * Move the cursor to the specified address
+     *
+     * @param $cellAddress
+     *
+     * @return $this
+     */
+    public function moveTo($cellAddress): Area
+    {
+        if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress, $numAddress)) {
+            $this->currentColNum = $numAddress['col'];
+            $this->currentRowNum = $numAddress['row'];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Write value to the cursor position and move cursor to the next cell in the row
+     *
+     * @return $this
+     */
+    public function nextCell(): Area
+    {
+        $this->currentColNum++;
+
+        return $this;
+    }
+
+    /**
+     * Move the cursor to the next cell in the row
+     *
+     * @return $this
+     */
+    public function nextRow(): Area
+    {
+        $this->currentRowNum++;
+        $this->currentColNum = $this->dimension['colNum1'];
+
+        return $this;
+    }
+
+    /**
+     * Write a value to the cursor position and move the cursor to the next cell in the row
+     *
+     * @return $this
+     */
+    public function writeCell($value): Area
+    {
+        $this->setValue(['col' => $this->currentColNum++, 'row' => $this->currentRowNum], $value);
+
+        return $this;
+    }
+
+    /**
+     * Write a row data to the current row and move the cursor to the next row
+     *
+     * @param array $row
+     *
+     * @return $this
+     */
+    public function writeRow(array $row): Area
+    {
+        foreach ($row as $cell) {
+            $this->writeCell($cell);
+        }
+        $this->nextRow();
 
         return $this;
     }

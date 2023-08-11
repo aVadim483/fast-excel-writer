@@ -100,6 +100,8 @@ class Sheet
     // Current column index
     protected int $currentCol = 0;
 
+    protected int $offsetCol = 0;
+
     protected array $mergeCells = [];
     protected array $totalArea = [];
     protected array $areas = [];
@@ -462,6 +464,21 @@ class Sheet
             }
         }
         $this->absoluteAutoFilter = Excel::cellAddress($row, $col, true);
+
+        return $this;
+    }
+
+    /**
+     * @param string|array $cellAddress
+     *
+     * @return $this
+     */
+    public function setTopLeftCell($cellAddress): Sheet
+    {
+        $address = $this->_moveTo($cellAddress);
+        $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
+        $this->_touchEnd($address['rowIndex'], $address['colIndex'], 'cell');
+        $this->offsetCol = $address['colIndex'];
 
         return $this;
     }
@@ -1599,7 +1616,7 @@ class Sheet
      */
     public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
-        if ($this->currentCol || $this->areas) {
+        if (($this->currentCol > 0) || $this->areas) {
             $this->_writeCurrentRow();
         }
 
@@ -1724,7 +1741,6 @@ class Sheet
                 $this->totalArea['coord'][1]['col'] = $coord[1]['col'];
             }
         }
-
 
         return $area;
     }

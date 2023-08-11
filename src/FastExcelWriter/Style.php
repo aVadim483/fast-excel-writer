@@ -1448,19 +1448,20 @@ class Style
             if (strpos('@PERCENT', $numFormat) === 0) {
                 return '0%';
             }
-            return '@';
-        }
 
-        while (isset(self::$instance->localeSettings['formats'][$numFormat])) {
-            if (!$numFormat) {
-                break;
+            while (isset(self::$instance->localeSettings['formats'][$numFormat])) {
+                if (!$numFormat) {
+                    break;
+                }
+                if (isset(self::$instance->localeSettings['formats'][$numFormat])) {
+                    $numFormat = self::$instance->localeSettings['formats'][$numFormat];
+                }
+                else {
+                    break;
+                }
             }
-            if (isset(self::$instance->localeSettings['formats'][$numFormat])) {
-                $numFormat = self::$instance->localeSettings['formats'][$numFormat];
-            }
-            else {
-                break;
-            }
+
+            return $numFormat ?: '@';
         }
 
         $ignoreUntil = '';

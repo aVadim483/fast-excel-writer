@@ -672,7 +672,7 @@ class Writer
     {
         static $functionNames = [];
 
-        $formula = substr($formula, 1);
+        //$formula = substr($formula, 1);
 
         $mark = md5(microtime());
         $replace = [];
@@ -686,7 +686,7 @@ class Writer
                 return $key;
             }, $formula);
         }
-        // change relative addresses
+        // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
         $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?\]?C\[?(-?\d+)?\]?)/', static function ($matches) use ($baseAddress) {
             $indexes = Excel::rangeRelOffsets($matches[2]);
             if (isset($indexes[0], $indexes[1])) {

@@ -102,6 +102,25 @@ $area
 $sheet->writeAreas();
 
 ```
+Other way is writing row by row or cell by cell in the defined area
+```php
+$excel = Excel::create();
+$sheet = $excel->getSheet();
+
+$area = $sheet->beginArea('C4');  // Make write area from C4 to max column and max row
+
+// You can write row by row within defined area
+foreach ($rows as $row) {
+    $area->writeRow($row);
+}
+$area->nextRow();
+$area->writeCell(123);
+$area->writeCell(456);
+
+// Close and write all areas
+$sheet->writeAreas();
+
+```
 
 ### Cell Formats
 

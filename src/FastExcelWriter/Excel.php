@@ -249,20 +249,20 @@ class Excel
             // set money pattern
             $tmpLocale = setlocale(LC_MONETARY, '0');
             if (setlocale(LC_MONETARY, $newLocale)) {
-                $locale_info = localeconv();
+                $localeInfo = localeconv();
 
-                $moneyPattern = '0' . $locale_info['decimal_point'] . str_repeat('0', $locale_info['frac_digits']);
-                if ($locale_info['thousands_sep']) {
-                    $moneyPattern = '#' . $locale_info['thousands_sep'] . '##' . $moneyPattern;
+                $moneyPattern = '0' . $localeInfo['decimal_point'] . str_repeat('0', $localeInfo['frac_digits']);
+                if ($localeInfo['thousands_sep']) {
+                    $moneyPattern = '#' . $localeInfo['thousands_sep'] . '##' . $moneyPattern;
                 }
-                $sepSpace = !empty($locale_info['p_sep_by_space']) ? str_repeat(' ', $locale_info['p_sep_by_space']) : '';
-                if (!empty($locale_info['p_cs_precedes'])) {
-                    $moneyPattern = '[$' . $locale_info['currency_symbol'] . ']' . $sepSpace . $moneyPattern;
+                $sepSpace = !empty($localeInfo['p_sep_by_space']) ? str_repeat(' ', $localeInfo['p_sep_by_space']) : '';
+                if (!empty($localeInfo['p_cs_precedes'])) {
+                    $moneyPattern = '[$' . $localeInfo['currency_symbol'] . ']' . $sepSpace . $moneyPattern;
                 }
                 else {
-                    $moneyPattern .= $sepSpace . '[$' . $locale_info['currency_symbol'] . ']';
+                    $moneyPattern .= $sepSpace . '[$' . $localeInfo['currency_symbol'] . ']';
                 }
-                $aFormatSettings['formats']['money'] = $moneyPattern;
+                $aFormatSettings['formats']['@MONEY'] = $moneyPattern;
                 setlocale(LC_MONETARY, $oldLocale);
             }
             if ($tmpLocale) {

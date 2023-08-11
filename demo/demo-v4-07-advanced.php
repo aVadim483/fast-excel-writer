@@ -20,14 +20,13 @@ $data = [];
 $rowCount = 100;
 for ($i = 1; $i <= $rowCount; $i++) {
     $row = [
-        $i,
-        $demoNames[0][array_rand($demoNames[0])],
-        $demoNames[1][array_rand($demoNames[1])],
-        date('Y-m-d', random_int($time1, $time2)),
-        '=ROUNDDOWN((TODAY()-RC[-1])/365,0)',
-        //'=RC[-1]',
-        random_int(100, 200) / 10,
-        random_int(1000, 9000) / 10,
+        $i, // #
+        $demoNames[0][array_rand($demoNames[0])], // f.name
+        $demoNames[1][array_rand($demoNames[1])], // l.name
+        date('Y-m-d', random_int($time1, $time2)), // b.day
+        '=ROUNDDOWN((TODAY()-RC[-1])/365,0)', // age
+        random_int(100, 200) / 10, // quant.
+        random_int(1000, 9000) / 10, // price
         '=RC[-1]*RC[-2]',
         random_int(1, 3) * 5 / 100,
         '=RC[-1]*RC[-2]',

@@ -444,6 +444,37 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+    public function testExcelWriter5()
+    {
+        $testFileName = __DIR__ . '/test5.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $excel->setLocale('en');
+        $sheet = $excel->getSheet();
+        $sheet->setTopLeftCell('c3');
+
+        $sheet->writeRow([1, 11, 111]);
+        $sheet->writeRow([2, 22, 222]);
+        $sheet->writeCell(3);
+        $sheet->writeCell(33);
+        $sheet->writeCell(333);
+
+        $excel->save($testFileName);
+        $this->assertTrue(file_exists($testFileName));
+
+        $this->excelReader = ExcelReader::open($testFileName);
+        $this->cells = $this->excelReader->readRows(false, null, true);
+
+        $this->assertEquals([1, 11, 111], $this->getValues(['c3', 'd3', 'e3']));
+        $this->assertEquals([2, 22, 222], $this->getValues(['c4', 'd4', 'e4']));
+        $this->assertEquals([3, 33, 333], $this->getValues(['c5', 'd5', 'e5']));
+
+        unlink($testFileName);
+    }
+
     public function testExcelWriterNotes()
     {
         $testFileName = __DIR__ . '/test_note.xlsx';

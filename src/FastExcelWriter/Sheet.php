@@ -478,7 +478,9 @@ class Sheet
         $address = $this->_moveTo($cellAddress);
         $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
         $this->_touchEnd($address['rowIndex'], $address['colIndex'], 'cell');
-        $this->offsetCol = $address['colIndex'];
+
+        $this->currentRow = $address['rowIndex'];
+        $this->currentCol = $this->offsetCol = $address['colIndex'];
 
         return $this;
     }
@@ -1595,7 +1597,7 @@ class Sheet
                 $this->currentRow++;
             }
 
-            $this->currentCol = 0;
+            $this->currentCol = $this->offsetCol;
 
             if (isset($this->colStyles[-1])) {
                 $this->setColOptions($this->colStyles[-1]);
@@ -1616,7 +1618,7 @@ class Sheet
      */
     public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
-        if (($this->currentCol > 0) || $this->areas) {
+        if (($this->currentCol > $this->offsetCol) || $this->areas) {
             $this->_writeCurrentRow();
         }
 
@@ -1648,7 +1650,7 @@ class Sheet
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
         $maxColIdx = max($cellStyles ? max(array_keys($cellStyles)) : 0, $rowValues ? max(array_keys($rowValues)) : 0);
-        $this->_touchStart($this->currentRow, 0, 'row');
+        $this->_touchStart($this->currentRow, $this->offsetCol, 'row');
         for ($colIdx = 0; $colIdx <= $maxColIdx; $colIdx++) {
             if (isset($rowValues[$colIdx]) || isset($cellStyles[$colIdx])) {
                 if ($this->lastTouch['area']['col_idx1'] === -1) {
@@ -1667,7 +1669,8 @@ class Sheet
                 else {
                     $cellComboStyle = null;
                 }
-                $this->_setCellData(null, $rowValues[$colIdx] ?? null, $cellComboStyle);
+                //$this->_setCellData(null, $rowValues[$colIdx] ?? null, $cellComboStyle);
+                $this->_setCellData(['col_idx' => $this->offsetCol + $colIdx, 'row_idx' => $this->currentRow], $rowValues[$colIdx] ?? null, $cellComboStyle);
             }
             $this->lastTouch['cell']['col_idx'] = ++$this->currentCol;
         }

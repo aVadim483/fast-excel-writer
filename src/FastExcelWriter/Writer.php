@@ -206,7 +206,9 @@ class Writer
     {
         if (!empty($this->tempFiles)) {
             foreach ($this->tempFiles as $tempFile) {
-                @unlink($tempFile);
+                if (is_file($tempFile)) {
+                    @unlink($tempFile);
+                }
             }
         }
     }
@@ -568,11 +570,14 @@ class Writer
         if (!empty($sheet->colWidths)) {
             $fileWriter->write('<cols>');
             foreach ($sheet->colWidths as $colNum => $columnWidth) {
+                if (is_float($columnWidth)) {
+                    // important for some locales
+                    $columnWidth = str_replace(',', '.', (string)$columnWidth);
+                }
                 $fileWriter->write('<col min="' . ($colNum + 1) . '" max="' . ($colNum + 1) . '" width="' . $columnWidth . '" customWidth="1"/>');
             }
             $fileWriter->write('</cols>');
         }
-        //$fileWriter->write('<col collapsed="false" hidden="false" max="1024" min="' . ($i + 1) . '" style="0" customWidth="false" width="11.5"/>');
 
         return $fileWriter;
     }

@@ -14,9 +14,10 @@ use avadim\FastExcelWriter\Exception\ExceptionRangeName;
 class Sheet
 {
     // constants for auo width
-    protected const WIDTH_LOWER_CASE_LETTER = 1.00;
-    protected const WIDTH_UPPER_CASE_LETTER = 1.20;
-    protected const WIDTH_DOTS_SYMBOLS = 0.22;
+    protected const WIDTH_LOWER_CASE_LETTER = 1.05;
+    protected const WIDTH_UPPER_CASE_LETTER = 1.25;
+    protected const WIDTH_WIDE_LETTER = 1.70;
+    protected const WIDTH_DOTS_SYMBOLS = 0.50;
     protected const WIDTH_PADDING = 5;
 
     // constants for notes
@@ -1073,23 +1074,30 @@ class Sheet
         }
 
         $len = mb_strlen($str);
+        $wideCount = 0;
         $upperCount = 0;
         $dotsCount = 0;
+        if (preg_match_all("/[@%&WM]/u", $str, $matches)) {
+            $wideCount = count($matches[0]);
+            $str = preg_replace("/[@%&WM]/u", '', $str);
+        }
+        if (preg_match_all("/[,\.\-\:\';`Iil\[\]]/u", $str, $matches)) {
+            $dotsCount = count($matches[0]);
+            $str = preg_replace("/[,\.\-\:\';`Iil\[\]]/u", '', $str);
+        }
         if (preg_match_all("/[[:upper:]#@w]/u", $str, $matches)) {
             $upperCount = count($matches[0]);
-        }
-        if (preg_match_all("/[,\.\-\+\:]/u", $str, $matches)) {
-            $dotsCount = count($matches[0]);
         }
 
         // width = Truncate([{Number of Characters} * {Maximum Digit Width} + {5 pixel padding}]/{Maximum Digit Width}*256)/256
         $k = $fontSize * 0.66;
 
-        $n = ($len - $upperCount - $dotsCount) * self::WIDTH_LOWER_CASE_LETTER * $k +
+        $n = ($len - $wideCount - $upperCount - $dotsCount) * self::WIDTH_LOWER_CASE_LETTER * $k +
+            $wideCount * self::WIDTH_WIDE_LETTER * $k +
             $upperCount * self::WIDTH_UPPER_CASE_LETTER * $k +
             $dotsCount * self::WIDTH_DOTS_SYMBOLS * $k + self::WIDTH_PADDING;
 
-        return $n / $k;
+        return round($n / $k, 8);
     }
 
     /**

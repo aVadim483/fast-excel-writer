@@ -159,6 +159,8 @@ foreach($data as $n => $row) {
 $totalRow = [];
 $sheet->writeRow($totalRow, ['font' => 'bold', 'border-top' => 'double']);
 
+$sheet->addNote('K8', "It's a comment.\nThe second line");
+
 $excel->save($outFileName);
 
 echo '<b>', basename(__FILE__, '.php'), "</b><br>\n<br>\n";

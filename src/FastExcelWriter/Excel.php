@@ -43,6 +43,8 @@ class Excel
 
     protected string $fileName = '';
 
+    protected array $media = [];
+
     /**
      * Excel constructor
      *
@@ -65,13 +67,15 @@ class Excel
             if (self::$tempDir) {
                 $this->writer->setTempDir(self::$tempDir);
             }
-        } else {
+        }
+        else {
             $this->writer = new Writer($writerOptions);
         }
 
         if (isset($options['style_class'])) {
             $this->style = $this->getObject($options['style_class']);
-        } else {
+        }
+        else {
             $this->style = new Style($options);
         }
 
@@ -1030,7 +1034,13 @@ class Excel
         return $this->sheets;
     }
 
-    public function addNamedRange(string $range, string $name)
+    /**
+     * @param string $range
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function addNamedRange(string $range, string $name): Excel
     {
         if (strpos($range, '!')) {
             [$sheetName, $range] = explode('!', $range);
@@ -1042,6 +1052,54 @@ class Excel
             }
         }
         ExceptionRangeName::throwNew('Sheet name not defined in range address');
+    }
+
+    /**
+     * @param string $imageFile
+     *
+     * @return array|null
+     */
+    public function loadImageFile(string $imageFile): ?array
+    {
+        $extension = strtolower(pathinfo($imageFile, PATHINFO_EXTENSION));
+        $imageId = (empty($this->media['images']) ? 1 : count($this->media['images']) + 1);
+        $name = 'image' . $imageId . '.' . $extension;
+        $fileName = $this->writer->tempFilename('xl/media/' . $name);
+        $imageBlob = file_get_contents($imageFile);
+        $imageHash = sha1($imageBlob);
+        if ($fileName && !isset($this->media['images'][$imageHash]) && file_put_contents($fileName, $imageBlob)) {
+            switch ($extension) {
+                case 'png':
+                    $mimeType = 'image/png';
+                    break;
+                case 'webp':
+                    $mimeType = 'image/webp';
+                    break;
+                case 'gif':
+                    $mimeType = 'image/gif';
+                    break;
+                default:
+                    $mimeType = 'image/jpeg';
+            }
+            $this->media['images'][$imageHash] =  [
+                'filename' => $fileName,
+                'name' => $name,
+                'id' => $imageId,
+                'hash' => $imageHash,
+                'extension' => $extension,
+                'mime_type' => $mimeType,
+            ];
+        }
+
+        return $this->media['images'][$imageHash] ?? null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImageFiles(): array
+    {
+        return $this->media['images'] ?? [];
     }
 
     /**

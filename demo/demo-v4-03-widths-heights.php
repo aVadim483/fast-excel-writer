@@ -10,6 +10,7 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $heights = [
+    1 => 12,
     2 => 25,
     3 => 50,
 ];

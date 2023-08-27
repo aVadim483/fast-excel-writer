@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exception\Exception;
 use avadim\FastExcelWriter\Exception\ExceptionAddress;
+use avadim\FastExcelWriter\Exception\ExceptionFile;
 use avadim\FastExcelWriter\Exception\ExceptionRangeName;
 
 /**
@@ -123,6 +124,7 @@ class Sheet
 
     protected array $notes = [];
 
+    protected array $media = [];
 
     /**
      * Sheet constructor
@@ -224,19 +226,9 @@ class Sheet
         if ($this->relationships) {
             $result = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $result .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
-            if (isset($this->relationships['links'])) {
-                foreach ($this->relationships['links'] as $rId => $data) {
-                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '" TargetMode="External"/>';
-                }
-            }
-            if (isset($this->relationships['comments'])) {
-                foreach ($this->relationships['comments'] as $rId => $data) {
-                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '"/>';
-                }
-            }
-            if (isset($this->relationships['legacyDrawing'])) {
-                foreach ($this->relationships['legacyDrawing'] as $rId => $data) {
-                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '"/>';
+            foreach ($this->relationships as $rels) {
+                foreach ($rels as $rId => $data) {
+                    $result .= '<Relationship Id="rId' . $rId . '" Type="' . $data['type'] . '" Target="' . $data['link'] . '" ' . $data['extra'] . '/>';
                 }
             }
             $result .= '</Relationships>';
@@ -890,6 +882,7 @@ class Sheet
             'cell' => $address,
             'link' => $link,
             'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
+            'extra' => 'TargetMode="External"',
         ];
     }
 
@@ -2155,7 +2148,7 @@ class Sheet
             return;
         }
 
-        $sheetFileName = $writer->tempFilename();
+        $sheetFileName = $writer->tempFilename('xl/worksheets/' . $this->xmlName);
         $this->setFileWriter($writer::makeWriteBuffer($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');
@@ -2452,7 +2445,7 @@ class Sheet
      */
     public function addNote(string $cell, $comment = null, array $noteStyle = []): Sheet
     {
-        if (func_num_args() === 1 || (func_num_args() === 2 && is_array( $comment )) ) {
+        if (func_num_args() === 1 || (func_num_args() === 2 && is_array($comment)) ) {
             if ( func_num_args() === 2) {
                 $noteStyle = $comment;
             }
@@ -2506,6 +2499,7 @@ class Sheet
                     'file' => $file,
                     'link' => '../drawings/' . $file,
                     'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing',
+                    'extra' => '',
                 ];
             }
             if (!isset($this->relationships['comments'])) {
@@ -2514,6 +2508,7 @@ class Sheet
                     'file' => $file,
                     'link' => '../' . $file,
                     'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments',
+                    'extra' => '',
                 ];
             }
         }
@@ -2529,7 +2524,7 @@ class Sheet
         return $this->notes;
     }
 
-    public function getLegacyDrawing()
+    public function getLegacyDrawingId()
     {
         if (isset($this->relationships['legacyDrawing'])) {
             return array_key_first($this->relationships['legacyDrawing']);
@@ -2538,7 +2533,71 @@ class Sheet
         return 0;
     }
 
-    // === DESIGN STYLES === /
+    public function getDrawingId()
+    {
+        if (isset($this->relationships['drawing'])) {
+            return array_key_first($this->relationships['drawing']);
+        }
+
+        return 0;
+    }
+
+    // === IMAGES === //
+
+    public function addImage(string $cell, string $imageFile): Sheet
+    {
+        if (func_num_args() === 1) {
+            $imageFile = $cell;
+            $rowIdx = $this->lastTouch['cell']['row_idx'];
+            $colIdx = $this->lastTouch['cell']['col_idx'];
+            $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
+        }
+        else {
+            $dimension = self::_rangeDimension($cell);
+            $cell = $dimension['cell1'];
+            $rowIdx = $dimension['rowIndex'];
+            $colIdx = $dimension['colIndex'];
+        }
+        if (!is_file($imageFile)) {
+            ExceptionFile::throwNew('Image file "%s" does not exist', $imageFile);
+        }
+
+        if ($cell) {
+            $imageData = $this->excel->loadImageFile($imageFile);
+            if ($imageData) {
+                $this->media['images'][$imageData['name']] = [
+                    'cell' => $cell,
+                    'row_index' => $rowIdx,
+                    'col_index' => $colIdx,
+                    'name' => $imageData['name'],
+                    'id' => $imageData['id'],
+                ];
+
+                if (!isset($this->relationships['drawing'])) {
+                    $file = 'drawing' . $this->index . '.xml';
+                    $this->relationships['drawing'][++$this->relationshipId] = [
+                        'file' => $file,
+                        'link' => '../drawings/' . $file,
+                        'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
+                        'extra' => '',
+                    ];
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImages()
+    {
+
+        return $this->media['images'] ?? [];
+    }
+
+    // === DESIGN STYLES === //
 
     /**
      * Sets height to the current row

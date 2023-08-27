@@ -242,7 +242,7 @@ class Writer
     /**
      * @return bool|string
      */
-    public function tempFilename()
+    public function tempFilename($localName = null)
     {
         $tempPrefix = 'xlsx_writer_';
         if (!$this->tempDir) {
@@ -251,14 +251,56 @@ class Writer
             if (!$filename) {
                 $filename = tempnam(getcwd(), $tempPrefix);
             }
-        } else {
+        }
+        else {
             $filename = tempnam($this->tempDir, $tempPrefix);
         }
         if ($filename) {
-            $this->tempFiles[] = $filename;
+            if ($localName) {
+                $this->tempFiles[$localName] = $filename;
+            }
+            else {
+                $this->tempFiles[] = $filename;
+            }
         }
 
         return $filename;
+    }
+
+    protected function _fake_writeSheet()
+    {
+        $s = <<<EOD
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+           xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac xr xr2 xr3"
+           xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"
+           xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+           xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"
+           xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"
+           xr:uid="{00000000-0001-0000-0000-000000000000}">
+    <dimension ref="A1"/>
+    <sheetViews>
+        <sheetView tabSelected="1" workbookViewId="0">
+            <selection activeCell="C5" sqref="C5"/>
+        </sheetView>
+    </sheetViews>
+    <sheetFormatPr defaultRowHeight="14.4" x14ac:dyDescent="0.55000000000000004"/>
+    <sheetData/>
+    <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+    <drawing r:id="rId1"/>
+</worksheet>
+EOD;
+
+        $sheets = $this->excel->getSheets();
+        $sheet = reset($sheets);
+
+        $sheetFileName = $this->tempFilename('xl/worksheets/' . $sheet->xmlName);
+        $sheet->setFileWriter(self::makeWriteBuffer($sheetFileName));
+
+        $sheet->fileWriter->write($s);
+        $sheet->fileWriter->flush(true);
+
     }
 
     /**
@@ -270,14 +312,30 @@ class Writer
      */
     public function saveToFile(string $fileName, ?bool $overWrite = true, ?array $metadata = []): bool
     {
-        $sheets = $this->excel->getSheets();
-        foreach ($sheets as $sheet) {
-            if (!$sheet->open) {
-                // open and write areas
-                $this->writeSheetDataBegin($sheet);
-            }
-            $this->writeSheetDataEnd($sheet);//making sure all footers have been written
-        }
+        $relationShips = [
+            'default' => [
+                'rels' => ['content_type' => 'application/vnd.openxmlformats-package.relationships+xml'],
+                'xml' => ['content_type' => 'application/xml'],
+            ],
+            'override' => [
+                'docProps/core.xml' => [
+                    'content_type' => 'application/vnd.openxmlformats-package.core-properties+xml',
+                    'rel' => 'root',
+                    'schema' => 'http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties',
+                ],
+                'docProps/app.xml' => [
+                    'content_type' => 'application/vnd.openxmlformats-officedocument.extended-properties+xml',
+                    'rel' => 'root',
+                    'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties',
+                ],
+                'xl/workbook.xml' => [
+                    'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
+                    'rel' => 'root',
+                    'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument',
+                ],
+            ],
+            'rel_id' => ['workbook' => 0],
+        ];
 
         if (!is_dir(dirname($fileName))) {
             ExceptionFile::throwNew('Directory "%s" for output file is not exist', dirname($fileName));
@@ -291,76 +349,179 @@ class Writer
             }
         }
 
-        $zip = new \ZipArchive();
+        $sheets = $this->excel->getSheets();//$this->writeSheetDataBegin($sheet);
         if (empty($sheets)) {
             ExceptionFile::throwNew('No worksheets defined');
         }
+        $zip = new \ZipArchive();
         if (!$zip->open($fileName, \ZIPARCHIVE::CREATE)) {
             ExceptionFile::throwNew('Unable to create zip "%s"', $fileName);
         }
+
+        // add sheets
+        $zip->addEmptyDir('xl/worksheets/');
+
+        // 'xl/worksheets/sheet{%n}.xml' -- workbook
+        $this->_writeSheetsFiles($zip, $sheets, $relationShips);
+//        $this->_fake_writeSheet();
+
+        $zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');
+        $relationShips['override']['xl/styles.xml'] = [
+            'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml',
+            'rel' => 'workbook',
+            'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles',
+            'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
+        ];
+
+        // 'xl/media/...'
+        $this->_writeMediaFiles($zip, $relationShips);
+
+        // 'xl/sharedStrings.xml' -- workbook
+        $this->_writeSharedStrings($zip, $relationShips);
+/*
+        // 'xl/comments{%n}.xml'
+        $this->_writeCommentsFiles($zip, $relationShips);
+
+        // 'xl/drawings/vmlDrawing{%n}.vml'
+        if (!empty($relationShips['comments'])) {
+            $this->_writeCommentOldStyleShape($zip, $relationShips);
+        }
+*/
+        // 'xl/theme/theme{%n}.xml' -- workbook
+        $this->_writeThemesFiles($zip, $relationShips);
+
+        // 'xl/media/image{%n}.jpg'
+        // 'xl/drawings/drawing{%n}.xml'
+        // xl/drawings/_rels/drawing{%n}.xml.rels
+//`        $this->_writeDrawingFiles($zip, $relationShips);
+
+        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($sheets));
+        $zip->addEmptyDir('xl/_rels/');
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($relationShips));
 
         $zip->addEmptyDir('docProps/');
         $zip->addFromString('docProps/app.xml', $this->_buildAppXML($metadata));
         $zip->addFromString('docProps/core.xml', $this->_buildCoreXML($metadata));
 
         $zip->addEmptyDir('_rels/');
-        $zip->addFromString('_rels/.rels', $this->_buildRelationshipsXML());
+        $zip->addFromString('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
 
-        $zip->addEmptyDir('xl/worksheets/');
-        $xmlRels = [];
-        foreach ($sheets as $sheet) {
-            $xml = $sheet->getXmlRels();
-            if ($xml) {
-                $xmlRels['xl/worksheets/_rels/' . $sheet->xmlName . '.rels'] = $xml;
-            }
-            $zip->addFile($sheet->fileTempName, 'xl/worksheets/' . $sheet->xmlName);
-        }
-
-        if ($xmlRels) {
-            $zip->addEmptyDir('xl/worksheets/_rels/');
-            foreach ($xmlRels as $file => $content) {
-                $zip->addFromString($file, $content);
-            }
-        }
-
-        $xmlPartFiles = [];
-        $xmlPartFiles['theme'] = $this->_writeThemesFiles($zip);
-        $xmlPartFiles['sharedStrings'] = $this->_writeSharedStrings($zip);
-        $xmlPartFiles['comments'] = $this->_writeCommentsFiles($zip);
-        if (!empty($xmlPartFiles['comments'])) {
-            $this->_writeCommentOldStyleShape($zip);
-        }
-
-        $zip->addEmptyDir('xl/_rels/');
-        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($sheets, $xmlPartFiles));
-
-        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($sheets));
-        $zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');
-        $zip->addFromString('[Content_Types].xml', $this->_buildContentTypesXML($sheets, $xmlPartFiles));
+        $zip->addFromString('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
 
         $zip->close();
 
         return true;
     }
 
-
-    protected function _add($zip, $name, $from = null)
+    /**
+     * @param \ZipArchive $zip
+     * @param Sheet[] $sheets
+     * @param array $relationShips
+     *
+     * @return true
+     */
+    protected function _writeSheetsFiles(\ZipArchive $zip, array $sheets, array &$relationShips): bool
     {
-        if (!$from) {
-            $from = $name;
+        $dirRels = false;
+
+        foreach ($sheets as $sheet) {
+            if (!$sheet->open) {
+                // open and write areas
+                $this->writeSheetDataBegin($sheet);
+            }
+            $this->writeSheetDataEnd($sheet);//making sure all footers have been written
+            $sheet->relId = 'rId' . (++$relationShips['rel_id']['workbook']);
+            $relationShips['override']['xl/worksheets/' . $sheet->xmlName] = [
+                'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml',
+                'rel' => 'workbook',
+                'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
+                'r_id' => $sheet->relId,
+            ];
+
+            $zip->addFile($sheet->fileTempName, 'xl/worksheets/' . $sheet->xmlName);
+            $xmlContent = $sheet->getXmlRels();
+            if ($xmlContent) {
+                if (!$dirRels) {
+                    $zip->addEmptyDir('xl/worksheets/_rels/');
+                    $dirRels = true;
+                }
+                $entry = 'xl/worksheets/_rels/' . $sheet->xmlName . '.rels';
+                $zip->addFromString($entry, $xmlContent);
+            }
+
+            $commentList = $sheet->getNotes();
+            if ($commentList) {
+                // 'xl/comments{%n}.xml'
+                $entry = 'xl/comments' . $sheet->index . '.xml';
+                $this->_writeCommentsFile($zip, $entry, $commentList, $relationShips);
+
+                // 'xl/drawings/vmlDrawing{%n}.vml'
+                $entry = 'xl/drawings/vmlDrawing' . $sheet->index . '.vml';
+                $this->_writeCommentOldStyleShape($zip, $entry, $commentList, $relationShips);
+                if (empty($relationShips['default']['vml'])) {
+                    $relationShips['default']['vml'] = [
+                        'content_type' => 'application/vnd.openxmlformats-officedocument.vmlDrawing',
+                    ];
+                }
+            }
+            $imageList = $sheet->getImages();
+            if ($imageList) {
+                // 'xl/drawings/drawing{%n}.xml'
+                // 'xl/drawings/_rels/drawing{%n}.xml.rels'
+                $entry = 'xl/drawings/drawing' . $sheet->index . '.xml';
+                $this->_writeDrawingFile($zip, $entry, $imageList, $relationShips);
+                if (empty($relationShips['override'][$entry])) {
+                    $relationShips['override'][$entry] = [
+                        'content_type' => 'application/vnd.openxmlformats-officedocument.drawing+xml',
+                    ];
+                }
+            }
         }
-        $file = realpath(__DIR__ . '/../../test/simple/' . $from);
-        $s = file_get_contents($file);
-        $zip->addFromString($name, $s);
+
+        return true;
     }
 
     /**
-     * @param $zip
+     * @param \ZipArchive $zip
+     * @param array $relationShips
      *
-     * @return array
+     * @return string|null
      */
-    protected function _writeSharedStrings($zip): array
+    protected function _writeThemesFiles(\ZipArchive $zip, array &$relationShips): ?string
     {
+        $error = null;
+
+        $themes = $this->excel->getThemes();
+        if ($themes) {
+            $zip->addEmptyDir('xl/theme/');
+            foreach ($themes as $num => $theme) {
+                $file = 'xl/theme/theme' . $num . '.xml';
+                if ($zip->addFromString($file, $this->_buildThemeXML())) {
+                    $relationShips['override'][$file] = [
+                        'content_type' => 'application/vnd.openxmlformats-officedocument.theme+xml',
+                        'rel' => 'workbook',
+                        'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme',
+                        'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
+                    ];
+                }
+                else {
+                    $error = $zip->getStatusString();
+                }
+            }
+        }
+
+        return $error;
+    }
+
+    /**
+     * @param \ZipArchive $zip
+     * @param array $relationShips
+     *
+     * @return string|null
+     */
+    protected function _writeSharedStrings(\ZipArchive $zip, array &$relationShips): ?string
+    {
+        $error = null;
         $sharedStrings = $this->excel->getSharedStrings();
         if ($sharedStrings) {
             $uniqueCount = count($sharedStrings);
@@ -376,121 +537,233 @@ class Writer
                 . '</sst>';
 
             $file = 'xl/sharedStrings.xml';
-            $zip->addFromString($file, $xmlSharedStrings);
 
-            return [$file];
-        }
-
-        return [];
-    }
-
-    /**
-     * @param $zip
-     *
-     * @return array
-     */
-    protected function _writeCommentsFiles($zip): array
-    {
-        $files = [];
-
-        $sheets = $this->excel->getSheets();
-        foreach ($sheets as $sheet) {
-            $commentList = $sheet->getNotes();
-            if ($commentList) {
-                $xmlString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-                $xmlString .= '<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="xr" xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision">';
-                $xmlString .= '<authors><author/></authors>';
-                $xmlString .= '<commentList>';
-                foreach ($commentList as $comment) {
-                    $xmlString .= '<comment ref="' . $comment['cell'] . '" authorId="0"  shapeId="0" xr:uid="{' . Excel::generateUuid() . '}">';
-                    $xmlString .= '<text><r>';
-                    $xmlString .= '<t xml:space="preserve">' . $comment['text'] . '</t>';
-                    $xmlString .= '</r></text>';
-                    $xmlString .= '</comment>';
-                }
-                $xmlString .= '</commentList>';
-                $xmlString .= '</comments>';
-
-                $file = 'xl/comments' . $sheet->index . '.xml';
-                if ($zip->addFromString($file, $xmlString)) {
-                    $files[] = $file;
-                }
-                else {
-                    $error = $zip->getStatusString();
-                }
+            if ($zip->addFromString($file, $xmlSharedStrings)) {
+                $relationShips['override'][$file] = [
+                    'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml',
+                    'rel' => 'workbook',
+                    'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings',
+                    'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
+                ];
+            }
+            else {
+                $error = $zip->getStatusString();
             }
         }
 
-        return $files;
+        return $error;
     }
 
-    protected function _writeCommentOldStyleShape($zip)
+    /**
+     * @param \ZipArchive $zip
+     * @param array $relationShips
+     *
+     * @return string|null
+     */
+    protected function _writeMediaFiles(\ZipArchive $zip, array &$relationShips): ?string
     {
-        $files = [];
-        $sheets = $this->excel->getSheets();
-        $drawingCnt = 0;
-        foreach ($sheets as $sheet) {
-            $comments = $sheet->getNotes();
-            if ($comments) {
-                $xmlDrawing = '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"  xmlns:x="urn:schemas-microsoft-com:office:excel">';
-                $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
-                $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
-                $xmlDrawing .= '<v:fill color="#0000FF"/>';
-                $xmlDrawing .= '</v:shapetype>';
-                foreach ($comments as $comment) {
-                    $id = 1024 + (++$drawingCnt);
-                    $style = 'position:absolute;margin-left:' . $comment['style']['margin_left'] . ';margin-top:'  . $comment['style']['margin_top'] . ';'
-                        . 'width:'  . $comment['style']['width'] . ';height:'  . $comment['style']['height'] . ';z-index:1;';
-                    if (empty($comment['style']['show'])) {
-                        $style .= 'visibility:hidden';
+        $error = null;
+
+        $imageList = $this->excel->getImageFiles();
+        if ($imageList) {
+            foreach ($imageList as $image) {
+                if ($zip->addFile($image['filename'], 'xl/media/' . $image['name'])) {
+                    if (empty($relationShips['default'][$image['name']])) {
+                        $relationShips['default'][$image['extension']] = [
+                            'content_type' => $image['mime_type'],
+                        ];
                     }
-                    $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '" fillcolor="' . $comment['style']['fill_color'] . '" o:insetmode="auto">';
-                    $xmlDrawing .= '<v:fill color2="' . $comment['style']['fill_color'] . '"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
-                    $xmlDrawing .= '<v:textbox style="mso-direction-alt:auto">';
-                    $xmlDrawing .= '<div style="text-align:' . ($this->excel->isRightToLeft() ? 'right' : 'left') . '"/>';
-                    $xmlDrawing .= '</v:textbox>';
-                    $xmlDrawing .= '<x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/>';
-                    $xmlDrawing .= '<x:AutoFill>False</x:AutoFill>';
-                    $xmlDrawing .= '<x:Row>' . $comment['row_index'] . '</x:Row><x:Column>' . $comment['col_index'] . '</x:Column>';
-                    $xmlDrawing .= '</x:ClientData></v:shape>';
-                }
-                $xmlDrawing .= '</xml>';
-                $file = 'xl/drawings/vmlDrawing' . $sheet->index . '.vml';
-                if ($zip->addFromString($file, $xmlDrawing)) {
-                    $files[] = $file;
                 }
                 else {
                     $error = $zip->getStatusString();
                 }
             }
         }
-        return $files;
+
+        return $error;
     }
 
     /**
-     * @param $zip
+     * @param \ZipArchive $zip
+     * @param string $entry
+     * @param array $commentList
+     * @param array $relationShips
      *
-     * @return array
+     * @return string|null
      */
-    protected function _writeThemesFiles($zip): array
+    protected function _writeCommentsFile(\ZipArchive $zip, string $entry, array $commentList, array &$relationShips): ?string
     {
-        $files = [];
+        $error = null;
 
-        $themes = $this->excel->getThemes();
-        if ($themes) {
-            $zip->addEmptyDir('xl/theme/');
-            foreach ($themes as $num => $theme) {
-                $file = 'xl/theme/theme' . $num . '.xml';
-                if ($zip->addFromString($file, $this->_buildThemeXML())) {
-                    $files[] = $file;
-                }
-                else {
-                    $error = $zip->getStatusString();
-                }
+        if ($commentList) {
+            $xmlString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+            $xmlString .= '<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="xr" xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision">';
+            $xmlString .= '<authors><author/></authors>';
+            $xmlString .= '<commentList>';
+            foreach ($commentList as $comment) {
+                $xmlString .= '<comment ref="' . $comment['cell'] . '" authorId="0"  shapeId="0" xr:uid="{' . Excel::generateUuid() . '}">';
+                $xmlString .= '<text><r>';
+                $xmlString .= '<t xml:space="preserve">' . $comment['text'] . '</t>';
+                $xmlString .= '</r></text>';
+                $xmlString .= '</comment>';
+            }
+            $xmlString .= '</commentList>';
+            $xmlString .= '</comments>';
+
+            if ($zip->addFromString($entry, $xmlString)) {
+                $relationShips['override'][$entry] = [
+                    'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml',
+                ];
+            }
+            else {
+                $error = $zip->getStatusString();
             }
         }
 
-        return $files;
+        return $error;
+    }
+
+    /**
+     * @param \ZipArchive $zip
+     * @param string $entry
+     * @param array $commentList
+     * @param array $relationShips
+     *
+     * @return string|null
+     */
+    protected function _writeCommentOldStyleShape(\ZipArchive $zip, string $entry, array $commentList, array &$relationShips): ?string
+    {
+        $error = null;
+
+        $drawingCnt = 0;
+        if ($commentList) {
+            $xmlDrawing = '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"  xmlns:x="urn:schemas-microsoft-com:office:excel">';
+            $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
+            $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
+            $xmlDrawing .= '<v:fill color="#0000FF"/>';
+            $xmlDrawing .= '</v:shapetype>';
+            foreach ($commentList as $comment) {
+                $id = 1024 + (++$drawingCnt);
+                $style = 'position:absolute;margin-left:' . $comment['style']['margin_left'] . ';margin-top:'  . $comment['style']['margin_top'] . ';'
+                    . 'width:'  . $comment['style']['width'] . ';height:'  . $comment['style']['height'] . ';z-index:1;';
+                if (empty($comment['style']['show'])) {
+                    $style .= 'visibility:hidden';
+                }
+                $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '" fillcolor="' . $comment['style']['fill_color'] . '" o:insetmode="auto">';
+                $xmlDrawing .= '<v:fill color2="' . $comment['style']['fill_color'] . '"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
+                $xmlDrawing .= '<v:textbox style="mso-direction-alt:auto">';
+                $xmlDrawing .= '<div style="text-align:' . ($this->excel->isRightToLeft() ? 'right' : 'left') . '"/>';
+                $xmlDrawing .= '</v:textbox>';
+                $xmlDrawing .= '<x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/>';
+                $xmlDrawing .= '<x:AutoFill>False</x:AutoFill>';
+                $xmlDrawing .= '<x:Row>' . $comment['row_index'] . '</x:Row><x:Column>' . $comment['col_index'] . '</x:Column>';
+                $xmlDrawing .= '</x:ClientData></v:shape>';
+            }
+            $xmlDrawing .= '</xml>';
+
+            if (!$zip->addFromString($entry, $xmlDrawing)) {
+                $error = $zip->getStatusString();
+            }
+        }
+
+        return $error;
+    }
+
+    /**
+     * @param \ZipArchive $zip
+     * @param string $entry
+     * @param array $imageList
+     * @param array $relationShips
+     *
+     * @return string|null
+     */
+    protected function _writeDrawingFile(\ZipArchive $zip, string $entry, array $imageList, array &$relationShips): ?string
+    {
+        $error = null;
+
+        $relations = [];
+        $xmlDrawingString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+        $xmlDrawingString .= '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+
+        foreach ($imageList as $image) {
+            $rId = 'rId' . $image['id'];
+            $xmlDrawingString .= <<<EOD
+    <xdr:twoCellAnchor editAs="oneCell">
+        <xdr:from>
+            <xdr:col>2</xdr:col>
+            <xdr:colOff>0</xdr:colOff>
+            <xdr:row>4</xdr:row>
+            <xdr:rowOff>0</xdr:rowOff>
+        </xdr:from>
+        <xdr:to>
+            <xdr:col>4</xdr:col>
+            <xdr:colOff>619125</xdr:colOff>
+            <xdr:row>14</xdr:row>
+            <xdr:rowOff>86809</xdr:rowOff>
+        </xdr:to>
+        <xdr:pic>
+            <xdr:nvPicPr>
+                <xdr:cNvPr id="5" name="Рисунок 4">
+                    <a:extLst>
+                        <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
+                            <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main"
+                                            id="{E5A09D86-4DE0-78ED-89D4-62493E0E0E38}"/>
+                        </a:ext>
+                    </a:extLst>
+                </xdr:cNvPr>
+                <xdr:cNvPicPr>
+                    <a:picLocks noChangeAspect="1"/>
+                </xdr:cNvPicPr>
+            </xdr:nvPicPr>
+            <xdr:blipFill>
+                <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="{$rId}">
+                    <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                    </a:extLst>
+                </a:blip>
+                <a:stretch>
+                    <a:fillRect/>
+                </a:stretch>
+            </xdr:blipFill>
+            <xdr:spPr>
+                <a:xfrm>
+                    <a:off x="1276350" y="723900"/>
+                    <a:ext cx="1895475" cy="1896559"/>
+                </a:xfrm>
+                <a:prstGeom prst="rect">
+                    <a:avLst/>
+                </a:prstGeom>
+            </xdr:spPr>
+        </xdr:pic>
+        <xdr:clientData/>
+    </xdr:twoCellAnchor>
+EOD;
+            $relations[$image['name']] = [
+                'r_id' => $rId,
+                'target' => '../media/' . $image['name'],
+                'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
+            ];
+        }
+        $xmlDrawingString .= '</xdr:wsDr>';
+        if ($zip->addFromString($entry, $xmlDrawingString) && $relations) {
+            $xmlRelations = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+            $xmlRelations .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+            foreach ($relations as $relData) {
+                $xmlRelations .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . $relData['target'] . '"/>';
+            }
+            $xmlRelations .= '</Relationships>';
+            $entryRel = str_replace('xl/drawings/drawing', 'xl/drawings/_rels/drawing', $entry) . '.rels'; //xl/drawings/_rels/drawing' . $sheet->index . '.xml.rels';
+            if (!$zip->addFromString($entryRel, $xmlRelations)) {
+                $error = $zip->getStatusString();
+            }
+        }
+        else {
+            $error = $zip->getStatusString();
+        }
+
+        return $error;
     }
 
     /**
@@ -500,7 +773,7 @@ class Writer
      */
     protected function _writeSheetHead(Sheet $sheet): WriterBuffer
     {
-        $fileWriter = self::makeWriteBuffer($this->tempFilename());
+        $fileWriter = self::makeWriteBuffer($this->tempFilename('xl/worksheets/' . $sheet->xmlName . '-head'));
 
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $xmlnsLinks = [
@@ -651,8 +924,12 @@ class Writer
         $sheet->fileWriter->write('<oddFooter/>');
         $sheet->fileWriter->write('</headerFooter>');
 
-        if ($rId = $sheet->getLegacyDrawing()) {
+        if ($rId = $sheet->getLegacyDrawingId()) {
             $sheet->fileWriter->write('<legacyDrawing r:id="rId' . $rId . '"/>');
+        }
+
+        if ($rId = $sheet->getDrawingId()) {
+            $sheet->fileWriter->write('<drawing r:id="rId' . $rId . '"/>');
         }
 
         $sheet->fileWriter->write('</worksheet>');
@@ -1063,15 +1340,21 @@ class Writer
     }
 
     /**
+     * @param array $relationShips
+     *
      * @return string
      */
-    protected function _buildRelationshipsXML()
+    protected function _buildRelationshipsXML(array $relationShips)
     {
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $xmlText .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
-        $xmlText .= '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>';
-        $xmlText .= '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>';
-        $xmlText .= '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>';
+        $rId = 1;
+        foreach ($relationShips['override'] as $relItem => $relData) {
+            if (!empty($relData['rel']) && $relData['rel'] === 'root') {
+                $relId = 'rId' . ($rId++);
+                $xmlText .= '<Relationship Id="' . $relId . '" Type="' . $relData['schema'] . '" Target="' . $relItem . '"/>';
+            }
+        }
         $xmlText .= '</Relationships>';
 
         return $xmlText;
@@ -1082,7 +1365,7 @@ class Writer
      *
      * @return string
      */
-    protected function _buildWorkbookXML(array $sheets)
+    protected function _buildWorkbookXML(array $sheets): string
     {
         $i = 0;
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
@@ -1122,33 +1405,21 @@ class Writer
     /**
      * Сontents of /xl/_rels/workbook.xml.rels
      *
-     * @param Sheet[] $sheets
-     * @param array $xmlPartFiles
+     * @param array $relationShips
      *
      * @return string
      */
-    protected function _buildWorkbookRelsXML(array $sheets, array $xmlPartFiles)
+    protected function _buildWorkbookRelsXML(array $relationShips): string
     {
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $xmlText .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
-        $xmlText .= '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
-        $rId = 2;
-        if (!empty($xmlPartFiles['theme'])) {
-            foreach ($xmlPartFiles['theme'] as $themeFile) {
-                $themeFile = substr('xl/theme', 'theme', $themeFile);
-                $relId = 'rId' . ($rId++);
-                $xmlText .= '<Relationship Id="' . $relId . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="' . $themeFile . '"/>';
+
+        foreach ($relationShips['override'] as $relItem => $relData) {
+            if (!empty($relData['rel']) && $relData['rel'] === 'workbook') {
+                $xmlText .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . substr($relItem, 3) . '"/>';
             }
         }
-        if (!empty($xmlPartFiles['sharedStrings'])) {
-            $relId = 'rId' . ($rId++);
-            $xmlText .= '<Relationship Id="' . $relId . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>';
-        }
-        foreach ($sheets as $sheet) {
-            $relId = 'rId' . ($rId++);
-            $xmlText .= '<Relationship Id="' . $relId . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/' . ($sheet->xmlName) . '"/>';
-            $sheet->relId = $relId;
-        }
+
         $xmlText .= '</Relationships>';
 
         return $xmlText;
@@ -1157,45 +1428,26 @@ class Writer
     /**
      * Contents of /[Content_Types].xml
      *
-     * @param Sheet[] $sheets
-     * @param array $xmlPartFiles
+     * @param array $relationShips
      *
      * @return string
      */
-    protected function _buildContentTypesXML(array $sheets, array $xmlPartFiles): string
+    protected function _buildContentTypesXML(array $relationShips): string
     {
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $xmlText .= '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">';
 
-        $xmlText .= '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>';
-        $xmlText .= '<Default Extension="xml" ContentType="application/xml"/>';
-        $xmlText .= '<Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/>';
-
-        $xmlText .= '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
-        $xmlText .= '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
-
-        foreach ($sheets as $sheet) {
-            $xmlText .= '<Override PartName="/xl/worksheets/' . ($sheet->xmlName) . '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
-        }
-
-        if (!empty($xmlPartFiles['theme'])) {
-            foreach ($xmlPartFiles['theme'] as $file) {
-                $xmlText .= '<Override PartName="/' . $file . '" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>';
-            }
-        }
-        if (!empty($xmlPartFiles['comments'])) {
-            foreach ($xmlPartFiles['comments'] as $file) {
-                $xmlText .= '<Override PartName="/' . $file . '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/>';
-            }
-        }
-        if (!empty($xmlPartFiles['sharedStrings'])) {
-            foreach ($xmlPartFiles['sharedStrings'] as $file) {
-                $xmlText .= '<Override PartName="/' . $file . '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>';
+        foreach ($relationShips as $tag => $tagSet) {
+            foreach ($tagSet as $name => $data) {
+                if ($tag === 'default') {
+                    $xmlText .= '<Default Extension="' . $name . '" ContentType="' . $data['content_type'] . '"/>';
+                }
+                elseif ($tag === 'override') {
+                    $xmlText .= '<Override PartName="/' . $name . '" ContentType="' . $data['content_type'] . '"/>';
+                }
             }
         }
 
-        $xmlText .= '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>';
-        $xmlText .= '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>';
         $xmlText .= '</Types>';
 
         return $xmlText;

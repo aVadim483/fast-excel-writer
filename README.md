@@ -48,12 +48,13 @@ Jump To:
 
 This library is designed to be lightweight, super-fast and requires minimal memory usage.
 
-This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with just basic features supported:
+This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with many features supported:
 * Takes UTF-8 encoded input
 * Multiple worksheets
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks
 * Supports basic column, row and cell styling
 * You can set the height of the rows and the width of the columns (including auto width calculation)
+* You can add formulas, notes and images in you XLSX-files
 
 And if you are Laravel-developer then you can use special **Laravel** edition -
 [FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel).

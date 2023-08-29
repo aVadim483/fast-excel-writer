@@ -663,7 +663,7 @@ class Writer
         </xdr:cNvPicPr>
       </xdr:nvPicPr>
       <xdr:blipFill>
-        <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/>
+        <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="{$rId}"/>
         <a:stretch>
           <a:fillRect/>
         </a:stretch>

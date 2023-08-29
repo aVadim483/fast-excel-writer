@@ -495,17 +495,43 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeCell('Text to d4')->addNote('This is a note for D4');
         $sheet->writeTo('e5', 'Text to E5')->addNote('Note for C1', ['width' => '200pt', 'height' => '100pt']);
 
-
         $sheet->addNote('E4:F8', 'This note will added to E4');
-        $sheet->addImage('g10', __DIR__ . '/../demo/logo_512-512.png');
+
+        $sheet->addImage('A10', __DIR__ . '/../demo/logo/excel-logo.gif');
+        $sheet->addImage('B10', __DIR__ . '/../demo/logo/excel-logo.jpg');
+        $sheet->addImage('C10', __DIR__ . '/../demo/logo/excel-logo.png');
+        $sheet->addImage('D10', __DIR__ . '/../demo/logo/excel-logo.svg');
+        $sheet->addImage('E10', __DIR__ . '/../demo/logo/excel-logo.webp');
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
 
         $this->excelReader = ExcelReader::open($testFileName);
         $sheet = $this->excelReader->sheet();
-        $this->assertEquals(1, $sheet->countImages());
-        $this->assertEquals(['G10' => ['image_name' => 'logo_512-512.png', 'file_name' => 'image1.png']], $sheet->getImageList());
+        $this->assertEquals(5, $sheet->countImages());
+        $testList = [
+            'A10' => [
+                'image_name' => 'excel-logo.gif',
+                'file_name' => 'image1.gif',
+            ],
+            'B10' => [
+                'image_name' => 'excel-logo.jpg',
+                'file_name' => 'image2.jpg',
+            ],
+            'C10' => [
+                'image_name' => 'excel-logo.png',
+                'file_name' => 'image3.png',
+            ],
+            'D10' => [
+                'image_name' => 'excel-logo.svg',
+                'file_name' => 'image4.svg',
+            ],
+            'E10' => [
+                'image_name' => 'excel-logo.webp',
+                'file_name' => 'image5.webp',
+            ],
+        ];
+        $this->assertEquals($testList, $sheet->getImageList());
 
         unlink($testFileName);
     }

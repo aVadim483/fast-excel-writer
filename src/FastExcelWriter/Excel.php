@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exception\Exception;
+use avadim\FastExcelWriter\Exception\ExceptionFile;
 use avadim\FastExcelWriter\Exception\ExceptionRangeName;
 
 /**
@@ -18,6 +19,15 @@ class Excel
     public const MIN_COL = 0;
 
     public const EMU_PER_PIXEL = 9525;
+
+    public static array $availableImageTypes = [
+        'jpg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'bmp' => 'image/bmp',
+        'svg' => 'image/svg+xml',
+    ];
 
     protected static string $tempDir;
 
@@ -1057,47 +1067,91 @@ class Excel
     }
 
     /**
+     * @param string $imageBlob
+     *
+     * @return array
+     */
+    protected function getImageInfo(string $imageBlob): array
+    {
+        if (substr($imageBlob, 0, 4) === '<svg'
+            && isset(self::$availableImageTypes['svg'])) {
+            if (preg_match("#^<svg\s([^>]+)>#si", $imageBlob, $s)
+                && preg_match("#width\s*=\s*[\"'](\d+)[\"']#si", $s[1], $w)
+                && preg_match("#height\s*=\s*[\"'](\d+)[\"']#si", $s[1], $h)) {
+                $result = [
+                    'extension' => 'svg',
+                    'width' => (int)$w[1],
+                    'height' => (int)$h[1],
+                    'mime' => self::$availableImageTypes['svg'],
+                ];
+            }
+            elseif (preg_match("#viewbox=[\"']([\d\s\-\.]+)[\"']#si", $imageBlob, $m)) {
+                $d = explode(' ', $m[1]);
+                if (isset($d[2], $d[3])) {
+                    $result = [
+                        'extension' => 'svg',
+                        'width' => (int)$d[2],
+                        'height' => (int)$d[3],
+                        'mime' => self::$availableImageTypes['svg'],
+                    ];
+                }
+            }
+        }
+        else {
+            $info = getimagesizefromstring($imageBlob);
+            if (!empty($info['mime'])) {
+                $extension = array_search($info['mime'], self::$availableImageTypes);
+                $result = [
+                    'extension' => $extension,
+                    'width' => $info[0],
+                    'height' => $info[1],
+                    'mime' => $info['mime'],
+                ];
+            }
+        }
+
+        return $result ?? [];
+    }
+
+    /**
      * @param string $imageFile
      *
      * @return array|null
      */
     public function loadImageFile(string $imageFile): ?array
     {
-        $extension = strtolower(pathinfo($imageFile, PATHINFO_EXTENSION));
-        $imageId = (empty($this->media['images']) ? 1 : count($this->media['images']) + 1);
-        $name = 'image' . $imageId . '.' . $extension;
-        $fileName = $this->writer->tempFilename('xl/media/' . $name);
         $imageBlob = file_get_contents($imageFile);
+        if (!$imageBlob) {
+            ExceptionFile::throwNew('Image file "%s" is empty', $imageFile);
+        }
         $imageHash = sha1($imageBlob);
-        if ($fileName && !isset($this->media['images'][$imageHash]) && file_put_contents($fileName, $imageBlob)) {
-            switch ($extension) {
-                case 'png':
-                    $mimeType = 'image/png';
-                    break;
-                case 'webp':
-                    $mimeType = 'image/webp';
-                    break;
-                case 'gif':
-                    $mimeType = 'image/gif';
-                    break;
-                default:
-                    $mimeType = 'image/jpeg';
+
+        if (!isset($this->media['images'][$imageHash])) {
+            $info = $this->getImageInfo($imageBlob);
+            if ($info) {
+                $imageId = (empty($this->media['images']) ? 1 : count($this->media['images']) + 1);
+                $name = 'image' . $imageId . '.' . $info['extension'];
+                $fileName = $this->writer->tempFilename('xl/media/' . $name);
+                if ($fileName && file_put_contents($fileName, $imageBlob)) {
+                    $this->media['images'][$imageHash] =  [
+                        'filename' => $fileName,
+                        'original' => basename($imageFile),
+                        'width' => $info['width'],
+                        'height' => $info['height'],
+                        'name' => $name,
+                        'id' => $imageId,
+                        'hash' => $imageHash,
+                        'extension' => $info['extension'],
+                        'mime_type' => $info['mime'],
+                    ];
+                }
             }
-            [$width, $height] = getimagesizefromstring($imageBlob);
-            $this->media['images'][$imageHash] =  [
-                'filename' => $fileName,
-                'original' => basename($imageFile),
-                'width' => $width,
-                'height' => $height,
-                'name' => $name,
-                'id' => $imageId,
-                'hash' => $imageHash,
-                'extension' => $extension,
-                'mime_type' => $mimeType,
-            ];
+        }
+        if (!isset($this->media['images'][$imageHash])) {
+            ExceptionFile::throwNew('File "%s" is not image', $imageFile);
         }
 
-        return $this->media['images'][$imageHash] ?? null;
+        return $this->media['images'][$imageHash];
     }
 
     /**

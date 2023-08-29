@@ -35,6 +35,8 @@ for ($i = 1; $i <= $rowCount; $i++) {
     $data[] = $row;
 }
 $colors = ['cc9', 'c9c', 'cc9', 'c9f', '9cf', '9fc', '36f', '3f6', '63f', '36c', '3c6', '63c'];
+$images = glob(__DIR__ . '/logo/excel-logo.*');
+$noteColors = ['', '#f8d7e9', '#bad6f1', '#f9efe7', '#d7eff7'];
 // *****************
 
 
@@ -64,34 +66,42 @@ $headerStyle = [
 ];
 
 /*  DOCUMENT HEADER */
-// Begin an area for direct write
-$area = $sheet->beginArea();
 
 $cells = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1', 'K1'];
 foreach($cells as $cell) {
     $color = '#' . $colors[array_rand($colors)] . $colors[array_rand($colors)];
     // set background colors for specified cells
-    $area->setBgColor($cell, $color);
+    $sheet->setBgColor($cell, $color);
 }
+$sheet->writeTo('a2', '');
+foreach ($images as $n => $image) {
+    $cell = Excel::cellAddress(3, $n + 2);
+    $sheet->addImage($cell, $image, ['height' => 40]);
+    $bgColor = $noteColors[$n];
+    $sheet->addNote($cell, basename($image), ['bg_color' => $bgColor]);
+}
+$sheet->setRowHeight(3, 50);
+
+// Begin an area for direct write
+$area = $sheet->beginArea();
 
 // Write value to automerged cells
-//$area->setValue('A2:K2', 'This is demo XLSX-sheet', $headerStyle);
-$area->setValue('A2:K2', 'This is demo XLSX-sheet')
+$area->setValue('A4:K4', 'This is demo XLSX-sheet')
     ->applyFontStyleBold()
     ->applyFontSize(24)
     ->applyTextCenter();
 
-$area->setValue('E3:I3', 'avadim/fast-excel-writer', ['hyperlink' => 'https://github.com/aVadim483/fast-excel-writer', 'align'=>'center']);
+$area->setValue('E5:I5', 'avadim/fast-excel-writer', ['hyperlink' => 'https://github.com/aVadim483/fast-excel-writer', 'align'=>'center']);
 
 $area
-    ->setValue('J4', 'Date:', ['text-align' => 'right'])
-    ->setValue('K4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => '@datetime', 'text-align' => 'left'])
+    ->setValue('J6', 'Date:', ['text-align' => 'right'])
+    ->setValue('K6', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => '@datetime', 'text-align' => 'left'])
 ;
 
 /* TABLE HEADER */
 
 // Begin new area (specify left top cell)
-$area = $sheet->beginArea('A6');
+$area = $sheet->beginArea('A8');
 //var_dump($area->getBeginAddress()); exit;
 // You can use R1C1-notation, start position in A6
 $area
@@ -158,9 +168,6 @@ foreach($data as $n => $row) {
 
 $totalRow = [];
 $sheet->writeRow($totalRow, ['font' => 'bold', 'border-top' => 'double']);
-
-$sheet->addNote('K4', 'Date & time of file generation');
-$sheet->addImage('a2', __DIR__ . '/logo_512-512.png', ['height' => 40]);
 
 $excel->save($outFileName);
 

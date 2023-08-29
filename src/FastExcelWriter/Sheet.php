@@ -2058,6 +2058,17 @@ class Sheet
 
     /**
      * @param string $cellAddr
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function setBgColor(string $cellAddr, string $color): Sheet
+    {
+        return $this->setStyle($cellAddr, ['fill-color' => $color], true);
+    }
+
+    /**
+     * @param string $cellAddr
      * @param string $format
      *
      * @return $this

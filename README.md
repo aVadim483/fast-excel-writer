@@ -15,6 +15,7 @@ Jump To:
 * [Height And Width](#height-and-width)
 * [Define Named Ranges](#define-named-ranges)
 * [Adding Notes](#adding-notes)
+* [Adding Images](#adding-images)
 * [Workbook](/docs/01-workbook.md)
   * [Workbook settings](/docs/01-workbook.md#workbook-settings)
   * [Sets metadata of workbook](/docs/01-workbook.md#sets-metadata-of-workbook)
@@ -303,6 +304,23 @@ $sheet->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
 
 // This note is visible when the Excel workbook is displayed
 $sheet->addNote('C8', 'This note is always visible', ['show' => true]);
+```
+
+###  Adding Images
+
+```php
+// Insert an image to the cell A1
+$sheet->addImage('A1', 'path/to/file');
+
+// Insert an image to the cell B2 and set with to 150 pixels (height will change proportionally)
+$sheet->addImage('B2', 'path/to/file', ['width' => 150]);
+
+// Set height to 150 pixels (with will change proportionally)
+$sheet->addImage('C3', 'path/to/file', ['height' => 150]);
+
+// Set size in pixels
+$sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
+
 ```
 
 ## Do you want to support FastExcelWriter?

@@ -475,9 +475,9 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
-    public function testExcelWriterNotes()
+    public function testExcelWriterNotesAndImages()
     {
-        $testFileName = __DIR__ . '/test_note.xlsx';
+        $testFileName = __DIR__ . '/test_notes_images.xlsx';
         if (file_exists($testFileName)) {
             unlink($testFileName);
         }
@@ -497,11 +497,17 @@ final class FastExcelWriterTest extends TestCase
 
 
         $sheet->addNote('E4:F8', 'This note will added to E4');
+        $sheet->addImage('g10', __DIR__ . '/../demo/logo_512-512.png');
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
 
+        $this->excelReader = ExcelReader::open($testFileName);
+        $sheet = $this->excelReader->sheet();
+        $this->assertEquals(1, $sheet->countImages());
+        $this->assertEquals(['G10' => ['image_name' => 'logo_512-512.png', 'file_name' => 'image1.png']], $sheet->getImageList());
 
         unlink($testFileName);
     }
+
 }

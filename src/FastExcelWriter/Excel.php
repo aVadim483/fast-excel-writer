@@ -17,6 +17,8 @@ class Excel
     public const MIN_ROW = 0;
     public const MIN_COL = 0;
 
+    public const EMU_PER_PIXEL = 9525;
+
     protected static string $tempDir;
 
     /** @var Writer */
@@ -1081,8 +1083,12 @@ class Excel
                 default:
                     $mimeType = 'image/jpeg';
             }
+            [$width, $height] = getimagesizefromstring($imageBlob);
             $this->media['images'][$imageHash] =  [
                 'filename' => $fileName,
+                'original' => basename($imageFile),
+                'width' => $width,
+                'height' => $height,
                 'name' => $name,
                 'id' => $imageId,
                 'hash' => $imageHash,

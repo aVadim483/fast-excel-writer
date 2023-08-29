@@ -267,42 +267,6 @@ class Writer
         return $filename;
     }
 
-    protected function _fake_writeSheet()
-    {
-        $s = <<<EOD
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-           xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac xr xr2 xr3"
-           xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"
-           xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
-           xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"
-           xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"
-           xr:uid="{00000000-0001-0000-0000-000000000000}">
-    <dimension ref="A1"/>
-    <sheetViews>
-        <sheetView tabSelected="1" workbookViewId="0">
-            <selection activeCell="C5" sqref="C5"/>
-        </sheetView>
-    </sheetViews>
-    <sheetFormatPr defaultRowHeight="14.4" x14ac:dyDescent="0.55000000000000004"/>
-    <sheetData/>
-    <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
-    <drawing r:id="rId1"/>
-</worksheet>
-EOD;
-
-        $sheets = $this->excel->getSheets();
-        $sheet = reset($sheets);
-
-        $sheetFileName = $this->tempFilename('xl/worksheets/' . $sheet->xmlName);
-        $sheet->setFileWriter(self::makeWriteBuffer($sheetFileName));
-
-        $sheet->fileWriter->write($s);
-        $sheet->fileWriter->flush(true);
-
-    }
-
     /**
      * @param string $fileName
      * @param bool|null $overWrite
@@ -362,8 +326,11 @@ EOD;
         $zip->addEmptyDir('xl/worksheets/');
 
         // 'xl/worksheets/sheet{%n}.xml' -- workbook
+        // 'xl/comments{%n}.xml'
+        // 'xl/drawings/vmlDrawing{%n}.vml'
+        // 'xl/drawings/drawing{%n}.xml'
+        // xl/drawings/_rels/drawing{%n}.xml.rels
         $this->_writeSheetsFiles($zip, $sheets, $relationShips);
-//        $this->_fake_writeSheet();
 
         $zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');
         $relationShips['override']['xl/styles.xml'] = [
@@ -373,27 +340,14 @@ EOD;
             'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
         ];
 
-        // 'xl/media/...'
+        // 'xl/media/image{%n}.jpg'
         $this->_writeMediaFiles($zip, $relationShips);
 
         // 'xl/sharedStrings.xml' -- workbook
         $this->_writeSharedStrings($zip, $relationShips);
-/*
-        // 'xl/comments{%n}.xml'
-        $this->_writeCommentsFiles($zip, $relationShips);
 
-        // 'xl/drawings/vmlDrawing{%n}.vml'
-        if (!empty($relationShips['comments'])) {
-            $this->_writeCommentOldStyleShape($zip, $relationShips);
-        }
-*/
         // 'xl/theme/theme{%n}.xml' -- workbook
         $this->_writeThemesFiles($zip, $relationShips);
-
-        // 'xl/media/image{%n}.jpg'
-        // 'xl/drawings/drawing{%n}.xml'
-        // xl/drawings/_rels/drawing{%n}.xml.rels
-//`        $this->_writeDrawingFiles($zip, $relationShips);
 
         $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($sheets));
         $zip->addEmptyDir('xl/_rels/');
@@ -686,59 +640,43 @@ EOD;
         $xmlDrawingString .= '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
 
         foreach ($imageList as $image) {
+            $objectId = $image['id'];
             $rId = 'rId' . $image['id'];
+            $baseName = $image['original'];
+            $width = $image['width'] * Excel::EMU_PER_PIXEL;
+            $height = $image['height'] * Excel::EMU_PER_PIXEL;
+
             $xmlDrawingString .= <<<EOD
-    <xdr:twoCellAnchor editAs="oneCell">
-        <xdr:from>
-            <xdr:col>2</xdr:col>
-            <xdr:colOff>0</xdr:colOff>
-            <xdr:row>4</xdr:row>
-            <xdr:rowOff>0</xdr:rowOff>
-        </xdr:from>
-        <xdr:to>
-            <xdr:col>4</xdr:col>
-            <xdr:colOff>619125</xdr:colOff>
-            <xdr:row>14</xdr:row>
-            <xdr:rowOff>86809</xdr:rowOff>
-        </xdr:to>
-        <xdr:pic>
-            <xdr:nvPicPr>
-                <xdr:cNvPr id="5" name="Рисунок 4">
-                    <a:extLst>
-                        <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
-                            <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main"
-                                            id="{E5A09D86-4DE0-78ED-89D4-62493E0E0E38}"/>
-                        </a:ext>
-                    </a:extLst>
-                </xdr:cNvPr>
-                <xdr:cNvPicPr>
-                    <a:picLocks noChangeAspect="1"/>
-                </xdr:cNvPicPr>
-            </xdr:nvPicPr>
-            <xdr:blipFill>
-                <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="{$rId}">
-                    <a:extLst>
-                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
-                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
-                        </a:ext>
-                    </a:extLst>
-                </a:blip>
-                <a:stretch>
-                    <a:fillRect/>
-                </a:stretch>
-            </xdr:blipFill>
-            <xdr:spPr>
-                <a:xfrm>
-                    <a:off x="1276350" y="723900"/>
-                    <a:ext cx="1895475" cy="1896559"/>
-                </a:xfrm>
-                <a:prstGeom prst="rect">
-                    <a:avLst/>
-                </a:prstGeom>
-            </xdr:spPr>
-        </xdr:pic>
-        <xdr:clientData/>
-    </xdr:twoCellAnchor>
+  <xdr:oneCellAnchor>
+    <xdr:from>
+      <xdr:col>{$image['col_index']}</xdr:col>
+      <xdr:colOff>0</xdr:colOff>
+      <xdr:row>{$image['row_index']}</xdr:row>
+      <xdr:rowOff>0</xdr:rowOff>
+    </xdr:from>
+    <xdr:ext cx="{$width}" cy="{$height}"/>
+    <xdr:pic>
+      <xdr:nvPicPr>
+        <xdr:cNvPr id="{$objectId}" name="{$baseName}"/>
+        <xdr:cNvPicPr>
+          <a:picLocks noChangeAspect="1"/>
+        </xdr:cNvPicPr>
+      </xdr:nvPicPr>
+      <xdr:blipFill>
+        <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/>
+        <a:stretch>
+          <a:fillRect/>
+        </a:stretch>
+      </xdr:blipFill>
+      <xdr:spPr>
+        <a:xfrm rot="0"/>
+        <a:prstGeom prst="rect">
+          <a:avLst/>
+        </a:prstGeom>
+      </xdr:spPr>
+    </xdr:pic>
+    <xdr:clientData/>
+  </xdr:oneCellAnchor>
 EOD;
             $relations[$image['name']] = [
                 'r_id' => $rId,
@@ -790,19 +728,18 @@ EOD;
         $xmlns = implode(' ', $xmlnsLinks);
         $fileWriter->write('<worksheet ' . $xmlns . '>');
 
-        $fileWriter->write('<sheetPr>');
         if ($sheet->getPageFit()) {
+            $fileWriter->write('<sheetPr>');
             $fileWriter->write('<pageSetUpPr fitToPage="1"/>');
-        } else {
-            $fileWriter->write('<pageSetUpPr fitToPage="false"/>');
+            $fileWriter->write('</sheetPr>');
         }
-        $fileWriter->write('</sheetPr>');
-
-        if ($sheet->rowCountWritten + $sheet->colCountWritten === 0) {
-            $fileWriter->write('<dimension ref="A1"/>');
-        } else {
-            $maxCell = $sheet->maxCell();
-            $fileWriter->write('<dimension ref="A1:' . $maxCell . '"/>');
+        $minCell = $sheet->minCell();
+        $maxCell = $sheet->maxCell();
+        if ($minCell === $maxCell) {
+            $fileWriter->write('<dimension ref="' . $minCell . '"/>');
+        }
+        else {
+            $fileWriter->write('<dimension ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
         $rightToLeftValue = $sheet->isRightToLeft() ? 'true' : 'false';
@@ -924,12 +861,12 @@ EOD;
         $sheet->fileWriter->write('<oddFooter/>');
         $sheet->fileWriter->write('</headerFooter>');
 
-        if ($rId = $sheet->getLegacyDrawingId()) {
-            $sheet->fileWriter->write('<legacyDrawing r:id="rId' . $rId . '"/>');
-        }
-
         if ($rId = $sheet->getDrawingId()) {
             $sheet->fileWriter->write('<drawing r:id="rId' . $rId . '"/>');
+        }
+
+        if ($rId = $sheet->getLegacyDrawingId()) {
+            $sheet->fileWriter->write('<legacyDrawing r:id="rId' . $rId . '"/>');
         }
 
         $sheet->fileWriter->write('</worksheet>');

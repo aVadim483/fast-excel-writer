@@ -115,9 +115,13 @@ class Sheet
 
     protected array $relationships = [];
 
-    protected array $externalLinks = [];
+    //protected array $externalLinks = [];
 
     protected array $lastTouch = [];
+    protected int $minRow = 0;
+    protected int $minCol = 0;
+    protected int $maxRow = 0;
+    protected int $maxCol = 0;
 
     protected array $namedRanges = [];
 
@@ -178,6 +182,28 @@ class Sheet
             E_USER_NOTICE);
 
         return null;
+    }
+
+    /**
+     * @param int $row
+     * @param int $col
+     *
+     * @return void
+     */
+    protected function _setDimension(int $row, int $col)
+    {
+        if (!$this->minRow || $this->minRow > $row) {
+            $this->minRow = $row;
+        }
+        if (!$this->maxRow || $this->maxRow < $row) {
+            $this->maxRow = $row;
+        }
+        if (!$this->minCol || $this->minCol > $col) {
+            $this->minCol = $col;
+        }
+        if (!$this->maxCol || $this->maxCol < $col) {
+            $this->maxCol = $col;
+        }
     }
 
     /**
@@ -1035,6 +1061,7 @@ class Sheet
                     $writer = $this->excel->getWriter();
                 }
                 $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+                $this->_setDimension($rowIdx + 1, $colIdx + 1);
                 $colIdx++;
                 if ($colIdx > $this->colCountWritten) {
                     $this->colCountWritten = $colIdx;
@@ -2182,9 +2209,17 @@ class Sheet
     /**
      * @return string
      */
+    public function minCell(): string
+    {
+        return Excel::cellAddress(($this->minRow === 0) ? 1 : $this->minRow, ($this->minCol === 0) ? 1 : $this->minCol);
+    }
+
+    /**
+     * @return string
+     */
     public function maxCell(): string
     {
-        return Excel::cellAddress($this->rowCountWritten, $this->colCountWritten);
+        return Excel::cellAddress(($this->maxRow === 0) ? 1 : $this->maxRow, ($this->maxCol === 0) ? 1 : $this->maxCol);
     }
 
     /**
@@ -2417,6 +2452,8 @@ class Sheet
                 }
             }
             $this->namedRanges[] = ['range' => $dimension['absAddress'], 'name' => $name];
+            $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
+            $this->_setDimension($dimension['rowNum2'], $dimension['colNum2']);
         }
 
         return $this;
@@ -2484,7 +2521,7 @@ class Sheet
                 'cell' => $cell,
                 'row_index' => $rowIdx,
                 'col_index' => $colIdx,
-                'text' => $comment,
+                'text' => htmlspecialchars($comment),
                 'style' => array_merge( [
                     'width' => self::NOTE_DEFAULT_WIDTH,
                     'height' => self::NOTE_DEFAULT_HEIGHT,
@@ -2493,6 +2530,7 @@ class Sheet
                     'fill_color' => self::NOTE_DEFAULT_COLOR,
                 ], $noteStyle ),
             ];
+            $this->_setDimension($rowIdx + 1, $colIdx + 1);
             if (!isset($this->relationships['legacyDrawing'])) {
                 $file = 'vmlDrawing' . $this->index . '.vml';
                 $this->relationships['legacyDrawing'][++$this->relationshipId] = [
@@ -2544,7 +2582,18 @@ class Sheet
 
     // === IMAGES === //
 
-    public function addImage(string $cell, string $imageFile): Sheet
+    /**
+     * Add image to the sheet
+     * $sheet->addImage('A1', 'path/to/file')
+     * $sheet->addImage('A1', 'path/to/file', ['width => 100])
+     *
+     * @param string $cell
+     * @param string $imageFile
+     * @param array|null $imageStyle
+     *
+     * @return $this
+     */
+    public function addImage(string $cell, string $imageFile, ?array $imageStyle = []): Sheet
     {
         if (func_num_args() === 1) {
             $imageFile = $cell;
@@ -2565,13 +2614,27 @@ class Sheet
         if ($cell) {
             $imageData = $this->excel->loadImageFile($imageFile);
             if ($imageData) {
-                $this->media['images'][$imageData['name']] = [
-                    'cell' => $cell,
-                    'row_index' => $rowIdx,
-                    'col_index' => $colIdx,
-                    'name' => $imageData['name'],
-                    'id' => $imageData['id'],
-                ];
+                $imageData['cell'] = $cell;
+                $imageData['row_index'] = $rowIdx;
+                $imageData['col_index'] = $colIdx;
+                if (!empty($imageStyle['width']) || !empty($imageStyle['height'])) {
+                    if (!empty($imageStyle['width']) && empty($imageStyle['height'])) {
+                        $ratio = $imageStyle['width'] / $imageData['width'];
+                        $imageData['width'] = $imageStyle['width'];
+                        $imageData['height'] = (int)round($imageData['height'] * $ratio);
+                    }
+                    elseif (empty($imageStyle['width']) && !empty($imageStyle['height'])) {
+                        $ratio = $imageStyle['height'] / $imageData['height'];
+                        $imageData['width'] = (int)round($imageData['width'] * $ratio);
+                        $imageData['height'] = $imageStyle['height'];
+                    }
+                    else {
+                        $imageData['width'] = $imageStyle['width'];
+                        $imageData['height'] = $imageStyle['height'];
+                    }
+                }
+                $this->media['images'][] = $imageData;
+                $this->_setDimension($rowIdx + 1, $colIdx + 1);
 
                 if (!isset($this->relationships['drawing'])) {
                     $file = 'drawing' . $this->index . '.xml';

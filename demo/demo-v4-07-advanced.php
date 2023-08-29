@@ -159,7 +159,8 @@ foreach($data as $n => $row) {
 $totalRow = [];
 $sheet->writeRow($totalRow, ['font' => 'bold', 'border-top' => 'double']);
 
-$sheet->addNote('K8', "It's a comment.\nThe second line");
+$sheet->addNote('K4', 'Date & time of file generation');
+$sheet->addImage('a2', __DIR__ . '/logo_512-512.png', ['height' => 40]);
 
 $excel->save($outFileName);
 

@@ -2618,10 +2618,6 @@ class Sheet
             $rowIdx = $dimension['rowIndex'];
             $colIdx = $dimension['colIndex'];
         }
-        if (!is_file($imageFile)) {
-            ExceptionFile::throwNew('Image file "%s" does not exist', $imageFile);
-        }
-
         if ($cell) {
             $imageData = $this->excel->loadImageFile($imageFile);
             if ($imageData) {

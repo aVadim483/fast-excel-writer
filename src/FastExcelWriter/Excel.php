@@ -1120,7 +1120,38 @@ class Excel
      */
     public function loadImageFile(string $imageFile): ?array
     {
-        $imageBlob = file_get_contents($imageFile);
+        if (preg_match('#^https?://.+#i', $imageFile)) {
+            $imageBlob = false;
+            $response = file_get_contents(
+                $imageFile,
+                false,
+                stream_context_create([
+                    'http' => [
+                        'ignore_errors' => true,
+                    ],
+                ])
+            );
+            if (isset($http_response_header[0])) {
+                if (preg_match('#\s404\s#', $http_response_header[0])) {
+                    ExceptionFile::throwNew('Image file "%s" does not exist', $imageFile);
+                }
+                elseif (preg_match('#\s200\s#', $http_response_header[0])) {
+                    $imageBlob = $response;
+                }
+            }
+        }
+        elseif (preg_match('#^\w+://.+#', $imageFile)) {
+            $imageBlob = file_get_contents($imageFile);
+        }
+        else {
+            if (!is_file($imageFile)) {
+                ExceptionFile::throwNew('Image file "%s" does not exist', $imageFile);
+            }
+            $imageBlob = file_get_contents($imageFile);
+        }
+        if ($imageBlob === false) {
+            ExceptionFile::throwNew('Cannot read file "%s"', $imageFile);
+        }
         if (!$imageBlob) {
             ExceptionFile::throwNew('Image file "%s" is empty', $imageFile);
         }

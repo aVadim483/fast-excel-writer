@@ -983,7 +983,7 @@ class Excel
      *
      * @return Sheet|null
      */
-    public function getSheet($index = null): ?Sheet
+    public function sheet($index = null): ?Sheet
     {
         if (null === $index) {
             return reset($this->sheets);
@@ -1006,6 +1006,18 @@ class Excel
             }
         }
         return $this->sheets[$key] ?? null;
+    }
+
+    /**
+     * Alias of getSheet()
+     *
+     * @param int|string|null $index - number or name of sheet
+     *
+     * @return Sheet|null
+     */
+    public function getSheet($index = null): ?Sheet
+    {
+        return $this->sheet($index);
     }
 
     /**

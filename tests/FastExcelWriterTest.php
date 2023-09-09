@@ -87,7 +87,7 @@ final class FastExcelWriterTest extends TestCase
         }
 
         $excel = Excel::create();
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
         $style = [
             'font' => [
                 'font-name' => 'Arial',
@@ -173,7 +173,7 @@ final class FastExcelWriterTest extends TestCase
         $title = 'This is test XLSX-sheet';
 
         $excel = Excel::create(['Demo']);
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
 
         $sheet
             ->pageOrientationLandscape()  // set page orientation
@@ -359,7 +359,7 @@ final class FastExcelWriterTest extends TestCase
         }
 
         $excel = Excel::create(['Demo']);
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
 
         $area = $sheet->beginArea();
         $title = 'Title';
@@ -424,7 +424,7 @@ final class FastExcelWriterTest extends TestCase
 
         $excel = Excel::create(['Demo']);
         $excel->setLocale('en');
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
         $sheet->setColFormats(['C' => 0, 'D' => '@money', 'E' => '0.00', 'F' => '@']);
 
         $area = $sheet->beginArea('c3');
@@ -453,7 +453,7 @@ final class FastExcelWriterTest extends TestCase
 
         $excel = Excel::create(['Demo']);
         $excel->setLocale('en');
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
         $sheet->setTopLeftCell('c3');
 
         $sheet->writeRow([1, 11, 111]);
@@ -483,7 +483,7 @@ final class FastExcelWriterTest extends TestCase
         }
 
         $excel = Excel::create(['Demo']);
-        $sheet = $excel->getSheet();
+        $sheet = $excel->sheet();
 
         $sheet->writeCell('Text to A1');
         $sheet->addNote('A1', 'This is a note for cell A1');

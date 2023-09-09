@@ -7,8 +7,24 @@
 
 This documentation for version 4.x. Documentation for ver. 3.x see [here](/docs/ver3x.md).
 
+## Introduction
+
+This library is designed to be lightweight, super-fast and requires minimal memory usage.
+
+This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with many features supported:
+* Takes UTF-8 encoded input
+* Multiple worksheets
+* Supports currency/date/numeric cell formatting, formulas and active hyperlinks
+* Supports most styling options for cells, rows, columns - colors, borders, fonts, etc.
+* You can set the height of the rows and the width of the columns (including auto width calculation)
+* You can add formulas, notes and images in you XLSX-files
+
+By the way, **FastExcelReader** also exists - https://github.com/aVadim483/fast-excel-reader
+
+And if you are Laravel-developer then you can use special **Laravel** edition -
+[FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel).
+
 Jump To:
-* [Introduction](#introduction)
 * [Changes in version 4](#changes-in-version-4)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
@@ -37,48 +53,14 @@ Jump To:
   * [Row Styles](/docs/04-styles.md#row-styles)
   * [Column Styles](/docs/04-styles.md#column-styles)
   * [Other Columns Options](/docs/04-styles.md#other-columns-options)
-  * [Apply Styles (The Fluent Interface)](/docs/04-styles.md#apply-styles-the-fluent-interface)
+  * [Apply Styles (The Fluent Interface)](/docs/04-styles.md#apply-styles--the-fluent-interface-)
   * [Apply Borders](/docs/04-styles.md#apply-borders)
   * [Apply Fonts](/docs/04-styles.md#apply-fonts)
   * [Apply Colors](/docs/04-styles.md#apply-colors)
   * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
+* [FastExcelWriter vs PhpSpreadsheet](#fastexcelwriter-vs-phpspreadsheet)
 * [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 
-## Introduction
-
-This library is designed to be lightweight, super-fast and requires minimal memory usage.
-
-This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with many features supported:
-* Takes UTF-8 encoded input
-* Multiple worksheets
-* Supports currency/date/numeric cell formatting, formulas and active hyperlinks
-* Supports basic column, row and cell styling
-* You can set the height of the rows and the width of the columns (including auto width calculation)
-* You can add formulas, notes and images in you XLSX-files
-
-And if you are Laravel-developer then you can use special **Laravel** edition -
-[FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel).
-
-### **FastExcelWriter** vs **PhpSpreadsheet**
-
-**PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.
-**FastExcelWriter** can only write and only in XLSX format, but does it very fast 
-and with minimal memory usage (if you need read XLSX-files the see **FastExcelReader** -
-https://github.com/aVadim483/fast-excel-reader).
-
-**FastExcelWriter**:
-* 7-9 times faster
-* uses less memory by 8-10 times
-* supports writing huge 100K+ row spreadsheets
-
-Benchmark of PhpSpreadsheet (P) and FastExcelWriter (F), spreadsheet generation without styles
-
-| Rows x Cols | Time **P** | Time **F** | Memory **P** | Memory **F** |
-|-------------|------------|------------|--------------|--------------|
-| 1000 x 5    | 0.98 sec   | 0.19 sec   | 2,048 Kb     | 2,048 Kb     |
-| 1000 x 25   | 4.68 sec   | 1.36 sec   | 14,336 Kb    | 2,048 Kb     |
-| 5000 x 25   | 23.19 sec  | 3.61 sec   | 77,824 Kb    | 2,048 Kb     |
-| 10000 x 50  | 105.8 sec  | 13.02 sec  | 256,000 Kb   | 2,048 Kb     |
 
 ## Installation
 
@@ -114,7 +96,7 @@ $data = [
 ];
 
 $excel = Excel::create(['Sheet1']);
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Write heads
 $sheet->writeRow(['Date', 'Name', 'Amount']);
@@ -155,7 +137,7 @@ $headStyle = [
 ];
 
 $excel = Excel::create(['Sheet1']);
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Write the head row (sets style via array)
 $sheet->writeHeader($head, $headStyle);
@@ -248,7 +230,7 @@ Also range names must start with a letter or underscore, have no spaces, and be 
 ```php
 $excel = Excel::create();
 $excel->setFileName($outFileName);
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Named a single cell
 $sheet->addNamedRange('B2', 'cell_name');
@@ -323,6 +305,26 @@ $sheet->addImage('C3', 'path/to/file', ['height' => 150]);
 $sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
 
 ```
+
+## **FastExcelWriter** vs **PhpSpreadsheet**
+
+**PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.
+**FastExcelWriter** can only write and only in XLSX format, but does it very fast
+and with minimal memory usage.
+
+**FastExcelWriter**:
+* 7-9 times faster
+* uses less memory by 8-10 times
+* supports writing huge 100K+ row spreadsheets
+
+Benchmark of PhpSpreadsheet (P) and FastExcelWriter (F), spreadsheet generation without styles
+
+| Rows x Cols | Time **P** | Time **F** | Memory **P** | Memory **F** |
+|-------------|------------|------------|--------------|--------------|
+| 1000 x 5    | 0.98 sec   | 0.19 sec   | 2,048 Kb     | 2,048 Kb     |
+| 1000 x 25   | 4.68 sec   | 1.36 sec   | 14,336 Kb    | 2,048 Kb     |
+| 5000 x 25   | 23.19 sec  | 3.61 sec   | 77,824 Kb    | 2,048 Kb     |
+| 10000 x 50  | 105.8 sec  | 13.02 sec  | 256,000 Kb   | 2,048 Kb     |
 
 ## Do you want to support FastExcelWriter?
 

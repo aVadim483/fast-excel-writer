@@ -349,7 +349,7 @@ class Writer
         // 'xl/theme/theme{%n}.xml' -- workbook
         $this->_writeThemesFiles($zip, $relationShips);
 
-        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($sheets));
+        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($this->excel));
         $zip->addEmptyDir('xl/_rels/');
         $zip->addFromString('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($relationShips));
 
@@ -742,13 +742,10 @@ EOD;
             $fileWriter->write('<dimension ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
-        $rightToLeftValue = $sheet->isRightToLeft() ? 'true' : 'false';
-
         $fileWriter->write('<sheetViews>');
 
-        $tabSelected = ($sheet->active ? 'tabSelected="true"' : '');
-        //$fileWriter->write('<sheetView colorId="64" defaultGridColor="true" rightToLeft="' . $rightToLeftValue . '" showFormulas="false" showGridLines="true" showOutlineSymbols="true" showRowColHeaders="true" showZeros="true" ' . $tabSelected . ' topLeftCell="A1" view="normal" windowProtection="false" workbookViewId="0" zoomScale="100" zoomScaleNormal="100" zoomScalePageLayoutView="100">');
-        $fileWriter->write('<sheetView rightToLeft="' . $rightToLeftValue . '" ' . $tabSelected . ' topLeftCell="A1" view="normal" windowProtection="false" workbookViewId="0" zoomScale="100" zoomScaleNormal="100" zoomScalePageLayoutView="100">');
+        $sheetViews = $sheet->getSheetViews();
+        $fileWriter->write('<sheetView' . $this->_tagOptions($sheetViews[0]) . '>');
 
         $paneRow = ($sheet->freezeRows ? $sheet->freezeRows + 1 : 0);
         $paneCol = ($sheet->freezeColumns ? $sheet->freezeColumns + 1 : 0);
@@ -805,6 +802,16 @@ EOD;
         $sheet->writeDataBegin($this);
     }
 
+    protected function _tagOptions(array $options): string
+    {
+        $result = '';
+        foreach ($options as $key => $val) {
+            $result .= ' ' . $key . '="' . $val . '"';
+        }
+
+        return $result;
+    }
+
     /**
      * @param Sheet $sheet
      */
@@ -831,18 +838,6 @@ EOD;
             $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
-        $pageSetupAttr = 'orientation="' . $sheet->getPageOrientation() . '"';
-        if ($sheet->getPageFit()) {
-            $pageFitToWidth = $sheet->getPageFitToWidth();
-            $pageFitToHeight = $sheet->getPageFitToHeight();
-            if ($pageFitToWidth === 1) {
-                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" ';
-            } else {
-                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" fitToWidth="' . $pageFitToWidth . '"';
-            }
-        }
-        //$sheet->fileWriter->write('<printOptions headings="false" gridLines="false" gridLinesSet="true" horizontalCentered="false" verticalCentered="false"/>');
-
         $links = $sheet->getExternalLinks();
         if ($links) {
             $sheet->fileWriter->write('<hyperlinks>');
@@ -852,7 +847,24 @@ EOD;
             $sheet->fileWriter->write('</hyperlinks>');
         }
 
-        $sheet->fileWriter->write('<pageMargins left="0.5" right="0.5" top="1.0" bottom="1.0" header="0.5" footer="0.5"/>');
+        if ($options = $sheet->getProtection()) {
+            $sheet->fileWriter->write('<sheetProtection' . $this->_tagOptions($options) . '/>');
+        }
+        if ($options = $sheet->getPageMargins()) {
+            $sheet->fileWriter->write('<pageMargins' . $this->_tagOptions($options) . '/>');
+        }
+
+        $pageSetupAttr = 'orientation="' . $sheet->getPageOrientation() . '"';
+        if ($sheet->getPageFit()) {
+            $pageFitToWidth = $sheet->getPageFitToWidth();
+            $pageFitToHeight = $sheet->getPageFitToHeight();
+            if ($pageFitToWidth === 1) {
+                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" ';
+            }
+            else {
+                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" fitToWidth="' . $pageFitToWidth . '"';
+            }
+        }
 
         $sheet->fileWriter->write("<pageSetup  paperSize=\"1\" useFirstPageNumber=\"1\" horizontalDpi=\"0\" verticalDpi=\"0\" $pageSetupAttr />");
 
@@ -1298,25 +1310,35 @@ EOD;
     }
 
     /**
-     * @param Sheet[] $sheets
+     * @param Excel $excel
      *
      * @return string
      */
-    protected function _buildWorkbookXML(array $sheets): string
+    protected function _buildWorkbookXML(Excel $excel): string
     {
-        $i = 0;
+        $sheets = $excel->getSheets();
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $xmlText .= '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
-        $xmlText .= '<fileVersion appName="FastExcelWriter"/><workbookPr backupFile="false" showObjects="all" date1904="false"/><workbookProtection/>';
-        $xmlText .= '<bookViews><workbookView activeTab="0" firstSheet="0" showHorizontalScroll="true" showSheetTabs="true" showVerticalScroll="true" tabRatio="212" windowHeight="8192" windowWidth="16384" xWindow="0" yWindow="0"/></bookViews>';
+        $xmlText .= '<fileVersion appName="xl" lastEdited="4" lowestEdited="4" rupBuild="4505"/>';
+        $xmlText .= '<workbookPr date1904="false"/>';
+        if ($options = $excel->getProtection()) {
+            $xmlText .= '<workbookProtection' . $this->_tagOptions($options) . '/>';
+        }
+
+        $xmlText .= '<bookViews>';
+        foreach ($excel->getBookViews() as $workbookView) {
+            $xmlText .= '<workbookView' . $this->_tagOptions($workbookView) . '/>';
+        }
+        $xmlText .= '</bookViews>';
+
         $xmlText .= '<sheets>';
         $definedNames = '';
+        $i = 0;
         foreach ($sheets as $sheet) {
             $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
             if ($sheet->absoluteAutoFilter) {
                 $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
                 $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheet->sanitizedSheetName . '\'!' . $filterRange . '</definedName>';
-                //                <definedName name="_xlnm._FilterDatabase" localSheetId="1" hidden="1">Лист1!$A$1:$B$1</definedName>
             }
             $i++;
         }
@@ -1334,7 +1356,8 @@ EOD;
             $xmlText .= '<definedNames/>';
         }
 
-        $xmlText .= '<calcPr refMode="A1" calcId="162913"/></workbook>';
+        $xmlText .= '<calcPr calcId="0" calcMode="auto"/>';
+        $xmlText .= '</workbook>';
 
         return $xmlText;
     }

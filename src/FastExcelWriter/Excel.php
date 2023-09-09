@@ -47,6 +47,8 @@ class Excel
 
     protected array $metadata = [];
 
+    protected array $bookViews = [];
+
     /** @var bool */
     protected bool $isRightToLeft = false;
 
@@ -56,6 +58,8 @@ class Excel
     protected string $fileName = '';
 
     protected array $media = [];
+
+    protected array $protection = [];
 
     /**
      * Excel constructor
@@ -92,6 +96,20 @@ class Excel
         }
 
         $this->setDefaultLocale();
+        $this->bookViews = [
+            [
+                'activeTab' => '0',
+                'firstSheet' => '0',
+                'showHorizontalScroll' => 'true',
+                'showSheetTabs' => 'true',
+                'showVerticalScroll' => 'true',
+                'tabRatio' => '212',
+                'windowHeight' => '8192',
+                'windowWidth' => '16384',
+                'xWindow' => '0',
+                'yWindow' => '0',
+            ]
+        ];
     }
 
     /**
@@ -1206,6 +1224,32 @@ class Excel
     }
 
     /**
+     * Protect workbook
+     *
+     * @return $this
+     */
+    public function protect(): Excel
+    {
+        $this->protection = [
+            'lockStructure' => '1',
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Unprotect workbook
+     *
+     * @return $this
+     */
+    public function unprotect(): Excel
+    {
+        $this->protection = [];
+
+        return $this;
+    }
+
+    /**
      * Sets default filename for saving
      *
      * @param string $fileName
@@ -1230,6 +1274,22 @@ class Excel
     public function getFileName(): string
     {
         return $this->fileName;
+    }
+
+    /**
+     * @return array|array[]
+     */
+    public function getBookViews(): array
+    {
+        return $this->bookViews;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProtection(): array
+    {
+        return $this->protection;
     }
 
     /**

@@ -125,10 +125,23 @@ class Sheet
 
     protected array $namedRanges = [];
 
-
     protected array $notes = [];
 
     protected array $media = [];
+
+    protected array $protection = [];
+
+    protected array $pageMargins = [
+        'left' => '0.5',
+        'right' => '0.5',
+        'top' => '1.0',
+        'bottom' => '1.0',
+        'header' => '0.5',
+        'footer' => '0.5',
+    ];
+
+    protected array $sheetViews = [];
+
 
     /**
      * Sheet constructor
@@ -139,6 +152,19 @@ class Sheet
     {
         $this->setName($sheetName);
         $this->pageOptions['orientation'] = 'portrait';
+        $this->sheetViews = [
+            [
+                'workbookViewId' => '0',
+                'view' => 'normal',
+                'rightToLeft' => 'false',
+                'topLeftCell' => 'A1',
+                'windowProtection' => 'false',
+                'zoomScale' => '100',
+                'zoomScaleNormal' => '100',
+                'zoomScalePageLayoutView' => '100',
+            ]
+        ];
+
         $this->cells = [
             'values' => [],
             'styles' => [],
@@ -2480,6 +2506,8 @@ class Sheet
         return $this->namedRanges;
     }
 
+    // === NOTES === //
+
     /**
      * Add note to the sheet
      * $sheet->addNote('A1', $noteText, $noteStyle)
@@ -2661,10 +2689,165 @@ class Sheet
     /**
      * @return array
      */
-    public function getImages()
+    public function getImages(): array
     {
 
         return $this->media['images'] ?? [];
+    }
+
+    /**
+     * Protect sheet
+     *
+     * @return $this
+     */
+    public function protect(): Sheet
+    {
+        $this->protection = [
+            'sheet' => 1,
+            'objects' => 1,
+            'scenarios' => 1,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Unprotect sheet
+     *
+     * @return $this
+     */
+    public function unprotect(): Sheet
+    {
+        $this->protection = [];
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     *
+     * @return void
+     */
+    protected function _pageMargin($key, $value)
+    {
+        if (!is_string($value)) {
+            $value = number_format($value, 1, '.', '');
+        }
+        $this->pageMargins[$key] = $value;
+    }
+
+    public function pageMargins(array $options): Sheet
+    {
+        foreach ($options as $key => $val) {
+            $this->_pageMargin($key, $val);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginLeft($value): Sheet
+    {
+        $this->_pageMargin('left', $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginRight($value): Sheet
+    {
+        $this->_pageMargin('right', $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginTop($value): Sheet
+    {
+        $this->_pageMargin('top', $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginBottom($value): Sheet
+    {
+        $this->_pageMargin('bottom', $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginHeader($value): Sheet
+    {
+        $this->_pageMargin('header', $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string|float $value
+     *
+     * @return $this
+     */
+    public function pageMarginFooter($value): Sheet
+    {
+        $this->_pageMargin('footer', $value);
+
+        return $this;
+    }
+
+    /**
+     * @return array|array[]
+     */
+    public function getSheetViews(): array
+    {
+        $result = $this->sheetViews;
+        $result[0]['rightToLeft'] = $this->isRightToLeft() ? 'true' : 'false';
+        if ($this->active) {
+            $result[0]['tabSelected'] = 'true';
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProtection(): array
+    {
+
+        return $this->protection;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPageMargins(): array
+    {
+
+        return $this->pageMargins;
     }
 
     // === DESIGN STYLES === //
@@ -3196,6 +3379,17 @@ class Sheet
         return $this;
     }
 
+    /**
+     * @param bool $lock
+     *
+     * @return $this
+     */
+    public function applyProtection(bool $lock): Sheet
+    {
+        $this->_setStyleOptions([], 'protection', ['protection-lock' => (int)$lock]);
+
+        return $this;
+    }
 
 }
 

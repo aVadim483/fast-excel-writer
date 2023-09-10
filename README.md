@@ -246,6 +246,12 @@ $sheet->addNamedRange('c2:e3', 'range_name');
 // Add named range in a workbook (sheet name required)
 $excel->addNamedRange('Sheet1!A1:F5', 'A1_F5');
 
+// You can define name using applyNamedRange()
+$sheet->writeCell(1000)->applyNamedRange('Value');
+$sheet->writeCell(0.12)->applyNamedRange('Rate');
+// Add the formula using names
+$sheet->writeCell('=Value*Rate');
+
 ```
 
 ###  Adding Notes

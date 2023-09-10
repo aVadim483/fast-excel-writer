@@ -33,7 +33,7 @@ final class FastExcelWriterTest extends TestCase
     protected function getStyle($cell, $flat = false): array
     {
         preg_match('/^(\w+)(\d+)$/', strtoupper($cell), $m);
-        $styleIdx = $this->cells[$m[2]][$m[1]]['s'] ?? null;
+        $styleIdx = $this->cells[$m[2]][$m[1]]['s'] ?? 0;
         if ($styleIdx !== null) {
             $style = $this->excelReader->getCompleteStyleByIdx($styleIdx);
             if ($flat) {
@@ -65,8 +65,8 @@ final class FastExcelWriterTest extends TestCase
             'border-top-style' => null,
             'border-bottom-style' => null,
             'border-diagonal-style' => null,
-            'format-num-id' => 164,
-            'format-pattern' => 'GENERAL',
+            'format-num-id' => 0,
+            'format-pattern' => 'General',
         ];
 
     }
@@ -78,6 +78,59 @@ final class FastExcelWriterTest extends TestCase
             $this->assertEquals($val, $style[$key]);
         }
     }
+
+    public function testExcelWriter0()
+    {
+        $testFileName = __DIR__ . '/test0.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $sheet
+            ->writeCell('A1')
+            ->writeCell('B1')
+            ->nextCell() // C1
+            ->writeCell('D1')
+            ->nextCell() // E1
+            ->nextCell() // F1
+            ->writeCell('G1')
+            ->writeTo('F1', 'F1');
+        ;
+        $sheet->writeRow(['A2', 'B2', null, 'D2']);
+        $sheet->nextRow();
+        $sheet->writeTo('F3', 'F3');
+        $sheet->nextRow(); // 4
+        $sheet->nextRow(); // 5
+        $sheet->writeCell('A5');
+        $sheet->skipRow(3);
+        $sheet->writeCell('A9');
+
+        $excel->save($testFileName);
+        $this->assertTrue(file_exists($testFileName));
+
+        $this->excelReader = ExcelReader::open($testFileName);
+        $this->cells = $this->excelReader->readCells();
+
+        $this->assertEquals('A1', $this->cells['A1']);
+        $this->assertEquals('B1', $this->cells['B1']);
+        $this->assertEquals('D1', $this->cells['D1']);
+        $this->assertEquals('F1', $this->cells['F1']);
+        $this->assertEquals('G1', $this->cells['G1']);
+
+        $this->assertEquals('A2', $this->cells['A2']);
+        $this->assertEquals('B2', $this->cells['B2']);
+        $this->assertEquals('D2', $this->cells['D2']);
+
+        $this->assertEquals('F3', $this->cells['F3']);
+
+        $this->assertEquals('A5', $this->cells['A5']);
+
+        $this->assertEquals('A9', $this->cells['A9']);
+    }
+
 
     public function testExcelWriter1()
     {

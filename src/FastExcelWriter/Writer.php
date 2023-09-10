@@ -768,7 +768,7 @@ EOD;
         }
         else {
             // not frozen
-            $fileWriter->write('<selection activeCell="A1" activeCellId="0" pane="topLeft" sqref="A1"/>');
+            $fileWriter->write('<selection activeCell="' . $minCell . '" activeCellId="0" pane="topLeft" sqref="' . $minCell . '"/>');
         }
         $fileWriter->write('</sheetView>');
 
@@ -823,6 +823,10 @@ EOD;
 
         $sheet->writeDataEnd();
 
+        if (($options = $sheet->getProtection()) && !empty($options['sheet'])) {
+            $sheet->fileWriter->write('<sheetProtection' . $this->_tagOptions($options) . '/>');
+        }
+
         $mergedCells = $sheet->getMergedCells();
         if ($mergedCells) {
             $sheet->fileWriter->write('<mergeCells>');
@@ -847,9 +851,6 @@ EOD;
             $sheet->fileWriter->write('</hyperlinks>');
         }
 
-        if ($options = $sheet->getProtection()) {
-            $sheet->fileWriter->write('<sheetProtection' . $this->_tagOptions($options) . '/>');
-        }
         if ($options = $sheet->getPageMargins()) {
             $sheet->fileWriter->write('<pageMargins' . $this->_tagOptions($options) . '/>');
         }
@@ -979,7 +980,7 @@ EOD;
         elseif (is_string($value) && $value[0] === '=') {
             // formula
             $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><f>' . self::xmlSpecialChars($value) . '</f></c>');
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"><f>' . self::xmlSpecialChars($value) . '</f></c>');
         }
         elseif ($numFormatType === 'n_shared_string') {
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value . '</v></c>');
@@ -1188,22 +1189,43 @@ EOD;
                     $alignmentAttr .= ' wrapText="true"';
                 }
 
-                $xfAttr = 'applyFont="true" ';
-                if (isset($cellXf['_border_id'])) {
-                    $xfAttr .= 'applyBorder="true" ';
+                $xfId = $cellXf['_xf_id'] ?? 0;
+                $xfAttr = [
+                    'borderId' => $cellXf['_border_id'],
+                    'fillId' => $cellXf['_fill_id'],
+                    'fontId' => $cellXf['_font_id'],
+                    'numFmtId' => 164 + $cellXf['_num_fmt_id'],
+                    'xfId' => $xfId,
+                ];
+
+                $xfAttr['applyFont'] = 'true';
+
+                $kids = [];
+                if ($alignmentAttr) {
+                    $xfAttr['applyAlignment'] = 'true';
+                    $kids[] = '<alignment ' . $alignmentAttr . '/>';
+                }
+                if (isset($cellXf['protection'])) {
+                    $xfAttr['applyProtection'] = 'true';
+                    if (isset($cellXf['protection']['protection-locked'])) {
+                        $kids[] = '<protection locked="' . $cellXf['protection']['protection-locked'] . '"/>';
+                    }
+                    if (isset($cellXf['protection']['protection-hidden'])) {
+                        $kids[] = '<protection hidden="' . $cellXf['protection']['protection-hidden'] . '"/>';
+                    }
                 }
 
-                $xfId = $cellXf['_xf_id'] ?? 0;
-                if ($alignmentAttr) {
-                    $xfAttr .= 'applyAlignment="true" ';
-                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
-                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_id']) . '" xfId="' . $xfId . '">');
-                    $file->write('	<alignment ' . $alignmentAttr . '/>');
+                if (!empty($cellXf['_border_id'])) {
+                    $xfAttr['applyBorder'] = 'true';
+                }
+
+                if ($kids) {
+                    $file->write('<xf ' . $this->_tagOptions($xfAttr) . '>');
+                    $file->write(implode('', $kids));
                     $file->write('</xf>');
                 }
                 else {
-                    $file->write('<xf ' . $xfAttr . ' borderId="' . $cellXf['_border_id'] . '" fillId="' . $cellXf['_fill_id'] . '" '
-                        . 'fontId="' . $cellXf['_font_id'] . '" numFmtId="' . (164 + $cellXf['_num_fmt_id']) . '" xfId="' . $xfId . '" />');
+                    $file->write('<xf ' . $this->_tagOptions($xfAttr) . '/>');
                 }
             }
 
@@ -1293,7 +1315,7 @@ EOD;
      *
      * @return string
      */
-    protected function _buildRelationshipsXML(array $relationShips)
+    protected function _buildRelationshipsXML(array $relationShips): string
     {
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
         $xmlText .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';

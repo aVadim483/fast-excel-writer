@@ -103,11 +103,6 @@ class Excel
                 'showHorizontalScroll' => 'true',
                 'showSheetTabs' => 'true',
                 'showVerticalScroll' => 'true',
-                'tabRatio' => '212',
-                'windowHeight' => '8192',
-                'windowWidth' => '16384',
-                'xWindow' => '0',
-                'yWindow' => '0',
             ]
         ];
     }
@@ -921,6 +916,39 @@ class Excel
     }
 
     /**
+     * Create a password hash from a given string
+
+     * This code is from phpoffice/phpspreadsheet ver.1.28 and based on the spec at:
+     * https://interoperability.blob.core.windows.net/files/MS-OFFCRYPTO/[MS-OFFCRYPTO].pdf
+     * 2.3.7.1 Binary Document Password Verifier Derivation Method 1
+     *
+     *
+     * @param string $password Password to hash
+     *
+     * @return string
+     */
+    public static function hashPassword(string $password): string
+    {
+        if (strlen($password) > 255) {
+            Exception::throwNew('Maximum allowed password length is %d characters', 255);
+        }
+
+        $verifier = 0;
+        $pwlen = strlen($password);
+        $passwordArray = pack('c', $pwlen) . $password;
+        for ($i = $pwlen; $i >= 0; --$i) {
+            $intermediate1 = (($verifier & 0x4000) === 0) ? 0 : 1;
+            $intermediate2 = 2 * $verifier;
+            $intermediate2 = $intermediate2 & 0x7fff;
+            $intermediate3 = $intermediate1 | $intermediate2;
+            $verifier = $intermediate3 ^ ord($passwordArray[$i]);
+        }
+        $verifier ^= 0xCE4B;
+
+        return strtoupper(dechex($verifier));
+    }
+
+    /**
      * @param string $string
      *
      * @return int
@@ -1226,13 +1254,20 @@ class Excel
     /**
      * Protect workbook
      *
+     * @param string|null $password
+     *
      * @return $this
      */
-    public function protect(): Excel
+    public function protect(?string $password = null): Excel
     {
         $this->protection = [
             'lockStructure' => '1',
+            'lockWindows' => '1',
+            'lockRevision' => 'false',
         ];
+        if ($password) {
+            $this->protection['workbookPassword'] = Excel::hashPassword($password);
+        }
 
         return $this;
     }

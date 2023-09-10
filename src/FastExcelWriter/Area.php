@@ -32,6 +32,8 @@ use avadim\FastExcelWriter\Exception\Exception;
  * @method Area applyTextCenter()
  * @method Area applyTextWrap(bool $textWrap)
  * @method Area applyTextColor(string $color)
+ * @method Area applyUnlock(?bool $unlock = true)
+ * @method Area applyHide(?bool $hide = true)
  *
  * @package avadim\FastExcelWriter
  */
@@ -164,6 +166,8 @@ class Area
     }
 
     /**
+     * @param $offset
+     *
      * @return string
      */
     public function getOffsetAddress($offset): string
@@ -220,6 +224,28 @@ class Area
             return true;
         }
         return false;
+    }
+
+    /**
+     * Write value to cell
+     *
+     * writeTo('A2', $value)
+     * writeTo(['col' => 3, 'row' => 1], $value) - equals to 'C1'
+     * writeTo('A2:C2', $value) - merge cells and write value
+     *
+     * @param string|array $cellAddress
+     * @param mixed $value
+     * @param array|null $style
+     *
+     * @return $this
+     */
+    public function writeTo($cellAddress, $value, ?array $style = null): Area
+    {
+        if ($this->_validateAddressRange($cellAddress)) {
+            $this->sheet->setValue($cellAddress, $value, $style);
+        }
+
+        return $this;
     }
 
     /**

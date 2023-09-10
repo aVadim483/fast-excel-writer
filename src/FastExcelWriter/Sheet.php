@@ -156,12 +156,7 @@ class Sheet
             [
                 'workbookViewId' => '0',
                 'view' => 'normal',
-                'rightToLeft' => 'false',
                 'topLeftCell' => 'A1',
-                'windowProtection' => 'false',
-                'zoomScale' => '100',
-                'zoomScaleNormal' => '100',
-                'zoomScalePageLayoutView' => '100',
             ]
         ];
 
@@ -169,7 +164,7 @@ class Sheet
             'values' => [],
             'styles' => [],
         ];
-        $this->_setCellData('A1', '', null, false);
+        $this->_setCellData('A1', null, null, false);
         $this->lastTouch = [
             'cell' => [
                 'row_idx' => 0,
@@ -521,8 +516,7 @@ class Sheet
     public function setTopLeftCell($cellAddress): Sheet
     {
         $address = $this->_moveTo($cellAddress);
-        $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
-        $this->_touchEnd($address['rowIndex'], $address['colIndex'], 'cell');
+        $this->_touch($address['rowIndex'], $address['colIndex'], $address['rowIndex'], $address['colIndex'], 'cell');
 
         $this->currentRow = $address['rowIndex'];
         $this->currentCol = $this->offsetCol = $address['colIndex'];
@@ -1086,8 +1080,10 @@ class Sheet
                 if (!$writer) {
                     $writer = $this->excel->getWriter();
                 }
-                $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
-                $this->_setDimension($rowIdx + 1, $colIdx + 1);
+                if ($cellValue !== null || $cellStyleIdx !== 0 || $numberFormatType !== 'n_auto') {
+                    $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+                    $this->_setDimension($rowIdx + 1, $colIdx + 1);
+                }
                 $colIdx++;
                 if ($colIdx > $this->colCountWritten) {
                     $this->colCountWritten = $colIdx;
@@ -1096,7 +1092,8 @@ class Sheet
             $this->fileWriter->write('</row>');
         }
         else {
-            $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '/>');
+            // do not write an empty row
+            //$this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '/>');
         }
         $this->rowCountWritten++;
     }
@@ -1376,8 +1373,6 @@ class Sheet
      * @param array|null $styles
      *
      * @return $this
-     *
-     * @throws \Exception
      */
     public function writeCell($value, array $styles = null): Sheet
     {
@@ -1513,7 +1508,16 @@ class Sheet
         else {
             $this->currentCol++;
         }
-        $this->_touchEnd($address['rowIndex'], $address['colIndex'], 'cell');
+        if ($address['rowNum2'] === $address['rowNum1'] && $address['colNum2'] === $address['colNum1']) {
+            $ref = 'cell';
+        }
+        elseif ($address['rowNum2'] === $address['rowNum1']) {
+            $ref = 'row';
+        }
+        else {
+            $ref = 'area';
+        }
+        $this->_touchEnd($address['rowNum2'] - 1, $address['colNum2'] - 1, $ref);
 
         return $this;
     }
@@ -1605,10 +1609,11 @@ class Sheet
     }
 
     /**
-     * @return void
+     * @return int
      */
-    protected function _writeCurrentRow()
+    protected function _writeCurrentRow(): int
     {
+        $savedRow = $this->currentRow;
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
             $writer = $this->excel->getWriter();
             if (!$this->open) {
@@ -1659,6 +1664,8 @@ class Sheet
             }
             $this->withLastCell();
         }
+
+        return $this->currentRow - $savedRow;
     }
 
     /**
@@ -1747,7 +1754,12 @@ class Sheet
         if (!empty($options)) {
             $this->rowStyles[$this->currentRow] = $options;
         }
-        $this->_writeCurrentRow();
+        $writtenRows = $this->_writeCurrentRow();
+        if (!$writtenRows) {
+            $this->currentRow++;
+            $this->currentCol = $this->offsetCol;
+            $this->_touch($this->currentRow, $this->currentCol, $this->currentRow, $this->currentCol, 'cell');
+        }
 
         return $this;
     }
@@ -1761,7 +1773,7 @@ class Sheet
      */
     public function skipRow(?int $rowCount = 1): Sheet
     {
-        for ($i = 0; $i < $rowCount; $i++) {
+        for ($i = 0; $i <= $rowCount; $i++) {
             $this->nextRow();
         }
 
@@ -1798,6 +1810,7 @@ class Sheet
                 $this->totalArea['coord'][1]['col'] = $coord[1]['col'];
             }
         }
+        $this->_touch($coord[0]['row'] - 1, $coord[0]['col'] - 1, $coord[1]['row'] - 1, $coord[1]['col'] - 1, 'area');
 
         return $area;
     }
@@ -1989,6 +2002,7 @@ class Sheet
             else {
                 $this->lastTouch['row'] = 'area';
             }
+            $this->_touch($dimension['rowNum1'] - 1, $dimension['colNum1'] - 1, $dimension['rowNum2'] - 1, $dimension['colNum2'] - 1, 'area');
         }
         //$this->lastTouch['row'] = 'area';
 
@@ -2026,6 +2040,29 @@ class Sheet
     }
 
     /**
+     * Select a single cell or to cell range in the current row
+     *
+     * $cellAddress formats:
+     *      'B5'
+     *      'B5:C7'
+     *      ['row' => 6, 'col' => 7]
+     *      [6, 7]
+     *
+     * @param string|array $cellAddress
+     *
+     * @return $this
+     */
+    public function cell($cellAddress): Sheet
+    {
+        $dimension = $this->_setCellData($cellAddress, null, null, true);
+        $this->currentRow = $dimension['rowIndex'];
+        $this->currentCol = $dimension['colIndex'];
+        $this->_touchEnd($this->currentRow, $this->currentCol, 'cell');
+
+        return $this;
+    }
+
+    /**
      * @param string $cellAddress
      * @param mixed $style
      * @param bool|null $mergeStyles
@@ -2038,7 +2075,6 @@ class Sheet
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater then written rows');
         }
-        $oldStyle = $style;
         $style = Style::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
             for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {
@@ -2053,6 +2089,10 @@ class Sheet
                 }
             }
         }
+        $this->currentRow = $dimension['rowIndex'];
+        $this->currentCol = $dimension['colIndex'];
+        $this->_touchEnd($this->currentRow, $this->currentCol, 'cell');
+        ++$this->currentCol;
 
         return $this;
     }
@@ -2187,7 +2227,8 @@ class Sheet
                     $this->_writeRow($writer, array_values($rowValues), [], $cellStyles ? array_values($cellStyles) : []);
                 }
                 else {
-                    $this->_writeRow($writer, [null]);
+                    //$this->_writeRow($writer, [null]);
+                    $this->_writeRow($writer, []);
                 }
             }
             $this->clearAreas();
@@ -2326,56 +2367,78 @@ class Sheet
     }
 
     /**
-     * @param int $row
-     * @param int $col
+     * @param int $row1
+     * @param int $col1
      * @param string|null $ref
      *
      * @return void
      */
-    protected function _touchStart(int $row, int $col, ?string $ref = null)
+    protected function _touchStart(int $row1, int $col1, ?string $ref = null)
     {
-        $this->lastTouch['row'] = [
-            'row_idx' => $row,
-        ];
-        $this->lastTouch['cell'] = [
-            'row_idx' => $row,
-            'col_idx' => $col,
-        ];
-        $this->lastTouch['area'] = [
-            'row_idx1' => $row,
-            'row_idx2' => $row,
-            'col_idx1' => $col,
-            'col_idx2' => $col,
-        ];
-        if ($ref) {
-            $this->lastTouch['ref'] = $ref;
-        }
+        $this->_touch($row1, $col1, null, null, $ref);
     }
 
     /**
-     * @param int $row
-     * @param int $col
+     * @param int $row2
+     * @param int $col2
      * @param string|null $ref
      *
      * @return void
      */
-    protected function _touchEnd(int $row, int $col, ?string $ref = null)
+    protected function _touchEnd(int $row2, int $col2, ?string $ref = null)
     {
-        $this->lastTouch['row'] = [
-            'row_idx' => $row,
-        ];
-        $this->lastTouch['cell'] = [
-            'row_idx' => $row,
-            'col_idx' => $col,
-        ];
-        $this->lastTouch['area']['row_idx2'] = $row;
-        $this->lastTouch['area']['col_idx2'] = $col;
+        $this->_touch(null, null, $row2, $col2, $ref);
+    }
 
-        if ($ref) {
-            $this->lastTouch['ref'] = $ref;
-            if ($ref === 'cell') {
-                $this->lastTouch['area']['row_idx1'] = $row;
-                $this->lastTouch['area']['col_idx1'] = $col;
+    /**
+     * @param int|null $row1
+     * @param int|null $col1
+     * @param int|null $row2
+     * @param int|null $col2
+     * @param string|null $ref
+     *
+     * @return void
+     */
+    protected function _touch(?int $row1, ?int $col1, ?int $row2, ?int $col2, ?string $ref = null)
+    {
+        // _touchStart
+        if ($row1 !== null) {
+            $this->lastTouch['row'] = [
+                'row_idx' => $row1,
+            ];
+            $this->lastTouch['cell'] = [
+                'row_idx' => $row1,
+                'col_idx' => $col1,
+            ];
+            $this->lastTouch['area'] = [
+                'row_idx1' => $row1,
+                'row_idx2' => $row1,
+                'col_idx1' => $col1,
+                'col_idx2' => $col1,
+            ];
+            if ($ref) {
+                $this->lastTouch['ref'] = $ref;
+            }
+        }
+
+        // _touchEnd
+        if ($row2 !== null) {
+            $this->lastTouch['row'] = [
+                'row_idx' => $row2,
+            ];
+            $this->lastTouch['cell'] = [
+                'row_idx' => $row2,
+                'col_idx' => $col2,
+            ];
+            $this->lastTouch['area']['row_idx2'] = $row2;
+            $this->lastTouch['area']['col_idx2'] = $col2;
+
+            if ($ref) {
+                $this->lastTouch['ref'] = $ref;
+                if ($ref === 'cell') {
+                    $this->lastTouch['area']['row_idx1'] = $row2;
+                    $this->lastTouch['area']['col_idx1'] = $col2;
+                }
             }
         }
     }
@@ -2473,7 +2536,26 @@ class Sheet
      */
     public function addNamedRange(string $range, string $name): Sheet
     {
-        $dimension = self::_rangeDimension($range);
+        if ($range) {
+            $dimension = self::_rangeDimension($range);
+        }
+        else {
+            $cell1 = Excel::cellAddress($this->lastTouch['area']['row_idx1'] + 1, $this->lastTouch['area']['col_idx1'] + 1, true);
+            $cell2 = Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, true);
+            if ($cell1 === $cell2) {
+                $address = $cell1;
+            }
+            else {
+                $address = $cell1 . ':' . $cell2;
+            }
+            $dimension = [
+                'absAddress' => $address,
+                'rowNum1' => $this->lastTouch['area']['row_idx1'] + 1,
+                'colNum1' => $this->lastTouch['area']['col_idx1'] + 1,
+                'rowNum2' => $this->lastTouch['area']['row_idx2'] + 1,
+                'colNum2' => $this->lastTouch['area']['col_idx2'] + 1,
+            ];
+        }
         if (isset($dimension['absAddress'])) {
             if (!preg_match('/^\w+$/u', $name)) {
                 ExceptionRangeName::throwNew('Wrong name for range');
@@ -2695,18 +2777,246 @@ class Sheet
         return $this->media['images'] ?? [];
     }
 
+    // === PROTECTION === //
+
     /**
      * Protect sheet
      *
+     * @param string|null $password
+     *
      * @return $this
      */
-    public function protect(): Sheet
+    public function protect(?string $password = null): Sheet
     {
-        $this->protection = [
-            'sheet' => 1,
-            'objects' => 1,
-            'scenarios' => 1,
-        ];
+        $this->protection['sheet'] = 1;
+        if ($password) {
+            $this->protection['password'] = Excel::hashPassword($password);
+        }
+
+        return $this;
+    }
+
+    /**
+     * AutoFilters should be allowed to operate when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowAutoFilter(?bool $allow = true): Sheet
+    {
+        $this->protection['autoFilter'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Deleting columns should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowDeleteColumns(?bool $allow = true): Sheet
+    {
+        $this->protection['deleteColumns'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Deleting rows should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowDeleteRows(?bool $allow = true): Sheet
+    {
+        $this->protection['deleteRows'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Formatting cells should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowFormatCells(?bool $allow = true): Sheet
+    {
+        $this->protection['formatCells'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Formatting columns should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowFormatColumns(?bool $allow = true): Sheet
+    {
+        $this->protection['formatColumns'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Formatting rows should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowFormatRows(?bool $allow = true): Sheet
+    {
+        $this->protection['formatRows'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Inserting columns should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowInsertColumns(?bool $allow = true): Sheet
+    {
+        $this->protection['insertColumns'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Inserting hyperlinks should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowInsertHyperlinks(?bool $allow = true): Sheet
+    {
+        $this->protection['insertHyperlinks'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Inserting rows should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowInsertRows(?bool $allow = true): Sheet
+    {
+        $this->protection['insertRows'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Objects are allowed to be edited when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowEditObjects(?bool $allow = true): Sheet
+    {
+        $this->protection['objects'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * PivotTables should be allowed to operate when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowPivotTables(?bool $allow = true): Sheet
+    {
+        $this->protection['pivotTables'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Scenarios are allowed to be edited when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowEditScenarios(?bool $allow = true): Sheet
+    {
+        $this->protection['scenarios'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Selection of locked cells should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowSelectLockedCells(?bool $allow = true): Sheet
+    {
+        $this->protection['selectLockedCells'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Selection of unlocked cells should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowSelectUnlockedCells(?bool $allow = true): Sheet
+    {
+        $this->protection['selectUnlockedCells'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Selection of any cells should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowSelectCells(?bool $allow = true): Sheet
+    {
+        $this->protection['selectLockedCells'] = ($allow === false) ? 1 : 0;
+        $this->protection['selectUnlockedCells'] = ($allow === false) ? 1 : 0;
+
+        return $this;
+    }
+
+    /**
+     * Sorting should be allowed when the sheet is protected
+     *
+     * @param bool|null $allow
+     *
+     * @return $this
+     */
+    public function allowSort(?bool $allow = true): Sheet
+    {
+        $this->protection['sort'] = 0;
 
         return $this;
     }
@@ -2718,7 +3028,7 @@ class Sheet
      */
     public function unprotect(): Sheet
     {
-        $this->protection = [];
+        $this->protection['sheet'] = 0;
 
         return $this;
     }
@@ -2824,7 +3134,9 @@ class Sheet
     public function getSheetViews(): array
     {
         $result = $this->sheetViews;
-        $result[0]['rightToLeft'] = $this->isRightToLeft() ? 'true' : 'false';
+        if ($this->isRightToLeft()) {
+            $result[0]['rightToLeft'] = 'true';
+        }
         if ($this->active) {
             $result[0]['tabSelected'] = 'true';
         }
@@ -2862,6 +3174,21 @@ class Sheet
     public function applyRowHeight(float $height): Sheet
     {
         $this->setRowHeight($this->currentRow + 1, $height);
+
+        return $this;
+    }
+
+    /**
+     * @param array $style
+     *
+     * @return $this
+     */
+    public function applyStyle(array $style): Sheet
+    {
+        $style = Style::normalize($style);
+        foreach ($style as $key => $options) {
+            $this->_setStyleOptions([], $key, $options, true);
+        }
 
         return $this;
     }
@@ -3177,13 +3504,13 @@ class Sheet
     {
         $font = ['font-name' => $fontName];
         if ($fontSize) {
-            $font = ['font-size' => $fontSize];
+            $font['font-size'] = $fontSize;
         }
         if ($fontStyle) {
-            $font = ['font-style' => $fontStyle];
+            $font['font-style'] = $fontStyle;
         }
         if ($fontColor) {
-            $font = ['font-color' => $fontColor];
+            $font['font-color'] = $fontColor;
         }
 
         $this->_setStyleOptions([], 'font', $font);
@@ -3356,13 +3683,13 @@ class Sheet
     }
 
     /**
-     * @param bool $textWrap
+     * @param bool|null $textWrap
      *
      * @return $this
      */
-    public function applyTextWrap(bool $textWrap): Sheet
+    public function applyTextWrap(?bool $textWrap = true): Sheet
     {
-        $this->_setStyleOptions([], 'format', ['format-text-wrap' => 1]);
+        $this->_setStyleOptions([], 'format', ['format-text-wrap' => (int)$textWrap]);
 
         return $this;
     }
@@ -3380,17 +3707,38 @@ class Sheet
     }
 
     /**
-     * @param bool $lock
+     * @param bool $unlock
      *
      * @return $this
      */
-    public function applyProtection(bool $lock): Sheet
+    public function applyUnlock(?bool $unlock = true): Sheet
     {
-        $this->_setStyleOptions([], 'protection', ['protection-lock' => (int)$lock]);
+        $this->_setStyleOptions([], 'protection', ['protection-locked' => ($unlock === false) ? 1 : 0]);
 
         return $this;
     }
 
+    /**
+     * @return $this
+     */
+    public function applyHide(?bool $hide = true): Sheet
+    {
+        $this->_setStyleOptions([], 'protection', ['protection-hidden' => ($hide === false) ? 0 : 1]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function applyNamedRange(string $name): Sheet
+    {
+        $this->addNamedRange('', $name);
+
+        return $this;
+    }
 }
 
 // EOF

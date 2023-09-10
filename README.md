@@ -18,6 +18,7 @@ This library creates Excel compatible spreadsheets in XLSX format (Office 2007+)
 * Supports most styling options for cells, rows, columns - colors, borders, fonts, etc.
 * You can set the height of the rows and the width of the columns (including auto width calculation)
 * You can add formulas, notes and images in you XLSX-files
+* Supports workbook and sheet protection with/without passwords 
 
 By the way, **FastExcelReader** also exists - https://github.com/aVadim483/fast-excel-reader
 
@@ -58,6 +59,10 @@ Jump To:
   * [Apply Fonts](/docs/04-styles.md#apply-fonts)
   * [Apply Colors](/docs/04-styles.md#apply-colors)
   * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
+* [Protection of workbook and sheets](/docs/05-protection.md)
+  * [Workbook protection](/docs/05-protection.md#workbook-protection)
+  * [Sheet protection](/docs/05-protection.md#sheet-protection)
+  * [Cells locking/unlocking](/docs/05-protection.md#cells-lockingunlocking)
 * [FastExcelWriter vs PhpSpreadsheet](#fastexcelwriter-vs-phpspreadsheet)
 * [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 

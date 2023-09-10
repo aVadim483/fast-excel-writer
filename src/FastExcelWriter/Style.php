@@ -773,6 +773,8 @@ class Style
                 case 'border':
                 case 'border-style':
                 case 'border-color':
+                case 'border_style':
+                case 'border_color':
                     $border = self::borderOptions($styleVal);
                     if (isset($result['border'])) {
                         $result['border'] = array_replace($result['border'], $border);
@@ -797,13 +799,17 @@ class Style
                     break;
 
                 case 'font-name':
+                case 'font_name':
                     $result['font']['font-name'] = $styleVal;
                     break;
 
-                case 'font-color':
                 case 'color':
+                case 'font-color':
                 case 'text-color':
                 case 'fg-color':
+                case 'font_color':
+                case 'text_color':
+                case 'fg_color':
                     $result['font']['font-color'] = $styleVal;
                     break;
 
@@ -824,6 +830,9 @@ class Style
                 case 'fill-color':
                 case 'bg-color':
                 case 'background-color':
+                case 'fill_color':
+                case 'bg_color':
+                case 'background_color':
                     $result['fill']['fill-color'] = $styleVal;
                     if (!isset($result['fill']['fill-pattern'])) {
                         $result['fill']['fill-pattern'] = 'solid';
@@ -831,10 +840,12 @@ class Style
                     break;
 
                 case 'fill-pattern':
+                case 'fill_pattern':
                     $result['fill']['fill-pattern'] = $styleVal;
                     break;
 
                 case 'text-rotation':
+                case 'text_rotation':
                     $result['format']['format-text-rotation'] = (int) $styleVal;
                     break;
 
@@ -867,6 +878,9 @@ class Style
                 case 'text-align':
                 case 'format-align-horizontal':
                 case 'format-alignment-horizontal':
+                case 'text_align':
+                case 'format_align_horizontal':
+                case 'format_alignment_horizontal':
                     if (in_array($styleVal, ['general', 'left', 'right', 'justify', 'center'])) {
                         $result['format']['format-align-horizontal'] = $styleVal;
                     }
@@ -875,6 +889,9 @@ class Style
                 case 'vertical-align':
                 case 'format-align-vertical':
                 case 'format-alignment-vertical':
+                case 'vertical_align':
+                case 'format_align_vertical':
+                case 'format_alignment_vertical':
                     if (in_array($styleVal, ['bottom', 'center', 'distributed', 'top'])) {
                         $result['format']['format-align-vertical'] = $styleVal;
                     }
@@ -882,11 +899,28 @@ class Style
 
                 case 'text-wrap':
                 case 'format-text-wrap':
+                case 'text_wrap':
+                case 'format_text_wrap':
                     $result['format']['format-text-wrap'] = (bool)$styleVal;
+                    break;
+
+                case 'protection-lock':
+                case 'protection-locked':
+                case 'protection_lock':
+                case 'protection_locked':
+                    $result['protection']['protection-locked'] = (int)$styleVal;
+                    break;
+
+                case 'protection-hide':
+                case 'protection-hidden':
+                case 'protection_hide':
+                case 'protection_hidden':
+                    $result['protection']['protection-hidden'] = (int)$styleVal;
                     break;
 
                 case 'width':
                 case 'col-width':
+                case 'col_width':
                     if ($styleVal === 'auto' || $styleVal === true) {
                         $result['options']['width-auto'] = true;
                     }
@@ -900,6 +934,7 @@ class Style
 
                 case 'height':
                 case 'row-height':
+                case 'row_height':
                     $height = self::numFloat($styleVal);
                     if (is_numeric($height) && $height > 0) {
                         $result['options']['height'] = $height;
@@ -985,6 +1020,7 @@ class Style
             $key = $value['tag'];
         }
         else {
+            ksort($value);
             $key = json_encode($value);
         }
         if (isset($this->elements[$sectionName][$key])) {

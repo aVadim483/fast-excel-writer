@@ -107,6 +107,10 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeCell('A5');
         $sheet->skipRow(3);
         $sheet->writeCell('A9');
+        $sheet->writeTo('F9', 'F9');
+        $sheet->writeTo('D9', 'D9');
+        $sheet->writeTo('B9', 'B9');
+        $sheet->writeTo('E9', 'E9');
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
@@ -129,6 +133,9 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('A5', $this->cells['A5']);
 
         $this->assertEquals('A9', $this->cells['A9']);
+        $this->assertEquals('B9', $this->cells['B9']);
+        $this->assertEquals('D9', $this->cells['D9']);
+        $this->assertEquals('E9', $this->cells['E9']);
     }
 
 

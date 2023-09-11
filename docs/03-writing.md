@@ -1,5 +1,101 @@
 ## FastExcelWriter - Sheets
 
+### Writing Row by Row vs Direct
+
+There are two ways to write to a XLSX-file in the library - sequential (row by row) and direct. 
+When you use "row by row" writing, cells are written to the file as soon as you move to the next row. 
+And you can no longer write something into the cells of the previous rows. 
+This allows you to write quickly and save memory.
+
+**Note: Any Sheet class writing functions use row-by-row way,
+while Area class functions use direct writing**
+
+```php
+$excel = Excel::create(['Sheet1']);
+$sheet = $excel->sheet(); 
+// now position of internal record pointer is "A1"
+
+$sheet->writeCell('...'); 
+// ^^^ write to A1 and move position of internal record pointer to "B1"
+
+$sheet->writeCell('...'); 
+// ^^^ position of internal record pointer is "C1"
+
+$sheet->nextCell(); 
+// ^^^ move position of internal record pointer to "D1"
+
+$sheet->nextCell(); 
+// ^^^ position of internal record pointer is "E1"
+
+// we can write to any cell of the current row
+$sheet->writeTo('G1', '...'); 
+// ^^^ write value to G1 and move pointer to the H1
+
+$sheet->writeTo('F1', '...'); 
+// ^^^ we can write to previous cell of the current row
+
+// function writeRow() always flush current row to the file and writes new values to the next row
+$sheet->writeRow(['a', 'b', 'c']);
+// ^^^ internal pointer moves to the next row 2
+
+$sheet->cell('B2')->applyBgColor('#ccc');
+// ^^^ you can change cells in the row 2 (this is the current row)
+
+// but you can't write to the previous row
+$sheet->cell('B1')->applyBgColor('#ccc');
+// ^^^ ERROR! this code will throw an exception because B1 is in the previous row
+```
+
+### Direct Writing To Cells
+
+With direct writing, you first declare a recording area (or multiple areas) and write to it. 
+In this case, you can write to arbitrary cells within the area, they will all be stored in memory and written to a file 
+when you call functions Sheet::writeAreas() or Excel::save(). 
+This method is more flexible, but requires more memory and is not recommended for large files.
+
+```php
+$excel = Excel::create();
+$sheet = $excel->getSheet();
+
+// Make write area from A1 to max column and max row
+$area = $sheet->beginArea();
+
+// write to the row 3
+$area->setValue('C3', 'text 3');
+// then write to the row 2
+$area->setValue('B2', 'text 2');
+// then write to the row 1
+$area->setValue('A1', 'text 1');
+
+// Close and write all areas
+$sheet->writeAreas();
+```
+
+You can define any number of areas, and they can overlap
+
+```php
+// Define are from D3 to max column and max row
+$area1 = $sheet->beginArea('D3');
+
+// make write area from B4 to F12
+$area2 = $sheet->makeArea('B4:F12');
+// you can define any number of areas and they can overlap
+$area3 = $sheet->makeArea('C6:G18'); 
+
+// the left column will be D and the first row of this area is 3
+$area1->writeRow([100, 101, 102]);
+$area2->writeRow([200, 201, 202]);
+
+// you can write value to any cell of area...
+$area1->writeTo('H3', 'text');
+// ...but if you try to write to a cell outside the area it will throw an exception
+$area1->writeTo('B2', 'text');
+
+// Close and write all areas
+$sheet->writeAreas();
+
+```
+
 ### Writing Cell Values
 
 Usually, values is written sequentially, cell by cell, row by row. Writing to a cell moves the internal pointer
@@ -24,7 +120,11 @@ $sheet->writeCell('abc');
 // Pointer moves to the next cell (D1) without value writing
 $sheet->nextCell();
 
-// Now we will write value to D1 with styling
+// Write to B3 and moves pointer to C3. The pointer can only move from left to right and top to bottom
+$sheet->writeTo('B3', 'value');
+$sheet->writeTo('A4', 'value');
+
+// Now we will write value to B4 with styling
 $style = [
     'format' => '#,##0.00',
     'font-color' => '#ff0000',
@@ -32,18 +132,12 @@ $style = [
 ];
 $sheet->writeCell(0.9, $style);
 
-// Merge cells range
-$sheet->mergeCells('D1:F2');
-
-// Write to B2 and moves pointer to C2. The pointer can only move from left to right and top to bottom
-$sheet->writeTo('B2', 'value');
-
-// Merge C3:E3, write value to merged cells and move pointer to F3  
-$sheet->writeTo('C3:E3', 'other value');
+// this code will throw an exception because C3 is in the previous row
+$sheet->writeTo('C3', 'value');
 
 ```
 
-You can write values row by row
+You can write the entire row at once
 
 ```php
 $excel = Excel::create();
@@ -93,55 +187,23 @@ foreach ($data as $rowData) {
 
 ```
 
-### Direct Writing To Cells
-
-If you need to write directly to cells, you must define the area.
+### Merging Cells
 
 ```php
-$excel = Excel::create();
-$sheet = $excel->getSheet();
+// Merge C4:E4, write value to merged cells
+$sheet->writeTo('C4:E4', 'other value');
 
-$area = $sheet->makeArea('B4:F12'); // Make write area from B4 to F12
-$area = $sheet->makeArea('B4:12'); // Make write area from B4 to B12
-$area = $sheet->beginArea('B4');  // Make write area from B4 to max column and max row
+// Write value to the cell
+$sheet->writeTo('D1', 'Title');
+$sheet->writeRow(['...']);
+$sheet->writeRow(['...']);
+$sheet->writeRow(['...']);
 
-// Set style for single cell of area (new style will replace previous)
-$area->setStyle('B4', $style1); 
-// Set additional style for single cell of area (new style wil be merged with previous)
-$area->addStyle('B4', $style2); 
-
-$area->setStyle('D4:F6', $style2); // Set style for single cell of area
-
-$area->setValue('A2:J2', 'This is demo XLSX-sheet', $headerStyle);
-
-$area
-    ->setValue('H4', 'Date', ['text-align' => 'right'])
-    ->setValue('I4:J4', date('Y-m-d H:i:s'), ['font-style' => 'bold', 'format' => 'datetime', 'text-align' => 'left'])
-;
-
-// Close and write all areas
-$sheet->writeAreas();
-
+// Merge cells range
+$sheet->mergeCells('D1:F1');
 ```
-Other way is writing row by row or cell by cell in the defined area
-```php
-$excel = Excel::create();
-$sheet = $excel->getSheet();
-
-$area = $sheet->beginArea('C4');  // Make write area from C4 to max column and max row
-
-// You can write row by row within defined area
-foreach ($rows as $row) {
-    $area->writeRow($row);
-}
-$area->nextRow();
-$area->writeCell(123);
-$area->writeCell(456);
-
-// Close and write all areas
-$sheet->writeAreas();
-
-```
+Note: function mergeCells() does not write values or styles, it sets the properties of the sheet, 
+so it can be called for previous rows when all the data has already been written.
 
 ### Cell Formats
 
@@ -227,7 +289,7 @@ $sheet->writeRow([120, 560]);
 $sheet->writeRow([130, 117]);
 ```
 
-## Hyperlinks
+### Hyperlinks
 You can insert URLs as active hyperlinks
 
 ```php

@@ -32,6 +32,7 @@ use avadim\FastExcelWriter\Exception\Exception;
  * @method Area applyTextCenter()
  * @method Area applyTextWrap(bool $textWrap)
  * @method Area applyTextColor(string $color)
+ * @method Area applyFormat($format)
  * @method Area applyUnlock(?bool $unlock = true)
  * @method Area applyHide(?bool $hide = true)
  *
@@ -227,7 +228,7 @@ class Area
     }
 
     /**
-     * Write value to cell
+     * Write a value to the cell and move pointer to the next cell
      *
      * writeTo('A2', $value)
      * writeTo(['col' => 3, 'row' => 1], $value) - equals to 'C1'
@@ -243,13 +244,14 @@ class Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setValue($cellAddress, $value, $style);
+            $this->nextCell();
         }
 
         return $this;
     }
 
     /**
-     * Write value to cell
+     * Write a value to the cell
      *
      * setValue('A2', $value)
      * setValue(['col' => 3, 'row' => 1], $value) - equals to 'C1'
@@ -271,7 +273,7 @@ class Area
     }
 
     /**
-     * Write formula to cell
+     * Write a formula to the cell
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -289,7 +291,7 @@ class Area
     }
 
     /**
-     * Set style (old styles wil be replaced)
+     * Set a style (old styles wil be replaced)
      *
      * @param string|array $cellAddress
      * @param array $style
@@ -305,7 +307,7 @@ class Area
     }
 
     /**
-     * New style wil be added to old style (if they exists)
+     * New style wil be added to old style (if they exist)
      *
      * @param string|array $cellAddress
      * @param array $style
@@ -434,11 +436,20 @@ class Area
     public function moveTo($cellAddress): Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress, $numAddress)) {
-            $this->currentColNum = $numAddress['col'];
-            $this->currentRowNum = $numAddress['row'];
+            $this->sheet->cell($cellAddress);
         }
 
         return $this;
+    }
+
+    /**
+     * @param $cellAddress
+     *
+     * @return $this
+     */
+    public function cell($cellAddress): Area
+    {
+        return $this->moveTo($cellAddress);
     }
 
     /**

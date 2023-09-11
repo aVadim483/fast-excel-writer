@@ -1643,6 +1643,8 @@ class Sheet
                         $styles = [];
                     }
                     if ($values || $styles) {
+                        ksort($values);
+                        ksort($styles);
                         $this->_writeRow($writer, $values, [], $styles);
                     }
                     else {
@@ -3702,6 +3704,26 @@ class Sheet
     public function applyTextColor(string $color): Sheet
     {
         $this->_setStyleOptions([], 'font', ['font-color' => $color]);
+
+        return $this;
+    }
+
+    /**
+     * @param string|array $format
+     *
+     * @return $this
+     */
+    public function applyFormat($format): Sheet
+    {
+        if (is_array($format)) {
+            $this->_setStyleOptions([], 'format', $format);
+        }
+        else {
+            if ($format && $format[0] === '@') {
+                $format = strtoupper($format);
+            }
+            $this->_setStyleOptions([], 'format', ['format-pattern' => $format]);
+        }
 
         return $this;
     }

@@ -436,7 +436,7 @@ class Area
     public function moveTo($cellAddress): Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress, $numAddress)) {
-            $this->sheet->cell($cellAddress);
+            $this->sheet->setValue($cellAddress, null, null);
         }
 
         return $this;

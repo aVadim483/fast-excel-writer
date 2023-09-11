@@ -48,7 +48,7 @@ $sheet->cell('B1')->applyBgColor('#ccc');
 
 ### Direct Writing To Cells
 
-With direct writing, you first declare a recording area (or multiple areas) and write to it. 
+With direct writing, you first declare a writing area (or multiple areas) and write to it. 
 In this case, you can write to arbitrary cells within the area, they will all be stored in memory and written to a file 
 when you call functions Sheet::writeAreas() or Excel::save(). 
 This method is more flexible, but requires more memory and is not recommended for large files.

@@ -79,6 +79,28 @@ final class FastExcelWriterTest extends TestCase
         }
     }
 
+
+    protected function saveCheckRead($excel, $testFileName): ExcelReader
+    {
+        $excel->save($testFileName);
+        $this->assertTrue(file_exists($testFileName));
+        $valid = ExcelReader::validate($testFileName, $errors);
+        if ($errors) {
+            $text = [];
+            foreach ($errors as $err) {
+                $text[] = [
+                    'error' => $err->message,
+                    'file' => $err->file,
+                ];
+            }
+            var_dump($text);
+        }
+        $this->assertTrue($valid);
+
+        return ExcelReader::open($testFileName);
+    }
+
+
     public function testExcelWriter0()
     {
         $testFileName = __DIR__ . '/test0.xlsx';
@@ -112,10 +134,7 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeTo('B9', 'B9');
         $sheet->writeTo('E9', 'E9');
 
-        $excel->save($testFileName);
-        $this->assertTrue(file_exists($testFileName));
-
-        $this->excelReader = ExcelReader::open($testFileName);
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readCells();
 
         $this->assertEquals('A1', $this->cells['A1']);
@@ -171,9 +190,11 @@ final class FastExcelWriterTest extends TestCase
             ['text2 text2 text2 text2', time(), 200.0],
             ['text3 text3 text3 text3', time(), 300.0],
         ];
+        // rows 1-3
         foreach ($data as $row) {
             $sheet->writeRow($row, $style);
         }
+        // rows 4-6
         foreach ($data as $row) {
             $sheet->writeRow($row)
                 ->applyFontStyleBold()
@@ -182,6 +203,7 @@ final class FastExcelWriterTest extends TestCase
                 ->applyRowHeight(24)
             ;
         }
+        // row 7
         $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0]);
 
         $excel->save($testFileName);
@@ -426,7 +448,7 @@ final class FastExcelWriterTest extends TestCase
         $area->setValue('a2:c2', $title)
             ->applyFontSize(24)
             ->applyFontStyleBold()
-        //    ->applyTextCenter()
+            ->applyTextCenter()
         ;
 
         $area
@@ -557,11 +579,12 @@ final class FastExcelWriterTest extends TestCase
 
         $sheet->addNote('E4:F8', 'This note will added to E4');
 
-        $sheet->addImage('A10', __DIR__ . '/../demo/logo/excel-logo.gif');
-        $sheet->addImage('B10', __DIR__ . '/../demo/logo/excel-logo.jpg');
-        $sheet->addImage('C10', __DIR__ . '/../demo/logo/excel-logo.png');
-        $sheet->addImage('D10', __DIR__ . '/../demo/logo/excel-logo.svg');
-        $sheet->addImage('E10', __DIR__ . '/../demo/logo/excel-logo.webp');
+        $imgDir = __DIR__ . '/../demo/logo';
+        $sheet->addImage('A10', $imgDir . '/excel-logo.gif');
+        $sheet->addImage('B10', $imgDir . '/excel-logo.jpg');
+        $sheet->addImage('C10', $imgDir . '/excel-logo.png');
+        $sheet->addImage('D10', $imgDir . '/excel-logo.svg');
+        $sheet->addImage('E10', $imgDir . '/excel-logo.webp');
 
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
@@ -593,7 +616,7 @@ final class FastExcelWriterTest extends TestCase
         ];
         $this->assertEquals($testList, $sheet->getImageList());
 
-        unlink($testFileName);
+        //unlink($testFileName);
     }
 
 }

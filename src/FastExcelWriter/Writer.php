@@ -550,8 +550,14 @@ class Writer
         $error = null;
 
         if ($commentList) {
+            $nameSpaces = [
+                'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+                'xmlns:mc' => 'http://schemas.openxmlformats.org/markup-compatibility/2006',
+                'mc:Ignorable' => 'xr',
+                'xmlns:xr' => 'http://schemas.microsoft.com/office/spreadsheetml/2014/revision',
+            ];
             $xmlString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-            $xmlString .= '<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="xr" xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision">';
+            $xmlString .= '<comments' . $this->_tagOptions($nameSpaces) . '>';
             $xmlString .= '<authors><author/></authors>';
             $xmlString .= '<commentList>';
             foreach ($commentList as $comment) {
@@ -591,7 +597,12 @@ class Writer
 
         $drawingCnt = 0;
         if ($commentList) {
-            $xmlDrawing = '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"  xmlns:x="urn:schemas-microsoft-com:office:excel">';
+            $nameSpaces = [
+                'xmlns:v' => 'urn:schemas-microsoft-com:vml',
+                'xmlns:o' => 'urn:schemas-microsoft-com:office:office',
+                'xmlns:x' => 'urn:schemas-microsoft-com:office:excel',
+            ];
+            $xmlDrawing = '<xml' . $this->_tagOptions($nameSpaces) . '>';
             $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
             $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
             $xmlDrawing .= '<v:fill color="#0000FF"/>';
@@ -637,7 +648,11 @@ class Writer
 
         $relations = [];
         $xmlDrawingString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-        $xmlDrawingString .= '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+        $nameSpaces = [
+            'xmlns:xdr' => 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
+            'xmlns:a' => 'http://schemas.openxmlformats.org/drawingml/2006/main',
+        ];
+        $xmlDrawingString .= '<xdr:wsDr' . $this->_tagOptions($nameSpaces) . '>';
 
         foreach ($imageList as $image) {
             $objectId = $image['id'];
@@ -714,19 +729,19 @@ EOD;
         $fileWriter = self::makeWriteBuffer($this->tempFilename('xl/worksheets/' . $sheet->xmlName . '-head'));
 
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
-        $xmlnsLinks = [
-            'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',
-            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"',
-            'xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"',
-            //'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac xr xr2 xr3"',
-            //'xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"',
-            'xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"',
-            //'xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"',
-            //'xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"',
-            'xr:uid="{' . Excel::generateUuid() . '}"',
+        $nameSpaces = [
+            'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+            'xmlns:r' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+            'xmlns:xdr' => 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
+            //'xmlns:mc' => 'http://schemas.openxmlformats.org/markup-compatibility/2006',
+            //'mc:Ignorable' => 'x14ac xr xr2 xr3',
+            //'xmlns:x14ac' => 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac',
+            'xmlns:xr' => 'http://schemas.microsoft.com/office/spreadsheetml/2014/revision',
+            //'xmlns:xr2' => 'http://schemas.microsoft.com/office/spreadsheetml/2015/revision2',
+            //'xmlns:xr3' => 'http://schemas.microsoft.com/office/spreadsheetml/2016/revision3',
+            'xr:uid' => '{' . Excel::generateUuid() . '}',
         ];
-        $xmlns = implode(' ', $xmlnsLinks);
-        $fileWriter->write('<worksheet ' . $xmlns . '>');
+        $fileWriter->write('<worksheet' . $this->_tagOptions($nameSpaces) . '>');
 
         if ($sheet->getPageFit()) {
             $fileWriter->write('<sheetPr>');
@@ -774,14 +789,11 @@ EOD;
 
         $fileWriter->write('</sheetViews>');
 
-        if (!empty($sheet->colWidths)) {
+        $cols = $sheet->getColSettings();
+        if ($cols) {
             $fileWriter->write('<cols>');
-            foreach ($sheet->colWidths as $colNum => $columnWidth) {
-                if (is_float($columnWidth)) {
-                    // important for some locales
-                    $columnWidth = str_replace(',', '.', (string)$columnWidth);
-                }
-                $fileWriter->write('<col min="' . ($colNum + 1) . '" max="' . ($colNum + 1) . '" width="' . $columnWidth . '" customWidth="1"/>');
+            foreach ($cols as $colSettings) {
+                $fileWriter->write('<col' . $this->_tagOptions($colSettings) . '/>');
             }
             $fileWriter->write('</cols>');
         }
@@ -855,19 +867,9 @@ EOD;
             $sheet->fileWriter->write('<pageMargins' . $this->_tagOptions($options) . '/>');
         }
 
-        $pageSetupAttr = 'orientation="' . $sheet->getPageOrientation() . '"';
-        if ($sheet->getPageFit()) {
-            $pageFitToWidth = $sheet->getPageFitToWidth();
-            $pageFitToHeight = $sheet->getPageFitToHeight();
-            if ($pageFitToWidth === 1) {
-                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" ';
-            }
-            else {
-                $pageSetupAttr .= ' fitToHeight="' . $pageFitToHeight . '" fitToWidth="' . $pageFitToWidth . '"';
-            }
+        if ($options = $sheet->getPageSetup()) {
+            $sheet->fileWriter->write('<pageSetup' . $this->_tagOptions($options) . '/>');
         }
-
-        $sheet->fileWriter->write("<pageSetup  paperSize=\"1\" useFirstPageNumber=\"1\" horizontalDpi=\"0\" verticalDpi=\"0\" $pageSetupAttr />");
 
         $sheet->fileWriter->write('<headerFooter differentFirst="false" differentOddEven="false">');
         $sheet->fileWriter->write('<oddHeader/>');
@@ -919,7 +921,7 @@ EOD;
             }, $formula);
         }
         // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
-        $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?\]?C\[?(-?\d+)?\]?)/', static function ($matches) use ($baseAddress) {
+        $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
             $indexes = Excel::rangeRelOffsets($matches[2]);
             if (isset($indexes[0], $indexes[1])) {
                 $row = $baseAddress[0] + $indexes[0];
@@ -1277,8 +1279,12 @@ EOD;
      */
     protected function _buildAppXML(?array $metadata): string
     {
+        $nameSpaces = [
+            'xmlns' => 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties',
+            'xmlns:vt' => 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes',
+        ];
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
-        $xmlText .= '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">';
+        $xmlText .= '<Properties' . $this->_tagOptions($nameSpaces) . '>';
         $xmlText .= '<TotalTime>0</TotalTime>';
         $xmlText .= '<Company>' . self::xmlSpecialChars($metadata['company'] ?? '') . '</Company>';
         $xmlText .= '<HyperlinksChanged>false</HyperlinksChanged>';
@@ -1338,9 +1344,13 @@ EOD;
      */
     protected function _buildWorkbookXML(Excel $excel): string
     {
+        $nameSpaces = [
+            'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+            'xmlns:r' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+        ];
         $sheets = $excel->getSheets();
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
-        $xmlText .= '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+        $xmlText .= '<workbook' . $this->_tagOptions($nameSpaces) . '>';
         $xmlText .= '<fileVersion appName="xl" lastEdited="4" lowestEdited="4" rupBuild="4505"/>';
         $xmlText .= '<workbookPr date1904="false"/>';
         if ($options = $excel->getProtection()) {

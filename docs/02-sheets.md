@@ -46,6 +46,25 @@ $sheet->pagePortrait();
 $sheet->pageLandscape();
 $sheet->pageFitToWidth(1); // fit width to 1 page
 $sheet->pageFitToHeight(1);// fit height to 1 page
+
+$sheet->pageMargins([
+        'left' => '0.5',
+        'right' => '0.5',
+        'top' => '1.0',
+        'bottom' => '1.0',
+        'header' => '0.5',
+        'footer' => '0.5',
+    ]);
+$sheet->pageMarginLeft(0.5);
+$sheet->pageMarginRight(0.5);
+$sheet->pageMarginTop(1.0);
+$sheet->pageMarginBottom(1.0);
+$sheet->pageMarginHeader(0.5);
+$sheet->pageMarginFooter(0.5);
+
+$sheet->pagePaperSize(Excel::PAPERSIZE_A3);
+$sheet->pagePaperHeight('297mm');
+$sheet->pagePaperWidth('21cm');
 ```
 
 ### Freeze Panes and Autofilter

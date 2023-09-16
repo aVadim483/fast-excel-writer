@@ -20,6 +20,89 @@ class Excel
 
     public const EMU_PER_PIXEL = 9525;
 
+    public const PAPERSIZE_LETTER = 1; // Letter paper (8.5 in. by 11 in.)
+    public const PAPERSIZE_LETTER_SMALL = 2; // Letter small paper (8.5 in. by 11 in.)
+    public const PAPERSIZE_TABLOID = 3; // Tabloid paper (11 in. by 17 in.)
+    public const PAPERSIZE_LEDGER = 4; // Ledger paper (17 in. by 11 in.)
+    public const PAPERSIZE_LEGAL = 5; // Legal paper (8.5 in. by 14 in.)
+    public const PAPERSIZE_STATEMENT = 6; // Statement paper (5.5 in. by 8.5 in.)
+    public const PAPERSIZE_EXECUTIVE = 7; // Executive paper (7.25 in. by 10.5 in.)
+    public const PAPERSIZE_A3 = 8; // A3 paper (297 mm by 420 mm)
+    public const PAPERSIZE_A4 = 9; // A4 paper (210 mm by 297 mm)
+    public const PAPERSIZE_A4_SMALL = 10; // A4 small paper (210 mm by 297 mm)
+    public const PAPERSIZE_A5 = 11; // A5 paper (148 mm by 210 mm)
+    public const PAPERSIZE_B4 = 12; // B4 paper (250 mm by 353 mm)
+    public const PAPERSIZE_B5 = 13; // B5 paper (176 mm by 250 mm)
+    public const PAPERSIZE_FOLIO = 14; // Folio paper (8.5 in. by 13 in.)
+    public const PAPERSIZE_QUARTO = 15; // Quarto paper (215 mm by 275 mm)
+    public const PAPERSIZE_STANDARD_1 = 16; // Standard paper (10 in. by 14 in.)
+    public const PAPERSIZE_STANDARD_2 = 17; // Standard paper (11 in. by 17 in.)
+    public const PAPERSIZE_NOTE = 18; // Note paper (8.5 in. by 11 in.)
+    public const PAPERSIZE_NO9_ENVELOPE = 19; // #9 envelope (3.875 in. by 8.875 in.)
+    public const PAPERSIZE_NO10_ENVELOPE = 20; // #10 envelope (4.125 in. by 9.5 in.)
+    public const PAPERSIZE_NO11_ENVELOPE = 21; // #11 envelope (4.5 in. by 10.375 in.)
+    public const PAPERSIZE_NO12_ENVELOPE = 22; // #12 envelope (4.75 in. by 11 in.)
+    public const PAPERSIZE_NO14_ENVELOPE = 23; // #14 envelope (5 in. by 11.5 in.)
+    public const PAPERSIZE_C = 24; // C paper (17 in. by 22 in.)
+    public const PAPERSIZE_D = 25; // D paper (22 in. by 34 in.)
+    public const PAPERSIZE_E = 26; // E paper (34 in. by 44 in.)
+    public const PAPERSIZE_DL_ENVELOPE = 27; // DL envelope (110 mm by 220 mm)
+    public const PAPERSIZE_C5_ENVELOPE = 28; // C5 envelope (162 mm by 229 mm)
+    public const PAPERSIZE_C3_ENVELOPE = 29; // C3 envelope (324 mm by 458 mm)
+    public const PAPERSIZE_C4_ENVELOPE = 30; // C4 envelope (229 mm by 324 mm)
+    public const PAPERSIZE_C6_ENVELOPE = 31; // C6 envelope (114 mm by 162 mm)
+    public const PAPERSIZE_C65_ENVELOPE = 32; // C65 envelope (114 mm by 229 mm)
+    public const PAPERSIZE_B4_ENVELOPE = 33; // B4 envelope (250 mm by 353 mm)
+    public const PAPERSIZE_B5_ENVELOPE = 34; // B5 envelope (176 mm by 250 mm)
+    public const PAPERSIZE_B6_ENVELOPE = 35; // B6 envelope (176 mm by 125 mm)
+    public const PAPERSIZE_ITALY_ENVELOPE = 36; // Italy envelope (110 mm by 230 mm)
+    public const PAPERSIZE_MONARCH_ENVELOPE = 37; // Monarch envelope (3.875 in. by 7.5 in.).
+    public const PAPERSIZE_6_3_4_ENVELOPE = 38; // 6 3/4 envelope (3.625 in. by 6.5 in.)
+    public const PAPERSIZE_US_STANDARD_FANFOLD = 39; // US standard fanfold (14.875 in. by 11 in.)
+    public const PAPERSIZE_GERMAN_STANDARD_FANFOLD = 40; // German standard fanfold (8.5 in. by 12 in.)
+    public const PAPERSIZE_GERMAN_LEGAL_FANFOLD = 41; // German legal fanfold (8.5 in. by 13 in.)
+    public const PAPERSIZE_ISO_B4 = 42; // ISO B4 (250 mm by 353 mm)
+    public const PAPERSIZE_JAPANESE_DOUBLE_POSTCARD = 43; // Japanese double postcard (200 mm by 148 mm)
+    public const PAPERSIZE_STANDARD_PAPER_1 = 44; // Standard paper (9 in. by 11 in.)
+    public const PAPERSIZE_STANDARD_PAPER_2 = 45; // Standard paper (10 in. by 11 in.)
+    public const PAPERSIZE_STANDARD_PAPER_3 = 46; // Standard paper (15 in. by 11 in.)
+    public const PAPERSIZE_INVITE_ENVELOPE = 47; // Invite envelope (220 mm by 220 mm)
+    public const PAPERSIZE_LETTER_EXTRA_PAPER = 50; // Letter extra paper (9.275 in. by 12 in.)
+    public const PAPERSIZE_LEGAL_EXTRA_PAPER = 51; // Legal extra paper (9.275 in. by 15 in.)
+    public const PAPERSIZE_TABLOID_EXTRA_PAPER = 52; // Tabloid extra paper (11.69 in. by 18 in.)
+    public const PAPERSIZE_A4_EXTRA_PAPER = 53; // A4 extra paper (236 mm by 322 mm)
+    public const PAPERSIZE_LETTER_TRANSVERSE_PAPER = 54; // Letter transverse paper (8.275 in. by 11 in.)
+    public const PAPERSIZE_A4_TRANSVERSE_PAPER = 55; // A4 transverse paper (210 mm by 297 mm)
+    public const PAPERSIZE_LETTER_EXTRA_TRANSVERSE_PAPER = 56; // Letter extra transverse paper (9.275 in. by 12 in.)
+    public const PAPERSIZE_SUPERA_SUPERA_A4_PAPER = 57; // SuperA/SuperA/A4 paper (227 mm by 356 mm)
+    public const PAPERSIZE_SUPERB_SUPERB_A3_PAPER = 58; // SuperB/SuperB/A3 paper (305 mm by 487 mm)
+    public const PAPERSIZE_LETTER_PLUS_PAPER = 59; // Letter plus paper (8.5 in. by 12.69 in.)
+    public const PAPERSIZE_A4_PLUS_PAPER = 60; // A4 plus paper (210 mm by 330 mm)
+    public const PAPERSIZE_A5_TRANSVERSE_PAPER = 61; // A5 transverse paper (148 mm by 210 mm)
+    public const PAPERSIZE_JIS_B5_TRANSVERSE_PAPER = 62; // JIS B5 transverse paper (182 mm by 257 mm)
+    public const PAPERSIZE_A3_EXTRA_PAPER = 63; // A3 extra paper (322 mm by 445 mm)
+    public const PAPERSIZE_A5_EXTRA_PAPER = 64; // A5 extra paper (174 mm by 235 mm)
+    public const PAPERSIZE_ISO_B5_EXTRA_PAPER = 65; // ISO B5 extra paper (201 mm by 276 mm)
+    public const PAPERSIZE_A2_PAPER = 66; // A2 paper (420 mm by 594 mm)
+    public const PAPERSIZE_A3_TRANSVERSE_PAPER = 67; // A3 transverse paper (297 mm by 420 mm)
+    public const PAPERSIZE_A3_EXTRA_TRANSVERSE_PAPER = 68; // A3 extra transverse paper (322 mm by 445 mm)
+    public const PAPERSIZE_A6 = 70; // A6 (105 mm x 148 mm)
+    public const PAPERSIZE_JAPANESE_ENVELOPE_KAKU_2 = 71; // Japanese Envelope Kaku #2
+    public const PAPERSIZE_JAPANESE_ENVELOPE_KAKU_3 = 72; // Japanese Envelope Kaku #3
+    public const PAPERSIZE_JAPANESE_ENVELOPE_CHOU_3 = 73; // Japanese Envelope Chou #3
+    public const PAPERSIZE_JAPANESE_ENVELOPE_CHOU_4 = 74; // Japanese Envelope Chou #4
+    public const PAPERSIZE_LETTER_ROTATED = 75; // Letter Rotated (11in x 8 1/2 11 in)
+    public const PAPERSIZE_A3_ROTATED = 76; // A3 Rotated (420 mm x 297 mm)
+    public const PAPERSIZE_A4_ROTATED = 77; // A4 Rotated (297 mm x 210 mm)
+    public const PAPERSIZE_A5_ROTATED = 78; // A5 Rotated (210 mm x 148 mm)
+    public const PAPERSIZE_B4_JIS = 79; // B4 (JIS) Rotated (364 mm x 257 mm)
+    public const PAPERSIZE_B5_JIS = 80; // B5 (JIS) Rotated (257 mm x 182 mm)
+    public const PAPERSIZE_JAPANESE_POSTCARD_ROTATED = 81; // Japanese Postcard Rotated (148 mm x 100 mm)
+    public const PAPERSIZE_A6_ROTATED = 83; // A6 Rotated (148 mm x 105 mm)
+    public const PAPERSIZE_B6_JIS = 88; // B6 (JIS) (128 mm x 182 mm)
+    public const PAPERSIZE_B6_JIS_ROTATED = 89; // B6 (JIS) Rotated (182 mm x 128 mm)
+
+
     public static array $availableImageTypes = [
         'jpg' => 'image/jpeg',
         'gif' => 'image/gif',
@@ -894,7 +977,7 @@ class Excel
     {
         $rowOffset1 = $colOffset1 = $rowOffset2 = $colOffset2 = null;
         $offset = strtoupper($relAddress);
-        if (preg_match('/^R\[?(-?\d+)?\]?C\[?(-?\d+)?\]?(:R\[?(-?\d+)?\]?C\[?(-?\d+)?\]?)?$/', $offset, $matches)) {
+        if (preg_match('/^R\[?(-?\d+)?]?C\[?(-?\d+)?]?(:R\[?(-?\d+)?]?C\[?(-?\d+)?]?)?$/', $offset, $matches)) {
             $rowOffset1 = !empty($matches[1]) ? (int)$matches[1] : 0;
             $colOffset1 = !empty($matches[2]) ? (int)$matches[2] : 0;
             if (!empty($matches[3])) {
@@ -1143,7 +1226,7 @@ class Excel
                     'mime' => self::$availableImageTypes['svg'],
                 ];
             }
-            elseif (preg_match("#viewbox=[\"']([\d\s\-\.]+)[\"']#si", $imageBlob, $m)) {
+            elseif (preg_match("#viewbox=[\"']([\d\s\-.]+)[\"']#si", $imageBlob, $m)) {
                 $d = explode(' ', $m[1]);
                 if (isset($d[2], $d[3])) {
                     $result = [

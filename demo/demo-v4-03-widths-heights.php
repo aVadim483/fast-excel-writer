@@ -10,26 +10,31 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $heights = [
-    1 => 12,
-    2 => 25,
-    3 => 50,
+    2 => 15,
+    3 => 30,
+    4 => 60,
 ];
 
-//$sheet->setColWidths([10, 20, 30, 40]);
-$sheet->setColWidths(['A' => 40, 'B' => 30, 'C' => 20, 'D' => 10]);
-$sheet->setRowHeight(2, $heights[2]);
-//$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
+$widths = ['A' => null, 'B' => 40, 'C' => 30, 'D' => 20, 'E' => 10];
 
-$rowNum = 0;
-// Write row width default height
-$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789]);
+$values = [];
+foreach ($widths as $w) {
+    $values[] = $w ? ('width:' . $w) : null;
+}
+$sheet->writeRow($values, ['text-align' => 'center', 'font' => 'bold', 'border' => 'thin']);
+$sheet->setColWidths($widths);
+
+// set style foe the cell A only
+$cellStyles = [['font' => 'bold', 'border' => 'thin']];
+$sheet->setRowHeight(2, $heights[2]);
+$sheet->writeRow(['height:' . $heights[2] ?? '', 234, 456, 789], [], $cellStyles);
 
 // Write row with specified height
-$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789]);
+$sheet->writeRow(['height:' . $heights[3] ?? '', 234, 456, 789], ['height' => $heights[3]], $cellStyles);
 
 // Write row with specified height - other way (preferred)
-$sheet->writeRow(['height: ' . $heights[++$rowNum] ?? '', 234, 456, 789])
-    ->applyRowHeight($heights[$rowNum]);
+$sheet->writeRow(['height:' . $heights[4] ?? '', 234, 456, 789], [], $cellStyles)
+    ->applyRowHeight($heights[4]);
 
 $excel->save($outFileName);
 

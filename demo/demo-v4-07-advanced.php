@@ -68,19 +68,19 @@ $headerStyle = [
 /*  DOCUMENT HEADER */
 
 $cells = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1', 'K1'];
-foreach($cells as $cell) {
+foreach($cells as $cellAddress) {
     $color = '#' . $colors[array_rand($colors)] . $colors[array_rand($colors)];
     // set background colors for specified cells
-    $sheet->setBgColor($cell, $color);
+    $sheet->setBgColor($cellAddress, $color);
 }
 $sheet->writeTo('a2', '');
 foreach ($images as $n => $image) {
-    $cell = Excel::cellAddress(3, $n + 2);
-    $sheet->addImage($cell, $image, ['height' => 40]);
+    $cellAddress = Excel::cellAddress(3, $n + 2);
+    $sheet->addImage($cellAddress, $image, ['height' => 40]);
     $bgColor = $noteColors[$n];
-    $sheet->addNote($cell, basename($image), ['bg_color' => $bgColor]);
+    $sheet->addNote($cellAddress, basename($image), ['bg_color' => $bgColor]);
 }
-$sheet->setRowHeight(3, 50);
+$sheet->setRowHeight(3, 40);
 
 // Begin an area for direct write
 $area = $sheet->beginArea();

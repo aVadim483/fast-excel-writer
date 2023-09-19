@@ -146,6 +146,7 @@ class Sheet
         'footer' => '0.5',
     ];
 
+    protected ?string $activeCell = null;
     protected array $sheetViews = [];
 
 
@@ -502,6 +503,28 @@ class Sheet
 
         return $this;
     }
+
+    /**
+     * @param $cellAddress
+     *
+     * @return $this
+     */
+    public function setActiveCell($cellAddress): Sheet
+    {
+        $address = $this->_parseAddress($cellAddress);
+        if (!isset($address['row'], $address['col'])) {
+            ExceptionAddress::throwNew('Wrong cell address %s', print_r($address, 1));
+        }
+        if ($address['cell1'] === $address['cell2']) {
+            $this->activeCell = $address['cell1'];
+        }
+        else {
+            $this->activeCell = $address['cell1'] . ':' . $address['cell2'];
+        }
+
+        return $this;
+    }
+
 
     /**
      * @param int|null $row
@@ -977,6 +1000,13 @@ class Sheet
         elseif (is_numeric($rowNum)) {
             $this->_setRowSettings($rowNum, 'height', str_replace(',', '.', (float)$height));
         }
+        else {
+            $address = $this->_parseAddress($rowNum);
+            for ($row = $address['rowNum1']; $row <= $address['rowNum2']; $row++) {
+                $this->setRowHeight($row, $height);
+            }
+        }
+
         return $this;
     }
 
@@ -1013,6 +1043,13 @@ class Sheet
         elseif (is_numeric($rowNum)) {
             $this->_setRowSettings($rowNum, 'hidden', $visible ? 0 : 1);
         }
+        else {
+            $address = $this->_parseAddress($rowNum);
+            for ($row = $address['rowNum1']; $row <= $address['rowNum2']; $row++) {
+                $this->setRowVisible($row, $visible);
+            }
+        }
+
         return $this;
     }
 
@@ -1109,7 +1146,7 @@ class Sheet
         if ($this->rowCountWritten === 0) {
             $_styleCache = [];
         }
-$nnn = $this->rowCountWritten;
+
         if (isset($this->rowSettings[$this->rowCountWritten])) {
             $rowOptions = array_replace($this->rowSettings[$this->rowCountWritten], $rowOptions);
         }
@@ -1774,7 +1811,7 @@ $nnn = $this->rowCountWritten;
     protected function _writeCurrentRow(): int
     {
         $savedRow = $this->currentRowIdx;
-        if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
+        if (!empty($this->cells['values']) || !empty($this->cells['styles']) || $this->rowSettings) {
             $writer = $this->excel->getWriter();
             if (!$this->open) {
                 $writer->writeSheetDataBegin($this);
@@ -2415,7 +2452,7 @@ $nnn = $this->rowCountWritten;
             return;
         }
 
-        $sheetFileName = $writer->tempFilename('xl/worksheets/' . $this->xmlName);
+        $sheetFileName = $writer->tempFilename();
         $this->setFileWriter($writer::makeWriteBuffer($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');
@@ -2898,6 +2935,9 @@ $nnn = $this->rowCountWritten;
             $colIdx = $dimension['colIndex'];
         }
         if ($cell) {
+            if ($rowIdx >= $this->currentRowIdx && !isset($this->cells['values'][$rowIdx][$colIdx])) {
+                $this->cells['values'][$rowIdx][$colIdx] = null;
+            }
             $imageData = $this->excel->loadImageFile($imageFile);
             if ($imageData) {
                 $imageData['cell'] = $cell;
@@ -3383,12 +3423,76 @@ $nnn = $this->rowCountWritten;
      */
     public function getSheetViews(): array
     {
-        $result = $this->sheetViews;
-        if ($this->isRightToLeft()) {
-            $result[0]['rightToLeft'] = 'true';
-        }
-        if ($this->active) {
-            $result[0]['tabSelected'] = 'true';
+        $result = [];
+        $paneRow = ($this->freezeRows ? $this->freezeRows + 1 : 0);
+        $paneCol = ($this->freezeColumns ? $this->freezeColumns + 1 : 0);
+        foreach ($this->sheetViews as $n => $sheetView) {
+            $result[$n] = [
+                '_attr' => $sheetView,
+            ];
+            if ($this->isRightToLeft()) {
+                $result[$n]['_attr']['rightToLeft'] = 'true';
+            }
+            if ($this->active) {
+                $result[$n]['_attr']['tabSelected'] = 'true';
+            }
+            if ($this->freezeRows && $this->freezeColumns) {
+                // frozen rows and cols
+                $result[$n]['_items'] = [
+                    [
+                        '_tag' => 'pane',
+                        '_attr' => ['ySplit' => $this->freezeRows, 'xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress($paneRow, $paneCol), 'activePane' => 'bottomRight', 'state' => 'frozen'],
+                    ],
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, 1), 'pane' => 'topRight', 'sqref' => Excel::cellAddress($paneRow, 1)],
+                    ],
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => Excel::cellAddress(1, $paneCol), 'pane' => 'bottomLeft', 'sqref' => Excel::cellAddress(1, $paneCol)],
+                    ],
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, $paneCol), 'pane' => 'bottomRight', 'sqref' => Excel::cellAddress($paneRow, $paneCol)],
+                    ],
+                ];
+            }
+            elseif ($this->freezeRows) {
+                // frozen rows only
+                $result[$n]['_items'] = [
+                    [
+                        '_tag' => 'pane',
+                        '_attr' => ['ySplit' => $this->freezeRows, 'topLeftCell' => Excel::cellAddress($paneRow, 1), 'activePane' => 'bottomRight', 'state' => 'frozen'],
+                    ],
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, 1), 'pane' => 'bottomLeft', 'sqref' => Excel::cellAddress($paneRow, 1)],
+                    ],
+                ];
+            }
+            elseif ($this->freezeColumns) {
+                // frozen cols only
+                $result[$n]['_items'] = [
+                    [
+                        '_tag' => 'pane',
+                        '_attr' => ['xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress(1, $paneCol), 'activePane' => 'topRight', 'state' => 'frozen'],
+                    ],
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => Excel::cellAddress(1, $paneCol), 'pane' => 'topRight', 'sqref' => Excel::cellAddress(1, $paneCol)],
+                    ],
+                ];
+            }
+            else {
+                // not frozen
+                $activeCell = $this->activeCell ?? $this->minCell();
+                $result[$n]['_items'] = [
+                    [
+                        '_tag' => 'selection',
+                        '_attr' => ['activeCell' => $activeCell, 'pane' => 'topLeft', 'sqref' => $activeCell],
+                    ],
+                ];
+            }
         }
 
         return $result;

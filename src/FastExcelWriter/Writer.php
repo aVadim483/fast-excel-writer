@@ -174,8 +174,15 @@ class Writer
     /** @var array */
     protected array $tempFiles = [];
 
+    /** @var array */
+    protected array $tempXlsx = [];
+
     /** @var string */
     protected $tempDir = '';
+
+    /** @var \ZipArchive */
+    protected \ZipArchive $zip;
+
 
     /**
      * Writer constructor
@@ -204,12 +211,22 @@ class Writer
      */
     public function __destruct()
     {
-        if (!empty($this->tempFiles)) {
-            foreach ($this->tempFiles as $tempFile) {
+        if (!empty($this->tempFiles['zip'])) {
+            foreach ($this->tempFiles['zip'] as $tempFile) {
                 if (is_file($tempFile)) {
                     @unlink($tempFile);
                 }
             }
+        }
+        if (!empty($this->tempFiles['tmp'])) {
+            foreach ($this->tempFiles['tmp'] as $tempFile) {
+                if (is_file($tempFile)) {
+                    @unlink($tempFile);
+                }
+            }
+        }
+        if (!empty($this->zip) && is_file($this->zip->filename)) {
+            @unlink($this->zip->filename);
         }
     }
 
@@ -257,14 +274,30 @@ class Writer
         }
         if ($filename) {
             if ($localName) {
-                $this->tempFiles[$localName] = $filename;
+                $this->tempFiles['zip'][$localName] = $filename;
             }
             else {
-                $this->tempFiles[] = $filename;
+                $this->tempFiles['tmp'][] = $filename;
             }
         }
 
         return $filename;
+    }
+
+    /**
+     * @param string $localName
+     * @param string $contents
+     *
+     * @return false|int
+     */
+    public function writeToTemp(string $localName, string $contents)
+    {
+        $tmpFile = $this->tempFilename($localName);
+        if ($tmpFile) {
+            return file_put_contents($tmpFile, $contents);
+        }
+
+        return false;
     }
 
     /**
@@ -301,6 +334,10 @@ class Writer
             'rel_id' => ['workbook' => 0],
         ];
 
+        $sheets = $this->excel->getSheets();//$this->writeSheetDataBegin($sheet);
+        if (empty($sheets)) {
+            ExceptionFile::throwNew('No worksheets defined');
+        }
         if (!is_dir(dirname($fileName))) {
             ExceptionFile::throwNew('Directory "%s" for output file is not exist', dirname($fileName));
         }
@@ -313,26 +350,23 @@ class Writer
             }
         }
 
-        $sheets = $this->excel->getSheets();//$this->writeSheetDataBegin($sheet);
-        if (empty($sheets)) {
-            ExceptionFile::throwNew('No worksheets defined');
-        }
-        $zip = new \ZipArchive();
-        if (!$zip->open($fileName, \ZIPARCHIVE::CREATE)) {
+        $this->zip = new \ZipArchive();
+        if (!$this->zip->open($fileName, \ZIPARCHIVE::CREATE)) {
             ExceptionFile::throwNew('Unable to create zip "%s"', $fileName);
         }
 
         // add sheets
-        $zip->addEmptyDir('xl/worksheets/');
+        //$this->zip->addEmptyDir('xl/worksheets/');
 
-        // 'xl/worksheets/sheet{%n}.xml' -- workbook
-        // 'xl/comments{%n}.xml'
-        // 'xl/drawings/vmlDrawing{%n}.vml'
-        // 'xl/drawings/drawing{%n}.xml'
+        // xl/worksheets/sheet{%n}.xml -- workbook
+        // xl/comments{%n}.xml
+        // xl/drawings/vmlDrawing{%n}.vml
+        // xl/drawings/drawing{%n}.xml
         // xl/drawings/_rels/drawing{%n}.xml.rels
-        $this->_writeSheetsFiles($zip, $sheets, $relationShips);
+        $this->_writeSheetsFiles($sheets, $relationShips);
 
-        $zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');
+        //$this->zip->addFile($this->_writeStylesXML(), 'xl/styles.xml');
+        $this->_writeStylesXML();
         $relationShips['override']['xl/styles.xml'] = [
             'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml',
             'rel' => 'workbook',
@@ -341,43 +375,101 @@ class Writer
         ];
 
         // 'xl/media/image{%n}.jpg'
-        $this->_writeMediaFiles($zip, $relationShips);
+        $this->_writeMediaFiles($relationShips);
 
         // 'xl/sharedStrings.xml' -- workbook
-        $this->_writeSharedStrings($zip, $relationShips);
+        $this->_writeSharedStrings($relationShips);
 
         // 'xl/theme/theme{%n}.xml' -- workbook
-        $this->_writeThemesFiles($zip, $relationShips);
+        $this->_writeThemesFiles($relationShips);
 
-        $zip->addFromString('xl/workbook.xml', $this->_buildWorkbookXML($this->excel));
-        $zip->addEmptyDir('xl/_rels/');
-        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($relationShips));
+        $this->writeToTemp('xl/workbook.xml', $this->_buildWorkbookXML($this->excel));
+        $this->writeToTemp('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($relationShips));
+        $this->writeToTemp('docProps/app.xml', $this->_buildAppXML($metadata));
+        $this->writeToTemp('docProps/core.xml', $this->_buildCoreXML($metadata));
+        $this->writeToTemp('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
+        $this->writeToTemp('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
 
-        $zip->addEmptyDir('docProps/');
-        $zip->addFromString('docProps/app.xml', $this->_buildAppXML($metadata));
-        $zip->addFromString('docProps/core.xml', $this->_buildCoreXML($metadata));
 
-        $zip->addEmptyDir('_rels/');
-        $zip->addFromString('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
+        $this->writeEntryToZip('[Content_Types].xml');
+        $this->writeEntriesToZip('_rels/');
+        $this->writeEntriesToZip('xl/workbook.xml');
+        $this->writeEntriesToZip('xl/_rels/');
+        $this->writeEntriesToZip('xl/worksheets/sheet');
+        $this->writeEntriesToZip('xl/worksheets/_rels/');
+        $this->writeEntriesToZip('xl/');
+        $this->writeEntriesToZip('');
 
-        $zip->addFromString('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
-
-        $zip->close();
+/*
+        if (!$zip->addFile($this->tempFiles[$entry], $entry)) {
+            ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+        }
+        if (isset($struct['-'])) {
+            foreach ($struct['-'] as $entry) {
+                if (!$zip->addFile($this->tempFiles[$entry], $entry)) {
+                    ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+                }
+            }
+            unset($struct['-']);
+        }
+*/
+        $this->zip->close();
 
         return true;
     }
 
     /**
-     * @param \ZipArchive $zip
+     * @param string $entry
+     *
+     * @return void
+     */
+    protected function writeEntryToZip(string $entry)
+    {
+        if (!isset($this->tempFiles['zip'][$entry])) {
+            ExceptionFile::throwNew('Entry "%s" is not defined', $entry);
+        }
+        if (!$this->zip->addFile($this->tempFiles['zip'][$entry], $entry)) {
+            ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+        }
+        unset($this->tempFiles['zip'][$entry]);
+    }
+
+    /**
+     * @param string|null $mask
+     *
+     * @return void
+     */
+    protected function writeEntriesToZip(?string $mask)
+    {
+        if ($mask) {
+            $list = [];
+            foreach ($this->tempFiles['zip'] as $entry => $file) {
+                if (strpos($entry, $mask) === 0) {
+                    $list[$entry] = $file;
+                    unset($this->tempFiles['zip'][$entry]);
+                }
+            }
+        }
+        else {
+            $list = $this->tempFiles['zip'];
+        }
+        ksort($list);
+        foreach ($list as $entry => $file) {
+            if (!$this->zip->addFile($file, $entry)) {
+                $error = $this->zip->getStatusString();
+                ExceptionFile::throwNew('Could not write entry "%s" to zip (error: %s)', $entry, $error);
+            }
+        }
+    }
+
+    /**
      * @param Sheet[] $sheets
      * @param array $relationShips
      *
      * @return true
      */
-    protected function _writeSheetsFiles(\ZipArchive $zip, array $sheets, array &$relationShips): bool
+    protected function _writeSheetsFiles(array $sheets, array &$relationShips): bool
     {
-        $dirRels = false;
-
         foreach ($sheets as $sheet) {
             if (!$sheet->open) {
                 // open and write areas
@@ -392,26 +484,21 @@ class Writer
                 'r_id' => $sheet->relId,
             ];
 
-            $zip->addFile($sheet->fileTempName, 'xl/worksheets/' . $sheet->xmlName);
             $xmlContent = $sheet->getXmlRels();
             if ($xmlContent) {
-                if (!$dirRels) {
-                    $zip->addEmptyDir('xl/worksheets/_rels/');
-                    $dirRels = true;
-                }
                 $entry = 'xl/worksheets/_rels/' . $sheet->xmlName . '.rels';
-                $zip->addFromString($entry, $xmlContent);
+                $this->writeToTemp($entry, $xmlContent);
             }
 
             $commentList = $sheet->getNotes();
             if ($commentList) {
                 // 'xl/comments{%n}.xml'
                 $entry = 'xl/comments' . $sheet->index . '.xml';
-                $this->_writeCommentsFile($zip, $entry, $commentList, $relationShips);
+                $this->_writeCommentsFile($entry, $commentList, $relationShips);
 
                 // 'xl/drawings/vmlDrawing{%n}.vml'
                 $entry = 'xl/drawings/vmlDrawing' . $sheet->index . '.vml';
-                $this->_writeCommentOldStyleShape($zip, $entry, $commentList, $relationShips);
+                $this->_writeCommentOldStyleShape($entry, $commentList, $relationShips);
                 if (empty($relationShips['default']['vml'])) {
                     $relationShips['default']['vml'] = [
                         'content_type' => 'application/vnd.openxmlformats-officedocument.vmlDrawing',
@@ -423,7 +510,7 @@ class Writer
                 // 'xl/drawings/drawing{%n}.xml'
                 // 'xl/drawings/_rels/drawing{%n}.xml.rels'
                 $entry = 'xl/drawings/drawing' . $sheet->index . '.xml';
-                $this->_writeDrawingFile($zip, $entry, $imageList, $relationShips);
+                $this->_writeDrawingFile($entry, $imageList, $relationShips);
                 if (empty($relationShips['override'][$entry])) {
                     $relationShips['override'][$entry] = [
                         'content_type' => 'application/vnd.openxmlformats-officedocument.drawing+xml',
@@ -436,46 +523,31 @@ class Writer
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeThemesFiles(\ZipArchive $zip, array &$relationShips): ?string
+    protected function _writeThemesFiles(array &$relationShips)
     {
-        $error = null;
-
         $themes = $this->excel->getThemes();
         if ($themes) {
-            $zip->addEmptyDir('xl/theme/');
             foreach ($themes as $num => $theme) {
-                $file = 'xl/theme/theme' . $num . '.xml';
-                if ($zip->addFromString($file, $this->_buildThemeXML())) {
-                    $relationShips['override'][$file] = [
+                $entry = 'xl/theme/theme' . $num . '.xml';
+                if ($this->writeToTemp($entry, $this->_buildThemeXML())) {
+                    $relationShips['override'][$entry] = [
                         'content_type' => 'application/vnd.openxmlformats-officedocument.theme+xml',
                         'rel' => 'workbook',
                         'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme',
                         'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
                     ];
                 }
-                else {
-                    $error = $zip->getStatusString();
-                }
             }
         }
-
-        return $error;
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeSharedStrings(\ZipArchive $zip, array &$relationShips): ?string
+    protected function _writeSharedStrings(array &$relationShips)
     {
-        $error = null;
         $sharedStrings = $this->excel->getSharedStrings();
         if ($sharedStrings) {
             $uniqueCount = count($sharedStrings);
@@ -490,65 +562,43 @@ class Writer
                 . $result
                 . '</sst>';
 
-            $file = 'xl/sharedStrings.xml';
+            $entry = 'xl/sharedStrings.xml';
 
-            if ($zip->addFromString($file, $xmlSharedStrings)) {
-                $relationShips['override'][$file] = [
+            if ($this->writeToTemp($entry, $xmlSharedStrings)) {
+                $relationShips['override'][$entry] = [
                     'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml',
                     'rel' => 'workbook',
                     'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings',
                     'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
                 ];
             }
-            else {
-                $error = $zip->getStatusString();
-            }
         }
-
-        return $error;
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeMediaFiles(\ZipArchive $zip, array &$relationShips): ?string
+    protected function _writeMediaFiles(array &$relationShips)
     {
-        $error = null;
-
         $imageList = $this->excel->getImageFiles();
         if ($imageList) {
             foreach ($imageList as $image) {
-                if ($zip->addFile($image['filename'], 'xl/media/' . $image['name'])) {
-                    if (empty($relationShips['default'][$image['name']])) {
-                        $relationShips['default'][$image['extension']] = [
-                            'content_type' => $image['mime_type'],
-                        ];
-                    }
-                }
-                else {
-                    $error = $zip->getStatusString();
+                if (empty($relationShips['default'][$image['name']])) {
+                    $relationShips['default'][$image['extension']] = [
+                        'content_type' => $image['mime_type'],
+                    ];
                 }
             }
         }
-
-        return $error;
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param string $entry
      * @param array $commentList
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeCommentsFile(\ZipArchive $zip, string $entry, array $commentList, array &$relationShips): ?string
+    protected function _writeCommentsFile(string $entry, array $commentList, array &$relationShips)
     {
-        $error = null;
-
         if ($commentList) {
             $nameSpaces = [
                 'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
@@ -570,28 +620,20 @@ class Writer
             $xmlString .= '</commentList>';
             $xmlString .= '</comments>';
 
-            if ($zip->addFromString($entry, $xmlString)) {
+            if ($this->writeToTemp($entry, $xmlString)) {
                 $relationShips['override'][$entry] = [
                     'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml',
                 ];
             }
-            else {
-                $error = $zip->getStatusString();
-            }
         }
-
-        return $error;
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param string $entry
      * @param array $commentList
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeCommentOldStyleShape(\ZipArchive $zip, string $entry, array $commentList, array &$relationShips): ?string
+    protected function _writeCommentOldStyleShape(string $entry, array $commentList, array &$relationShips)
     {
         $error = null;
 
@@ -626,23 +668,16 @@ class Writer
             }
             $xmlDrawing .= '</xml>';
 
-            if (!$zip->addFromString($entry, $xmlDrawing)) {
-                $error = $zip->getStatusString();
-            }
+            $this->writeToTemp($entry, $xmlDrawing);
         }
-
-        return $error;
     }
 
     /**
-     * @param \ZipArchive $zip
      * @param string $entry
      * @param array $imageList
      * @param array $relationShips
-     *
-     * @return string|null
      */
-    protected function _writeDrawingFile(\ZipArchive $zip, string $entry, array $imageList, array &$relationShips): ?string
+    protected function _writeDrawingFile(string $entry, array $imageList, array &$relationShips)
     {
         $error = null;
 
@@ -700,7 +735,7 @@ EOD;
             ];
         }
         $xmlDrawingString .= '</xdr:wsDr>';
-        if ($zip->addFromString($entry, $xmlDrawingString) && $relations) {
+        if ($this->writeToTemp($entry, $xmlDrawingString) && $relations) {
             $xmlRelations = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $xmlRelations .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
             foreach ($relations as $relData) {
@@ -708,15 +743,8 @@ EOD;
             }
             $xmlRelations .= '</Relationships>';
             $entryRel = str_replace('xl/drawings/drawing', 'xl/drawings/_rels/drawing', $entry) . '.rels'; //xl/drawings/_rels/drawing' . $sheet->index . '.xml.rels';
-            if (!$zip->addFromString($entryRel, $xmlRelations)) {
-                $error = $zip->getStatusString();
-            }
+            $this->writeToTemp($entryRel, $xmlRelations);
         }
-        else {
-            $error = $zip->getStatusString();
-        }
-
-        return $error;
     }
 
     /**
@@ -726,8 +754,7 @@ EOD;
      */
     protected function _writeSheetHead(Sheet $sheet): WriterBuffer
     {
-        $fileWriter = self::makeWriteBuffer($this->tempFilename('xl/worksheets/' . $sheet->xmlName . '-head'));
-
+        $fileWriter = self::makeWriteBuffer($this->tempFilename());
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $nameSpaces = [
             'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
@@ -760,30 +787,9 @@ EOD;
         $fileWriter->write('<sheetViews>');
 
         $sheetViews = $sheet->getSheetViews();
-        $fileWriter->write('<sheetView' . $this->_tagOptions($sheetViews[0]) . '>');
-
-        $paneRow = ($sheet->freezeRows ? $sheet->freezeRows + 1 : 0);
-        $paneCol = ($sheet->freezeColumns ? $sheet->freezeColumns + 1 : 0);
-        if ($sheet->freezeRows && $sheet->freezeColumns) {
-            // frozen rows and cols
-            $fileWriter->write('<pane ySplit="' . $sheet->freezeRows . '" xSplit="' . $sheet->freezeColumns . '" topLeftCell="' . Excel::cellAddress($paneRow, $paneCol) . '" activePane="bottomRight" state="frozen"/>');
-            $fileWriter->write('<selection activeCell="' . Excel::cellAddress($paneRow, 1) . '" activeCellId="0" pane="topRight" sqref="' . Excel::cellAddress($paneRow, 1) . '"/>');
-            $fileWriter->write('<selection activeCell="' . Excel::cellAddress(1, $paneCol) . '" activeCellId="0" pane="bottomLeft" sqref="' . Excel::cellAddress(1, $paneCol) . '"/>');
-            $fileWriter->write('<selection activeCell="' . Excel::cellAddress($paneRow, $paneCol) . '" activeCellId="0" pane="bottomRight" sqref="' . Excel::cellAddress($paneRow, $paneCol) . '"/>');
-        }
-        elseif ($sheet->freezeRows) {
-            // frozen rows only
-            $fileWriter->write('<pane ySplit="' . $sheet->freezeRows . '" topLeftCell="' . Excel::cellAddress($paneRow, 1) . '" activePane="bottomLeft" state="frozen"/>');
-            $fileWriter->write('<selection activeCell="' . Excel::cellAddress($paneRow, 1) . '" activeCellId="0" pane="bottomLeft" sqref="' . Excel::cellAddress($paneRow, 1) . '"/>');
-        }
-        elseif ($sheet->freezeColumns) {
-            // frozen cols only
-            $fileWriter->write('<pane xSplit="' . $sheet->freezeColumns . '" topLeftCell="' . Excel::cellAddress(1, $paneCol) . '" activePane="topRight" state="frozen"/>');
-            $fileWriter->write('<selection activeCell="' . Excel::cellAddress(1, $paneCol) . '" activeCellId="0" pane="topRight" sqref="' . Excel::cellAddress(1, $paneCol) . '"/>');
-        }
-        else {
-            // not frozen
-            $fileWriter->write('<selection activeCell="' . $minCell . '" activeCellId="0" pane="topLeft" sqref="' . $minCell . '"/>');
+        $fileWriter->write('<sheetView' . $this->_tagOptions($sheetViews[0]['_attr']) . '>');
+        foreach ($sheetViews[0]['_items'] as $item) {
+            $fileWriter->write('<' . $item['_tag'] . $this->_tagOptions($item['_attr']) . '/>');
         }
         $fileWriter->write('</sheetView>');
 
@@ -814,6 +820,11 @@ EOD;
         $sheet->writeDataBegin($this);
     }
 
+    /**
+     * @param array $options
+     *
+     * @return string
+     */
     protected function _tagOptions(array $options): string
     {
         $result = '';
@@ -888,7 +899,7 @@ EOD;
         $sheet->fileWriter->flush(true);
 
         $headWriter = $this->_writeSheetHead($sheet);
-        $headWriter->appendFileWriter($sheet->fileWriter, $this->tempFilename());;
+        $headWriter->appendFileWriter($sheet->fileWriter, $this->tempFilename('xl/worksheets/' . $sheet->xmlName));;
 
         $sheet->fileWriter->close();
         $sheet->close = true;
@@ -1090,7 +1101,7 @@ EOD;
             //'xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"',
         ];
 
-        $temporaryFilename = $this->tempFilename();
+        $temporaryFilename = $this->tempFilename('xl/styles.xml');
         $file = new WriterBuffer($temporaryFilename);
         $file->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $links = implode("\n", $schemaLinks);

@@ -1,3 +1,12 @@
+## v.4.7
+
+The order of writing entries to the file has been changed so that the mimetype is determined correctly
+
+Bug fixes and some improvements
+
+New method
+* Sheet::setActiveCell($cellAddress);
+
 ## v.4.6
 
 New methods

@@ -84,6 +84,7 @@ final class FastExcelWriterTest extends TestCase
     {
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
+        $this->assertEquals('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', mime_content_type($testFileName));
         $valid = ExcelReader::validate($testFileName, $errors);
         if ($errors) {
             $text = [];
@@ -206,11 +207,7 @@ final class FastExcelWriterTest extends TestCase
         // row 7
         $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0]);
 
-        $excel->save($testFileName);
-
-        $this->assertTrue(file_exists($testFileName));
-
-        $this->excelReader = ExcelReader::open($testFileName);
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $style = $this->getStyle('A1');
@@ -351,7 +348,7 @@ final class FastExcelWriterTest extends TestCase
         $totalRow = [];
         $sheet->writeRow($totalRow, ['font' => 'bold', 'border-top' => 'double']);
 
-        $excel->save($testFileName);
+        return $this->saveCheckRead($excel, $testFileName);
     }
 
     public function testExcelWriter2()
@@ -361,11 +358,7 @@ final class FastExcelWriterTest extends TestCase
             unlink($testFileName);
         }
 
-        $this->makeTestFile2($testFileName);
-
-        $this->assertTrue(file_exists($testFileName));
-
-        $this->excelReader = ExcelReader::open($testFileName);
+        $this->excelReader = $this->makeTestFile2($testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $style = $this->getStyle('A1');
@@ -474,10 +467,7 @@ final class FastExcelWriterTest extends TestCase
             $sheet->writeRow($rowData);
         }
 
-        $excel->save($testFileName);
-        $this->assertTrue(file_exists($testFileName));
-
-        $this->excelReader = ExcelReader::open($testFileName);
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $value = $this->getValue('a1');
@@ -515,10 +505,8 @@ final class FastExcelWriterTest extends TestCase
         $area->writeRow([3, 3, '=RC[-1]+RC[-2]', 3]);
 
         $sheet->endAreas();
-        $excel->save($testFileName);
-        $this->assertTrue(file_exists($testFileName));
 
-        $this->excelReader = ExcelReader::open($testFileName);
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $this->assertEquals([1, 1, '=D3+C3', '1'], $this->getValues(['c3', 'd3', 'e3', 'f3']));
@@ -544,10 +532,8 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeCell(33);
         $sheet->writeCell(333);
 
-        $excel->save($testFileName);
-        $this->assertTrue(file_exists($testFileName));
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
 
-        $this->excelReader = ExcelReader::open($testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $this->assertEquals([1, 11, 111], $this->getValues(['c3', 'd3', 'e3']));
@@ -586,10 +572,8 @@ final class FastExcelWriterTest extends TestCase
         $sheet->addImage('D10', $imgDir . '/excel-logo.svg');
         $sheet->addImage('E10', $imgDir . '/excel-logo.webp');
 
-        $excel->save($testFileName);
-        $this->assertTrue(file_exists($testFileName));
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
 
-        $this->excelReader = ExcelReader::open($testFileName);
         $sheet = $this->excelReader->sheet();
         $this->assertEquals(5, $sheet->countImages());
         $testList = [

@@ -74,4 +74,14 @@ $sheet->setFreeze('B2');
 $sheet->setAutofilter(1);
 ```
 
+### Setting Active Cells
+
+```php
+// Selecting one active cell
+$sheet->setActiveCell('B2');
+
+// Selecting a range of cells
+$sheet->setActiveCell('B2:C3');
+```
+
 Returns to [README.md](/README.md)

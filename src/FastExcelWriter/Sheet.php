@@ -147,6 +147,8 @@ class Sheet
     ];
 
     protected ?string $activeCell = null;
+    protected ?string $activeRef = null;
+
     protected array $sheetViews = [];
 
 
@@ -516,10 +518,11 @@ class Sheet
             ExceptionAddress::throwNew('Wrong cell address %s', print_r($address, 1));
         }
         if ($address['cell1'] === $address['cell2']) {
-            $this->activeCell = $address['cell1'];
+            $this->activeRef = $this->activeCell = $address['cell1'];
         }
         else {
-            $this->activeCell = $address['cell1'] . ':' . $address['cell2'];
+            $this->activeCell = $address['cell1'];
+            $this->activeRef = $address['cell1'] . ':' . $address['cell2'];
         }
 
         return $this;
@@ -3438,6 +3441,8 @@ class Sheet
             }
             if ($this->freezeRows && $this->freezeColumns) {
                 // frozen rows and cols
+                $activeCell = $this->activeCell ?? Excel::cellAddress($paneRow, $paneCol);
+                $activeRef = $this->activeRef ?? $activeCell;
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
@@ -3445,20 +3450,22 @@ class Sheet
                     ],
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, 1), 'pane' => 'topRight', 'sqref' => Excel::cellAddress($paneRow, 1)],
+                        '_attr' => ['pane' => 'topRight', 'activeCell' => Excel::cellAddress($paneRow, 1), 'sqref' => Excel::cellAddress($paneRow, 1)],
                     ],
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => Excel::cellAddress(1, $paneCol), 'pane' => 'bottomLeft', 'sqref' => Excel::cellAddress(1, $paneCol)],
+                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => Excel::cellAddress(1, $paneCol), 'sqref' => Excel::cellAddress(1, $paneCol)],
                     ],
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, $paneCol), 'pane' => 'bottomRight', 'sqref' => Excel::cellAddress($paneRow, $paneCol)],
+                        '_attr' => ['pane' => 'bottomRight', 'activeCell' => $activeCell, 'sqref' => $activeRef],
                     ],
                 ];
             }
             elseif ($this->freezeRows) {
                 // frozen rows only
+                $activeCell = $this->activeCell ?? Excel::cellAddress($paneRow, 1);
+                $activeRef = $this->activeRef ?? $activeCell;
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
@@ -3466,12 +3473,14 @@ class Sheet
                     ],
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => Excel::cellAddress($paneRow, 1), 'pane' => 'bottomLeft', 'sqref' => Excel::cellAddress($paneRow, 1)],
+                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
                     ],
                 ];
             }
             elseif ($this->freezeColumns) {
                 // frozen cols only
+                $activeCell = $this->activeCell ?? Excel::cellAddress(1, $paneCol);
+                $activeRef = $this->activeRef ?? $activeCell;
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
@@ -3479,17 +3488,18 @@ class Sheet
                     ],
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => Excel::cellAddress(1, $paneCol), 'pane' => 'topRight', 'sqref' => Excel::cellAddress(1, $paneCol)],
+                        '_attr' => ['pane' => 'topRight', 'activeCell' => $activeCell, 'sqref' => $activeRef],
                     ],
                 ];
             }
             else {
                 // not frozen
                 $activeCell = $this->activeCell ?? $this->minCell();
+                $activeRef = $this->activeRef ?? $activeCell;
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'selection',
-                        '_attr' => ['activeCell' => $activeCell, 'pane' => 'topLeft', 'sqref' => $activeCell],
+                        '_attr' => ['pane' => 'topLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
                     ],
                 ];
             }

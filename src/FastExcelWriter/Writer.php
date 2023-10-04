@@ -334,7 +334,7 @@ class Writer
             'rel_id' => ['workbook' => 0],
         ];
 
-        $sheets = $this->excel->getSheets();//$this->writeSheetDataBegin($sheet);
+        $sheets = $this->excel->getSheets();
         if (empty($sheets)) {
             ExceptionFile::throwNew('No worksheets defined');
         }
@@ -400,19 +400,39 @@ class Writer
         $this->writeEntriesToZip('xl/');
         $this->writeEntriesToZip('');
 
-/*
-        if (!$zip->addFile($this->tempFiles[$entry], $entry)) {
-            ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+        $this->zip->close();
+
+        return true;
+    }
+
+    public function _replaceSheets($inputFile, $outputFile): bool
+    {
+        if (!copy($inputFile, $outputFile)) {
+            ExceptionFile::throwNew('Cannot to write file "%s"', $outputFile);
         }
-        if (isset($struct['-'])) {
-            foreach ($struct['-'] as $entry) {
-                if (!$zip->addFile($this->tempFiles[$entry], $entry)) {
-                    ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+
+        $this->zip = new \ZipArchive();
+        if (!$this->zip->open($outputFile)) {
+            ExceptionFile::throwNew('Unable to open zip "%s"', $outputFile);
+        }
+        $entryList = [];
+        for ($i = 0; $i < $this->zip->numFiles; $i++) {
+            $entryList[$i] = $this->zip->getNameIndex($i);
+        }
+        $sheets = $this->excel->getSheets();
+        $relationShips = [];
+        $this->_writeSheetsFiles($sheets, $relationShips);
+        foreach ($entryList as $index => $name) {
+            if (strpos($name, 'xl/worksheets/sheet') === 0 && !empty($this->tempFiles['zip'][$name])) {
+                if (version_compare(PHP_VERSION, '8.3.0') >= 0) {
+                    $this->zip->replaceFile($this->tempFiles['zip'][$name], $index);
+                }
+                else {
+                    $this->zip->addFile($this->tempFiles['zip'][$name], $name);
                 }
             }
-            unset($struct['-']);
         }
-*/
+
         $this->zip->close();
 
         return true;
@@ -795,7 +815,7 @@ EOD;
 
         $fileWriter->write('</sheetViews>');
 
-        $cols = $sheet->getColSettings();
+        $cols = $sheet->getColAttributes();
         if ($cols) {
             $fileWriter->write('<cols>');
             foreach ($cols as $colSettings) {
@@ -969,7 +989,7 @@ EOD;
             $formula = (string) preg_replace(self::XLWSREGEXP, '_xlws.$1(', $formula);
         }
 
-        return $formula;
+        return ($formula[0] === '=') ? mb_substr($formula, 1) : $formula;
     }
 
     /**

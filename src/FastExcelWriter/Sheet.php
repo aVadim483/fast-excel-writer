@@ -83,7 +83,7 @@ class Sheet
     public array $colFormulas = [];
     public array $colStyles = [];
 
-    protected array $colSettings = [];
+    protected array $colAttributes = [];
 
     // minimal with of columns
     protected array $colMinWidths = [];
@@ -691,7 +691,7 @@ class Sheet
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
-                $this->colSettings[$colIdx]['hidden'] = (int)$val;
+                $this->colAttributes[$colIdx]['hidden'] = (int)$val;
             }
         }
 
@@ -731,12 +731,12 @@ class Sheet
                     if (is_numeric($width)) {
                         if ($min) {
                             $this->colMinWidths[$colIdx] = $width;
-                            if (!isset($this->colSettings[$colIdx]['width']) || $this->colSettings[$colIdx]['width'] < $width) {
-                                $this->colSettings[$colIdx]['width'] = $width;
+                            if (!isset($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $width) {
+                                $this->colAttributes[$colIdx]['width'] = $width;
                             }
                         }
                         elseif (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $width) {
-                            $this->colSettings[$colIdx]['width'] = $width;
+                            $this->colAttributes[$colIdx]['width'] = $width;
                         }
                     }
                 }
@@ -819,20 +819,23 @@ class Sheet
     /**
      * @return array
      */
-    public function getColSettings(): array
+    public function getColAttributes(): array
     {
         $result = [];
-        if ($this->colSettings) {
-            foreach ($this->colSettings as $colIdx => $settings) {
-                $result[$colIdx] = [
-                    'min' => $colIdx + 1,
-                    'max' => $colIdx + 1,
-                ];
-                if (isset($settings['width'])) {
-                    $result[$colIdx]['width'] = number_format($settings['width'], 6, '.', '');
+        if ($this->colAttributes) {
+            foreach ($this->colAttributes as $colIdx => $attributes) {
+                $result[$colIdx] = $attributes;
+                if (!isset($attributes)) {
+                    $result[$colIdx]['min'] = $colIdx + 1;
+                }
+                if (!isset($attributes)) {
+                    $result[$colIdx]['max'] = $colIdx + 1;
+                }
+                if (isset($attributes['width'])) {
+                    $result[$colIdx]['width'] = number_format($attributes['width'], 6, '.', '');
                     $result[$colIdx]['customWidth'] = '1';
                 }
-                if (isset($settings['hidden'])) {
+                if (isset($attributes['hidden'])) {
                     $result[$colIdx]['hidden'] = '1';
                 }
             }
@@ -840,6 +843,17 @@ class Sheet
         }
 
         return $result;
+    }
+
+    /**
+     * @param int $colIdx
+     * @param array $settings
+     *
+     * @return void
+     */
+    public function _setColAttributes(int $colIdx, array $settings)
+    {
+        $this->colAttributes[$colIdx] = $settings;
     }
 
     /**
@@ -1217,67 +1231,74 @@ class Sheet
                         $styleStack = [$baseStyle];
                     }
 
-                    if (!empty($this->rowStyles[$rowIdx])) {
-                        $styleStack[] = $this->rowStyles[$rowIdx];
-                    }
-                    if (!empty($this->cells['styles'][$rowIdx][$colIdx])) {
-                        $styleStack[] = $this->cells['styles'][$rowIdx][$colIdx];
-                    }
-                    if ($rowOptions) {
-                        $styleStack[] = $rowOptions;
-                    }
-                    if (!empty($cellsOptions[$colIdx])) {
-                        $styleStack[] = $cellsOptions[$colIdx];
-                    }
-                    if (count($styleStack) > 1) {
-                        $cellStyle = Style::mergeStyles($styleStack);
+                    if (isset($cellsOptions[$colIdx]['_xf_id'])) {
+                        $cellStyleIdx = $cellsOptions[$colIdx]['_xf_id'];
+                        $numberFormatType = 'n_auto';
                     }
                     else {
-                        $cellStyle = $styleStack ? $styleStack[0] : [];
-                    }
-                    if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']])) {
-                        $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
-                    }
-
-                    if (isset($cellStyle['hyperlink'])) {
-                        if (!empty($cellStyle['hyperlink'])) {
-                            if (is_string($cellStyle['hyperlink'])) {
-                                $link = $cellStyle['hyperlink'];
-                            }
-                            else {
-                                $link = $cellValue;
-                            }
-                            $cellValue = [
-                                'shared_value' => $cellValue,
-                                'shared_index' => $this->excel->addSharedString($cellValue),
-                            ];
-                            $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
-                            if (!empty($this->excel->style->hyperlinkStyle)) {
-                                $cellStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $cellStyle]);
-                            }
+                        // Define cell style index and number format
+                        if (!empty($this->rowStyles[$rowIdx])) {
+                            $styleStack[] = $this->rowStyles[$rowIdx];
                         }
-                        unset($cellStyle['hyperlink']);
-                    }
+                        if (!empty($this->cells['styles'][$rowIdx][$colIdx])) {
+                            $styleStack[] = $this->cells['styles'][$rowIdx][$colIdx];
+                        }
+                        if ($rowOptions) {
+                            $styleStack[] = $rowOptions;
+                        }
+                        if (!empty($cellsOptions[$colIdx])) {
+                            $styleStack[] = $cellsOptions[$colIdx];
+                        }
+                        if (count($styleStack) > 1) {
+                            $cellStyle = Style::mergeStyles($styleStack);
+                        }
+                        else {
+                            $cellStyle = $styleStack ? $styleStack[0] : [];
+                        }
+                        if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']])) {
+                            $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
+                        }
 
-                    $styleHash = json_encode($cellStyle);
-                    if (!isset($_styleCache[$styleHash])) {
-                        $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
-                        $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
-                    }
-                    else {
-                        $resultStyle = $_styleCache[$styleHash]['result_style'];
-                        $cellStyleIdx = $_styleCache[$styleHash]['style_idx'];
-                    }
+                        if (isset($cellStyle['hyperlink'])) {
+                            if (!empty($cellStyle['hyperlink'])) {
+                                if (is_string($cellStyle['hyperlink'])) {
+                                    $link = $cellStyle['hyperlink'];
+                                }
+                                else {
+                                    $link = $cellValue;
+                                }
+                                $cellValue = [
+                                    'shared_value' => $cellValue,
+                                    'shared_index' => $this->excel->addSharedString($cellValue),
+                                ];
+                                $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
+                                if (!empty($this->excel->style->hyperlinkStyle)) {
+                                    $cellStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $cellStyle]);
+                                }
+                            }
+                            unset($cellStyle['hyperlink']);
+                        }
 
-                    $numberFormat = $resultStyle['number_format'];
-                    $numberFormatType = $resultStyle['number_format_type'];
+                        $styleHash = json_encode($cellStyle);
+                        if (!isset($_styleCache[$styleHash])) {
+                            $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
+                            $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
+                        }
+                        else {
+                            $resultStyle = $_styleCache[$styleHash]['result_style'];
+                            $cellStyleIdx = $_styleCache[$styleHash]['style_idx'];
+                        }
 
-                    if (!empty($cellStyle['options']['width-auto'])) {
-                        $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
-                    }
+                        $numberFormat = $resultStyle['number_format'];
+                        $numberFormatType = $resultStyle['number_format_type'];
 
-                    if (!$writer) {
-                        $writer = $this->excel->getWriter();
+                        if (!empty($cellStyle['options']['width-auto'])) {
+                            $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
+                        }
+
+                        if (!$writer) {
+                            $writer = $this->excel->getWriter();
+                        }
                     }
                     if ($cellValue !== null || $cellStyleIdx !== 0 || $numberFormatType !== 'n_auto') {
                         $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
@@ -1415,8 +1436,8 @@ class Sheet
                 }
                 $cache[$key] = $len;
             }
-            if ((empty($this->colSettings[$colIdx]['width']) || $this->colSettings[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
-                $this->colSettings[$colIdx]['width'] = $len;
+            if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
+                $this->colAttributes[$colIdx]['width'] = $len;
             }
         }
     }
@@ -2311,6 +2332,23 @@ class Sheet
     public function setCellStyle(string $cellAddress, $style, ?bool $mergeStyles = false): Sheet
     {
         return $this->setStyle($cellAddress, $style, $mergeStyles);
+    }
+
+    /**
+     * @param string $cellAddress
+     * @param int $styleIdx
+     *
+     * @return $this
+     */
+    public function _setStyleIdx(string $cellAddress, int $styleIdx): Sheet
+    {
+        $dimension = $this->_rangeDimension($cellAddress);
+        if ($dimension['rowNum1'] <= $this->rowCountWritten) {
+            throw new Exception('Row number must be greater then written rows');
+        }
+        $this->cells['styles'][$dimension['rowIndex']][$dimension['colIndex']]['_xf_id'] = $styleIdx;
+
+        return $this;
     }
 
     /**

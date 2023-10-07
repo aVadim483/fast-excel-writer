@@ -737,6 +737,8 @@ class Sheet
                         }
                         elseif (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $width) {
                             $this->colAttributes[$colIdx]['width'] = $width;
+                            $this->colAttributes[$colIdx]['min'] = $colIdx + 1;
+                            $this->colAttributes[$colIdx]['max'] = $colIdx + 1;
                         }
                     }
                 }

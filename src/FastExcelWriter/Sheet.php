@@ -826,19 +826,21 @@ class Sheet
         $result = [];
         if ($this->colAttributes) {
             foreach ($this->colAttributes as $colIdx => $attributes) {
-                $result[$colIdx] = $attributes;
-                if (!isset($attributes)) {
-                    $result[$colIdx]['min'] = $colIdx + 1;
-                }
-                if (!isset($attributes)) {
-                    $result[$colIdx]['max'] = $colIdx + 1;
-                }
-                if (isset($attributes['width'])) {
-                    $result[$colIdx]['width'] = number_format($attributes['width'], 6, '.', '');
-                    $result[$colIdx]['customWidth'] = '1';
-                }
-                if (isset($attributes['hidden'])) {
-                    $result[$colIdx]['hidden'] = '1';
+                if ($attributes) {
+                    $result[$colIdx] = $attributes;
+                    if (!isset($result[$colIdx]['min'])) {
+                        $result[$colIdx]['min'] = $colIdx + 1;
+                    }
+                    if (!isset($result[$colIdx]['max'])) {
+                        $result[$colIdx]['max'] = $colIdx + 1;
+                    }
+                    if (isset($attributes['width'])) {
+                        $result[$colIdx]['width'] = number_format($attributes['width'], 6, '.', '');
+                        $result[$colIdx]['customWidth'] = '1';
+                    }
+                    if (isset($attributes['hidden'])) {
+                        $result[$colIdx]['hidden'] = '1';
+                    }
                 }
             }
             ksort($result);

@@ -97,6 +97,11 @@ final class FastExcelWriterTest extends TestCase
             var_dump($text);
         }
         $this->assertTrue($valid);
+        $vbsChecker = __DIR__ . '/check_open_xlsx.vbs';
+        if (is_file($vbsChecker)) {
+            system("$vbsChecker $testFileName", $result);
+            $this->assertEquals(0, $result);
+        }
 
         return ExcelReader::open($testFileName);
     }

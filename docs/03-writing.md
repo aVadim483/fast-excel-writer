@@ -46,6 +46,20 @@ $sheet->cell('B1')->applyBgColor('#ccc');
 // ^^^ ERROR! this code will throw an exception because B1 is in the previous row
 ```
 
+You can write two-dimensional array
+
+```php
+//Data will be written to cells in the range E5:I8
+$data = [
+    ['', 'Q1', 'Q2', 'Q3', 'Q4'],
+    ['2020', 111, 222, 333, 444],
+    ['2021', 110, 220, 330, 440],
+    ['2022', 100, 200, 300, 400],
+];
+$sheet->writeArrayTo('E5', $data);
+
+```
+
 ### Direct Writing To Cells
 
 With direct writing, you first declare a writing area (or multiple areas) and write to it. 
@@ -93,6 +107,21 @@ $area1->writeTo('B2', 'text');
 
 // Close and write all areas
 $sheet->writeAreas();
+
+```
+You can write two-dimensional array
+
+```php
+// Define are from D3 to max column and max row
+$array = $sheet->beginArea('D3');
+// But data will be written to cells from E5 to I8
+$array = [
+    ['', 'Q1', 'Q2', 'Q3', 'Q4'],
+    ['2020', 111, 222, 333, 444],
+    ['2021', 110, 220, 330, 440],
+    ['2022', 100, 200, 300, 400],
+];
+$sheet->writeArrayTo('E5', $data);
 
 ```
 

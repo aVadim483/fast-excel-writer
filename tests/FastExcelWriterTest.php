@@ -504,10 +504,14 @@ final class FastExcelWriterTest extends TestCase
         $sheet = $excel->sheet();
         $sheet->setColFormats(['C' => 0, 'D' => '@money', 'E' => '0.00', 'F' => '@']);
 
-        $area = $sheet->beginArea('c3');
+        $data = [
+            [2, 2, '=RC[-1]+RC[-2]', 2],
+            [3, 3, '=RC[-1]+RC[-2]', 3],
+        ];
+        $area = $sheet->beginArea('b2');
+        $area->moveTo('c3');
         $area->writeRow([1, 1, '=RC[-1]+RC[-2]', 1]);
-        $area->writeRow([2, 2, '=RC[-1]+RC[-2]', 2]);
-        $area->writeRow([3, 3, '=RC[-1]+RC[-2]', 3]);
+        $area->writeArrayTo('c4', $data);
 
         $sheet->endAreas();
 

@@ -251,6 +251,30 @@ class Area
     }
 
     /**
+     * Write 2d array form the specified cell
+     *
+     * @param $topLeftCell
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function writeArrayTo($topLeftCell, array $data): Area
+    {
+        if (preg_match('/^([a-z]+)(\d+)$/i', $topLeftCell, $m)) {
+            $col = $m[1];
+            $row = $m[2];
+            foreach ($data as $rowData) {
+                $this->moveTo($col . ($row++));
+                foreach ($rowData as $cellValue) {
+                    $this->writeCell($cellValue);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Write a value to the cell
      *
      * setValue('A2', $value)
@@ -437,6 +461,8 @@ class Area
     {
         if (is_string($cellAddress) && $this->_validateAddressRange($cellAddress, $numAddress)) {
             $this->sheet->setValue($cellAddress, null, null);
+            $this->currentColNum = $numAddress['col'];
+            $this->currentRowNum = $numAddress['row'];
         }
 
         return $this;

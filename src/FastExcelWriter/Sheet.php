@@ -1748,6 +1748,31 @@ class Sheet
     }
 
     /**
+     * Write 2d array form the specified cell
+     *
+     * @param $topLeftCell
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function writeArrayTo($topLeftCell, array $data): Sheet
+    {
+        if (preg_match('/^([a-z]+)(\d+)$/i', $topLeftCell, $m)) {
+            $colNumBegin = Excel::colNumber($m[1]);
+            $rowNum = $m[2];
+            foreach ($data as $rowData) {
+                $colNum = $colNumBegin;
+                foreach ($rowData as $cellValue) {
+                    $this->writeTo(Excel::cellAddress($rowNum, $colNum++), $cellValue);
+                }
+                $rowNum++;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Merge cells
      *
      * mergeCells('A1:C3')

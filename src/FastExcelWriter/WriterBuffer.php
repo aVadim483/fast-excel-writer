@@ -40,7 +40,7 @@ class WriterBuffer
     /**
      * @return string
      */
-    public function getFileName()
+    public function getFileName(): string
     {
         return $this->fileName;
     }

@@ -168,14 +168,13 @@ class Writer
     . '|sort'
     . ')\s*\(/mui';
 
+    protected static array $buffers = [];
+
     /** @var Excel */
     protected $excel;
 
     /** @var array */
     protected array $tempFiles = [];
-
-    /** @var array */
-    protected array $tempXlsx = [];
 
     /** @var string */
     protected $tempDir = '';
@@ -211,11 +210,10 @@ class Writer
      */
     public function __destruct()
     {
-        if (!empty($this->tempFiles['zip'])) {
-            foreach ($this->tempFiles['zip'] as $tempFile) {
-                if (is_file($tempFile)) {
-                    @unlink($tempFile);
-                }
+        foreach (self::$buffers as $name => $buffer) {
+            if ($buffer) {
+                $buffer->close();
+                self::$buffers[$name] = null;
             }
         }
         if (!empty($this->tempFiles['tmp'])) {
@@ -235,9 +233,14 @@ class Writer
      *
      * @return WriterBuffer
      */
-    public static function makeWriteBuffer(string $fileName)
+    public static function makeWriteBuffer(string $fileName): WriterBuffer
     {
-        return new WriterBuffer($fileName);
+        if (isset(self::$buffers[$fileName])) {
+            self::$buffers[$fileName] = null;
+        }
+        self::$buffers[$fileName] = new WriterBuffer($fileName);
+
+        return self::$buffers[$fileName];
     }
 
     /**
@@ -276,9 +279,7 @@ class Writer
             if ($localName) {
                 $this->tempFiles['zip'][$localName] = $filename;
             }
-            else {
-                $this->tempFiles['tmp'][] = $filename;
-            }
+            $this->tempFiles['tmp'][] = $filename;
         }
 
         return $filename;

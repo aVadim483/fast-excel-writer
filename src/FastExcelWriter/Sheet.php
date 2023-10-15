@@ -1606,6 +1606,13 @@ class Sheet implements InterfaceSheetWriter
     // ---------------------//
 
 
+    protected function _checkOutput()
+    {
+        if ($this->excel->saved) {
+            Exception::throwNew('The output file is already saved');
+        }
+    }
+
     /**
      * Write value to the current cell and move pointer to the next cell in the row
      *
@@ -1616,6 +1623,8 @@ class Sheet implements InterfaceSheetWriter
      */
     public function writeCell($value, array $styles = null): Sheet
     {
+        $this->_checkOutput();
+
         if ($this->lastTouch['ref'] === 'row') {
             $this->_writeCurrentRow();
         }
@@ -1944,6 +1953,8 @@ class Sheet implements InterfaceSheetWriter
      */
     public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
+        $this->_checkOutput();
+
         if (($this->currentColIdx > $this->offsetCol) || $this->areas) {
             $this->_writeCurrentRow();
         }
@@ -2016,6 +2027,8 @@ class Sheet implements InterfaceSheetWriter
      */
     public function nextRow(?array $options = []): Sheet
     {
+        $this->_checkOutput();
+
         if (!empty($options)) {
             $this->rowStyles[$this->currentRowIdx] = $options;
         }
@@ -2054,6 +2067,8 @@ class Sheet implements InterfaceSheetWriter
      */
     public function makeArea(string $range): Area
     {
+        $this->_checkOutput();
+
         $area = new Area($this, $range);
 
         $this->areas[] = $area->setIndex(count($this->areas));

@@ -6,7 +6,6 @@ use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
-use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 
 /**
  * Class Excel
@@ -122,6 +121,8 @@ class Excel implements InterfaceBookWriter
     /** @var Style */
     public $style;
 
+    public bool $saved = false;
+
     /** @var int  */
     protected int $maxSheetIndex = 0;
 
@@ -145,6 +146,8 @@ class Excel implements InterfaceBookWriter
     protected array $media = [];
 
     protected array $protection = [];
+
+
 
     /**
      * Excel constructor
@@ -238,7 +241,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Sheet
      */
-    public static function createSheet(string $sheetName): InterfaceSheetWriter
+    public static function createSheet(string $sheetName): Sheet
     {
         return new Sheet($sheetName);
     }
@@ -1019,9 +1022,9 @@ class Excel implements InterfaceBookWriter
         }
 
         $verifier = 0;
-        $pwlen = strlen($password);
-        $passwordArray = pack('c', $pwlen) . $password;
-        for ($i = $pwlen; $i >= 0; --$i) {
+        $passwordLen = strlen($password);
+        $passwordArray = pack('c', $passwordLen) . $password;
+        for ($i = $passwordLen; $i >= 0; --$i) {
             $intermediate1 = (($verifier & 0x4000) === 0) ? 0 : 1;
             $intermediate2 = 2 * $verifier;
             $intermediate2 = $intermediate2 & 0x7fff;
@@ -1087,7 +1090,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Sheet
      */
-    public function makeSheet(string $sheetName = null): InterfaceSheetWriter
+    public function makeSheet(string $sheetName = null): Sheet
     {
         if ($sheetName === null) {
             $sheetName = $this->getDefaultSheetName();
@@ -1426,7 +1429,12 @@ class Excel implements InterfaceBookWriter
             $fileName = $this->fileName;
         }
 
-        return $this->writer->saveToFile($fileName, $overWrite, $this->getMetadata());
+        if ($this->writer->saveToFile($fileName, $overWrite, $this->getMetadata())) {
+            $this->saved = true;
+            return true;
+        }
+
+        return false;
     }
 
     /**

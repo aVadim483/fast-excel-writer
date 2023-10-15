@@ -113,10 +113,6 @@ class Sheet
     protected array $totalArea = [];
     protected array $areas = [];
 
-    protected array $pageOptions = [];
-    protected array $pageSetup = [];
-
-
     protected int $relationshipId = 0;
 
     protected array $relationships = [];
@@ -137,6 +133,7 @@ class Sheet
 
     protected array $protection = [];
 
+    // bottom sheet nodes
     protected array $pageMargins = [
         'left' => '0.5',
         'right' => '0.5',
@@ -145,6 +142,9 @@ class Sheet
         'header' => '0.5',
         'footer' => '0.5',
     ];
+
+    protected array $pageSetup = [];
+
 
     protected ?string $activeCell = null;
     protected ?string $activeRef = null;
@@ -454,6 +454,18 @@ class Sheet
     public function getPageSetup(): array
     {
         return $this->pageSetup;
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setPageSetup(array $options): Sheet
+    {
+        $this->pageSetup = $options;
+
+        return $this;
     }
 
     /**
@@ -1237,7 +1249,7 @@ class Sheet
 
                     if (isset($cellsOptions[$colIdx]['_xf_id'])) {
                         $cellStyleIdx = $cellsOptions[$colIdx]['_xf_id'];
-                        $numberFormatType = 'n_auto';
+                        $numberFormatType = $cellsOptions[$colIdx]['number_format_type'] ?? 'n_auto';
                     }
                     else {
                         // Define cell style index and number format
@@ -2364,23 +2376,6 @@ class Sheet
     }
 
     /**
-     * @param string $cellAddress
-     * @param int $styleIdx
-     *
-     * @return $this
-     */
-    public function _setStyleIdx(string $cellAddress, int $styleIdx): Sheet
-    {
-        $dimension = $this->_rangeDimension($cellAddress);
-        if ($dimension['rowNum1'] <= $this->rowCountWritten) {
-            throw new Exception('Row number must be greater then written rows');
-        }
-        $this->cells['styles'][$dimension['rowIndex']][$dimension['colIndex']]['_xf_id'] = $styleIdx;
-
-        return $this;
-    }
-
-    /**
      * @param string $cellAddr
      * @param array $style
      *
@@ -3354,6 +3349,11 @@ class Sheet
         }
 
         return $this;
+    }
+
+    public function setPageMargins(array $margins): Sheet
+    {
+        return $this->pageMargins($margins);
     }
 
     /**

@@ -6,13 +6,14 @@ use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
+use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 
 /**
  * Class Sheet
  *
  * @package avadim\FastExcelWriter
  */
-class Sheet
+class Sheet implements InterfaceSheetWriter
 {
     // constants for auo width
     protected const WIDTH_LOWER_CASE_LETTER = 1.05;

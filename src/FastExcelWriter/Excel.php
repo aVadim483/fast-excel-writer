@@ -6,6 +6,7 @@ use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
+use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 
 /**
  * Class Excel
@@ -237,7 +238,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Sheet
      */
-    public static function createSheet(string $sheetName): Sheet
+    public static function createSheet(string $sheetName): InterfaceSheetWriter
     {
         return new Sheet($sheetName);
     }
@@ -1086,7 +1087,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Sheet
      */
-    public function makeSheet(string $sheetName = null): Sheet
+    public function makeSheet(string $sheetName = null): InterfaceSheetWriter
     {
         if ($sheetName === null) {
             $sheetName = $this->getDefaultSheetName();

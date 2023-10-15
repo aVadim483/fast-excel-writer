@@ -2,7 +2,7 @@
 
 namespace avadim\FastExcelWriter;
 
-use avadim\FastExcelWriter\Exception\Exception;
+use avadim\FastExcelWriter\Exceptions\Exception;
 
 /**
  * Class WriterBuffer

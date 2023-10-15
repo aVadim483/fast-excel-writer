@@ -2,10 +2,10 @@
 
 namespace avadim\FastExcelWriter;
 
-use avadim\FastExcelWriter\Exception\Exception;
-use avadim\FastExcelWriter\Exception\ExceptionAddress;
-use avadim\FastExcelWriter\Exception\ExceptionFile;
-use avadim\FastExcelWriter\Exception\ExceptionRangeName;
+use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
+use avadim\FastExcelWriter\Exceptions\ExceptionFile;
+use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 
 /**
  * Class Sheet

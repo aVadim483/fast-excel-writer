@@ -1,6 +1,6 @@
 <?php
 
-namespace avadim\FastExcelWriter\Exception;
+namespace avadim\FastExcelWriter\Exceptions;
 
 /**
  * Class Exception

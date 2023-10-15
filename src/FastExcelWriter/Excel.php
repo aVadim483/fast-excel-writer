@@ -2,16 +2,17 @@
 
 namespace avadim\FastExcelWriter;
 
-use avadim\FastExcelWriter\Exception\Exception;
-use avadim\FastExcelWriter\Exception\ExceptionFile;
-use avadim\FastExcelWriter\Exception\ExceptionRangeName;
+use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Exceptions\ExceptionFile;
+use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
+use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
 
 /**
  * Class Excel
  *
  * @package avadim\FastExcelWriter
  */
-class Excel
+class Excel implements InterfaceBookWriter
 {
     public const MAX_ROW = 1048576; // max row number in Excel 2007
     public const MAX_COL = 16384; // max column number in Excel 2007

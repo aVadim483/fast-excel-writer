@@ -2,6 +2,7 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelHelper\Helper;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
@@ -581,23 +582,8 @@ class Excel implements InterfaceBookWriter
      */
     public static function colNumber($colLetter): int
     {
-        if (is_numeric($colLetter)) {
-            $colNumber = $colLetter;
-        }
-        else {
-            // Strip cell reference down to just letters
-            $letters = preg_replace('/[^A-Z]/', '', strtoupper($colLetter));
 
-            if (mb_strlen($letters) >= 3 && $letters > 'XFD') {
-                return -1;
-            }
-            // Iterate through each letter, starting at the back to increment the value
-            for ($colNumber = 0, $i = 0; $letters !== ''; $letters = substr($letters, 0, -1), $i++) {
-                $colNumber += (ord(substr($letters, -1)) - 64) * (26 ** $i);
-            }
-        }
-
-        return ($colNumber <= self::MAX_COL) ? (int)$colNumber : -1;
+        return Helper::colNumber($colLetter);
     }
 
     /**
@@ -735,25 +721,8 @@ class Excel implements InterfaceBookWriter
      */
     public static function colLetter(int $colNumber): string
     {
-        static $letters = ['',
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ',
-        ];
 
-        if (isset($letters[$colNumber])) {
-            return $letters[$colNumber];
-        }
-
-        if ($colNumber > 0 && $colNumber <= self::MAX_COL) {
-            $num = $colNumber - 1;
-            for ($letter = ''; $num >= 0; $num = (int)($num / 26) - 1) {
-                $letter = chr($num % 26 + 0x41) . $letter;
-            }
-            $letters[$colNumber] = $letter;
-
-            return $letter;
-        }
-        return '';
+        return Helper::colLetter($colNumber);
     }
 
     /**
@@ -798,23 +767,8 @@ class Excel implements InterfaceBookWriter
      */
     public static function cellAddress(int $rowNumber, int $colNumber, ?bool $absolute = false, bool $absoluteRow = null): string
     {
-        if ($rowNumber > 0 && $colNumber > 0) {
-            $letter = self::colLetter($colNumber);
-            if ($letter) {
-                if ($absolute) {
-                    if (null === $absoluteRow || true === $absoluteRow) {
-                        return '$' . $letter . '$' . $rowNumber;
-                    }
-                    return '$' . $letter . $rowNumber;
-                }
-                if ($absoluteRow) {
-                    return $letter . '$' . $rowNumber;
-                }
-                return $letter . $rowNumber;
-            }
-        }
 
-        return '';
+        return Helper::cellAddress($rowNumber, $colNumber, $absolute, $absoluteRow);
     }
 
     /**

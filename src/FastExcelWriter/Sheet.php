@@ -93,10 +93,9 @@ class Sheet implements InterfaceSheetWriter
     // special styles by field names
     protected array $fieldStyles = [];
 
+    // ZERO based
     protected array $rowSettings = [];
 
-    // ZERO based
-    public array $rowHeights = [];
     public array $rowStyles = [];
 
     // ZERO based
@@ -1057,7 +1056,17 @@ class Sheet implements InterfaceSheetWriter
         if ($rowNum <= $this->rowCountWritten) {
             ExceptionAddress::throwNew('Row number must be greater then written rows');
         }
-        $this->rowSettings[(int)$rowNum - 1][$key] = $val;
+        $rowIdx = (int)$rowNum - 1;
+        $this->rowSettings[$rowIdx][$key] = $val;
+        /*
+        if ($key === 'height' || $key === 'ht') {
+            $cellAddress = [
+                'row_idx' => $rowIdx,
+                'col_idx' => 0,
+            ];
+            $this->_setCellData($cellAddress, null, ['height' => $val], true, true);
+        }
+        */
     }
 
     /**
@@ -1958,10 +1967,14 @@ class Sheet implements InterfaceSheetWriter
                     else {
                         $styles = [];
                     }
+                    $rowSettings = $this->rowSettings[$rowIdx] ?? [];
                     if ($values || $styles) {
                         ksort($values);
                         ksort($styles);
-                        $this->_writeRow($writer, $values, [], $styles);
+                        $this->_writeRow($writer, $values, $rowSettings, $styles);
+                    }
+                    elseif ($rowSettings) {
+                        $this->_writeRow($writer, [null], $rowSettings, []);
                     }
                     else {
                         //$this->rowCount++;

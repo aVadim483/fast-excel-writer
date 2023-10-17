@@ -850,7 +850,45 @@ EOD;
     {
         $result = '';
         foreach ($options as $key => $val) {
+            if ($val === true) {
+                $val = 'true';
+            }
+            elseif ($val === false) {
+                $val = 'false';
+            }
             $result .= ' ' . $key . '="' . $val . '"';
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $tagName
+     * @param array $tagOptions
+     *
+     * @return string
+     */
+    protected function _makeTag(string $tagName, array $tagOptions): string
+    {
+        if (isset($tagOptions['__kids'])) {
+            $kids = $tagOptions['__kids'];
+            unset($tagOptions['__kids']);
+        }
+        if ($tagOptions) {
+            $result = '<' . $tagName . $this->_tagOptions($tagOptions);
+        }
+        else {
+            $result = '<' . $tagName;
+        }
+        if (empty($kids)) {
+            $result .= '/>';
+        }
+        else {
+            $result .= '>';
+            foreach ($kids as $tag) {
+                $result .= $this->_makeTag($tag['__name'], $tag['__attr']);
+            }
+            $result .= '</' . $tagName . '>';
         }
 
         return $result;
@@ -895,25 +933,8 @@ EOD;
             $sheet->fileWriter->write('</hyperlinks>');
         }
 
-        if ($options = $sheet->getPageMargins()) {
-            $sheet->fileWriter->write('<pageMargins' . $this->_tagOptions($options) . '/>');
-        }
-
-        if ($options = $sheet->getPageSetup()) {
-            $sheet->fileWriter->write('<pageSetup' . $this->_tagOptions($options) . '/>');
-        }
-
-        $sheet->fileWriter->write('<headerFooter differentFirst="false" differentOddEven="false">');
-        $sheet->fileWriter->write('<oddHeader/>');
-        $sheet->fileWriter->write('<oddFooter/>');
-        $sheet->fileWriter->write('</headerFooter>');
-
-        if ($rId = $sheet->getDrawingId()) {
-            $sheet->fileWriter->write('<drawing r:id="rId' . $rId . '"/>');
-        }
-
-        if ($rId = $sheet->getLegacyDrawingId()) {
-            $sheet->fileWriter->write('<legacyDrawing r:id="rId' . $rId . '"/>');
+        foreach ($sheet->getBottomNodesOptions() as $nodeName => $nodeOptions) {
+            $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
         $sheet->fileWriter->write('</worksheet>');

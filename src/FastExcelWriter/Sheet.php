@@ -134,23 +134,13 @@ class Sheet implements InterfaceSheetWriter
 
     protected array $protection = [];
 
-    // bottom sheet nodes
-    protected array $pageMargins = [
-        'left' => '0.5',
-        'right' => '0.5',
-        'top' => '1.0',
-        'bottom' => '1.0',
-        'header' => '0.5',
-        'footer' => '0.5',
-    ];
-
-    protected array $pageSetup = [];
-
-
     protected ?string $activeCell = null;
     protected ?string $activeRef = null;
 
     protected array $sheetViews = [];
+
+    // bottom sheet nodes
+    protected array $bottomNodeOptions = [];
 
 
     /**
@@ -161,13 +151,40 @@ class Sheet implements InterfaceSheetWriter
     public function __construct(string $sheetName)
     {
         $this->setName($sheetName);
-        $this->pageSetup = [
-            'paperSize' => '1',
-            'useFirstPageNumber' => '1',
-            'horizontalDpi' => '0',
-            'verticalDpi' => '0',
-            'orientation' => 'portrait',
+        $this->bottomNodeOptions = [
+            'pageMargins' => [
+                'left' => '0.5',
+                'right' => '0.5',
+                'top' => '1.0',
+                'bottom' => '1.0',
+                'header' => '0.5',
+                'footer' => '0.5',
+            ],
+            'pageSetup' => [
+                'paperSize' => '1',
+                'useFirstPageNumber' => '1',
+                'horizontalDpi' => '0',
+                'verticalDpi' => '0',
+                'orientation' => 'portrait',
+            ],
+            /*
+            'headerFooter' => [
+                'differentFirst' => false,
+                'differentOddEven' => false,
+                '__kids' => [
+                    [
+                        '__name' => 'oddHeader',
+                        '__attr' => [],
+                    ],
+                    [
+                        '__name' => 'oddFooter',
+                        '__attr' => [],
+                    ],
+                ],
+            ],
+            */
         ];
+
         $this->sheetViews = [
             [
                 'workbookViewId' => '0',
@@ -328,6 +345,33 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param string $node
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function setBottomNodeOption(string $node, string $key, $value): Sheet
+    {
+        $this->bottomNodeOptions[$node][$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param string $node
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setBottomNodeOptions(string $node, array $options): Sheet
+    {
+        $this->bottomNodeOptions[$node] = $options;
+
+        return $this;
+    }
+
+    /**
      * @deprecated
      *
      * @param string $option
@@ -340,7 +384,7 @@ class Sheet implements InterfaceSheetWriter
         if ($this->rowCountWritten) {
             throw new Exception('Cannot set page settings after rows writing');
         }
-        $this->pageSetup[$option] = $value;
+        $this->bottomNodeOptions['pageSetup'][$option] = $value;
 
         return $this;
     }
@@ -350,7 +394,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function pageOrientationPortrait(): Sheet
     {
-        $this->pageSetup['orientation'] = 'portrait';
+        $this->bottomNodeOptions['pageSetup']['orientation'] = 'portrait';
 
         return $this;
     }
@@ -370,7 +414,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function pageOrientationLandscape(): Sheet
     {
-        $this->pageSetup['orientation'] = 'landscape';
+        $this->bottomNodeOptions['pageSetup']['orientation'] = 'landscape';
 
         return $this;
     }
@@ -396,7 +440,7 @@ class Sheet implements InterfaceSheetWriter
             $numPage = 0;
         }
         if ($numPage >=0) {
-            $this->pageSetup['fitToWidth'] = (int)$numPage;
+            $this->bottomNodeOptions['pageSetup']['fitToWidth'] = (int)$numPage;
         }
         return $this;
     }
@@ -412,7 +456,7 @@ class Sheet implements InterfaceSheetWriter
             $numPage = 0;
         }
         if ($numPage >=0) {
-            $this->pageSetup['fitToHeight'] = (int)$numPage;
+            $this->bottomNodeOptions['pageSetup']['fitToHeight'] = (int)$numPage;
         }
         return $this;
     }
@@ -422,7 +466,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getPageOrientation(): string
     {
-        return $this->pageSetup['orientation'] ?? 'portrait';
+        return $this->bottomNodeOptions['pageSetup']['orientation'] ?? 'portrait';
     }
 
     /**
@@ -430,7 +474,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getPageFitToWidth(): int
     {
-        return (int)($this->pageSetup['fitToWidth'] ?? 0);
+        return (int)($this->bottomNodeOptions['pageSetup']['fitToWidth'] ?? 0);
     }
 
     /**
@@ -438,7 +482,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getPageFitToHeight(): int
     {
-        return (int)($this->pageSetup['fitToHeight'] ?? 0);
+        return (int)($this->bottomNodeOptions['pageSetup']['fitToHeight'] ?? 0);
     }
 
     /**
@@ -446,7 +490,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getPageFit(): bool
     {
-        return !empty($this->pageSetup['fitToWidth']) || !empty($this->pageSetup['fitToHeight']);
+        return !empty($this->bottomNodeOptions['pageSetup']['fitToWidth']) || !empty($this->bottomNodeOptions['pageSetup']['fitToHeight']);
     }
 
     /**
@@ -454,7 +498,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getPageSetup(): array
     {
-        return $this->pageSetup;
+        return $this->bottomNodeOptions['pageSetup'];
     }
 
     /**
@@ -464,7 +508,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setPageSetup(array $options): Sheet
     {
-        $this->pageSetup = $options;
+        $this->bottomNodeOptions['pageSetup'] = $options;
 
         return $this;
     }
@@ -2947,6 +2991,7 @@ class Sheet implements InterfaceSheetWriter
                     'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing',
                     'extra' => '',
                 ];
+                $this->setBottomNodeOptions('legacyDrawing', ['r:id' => 'rId' . $this->relationshipId]);
             }
             if (!isset($this->relationships['comments'])) {
                 $file = 'comments' . $this->index . '.xml';
@@ -2968,24 +3013,6 @@ class Sheet implements InterfaceSheetWriter
     public function getNotes(): array
     {
         return $this->notes;
-    }
-
-    public function getLegacyDrawingId()
-    {
-        if (isset($this->relationships['legacyDrawing'])) {
-            return array_key_first($this->relationships['legacyDrawing']);
-        }
-
-        return 0;
-    }
-
-    public function getDrawingId()
-    {
-        if (isset($this->relationships['drawing'])) {
-            return array_key_first($this->relationships['drawing']);
-        }
-
-        return 0;
     }
 
     // === IMAGES === //
@@ -3051,6 +3078,7 @@ class Sheet implements InterfaceSheetWriter
                         'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
                         'extra' => '',
                     ];
+                    $this->setBottomNodeOptions('drawing', ['r:id' => 'rId' . $this->relationshipId]);
                 }
             }
         }
@@ -3345,7 +3373,7 @@ class Sheet implements InterfaceSheetWriter
         else {
             $value = (float)$value;
         }
-        $this->pageMargins[$key] = number_format($value, 1, '.', '');
+        $this->bottomNodeOptions['pageMargins'][$key] = number_format($value, 1, '.', '');
     }
 
     /**
@@ -3465,7 +3493,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function pagePaperSize(int $paperSize): Sheet
     {
-        $this->pageSetup['paperSize'] = $paperSize;
+        $this->bottomNodeOptions['pageSetup']['paperSize'] = $paperSize;
 
         return $this;
     }
@@ -3482,7 +3510,7 @@ class Sheet implements InterfaceSheetWriter
         if ($paperHeight == (float)$paperHeight) {
             $paperHeight = number_format($paperHeight, 1, '.', '') . 'in';
         }
-        $this->pageSetup['paperHeight'] = $paperHeight;
+        $this->bottomNodeOptions['pageSetup']['paperHeight'] = $paperHeight;
 
         return $this;
     }
@@ -3499,7 +3527,7 @@ class Sheet implements InterfaceSheetWriter
         if ($paperWidth == (float)$paperWidth) {
             $paperWidth = number_format($paperWidth, 1, '.', '') . 'in';
         }
-        $this->pageSetup['paperWidth'] = $paperWidth;
+        $this->bottomNodeOptions['pageSetup']['paperWidth'] = $paperWidth;
 
         return $this;
     }
@@ -3606,7 +3634,12 @@ class Sheet implements InterfaceSheetWriter
     public function getPageMargins(): array
     {
 
-        return $this->pageMargins;
+        return $this->bottomNodeOptions['pageMargins'] ?? [];
+    }
+
+    public function getBottomNodesOptions(): array
+    {
+        return $this->bottomNodeOptions;
     }
 
     // === DESIGN STYLES === //

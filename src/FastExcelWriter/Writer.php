@@ -992,11 +992,16 @@ EOD;
             if (empty($functionNames)) {
                 $functionNames = [[], []];
                 foreach ($this->excel->style->localeSettings['functions'] as $name => $nameEn) {
-                    $functionNames[0][] = $name . '(';
+                    $functionNames[0][] = '/' . $name . '\s*\(/ui';
                     $functionNames[1][] = $nameEn . '(';
+                    if ($nameEn === 'FALSE' || $nameEn === 'TRUE') {
+                        $functionNames[0][] = '/([\(;,])\s*' . $name . '\s*([\);,])/ui';
+                        $functionNames[1][] = '$1' . $nameEn . '$2';
+                    }
                 }
             }
-            $formula = str_replace($functionNames[0], $functionNames[1], $formula);
+            //$formula = str_replace($functionNames[0], $functionNames[1], $formula);
+            $formula = preg_replace($functionNames[0], $functionNames[1], $formula);
         }
 
         if ($replace && !empty($replace[0])) {

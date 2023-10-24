@@ -16,7 +16,8 @@
 
 This library is designed to be lightweight, super-fast and requires minimal memory usage.
 
-This library creates Excel compatible spreadsheets in XLSX format (Office 2007+), with many features supported:
+**FastExcelWriter** creates Excel compatible spreadsheets in XLSX format (Office 2007+), with many features supported:
+
 * Takes UTF-8 encoded input
 * Multiple worksheets
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks

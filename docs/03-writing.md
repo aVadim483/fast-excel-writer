@@ -280,8 +280,13 @@ Simple cell formats map to more advanced cell formats
 
 Formulas must start with '='. If you want to write the formula as a text, use a backslash.
 Setting the locale allows the use of national language function names.
-You can use both A1 and R1C1 notations in formulas
+You can use both A1 and R1C1 notations in formulas.
 
+You must comply with the following rules:
+* Formulas must start with '='
+* Decimal separator in float numbers is '.'
+* Function argument separator is ','
+* Matrix row separator is ';'
 ```php
 use \avadim\FastExcelWriter\Excel;
 
@@ -308,6 +313,17 @@ $sheet->writeRow($totalRow);
 $excel->save('formulas.xlsx');
 
 ```
+Setting the locale allows the use of national language function names.
+```php
+$excel = Excel::create();
+// Set Portuguese locale
+$excel->setLocale('pt');
+$sheet = $excel->getSheet();
+
+$sheet->writeTo('A1', '=SE(FALSO,1.23+A4,4.56+B3)');
+
+```
+
 You can define formula for the specified column
 ```php
 $sheet->setColFormula('C', '=RC[-1]*0.1');

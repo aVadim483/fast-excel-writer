@@ -1349,7 +1349,7 @@ class Sheet implements InterfaceSheetWriter
                             unset($cellStyle['hyperlink']);
                         }
 
-                        $styleHash = json_encode($cellStyle);
+                        $styleHash = $cellStyle ? json_encode($cellStyle) : '';
                         if (!isset($_styleCache[$styleHash])) {
                             $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
                             $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];

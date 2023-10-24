@@ -5,7 +5,12 @@
 
 # FastExcelWriter
 
-This documentation for version 4.x. Documentation for ver. 3.x see [here](/docs/ver3x.md).
+**FastExcelWriter** is a part of the FastExcelPhp Project which consists of
+
+* [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer)
+* [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader)
+* [FastExcelTemplator](https://packagist.org/packages/avadim/fast-excel-templator)
+* [FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel)
 
 ## Introduction
 

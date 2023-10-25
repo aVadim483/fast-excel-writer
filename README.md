@@ -5,12 +5,12 @@
 
 # FastExcelWriter
 
-**FastExcelWriter** is a part of the FastExcelPhp Project which consists of
+**FastExcelWriter** is a part of the **FastExcelPhp Project** which consists of
 
-* [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer)
-* [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader)
-* [FastExcelTemplator](https://packagist.org/packages/avadim/fast-excel-templator)
-* [FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel)
+* [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer) - to create Excel spreadsheets
+* [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader) - to reader Excel spreadsheets
+* [FastExcelTemplator](https://packagist.org/packages/avadim/fast-excel-templator) - to generate Excel spreadsheets from XLSX templates
+* [FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel) - special **Laravel** edition
 
 ## Introduction
 
@@ -26,11 +26,6 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 * You can add formulas, notes and images in you XLSX-files
 * Supports workbook and sheet protection with/without passwords 
 * Supports page settings - page margins, page size
-
-By the way, **FastExcelReader** also exists - https://github.com/aVadim483/fast-excel-reader
-
-And if you are Laravel-developer then you can use special **Laravel** edition -
-[FastExcelLaravel](https://packagist.org/packages/avadim/fast-excel-laravel).
 
 Jump To:
 * [Changes in version 4](#changes-in-version-4)

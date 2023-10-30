@@ -113,7 +113,7 @@ You can write two-dimensional array
 
 ```php
 // Define are from D3 to max column and max row
-$array = $sheet->beginArea('D3');
+$area = $sheet->beginArea('D3');
 // But data will be written to cells from E5 to I8
 $array = [
     ['', 'Q1', 'Q2', 'Q3', 'Q4'],
@@ -121,7 +121,7 @@ $array = [
     ['2021', 110, 220, 330, 440],
     ['2022', 100, 200, 300, 400],
 ];
-$sheet->writeArrayTo('E5', $data);
+$area->writeArrayTo('E5', $data);
 
 ```
 

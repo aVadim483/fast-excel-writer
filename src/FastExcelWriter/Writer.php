@@ -406,7 +406,14 @@ class Writer
         return true;
     }
 
-    public function _replaceSheets($inputFile, $outputFile): bool
+    /**
+     * @param string $inputFile
+     * @param string $outputFile
+     * @param array $relationShips
+     *
+     * @return bool
+     */
+    public function _replaceSheets(string $inputFile, string $outputFile, array $relationShips): bool
     {
         if (!copy($inputFile, $outputFile)) {
             ExceptionFile::throwNew('Cannot to write file "%s"', $outputFile);
@@ -489,7 +496,7 @@ class Writer
      *
      * @return true
      */
-    protected function _writeSheetsFiles(array $sheets, array &$relationShips): bool
+    protected function _writeSheetsFiles(array $sheets, array &$relationShips = []): bool
     {
         foreach ($sheets as $sheet) {
             if (!$sheet->open) {
@@ -497,6 +504,9 @@ class Writer
                 $this->writeSheetDataBegin($sheet);
             }
             $this->writeSheetDataEnd($sheet);//making sure all footers have been written
+            if (!isset($relationShips['rel_id']['workbook'])) {
+                $relationShips['rel_id']['workbook'] = 0;
+            }
             $sheet->relId = 'rId' . (++$relationShips['rel_id']['workbook']);
             $relationShips['override']['xl/worksheets/' . $sheet->xmlName] = [
                 'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml',

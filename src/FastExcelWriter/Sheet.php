@@ -1854,10 +1854,11 @@ class Sheet implements InterfaceSheetWriter
      * mergeCells(['A1:B2', 'C1:D2'])
      *
      * @param array|string|int $rangeSet
+     * @param int|null $actionMode 0 - exception, 1 - replace, 2 - keep
      *
      * @return $this
      */
-    public function mergeCells($rangeSet): Sheet
+    public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
     {
         foreach((array)$rangeSet as $range) {
             if (isset($this->mergeCells[$range]) || empty($range)) {
@@ -1873,10 +1874,21 @@ class Sheet implements InterfaceSheetWriter
                     && ((($dimension['colNum1'] >= $savedDimension['colNum1']) && ($dimension['colNum1'] <= $savedDimension['colNum2']))
                         || (($dimension['colNum2'] >= $savedDimension['colNum1']) && ($dimension['colNum2'] <= $savedDimension['colNum2'])))
                 ) {
-                    throw new Exception("Cannot merge cells $range because they are intersecting with $savedRange");
+                    if ($actionMode === 1) {
+                        unset($this->mergeCells[$savedRange]);
+                    }
+                    elseif ($actionMode === 2) {
+                        $dimension = [];
+                        break;
+                    }
+                    else {
+                        throw new Exception("Cannot merge cells $range because they are intersecting with $savedRange");
+                    }
                 }
             }
-            $this->mergeCells[$dimension['range']] = $dimension;
+            if ($dimension) {
+                $this->mergeCells[$dimension['range']] = $dimension;
+            }
         }
 
         return $this;

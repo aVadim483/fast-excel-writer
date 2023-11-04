@@ -81,11 +81,6 @@ Use `composer` to install **FastExcelWriter** into your project:
 composer require avadim/fast-excel-writer
 ```
 
-Also, you can download package and include autoload file of the library:
-```php
-require 'path/to/fast-excel-writer/src/autoload.php';
-```
-
 ## Changes In Version 4
 
 * Now the library works even faster

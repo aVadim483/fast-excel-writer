@@ -552,6 +552,39 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+    public function testExcelWriterMergedCells()
+    {
+        $testFileName = __DIR__ . '/test_merged.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $area = $sheet->beginArea();
+        $area->setValue('A1', 'A');
+        // Write value to automerged cells
+        $area->setValue('A2:D2', 'A2:D2');
+        $sheet->writeAreas();
+
+        $sheet->writeCell(11);
+        $sheet->writeCell(12);
+        $sheet->writeCell(13);
+        $sheet->nextRow();
+        $sheet->writeCell(21);
+        $sheet->writeCell(32);
+        $sheet->writeCell(43);
+        $sheet->mergeCells('A4:C4');
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $mergedCells = $this->excelReader->sheet()->getMergedCells();
+        $a = ['A2' => 'A2:D2', 'A4' => 'A4:C4'];
+        $this->assertEquals($a, $mergedCells);
+
+        unlink($testFileName);
+    }
+
     public function testExcelWriterNotesAndImages()
     {
         $testFileName = __DIR__ . '/test_notes_images.xlsx';

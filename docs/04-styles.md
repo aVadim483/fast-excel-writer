@@ -56,6 +56,35 @@ $sheet->setRowStyles('2:5', ['fill-color' = '#f00']);
 
 ```
 
+### Row And Cell Styles
+
+The first argument of the function ```writeRow()``` is an array of values, the 2nd is the style of the row, and the 3rd is the styles of the cells in the row.
+
+```php
+$rowValues = [
+    'text',
+    'http://google.com',
+    123456,
+];
+$rowStyle = [];
+$cellStyles = [
+    [], // style for the first cell,
+    ['hyperlink' => true], // 2nd cell
+    [], // 3rd cell
+];
+
+$sheet->writeRow($rowValues, $rowStyle, $cellStyles);
+
+```
+
+Also, you can set styles for the specified cells
+```php
+$cellStyles = [
+    'B' => ['hyperlink' => true],
+];
+$sheet->writeRow($rowValues, [], $cellStyles);
+```
+
 ### Column Styles
 
 You can define column style and format with method ```writeHeader()```.

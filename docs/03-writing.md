@@ -348,5 +348,27 @@ $sheet->writeCell('https://google.com', ['hyperlink' => true]);
 $sheet->writeCell('Google', ['hyperlink' => 'https://google.com']);
 
 ```
+Write hyperlink using writeRow()
+```php
+$rowValues = [
+    'text',
+    'http://google.com',
+    123456,
+];
+$rowStyle = [];
+$cellStyles = [
+    [], // style for the first cell,
+    ['hyperlink' => true], // 2nd cell
+    [], // 3rd cell
+];
+
+$sheet->writeRow($rowValues, $rowStyle, $cellStyles);
+```
+Here is the other way
+```php
+$cellStyles = [
+    'B' => ['hyperlink' => true],
+];
+```
 
 Returns to [README.md](/README.md)

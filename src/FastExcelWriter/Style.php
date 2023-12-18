@@ -136,9 +136,20 @@ class Style
         ];
 
         if (isset($options['default_font'])) {
-            foreach($options['default_font'] as $key => $font) {
-                $key = strtoupper($key);
-                if (isset($defaultFont[$key])) {
+            $fontOptions = $options['default_font'];
+        }
+        elseif (isset($options[Style::FONT])) {
+            $fontOptions = $options[Style::FONT];
+        }
+        else {
+            $fontOptions = [];
+        }
+        if ($fontOptions) {
+            foreach($fontOptions as $key => $font) {
+                if (is_scalar($font)) {
+                    $defaultFont[$key] = $font;
+                }
+                elseif (isset($defaultFont[$key]) && is_array($font)) {
                     $defaultFont[$key] = array_merge($defaultFont[$key], $font);
                 }
             }
@@ -1008,10 +1019,11 @@ class Style
      * @param string $sectionName
      * @param string|array $value
      * @param array|null $fullStyle
+     * @param int|null $replaceIndex
      *
      * @return int
      */
-    protected function addElement(string $sectionName, $value, array $fullStyle = null): int
+    protected function addElement(string $sectionName, $value, array $fullStyle = null, ?int $replaceIndex = null): int
     {
         if (is_string($value)) {
             $key = $value;
@@ -1023,6 +1035,31 @@ class Style
             ksort($value);
             $key = json_encode($value);
         }
+        if ($replaceIndex !== null && isset($this->elements[$sectionName]) && count($this->elements[$sectionName]) >= $replaceIndex) {
+            if ($replaceIndex === 0) {
+                // replace the 1st element
+                $this->elements[$sectionName] = array_merge(
+                    [$key => [
+                        'index' => 0,
+                        'value' => $value,
+                    ]],
+                    array_slice($this->elements[$sectionName], 1),
+                );
+            }
+            else {
+                $this->elements[$sectionName] = array_merge(
+                    array_slice($this->elements[$sectionName], 0, $replaceIndex),
+                    [$key => [
+                        'index' => $replaceIndex,
+                        'value' => $value,
+                    ]],
+                    array_slice($this->elements[$sectionName], $replaceIndex + 1),
+                );
+            }
+
+            return $replaceIndex;
+        }
+
         if (isset($this->elements[$sectionName][$key])) {
             return $this->elements[$sectionName][$key]['index'];
         }

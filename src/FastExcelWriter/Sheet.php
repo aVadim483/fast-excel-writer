@@ -2203,6 +2203,12 @@ class Sheet implements InterfaceSheetWriter
     protected function _parseAddress($cellAddress): ?array
     {
         if (is_array($cellAddress) && isset($cellAddress['row'], $cellAddress['col'])) {
+            $cellAddress['rowIndex'] = $cellAddress['row'] - 1;
+            $cellAddress['colIndex'] = $cellAddress['col'] - 1;
+            $cellAddress['width'] = $cellAddress['height'] = $cellAddress['cellCount'] = 1;
+            $cellAddress['rowNum1'] = $cellAddress['rowNum2'] = $cellAddress['row'];
+            $cellAddress['colNum1'] = $cellAddress['colNum2'] = $cellAddress['col'];
+
             return $cellAddress;
         }
 
@@ -2337,23 +2343,10 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setValue($cellAddress, $value, ?array $styles = null): Sheet
     {
-        $dimension = $this->_setCellData($cellAddress, $value, $styles, true);
-        if (isset($dimension['rowNum1'], $dimension['rowNum2'], $dimension['colNum1'], $dimension['colNum2'])) {
-            $rowCnt = $dimension['rowNum2'] - $dimension['colNum1'];
-            $colCnt = $dimension['colNum2'] - $dimension['colNum1'];
-
-            if ($rowCnt === 0 && $colCnt === 0) {
-                $this->lastTouch['row'] = 'cell';
-            }
-            elseif ($rowCnt === 0) {
-                $this->lastTouch['row'] = 'row';
-            }
-            else {
-                $this->lastTouch['row'] = 'area';
-            }
-            $this->_touch($dimension['rowNum1'] - 1, $dimension['colNum1'] - 1, $dimension['rowNum2'] - 1, $dimension['colNum2'] - 1, 'area');
+        $this->writeTo($cellAddress, $value, $styles);
+        if ($this->currentColIdx) {
+            $this->currentColIdx--;
         }
-        //$this->lastTouch['row'] = 'area';
 
         return $this;
     }

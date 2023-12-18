@@ -135,7 +135,7 @@ $area->setOuterBorder('R0C0:R1C10', Style::BORDER_THICK);
 $sheet->writeAreas();
 
 /*
- * You can set three levels for cell style^
+ * You can set three levels for cell styles:
  * 1. Default style for sheet via setDefaultStyle()
  * 2. Style for column via setColStyle()
  * 3. Style for cells in row via writeRow($row, $rowOptions)

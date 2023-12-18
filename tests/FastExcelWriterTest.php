@@ -212,8 +212,22 @@ final class FastExcelWriterTest extends TestCase
         // row 7
         $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0]);
 
+        // write to C8 and move pointer to D9;
+        $sheet->writeTo('C8', 'C8');
+        $sheet->writeCell('D8');
+
+        // write to C8 and move pointer to D9;
+        $sheet->setValue('C9', 'C9');
+        $sheet->writeCell('replace C9');
+
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
+
+        $this->assertEquals('text1 text1 text1 text1', $this->cells['1']['A']['v']);
+        $this->assertEquals('C8', $this->cells['8']['C']['v']);
+        $this->assertEquals('D8', $this->cells['8']['D']['v']);
+        $this->assertEquals('replace C9', $this->cells['9']['C']['v']);
+        $this->assertFalse(isset($this->cells['9']['D']['v']));
 
         $style = $this->getStyle('A1');
         $this->assertEquals(1, $style['font']['font-style-bold']);
@@ -438,10 +452,12 @@ final class FastExcelWriterTest extends TestCase
             unlink($testFileName);
         }
 
-        $excel = Excel::create(['Demo']);
+        $defaultStyle = $this->defaultStyle();
+        $excel = Excel::create(['Demo'], [Style::FONT => $defaultStyle]);
         $sheet = $excel->sheet();
 
         $area = $sheet->beginArea();
+        $area->setValue('b1', '.');
         $title = 'Title';
         $area->setValue('a2:c2', $title)
             ->applyFontSize(24)
@@ -477,7 +493,12 @@ final class FastExcelWriterTest extends TestCase
 
         $value = $this->getValue('a1');
         $this->assertEquals('', (string)$value);
-        $this->checkDefaultStyle($this->getStyle('a1', true));
+        $style = $this->getStyle('a1', true);
+        $this->assertEquals($defaultStyle['font-size'], $style['font-size']);
+
+        $style = $this->getStyle('b1', true);
+        //var_dump($style);
+        $this->checkDefaultStyle($this->getStyle('b1', true));
 
         $this->assertEquals($title, $this->getValue('a2'));
 

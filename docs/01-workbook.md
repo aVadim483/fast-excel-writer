@@ -12,6 +12,9 @@ $excel = Excel::create('Abc');
 // Creates workbook with several named sheets 'Foo' and 'Bar'
 $excel = Excel::create(['Foo', 'Bar']);
 
+// Creates workbook with default font style
+$excel = Excel::create(['Foo', 'Bar'], $font);
+
 // Sets locale
 // In most cases, the locale is automatically set correctly,
 // but sometimes you need to do it manually

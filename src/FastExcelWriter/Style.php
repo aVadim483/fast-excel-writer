@@ -126,8 +126,8 @@ class Style
     {
         self::$instance = $this;
         $defaultFont = [
-            'font-name' => 'Arial',
-            'font-size' => 10,
+            'font-name' => 'Calibri',
+            'font-size' => 11,
         ];
         $defaultStyle = [];
         $defaultFormatStyles = [];

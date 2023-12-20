@@ -55,10 +55,10 @@ final class FastExcelWriterTest extends TestCase
     protected function defaultStyle(): array
     {
         return [
-            'font-name' => 'Arial',
+            'font-name' => 'Calibri',
             'font-charset' => '1',
-            'font-family' => '2',
-            'font-size' => '10',
+            'font-family' => '0',
+            'font-size' => '11',
             'fill-pattern' => 'none',
             'border-left-style' => null,
             'border-right-style' => null,
@@ -249,7 +249,7 @@ final class FastExcelWriterTest extends TestCase
 
         $this->checkDefaultStyle($this->getStyle('a7', true));
 
-        unlink($testFileName);
+       // unlink($testFileName);
 
         $this->excelReader = null;
         $this->cells = [];

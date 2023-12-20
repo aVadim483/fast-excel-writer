@@ -252,6 +252,7 @@ class Style
     public function setDefaultFont(array $font): Style
     {
         $this->defaultFont = self::normalizeFont($font);
+        $this->addElement('fonts', $this->defaultFont, null, 0);
 
         return $this;
     }

@@ -554,7 +554,7 @@ class Excel implements InterfaceBookWriter
      */
     public function setDefaultFont($font): Excel
     {
-        $this->style->setDefaultFont(['GENERAL' => $font]);
+        $this->style->setDefaultFont($font);
 
         return $this;
     }
@@ -569,6 +569,9 @@ class Excel implements InterfaceBookWriter
     public function setDefaultStyle(array $style): Excel
     {
         $this->style->setDefaultStyle($style);
+        if (isset($style[Style::FONT])) {
+            $this->style->setDefaultFont($style[Style::FONT]);
+        }
 
         return $this;
     }

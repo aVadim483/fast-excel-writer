@@ -12,8 +12,13 @@ $excel = Excel::create('Abc');
 // Creates workbook with several named sheets 'Foo' and 'Bar'
 $excel = Excel::create(['Foo', 'Bar']);
 
+$font = [
+    Style::FONT_NAME => 'Arial', 
+    Style::FONT_SIZE => 14
+];
+
 // Creates workbook with default font style
-$excel = Excel::create(['Foo', 'Bar'], $font);
+$excel = Excel::create(['Foo', 'Bar'], [Style::FONT => $font]);
 
 // Sets locale
 // In most cases, the locale is automatically set correctly,
@@ -24,7 +29,7 @@ $excel->setLocale('fr');
 $excel->setDefaultFont($font);
 
 // Sets default styles
-$excel->setDefaultStyle($font);
+$excel->setDefaultStyle([Style::FONT => $font]);
 
 // Sets RTL settings
 $excel->setRightToLeft(true);

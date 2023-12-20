@@ -521,6 +521,7 @@ final class FastExcelWriterTest extends TestCase
         }
 
         $excel = Excel::create(['Demo']);
+        $excel->setDefaultStyle([Style::FONT => [Style::FONT_NAME => 'Century', Style::FONT_SIZE => 21]]);
         $excel->setLocale('en');
         $sheet = $excel->sheet();
         $sheet->setColFormats(['C' => 0, 'D' => '@money', 'E' => '0.00', 'F' => '@']);
@@ -540,6 +541,14 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $this->assertEquals([1, 1, '=D3+C3', '1'], $this->getValues(['c3', 'd3', 'e3', 'f3']));
+
+        $style = $this->getStyle('c3', true);
+        $this->assertEquals('21', $style['font-size']);
+        $this->assertEquals('Century', $style['font-name']);
+
+        $style = $this->getStyle('a1', true);
+        $this->assertEquals('21', $style['font-size']);
+        $this->assertEquals('Century', $style['font-name']);
 
         unlink($testFileName);
     }
@@ -663,7 +672,39 @@ final class FastExcelWriterTest extends TestCase
         ];
         $this->assertEquals($testList, $sheet->getImageList());
 
-        //unlink($testFileName);
+        unlink($testFileName);
+    }
+
+    public function testExcelWriterSingleValue()
+    {
+        $testFileName = __DIR__ . '/test_single.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setValue('B5', 'test');
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('test', $this->cells['B5']);
+        unlink($testFileName);
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setValue('B5:C7', 'test');
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('test', $this->cells['B5']);
+        unlink($testFileName);
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setValue([2, 5], 'test');
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('test', $this->cells['B5']);
+        unlink($testFileName);
     }
 
 }

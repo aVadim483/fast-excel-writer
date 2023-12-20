@@ -1782,10 +1782,10 @@ class Sheet implements InterfaceSheetWriter
      * Write value to the specified cell and move pointer to the next cell in the row
      *
      * $cellAddress formats:
-     *  'B5'
-     *  'B5:C7'
-     *  ['row' => 6, 'col' => 7]
-     *  [6, 7]
+     *      'B5'
+     *      'B5:C7'
+     *      ['col' => 2, 'row' => 5]
+     *      [2, 5]
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -2202,28 +2202,23 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _parseAddress($cellAddress): ?array
     {
-        if (is_array($cellAddress) && isset($cellAddress['row'], $cellAddress['col'])) {
-            $cellAddress['rowIndex'] = $cellAddress['row'] - 1;
-            $cellAddress['colIndex'] = $cellAddress['col'] - 1;
-            $cellAddress['width'] = $cellAddress['height'] = $cellAddress['cellCount'] = 1;
-            $cellAddress['rowNum1'] = $cellAddress['rowNum2'] = $cellAddress['row'];
-            $cellAddress['colNum1'] = $cellAddress['colNum2'] = $cellAddress['col'];
-
-            return $cellAddress;
-        }
-
         $result = ['row' => null, 'col' => null];
-        if (is_string($cellAddress)) {
-            $result = $this->_rangeDimension($cellAddress);
-        }
-        elseif (is_array($cellAddress)) {
+        if (is_array($cellAddress)) {
+            if (!isset($cellAddress['row'], $cellAddress['col']) && count($cellAddress) > 1) {
+                [$col, $row] = array_values($cellAddress);
+                $cellAddress = ['row' => $row, 'col' => $col];
+            }
             if (isset($cellAddress['row'], $cellAddress['col'])) {
                 $result = $cellAddress;
+                $result['rowIndex'] = $cellAddress['row'] - 1;
+                $result['colIndex'] = $cellAddress['col'] - 1;
+                $result['width'] = $result['height'] = $result['cellCount'] = 1;
+                $result['rowNum1'] = $result['rowNum2'] = $cellAddress['row'];
+                $result['colNum1'] = $result['colNum2'] = $cellAddress['col'];
             }
-            else {
-                [$row, $col] = array_values($cellAddress);
-                $result = ['row' => $row, 'col' => $col];
-            }
+        }
+        elseif (is_string($cellAddress)) {
+            $result = $this->_rangeDimension($cellAddress);
         }
 
         return $result;
@@ -2332,8 +2327,8 @@ class Sheet implements InterfaceSheetWriter
      * $cellAddress formats:
      *      'B5'
      *      'B5:C7'
-     *      ['row' => 6, 'col' => 7]
-     *      [6, 7]
+     *      ['col' => 2, 'row' => 5]
+     *      [2, 5]
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -2357,8 +2352,8 @@ class Sheet implements InterfaceSheetWriter
      * $cellAddress formats:
      *      'B5'
      *      'B5:C7'
-     *      ['row' => 6, 'col' => 7]
-     *      [6, 7]
+     *      ['col' => 2, 'row' => 5]
+     *      [2, 5]
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -2387,8 +2382,8 @@ class Sheet implements InterfaceSheetWriter
      * $cellAddress formats:
      *      'B5'
      *      'B5:C7'
-     *      ['row' => 6, 'col' => 7]
-     *      [6, 7]
+     *      ['col' => 2, 'row' => 5]
+     *      [2, 5]
      *
      * @param string|array $cellAddress
      *

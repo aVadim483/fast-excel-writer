@@ -107,7 +107,7 @@ class Area
                 $col = $addr['col'];
             }
             else {
-                [$row, $col] = $addr;
+                [$col, $row] = $addr;
             }
             $this->coord[] = ['row' => $row, 'col' => $col];
         }

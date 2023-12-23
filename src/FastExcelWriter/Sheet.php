@@ -2579,7 +2579,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @param $writer
+     * @param Writer $writer
      *
      * @return void
      */
@@ -2591,7 +2591,7 @@ class Sheet implements InterfaceSheetWriter
         }
 
         $sheetFileName = $writer->tempFilename();
-        $this->setFileWriter($writer::makeWriteBuffer($sheetFileName));
+        $this->setFileWriter($writer->makeWriteBuffer($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');
 

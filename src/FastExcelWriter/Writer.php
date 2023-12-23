@@ -168,7 +168,8 @@ class Writer
     . '|sort'
     . ')\s*\(/mui';
 
-    protected static array $buffers = [];
+    //protected static array $buffers = [];
+    protected array $buffers = [];
 
     /** @var Excel */
     protected $excel;
@@ -210,12 +211,14 @@ class Writer
      */
     public function __destruct()
     {
-        foreach (self::$buffers as $name => $buffer) {
+        /* moved to saveToFile()
+        foreach ($this->buffers as $name => $buffer) {
             if ($buffer) {
                 $buffer->close();
-                self::$buffers[$name] = null;
+                $this->buffers[$name] = null;
             }
         }
+        */
         if (!empty($this->tempFiles['tmp'])) {
             foreach ($this->tempFiles['tmp'] as $tempFile) {
                 if (is_file($tempFile)) {
@@ -233,14 +236,14 @@ class Writer
      *
      * @return WriterBuffer
      */
-    public static function makeWriteBuffer(string $fileName): WriterBuffer
+    public function makeWriteBuffer(string $fileName): WriterBuffer
     {
-        if (isset(self::$buffers[$fileName])) {
-            self::$buffers[$fileName] = null;
+        if (isset($this->buffers[$fileName])) {
+            $this->buffers[$fileName] = null;
         }
-        self::$buffers[$fileName] = new WriterBuffer($fileName);
+        $this->buffers[$fileName] = new WriterBuffer($fileName);
 
-        return self::$buffers[$fileName];
+        return $this->buffers[$fileName];
     }
 
     /**
@@ -343,6 +346,9 @@ class Writer
             ExceptionFile::throwNew('Directory "%s" for output file is not exist', dirname($fileName));
         }
         if (file_exists($fileName)) {
+            if (!$overWrite) {
+                ExceptionFile::throwNew('File "%s" already exists', $fileName);
+            }
             if ($overWrite && is_writable($fileName)) {
                 @unlink($fileName); //if the zip already exists, remove it
             }
@@ -383,6 +389,13 @@ class Writer
 
         // 'xl/theme/theme{%n}.xml' -- workbook
         $this->_writeThemesFiles($relationShips);
+
+        foreach ($this->buffers as $name => $buffer) {
+            if ($buffer) {
+                $buffer->close();
+                $this->buffers[$name] = null;
+            }
+        }
 
         $this->writeToTemp('xl/workbook.xml', $this->_buildWorkbookXML($this->excel));
         $this->writeToTemp('xl/_rels/workbook.xml.rels', $this->_buildWorkbookRelsXML($relationShips));
@@ -785,7 +798,7 @@ EOD;
      */
     protected function _writeSheetHead(Sheet $sheet): WriterBuffer
     {
-        $fileWriter = self::makeWriteBuffer($this->tempFilename());
+        $fileWriter = $this->makeWriteBuffer($this->tempFilename());
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $nameSpaces = [
             'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',

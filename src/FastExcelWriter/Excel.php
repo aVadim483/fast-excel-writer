@@ -196,6 +196,14 @@ class Excel implements InterfaceBookWriter
         ];
     }
 
+
+    public function __destruct()
+    {
+        if (!$this->saved && $this->fileName) {
+            $this->writer->saveToFile($this->fileName, false, $this->getMetadata());
+        }
+    }
+
     /**
      * @param string|object $class
      * @param string|array $options
@@ -1382,6 +1390,10 @@ class Excel implements InterfaceBookWriter
      */
     public function save(?string $fileName = null, ?bool $overWrite = true): bool
     {
+        if ($this->saved) {
+            ExceptionFile::throwNew('The workbook is already saved');
+        }
+
         if (!$fileName && $this->fileName) {
             $fileName = $this->fileName;
         }

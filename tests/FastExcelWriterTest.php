@@ -682,26 +682,31 @@ final class FastExcelWriterTest extends TestCase
             unlink($testFileName);
         }
 
-        $excel = Excel::create();
-        $sheet = $excel->sheet();
-        $sheet->setValue('B5', 'test');
-        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $excel1 = Excel::create();
+        $sheet1 = $excel1->sheet();
+        $sheet1->setValue('B5', 'test');
+
+        $excel2 = Excel::create();
+        $sheet2 = $excel2->sheet();
+        $sheet2->setValue('B5:C7', 'test');
+
+        $excel3 = Excel::create();
+        $sheet3 = $excel3->sheet();
+
+        $this->excelReader = $this->saveCheckRead($excel1, $testFileName);
         $this->cells = $this->excelReader->readCells();
         $this->assertEquals('test', $this->cells['B5']);
         unlink($testFileName);
+        $this->cells = [];
 
-        $excel = Excel::create();
-        $sheet = $excel->sheet();
-        $sheet->setValue('B5:C7', 'test');
-        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->excelReader = $this->saveCheckRead($excel2, $testFileName);
         $this->cells = $this->excelReader->readCells();
         $this->assertEquals('test', $this->cells['B5']);
         unlink($testFileName);
+        $this->cells = [];
 
-        $excel = Excel::create();
-        $sheet = $excel->sheet();
-        $sheet->setValue([2, 5], 'test');
-        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $sheet3->setValue([2, 5], 'test');
+        $this->excelReader = $this->saveCheckRead($excel3, $testFileName);
         $this->cells = $this->excelReader->readCells();
         $this->assertEquals('test', $this->cells['B5']);
         unlink($testFileName);

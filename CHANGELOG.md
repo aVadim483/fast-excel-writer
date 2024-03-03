@@ -1,3 +1,7 @@
+## v.5.0
+
+Chart support!
+
 ## v.4.7
 
 The order of writing entries to the file has been changed so that the mimetype is determined correctly

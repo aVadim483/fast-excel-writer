@@ -18,24 +18,34 @@ $excel = Excel::create(['Chart Demo']);
 $sheet = $excel->sheet();
 
 $data = [
-    ['',	2010,	2011,	2012],
-    ['Q1',   12,   15,		21],
-    ['Q2',   56,   73,		86],
-    ['Q3',   52,   61,		69],
-    ['Q4',   30,   32,		0],
+    ['',	        2010,	    2011,	        2012],
+    ['Q1',          12,         15,		        21],
+    ['Q2',          56,         73,		        86],
+    ['Q3',          52,         61,		        69],
+    ['Q4',          30,         32,		        0],
+    ['Total', '=SUM(B2:B5)', '=SUM(C2:C5)', '=SUM(D2:D5)'],
 ];
 
 foreach ($data as $row) {
     $sheet->writeRow($row);
 }
 
-$chart1 = Chart::make(Chart::TYPE_LINE_3D_STACKED, 'Stacked Line 3D Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
+$chart1 = Chart::make(Chart::TYPE_COLUMN, 'Column Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
     ->setDataSeriesTickLabels('A2:A5')
     ->setLegendPosition(Legend::POSITION_TOPRIGHT)
 ;
 
 //	Add the chart to the worksheet
-$sheet->addChart('a7:h20', $chart1);
+$sheet->addChart('a9:h22', $chart1);
+
+$chart2 = Chart::make(Chart::TYPE_PIE, 'Pie Chart', ['b6:d6'])
+    ->setDataSeriesTickLabels('b1:d1')
+    ->setLegendPosition(Legend::POSITION_TOPRIGHT)
+    ->setPlotShowPercent(true)
+;
+
+//	Add the chart to the worksheet
+$sheet->addChart('i9:m22', $chart2);
 
 // Save to XLSX-file
 $excel->save($outFileName);

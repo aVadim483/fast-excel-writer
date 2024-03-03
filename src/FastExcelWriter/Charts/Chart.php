@@ -8,6 +8,11 @@ use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Writer\Writer;
 use avadim\FastExcelWriter\Writer\FileWriter;
 
+/**
+ * This class uses source code of PHPExcel
+ *
+ * @license LGPL http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+ */
 class Chart
 {
     const TYPE_BAR              = 'bar';
@@ -484,7 +489,7 @@ class Chart
      *
      * @return boolean
      */
-    public function getPlotVisibleOnly()
+    public function getPlotVisibleOnly(): bool
     {
         return $this->plotVisibleOnly;
     }
@@ -493,9 +498,10 @@ class Chart
      * Set Plot Visible Only
      *
      * @param boolean $plotVisibleOnly
+     *
      * @return $this
      */
-    public function setPlotVisibleOnly($plotVisibleOnly = true)
+    public function setPlotVisibleOnly(bool $plotVisibleOnly = true): Chart
     {
         $this->plotVisibleOnly = $plotVisibleOnly;
 
@@ -507,7 +513,7 @@ class Chart
      *
      * @return string
      */
-    public function getDisplayBlanksAs()
+    public function getDisplayBlanksAs(): string
     {
         return $this->displayBlanksAs;
     }
@@ -517,7 +523,7 @@ class Chart
      *
      * @param string $displayBlanksAs
      */
-    public function setDisplayBlanksAs($displayBlanksAs = '0')
+    public function setDisplayBlanksAs(string $displayBlanksAs = '0')
     {
         $this->displayBlanksAs = $displayBlanksAs;
     }
@@ -528,7 +534,7 @@ class Chart
      *
      * @return Axis
      */
-    public function getChartAxisY()
+    public function getChartAxisY(): ?Axis
     {
         if ($this->yAxis !== null) {
             return $this->yAxis;
@@ -542,7 +548,7 @@ class Chart
      *
      * @return Axis
      */
-    public function getChartAxisX()
+    public function getChartAxisX(): ?Axis
     {
         if ($this->xAxis !== null) {
             return $this->xAxis;
@@ -556,7 +562,7 @@ class Chart
      *
      * @return GridLines
      */
-    public function getMajorGridlines()
+    public function getMajorGridlines(): ?GridLines
     {
         if ($this->majorGridlines !== null) {
             return $this->majorGridlines;
@@ -570,7 +576,7 @@ class Chart
      *
      * @return GridLines
      */
-    public function getMinorGridlines()
+    public function getMinorGridlines(): ?GridLines
     {
         if ($this->minorGridlines !== null) {
             return $this->minorGridlines;
@@ -583,12 +589,13 @@ class Chart
     /**
      * Set the Top Left position for the chart
      *
-     * @param    string    $cell
-     * @param    integer    $xOffset
-     * @param    integer    $yOffset
+     * @param string $cell
+     * @param integer|null $xOffset
+     * @param integer|null $yOffset
+     *
      * @return $this
      */
-    public function setTopLeftPosition($cell, $xOffset = null, $yOffset = null)
+    public function setTopLeftPosition(string $cell, int $xOffset = null, int $yOffset = null): Chart
     {
         $this->topLeftCellRef = $cell;
         if (!is_null($xOffset)) {
@@ -1366,6 +1373,17 @@ class Chart
                 }
                 $fileWriter->endElement();
                 $fileWriter->endElement();
+            }
+            else {
+                /* custom colors of data series
+                $fileWriter->startElement('c:spPr');
+                $fileWriter->startElement('a:solidFill');
+                $fileWriter->startElement('a:srgbClr');
+                $fileWriter->writeAttribute('val', '777777');
+                $fileWriter->endElement();
+                $fileWriter->endElement();
+                $fileWriter->endElement();
+                */
             }
 
             $plotSeriesValues = $plotGroup->getPlotValuesByIndex($plotSeriesRef);

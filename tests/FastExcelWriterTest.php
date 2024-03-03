@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Charts\Chart;
+use avadim\FastExcelWriter\Charts\Legend;
 use PHPUnit\Framework\TestCase;
 use avadim\FastExcelReader\Excel as ExcelReader;
 
@@ -717,4 +719,79 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+    public function testCharts()
+    {
+        $testFileName = __DIR__ . '/test_charts.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $data = [
+            ['',	2010,	2011,	2012],
+            ['Q1',   12,   15,		21],
+            ['Q2',   56,   73,		86],
+            ['Q3',   52,   61,		69],
+            ['Q4',   30,   32,		0],
+        ];
+
+        foreach ($data as $row) {
+            $sheet->writeRow($row);
+        }
+
+        $chartTypes1 = [
+            Chart::TYPE_BAR              ,
+            Chart::TYPE_BAR_STACKED      ,
+            Chart::TYPE_COLUMN           ,
+            Chart::TYPE_COLUMN_STACKED   ,
+            Chart::TYPE_LINE             ,
+            Chart::TYPE_LINE_STACKED     ,
+            Chart::TYPE_LINE_3D          ,
+            Chart::TYPE_LINE_3D_STACKED  ,
+            Chart::TYPE_AREA             ,
+            Chart::TYPE_AREA_STACKED     ,
+            Chart::TYPE_AREA_3D          ,
+            Chart::TYPE_AREA_3D_STACKED  ,
+        ];
+        $chartTypes2 = [
+            Chart::TYPE_PIE              ,
+            Chart::TYPE_PIE_3D           ,
+            Chart::TYPE_DONUT            ,
+        ];
+
+        $dataSeries = [
+            // key - cell with name of data series
+            // value - range with data series
+            'B1' => 'B2:B5',
+            'C1' => 'c2:c5',
+            'D1' => 'd2:d5',
+        ];
+        foreach ($chartTypes1 as $charType) {
+            $chart = Chart::make($charType, $charType, $dataSeries)
+                // X axis tick values
+                ->setDataSeriesTickLabels('A2:A5')
+                // Position of legend
+                ->setLegendPosition(Legend::POSITION_TOPRIGHT)
+            ;
+            $sheet->addChart('A7:H20', $chart);
+        }
+
+        foreach ($chartTypes2 as $charType) {
+            $chart = Chart::make($charType, $charType, ['b6:d6'])
+                // X axis tick values
+                ->setDataSeriesTickLabels('A2:A5')
+                // Position of legend
+                ->setLegendPosition(Legend::POSITION_TOPRIGHT)
+            ;
+            $sheet->addChart('A7:H20', $chart);
+        }
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals(2010, $this->cells['B1']);
+        unlink($testFileName);
+        $this->cells = [];
+    }
 }

@@ -13,7 +13,7 @@ use avadim\FastExcelWriter\Style;
 $timer = microtime(true);
 
 // Create Excel workbook
-$excel = Excel::create(['Without Psw', 'With Psw']);
+$excel = Excel::create(['Chart Demo']);
 
 $sheet = $excel->sheet();
 

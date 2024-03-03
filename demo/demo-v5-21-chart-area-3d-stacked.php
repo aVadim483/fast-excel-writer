@@ -13,7 +13,7 @@ use avadim\FastExcelWriter\Style;
 $timer = microtime(true);
 
 // Create Excel workbook
-$excel = Excel::create(['Without Psw', 'With Psw']);
+$excel = Excel::create(['Chart Demo']);
 
 $sheet = $excel->sheet();
 
@@ -29,7 +29,7 @@ foreach ($data as $row) {
     $sheet->writeRow($row);
 }
 
-$chart1 = Chart::make(Chart::TYPE_AREA_3D_STACKED, 'Area Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
+$chart1 = Chart::make(Chart::TYPE_AREA_3D_STACKED, 'Stacked Area 3D Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
     ->setDataSeriesTickLabels('A2:A5')
     ->setLegendPosition(Legend::POSITION_TOPRIGHT)
 ;

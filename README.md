@@ -26,9 +26,11 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 * You can add formulas, notes and images in you XLSX-files
 * Supports workbook and sheet protection with/without passwords 
 * Supports page settings - page margins, page size
+* Inserting multiple charts
 
 Jump To:
 * [Changes in version 4](#changes-in-version-4)
+* [Changes in version 5](#changes-in-version-5)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
 * [Row's settings](#rows-settings)
@@ -65,10 +67,15 @@ Jump To:
   * [Apply Fonts](/docs/04-styles.md#apply-fonts)
   * [Apply Colors](/docs/04-styles.md#apply-colors)
   * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
-* [Protection of workbook and sheets](/docs/05-protection.md)
-  * [Workbook protection](/docs/05-protection.md#workbook-protection)
-  * [Sheet protection](/docs/05-protection.md#sheet-protection)
-  * [Cells locking/unlocking](/docs/05-protection.md#cells-lockingunlocking)
+* [Charts](/docs/05-charts.md)
+  * [Simple usage](/docs/05-charts.md#simple-usage-of-chart)
+  * [Multiple charts](/docs/05-charts.md#multiple-charts)
+  * [Chart types](/docs/05-charts.md#chart-types)
+  * [Useful Chart Methods](/docs/05-charts.md#useful-chart-methods)
+* [Protection of workbook and sheets](/docs/06-protection.md)
+  * [Workbook protection](/docs/06-protection.md#workbook-protection)
+  * [Sheet protection](/docs/06-protection.md#sheet-protection)
+  * [Cells locking/unlocking](/docs/06-protection.md#cells-lockingunlocking)
 * [FastExcelWriter vs PhpSpreadsheet](#fastexcelwriter-vs-phpspreadsheet)
 * [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 
@@ -86,6 +93,10 @@ composer require avadim/fast-excel-writer
 * Now the library works even faster
 * Added a fluent interface for applying styles.
 * New methods and code refactoring
+
+## Changes In Version 5
+
+* General is Chart support
 
 ## Usage
 

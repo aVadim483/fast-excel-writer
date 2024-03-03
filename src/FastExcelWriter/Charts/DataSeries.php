@@ -5,6 +5,11 @@ namespace avadim\FastExcelWriter\Charts;
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Sheet;
 
+/**
+ * This class uses source code of PHPExcel
+ *
+ * @license LGPL http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+ */
 class DataSeries
 {
     const TYPE_BARCHART = 'barChart';

@@ -413,10 +413,7 @@ class Writer
         $this->writeToTemp('docProps/core.xml', $this->_buildCoreXML($metadata));
         $this->writeToTemp('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
         $this->writeToTemp('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
-
-        //$this->writeToTemp('xl/sharedStrings.xml', '');
-        //$this->writeToTemp('xl/theme/theme1.xml', '');
-
+/*
         $samplesFile = __DIR__ . '/../samples.php';
         if (is_file($samplesFile)) {
             $samples = include($samplesFile);
@@ -424,8 +421,9 @@ class Writer
         else {
             $samples = [];
         }
+*/
+        $samples = [];
 
-//var_dump($this->tempFiles['zip']);
         $this->writeEntryToZip('[Content_Types].xml', $samples);
         $this->writeEntriesToZip('_rels/', $samples);
         $this->writeEntriesToZip('xl/workbook.xml', $samples);

@@ -2,11 +2,16 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelWriter\Charts\Chart;
+use avadim\FastExcelWriter\Charts\DataSeries;
+use avadim\FastExcelWriter\Charts\DataSeriesValues;
+use avadim\FastExcelWriter\Charts\PlotArea;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
-use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
+use avadim\FastExcelWriter\Writer\Writer;
+use avadim\FastExcelWriter\Writer\FileWriter;
 
 /**
  * Class Sheet
@@ -67,7 +72,7 @@ class Sheet implements InterfaceSheetWriter
     // written cols of row
     public int $colCountWritten = 0;
 
-    public ?WriterBuffer $fileWriter = null;
+    public ?FileWriter $fileWriter = null;
 
     public array $defaultStyle = [];
 
@@ -130,6 +135,8 @@ class Sheet implements InterfaceSheetWriter
     protected array $notes = [];
 
     protected array $media = [];
+
+    protected array $charts = [];
 
     protected array $protection = [];
 
@@ -259,12 +266,61 @@ class Sheet implements InterfaceSheetWriter
         }
     }
 
+
+    public function makeChart($plotType, $title = null, $values = null)
+    {
+        if ($values instanceof PlotArea) {
+            $plotArea = $values;
+            $chart = new Chart($title, $plotArea);
+            $chart->setChartType($plotType);
+        }
+        else {
+            $dataSeries = null;
+            if ($values instanceof DataSeries) {
+                $dataSeries = $values;
+            }
+            elseif ($values instanceof DataSeriesValues) {
+                $dataSeries = new DataSeries(
+                    $plotType,		// plotType
+                    [$values],		// plotValues
+                );
+            }
+            elseif (is_array($values)) {
+                $dataSeriesValues = [];
+                foreach ($values as $data) {
+                    if ($data instanceof DataSeriesValues) {
+                        $dataSeriesValues[] = $data;
+                    }
+                    elseif (is_string($data)) {
+                        $dimension = Excel::rangeDimension(str_replace('$', '', $data));
+                        if (!strpos($dimension['absAddress'], '!')) {
+                            $range = $this->getName() . '!' . $dimension['absAddress'];
+                        }
+                        else {
+                            $range = $dimension['absAddress'];
+                        }
+                        $dataSeriesValues[] = new DataSeriesValues('Number', $range, NULL, $dimension['cellCount']);
+
+                    }
+                }
+                $dataSeries = new DataSeries(
+                    $plotType,		// plotType
+                    $dataSeriesValues,		// plotValues
+                );
+            }
+            $plotArea = new PlotArea(NULL, [$dataSeries]);
+            $chart = new Chart($title, $plotArea);
+        }
+
+        return $chart;
+    }
+
     /**
-     * @param WriterBuffer $fileWriter
+     * @param FileWriter $fileWriter
      *
      * @return $this
      */
-    public function setFileWriter(WriterBuffer $fileWriter): Sheet
+    public function setFileWriter(FileWriter $fileWriter): Sheet
     {
         if (!$this->fileWriter) {
             $this->fileWriter = $fileWriter;
@@ -276,11 +332,11 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @param WriterBuffer $fileWriter
+     * @param FileWriter $fileWriter
      *
      * @return $this
      */
-    public function resetFileWriter(WriterBuffer $fileWriter): Sheet
+    public function resetFileWriter(FileWriter $fileWriter): Sheet
     {
         $this->fileWriter = $fileWriter;
         $this->fileTempName = $fileWriter->getFileName();
@@ -3106,6 +3162,46 @@ class Sheet implements InterfaceSheetWriter
     {
 
         return $this->media['images'] ?? [];
+    }
+
+    /**
+     * @param string $range Set the position where the chart should appear in the worksheet
+     * @param Chart $chart Chart object
+     *
+     * @return $this
+     */
+    public function addChart(string $range, Chart $chart): Sheet
+    {
+        $dimension = Excel::rangeDimension($range, true);
+        $chart->setTopLeftPosition($dimension['cell1']);
+        $chart->setBottomRightPosition($dimension['cell2']);
+        $chart->setSheet($this);
+
+        $this->charts[] = $chart;
+        if (!$chart->getName()) {
+            $chart->setName('Chart ' . count($this->charts));
+        }
+
+        if (!isset($this->relationships['drawing'])) {
+            $file = 'drawing' . $this->index . '.xml';
+            $this->relationships['drawing'][++$this->relationshipId] = [
+                'file' => $file,
+                'link' => '../drawings/' . $file,
+                'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
+                'extra' => '',
+            ];
+            $this->setBottomNodesOptions('drawing', ['r:id' => 'rId' . $this->relationshipId]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCharts(): array
+    {
+        return $this->charts;
     }
 
     // === PROTECTION === //

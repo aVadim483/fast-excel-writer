@@ -1,9 +1,12 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\Writer;
 
+use avadim\FastExcelWriter\Charts\Chart;
+use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
+use avadim\FastExcelWriter\Sheet;
 
 /**
  * Class Writer
@@ -184,6 +187,7 @@ class Writer
     protected \ZipArchive $zip;
 
 
+
     /**
      * Writer constructor
      *
@@ -231,17 +235,22 @@ class Writer
         }
     }
 
+    protected function _log($msg)
+    {
+        //echo $msg, "<br>\n";
+    }
+
     /**
      * @param string $fileName
      *
-     * @return WriterBuffer
+     * @return FileWriter
      */
-    public function makeWriteBuffer(string $fileName): WriterBuffer
+    public function makeWriteBuffer(string $fileName): FileWriter
     {
         if (isset($this->buffers[$fileName])) {
             $this->buffers[$fileName] = null;
         }
-        $this->buffers[$fileName] = new WriterBuffer($fileName);
+        $this->buffers[$fileName] = new FileWriter($fileName);
 
         return $this->buffers[$fileName];
     }
@@ -369,6 +378,7 @@ class Writer
         // xl/comments{%n}.xml
         // xl/drawings/vmlDrawing{%n}.vml
         // xl/drawings/drawing{%n}.xml
+        // xl/charts/chart{%n}.xml
         // xl/drawings/_rels/drawing{%n}.xml.rels
         $this->_writeSheetsFiles($sheets, $relationShips);
 
@@ -404,15 +414,26 @@ class Writer
         $this->writeToTemp('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
         $this->writeToTemp('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
 
+        //$this->writeToTemp('xl/sharedStrings.xml', '');
+        //$this->writeToTemp('xl/theme/theme1.xml', '');
 
-        $this->writeEntryToZip('[Content_Types].xml');
-        $this->writeEntriesToZip('_rels/');
-        $this->writeEntriesToZip('xl/workbook.xml');
-        $this->writeEntriesToZip('xl/_rels/');
-        $this->writeEntriesToZip('xl/worksheets/sheet');
-        $this->writeEntriesToZip('xl/worksheets/_rels/');
-        $this->writeEntriesToZip('xl/');
-        $this->writeEntriesToZip('');
+        $samplesFile = __DIR__ . '/../samples.php';
+        if (is_file($samplesFile)) {
+            $samples = include($samplesFile);
+        }
+        else {
+            $samples = [];
+        }
+
+//var_dump($this->tempFiles['zip']);
+        $this->writeEntryToZip('[Content_Types].xml', $samples);
+        $this->writeEntriesToZip('_rels/', $samples);
+        $this->writeEntriesToZip('xl/workbook.xml', $samples);
+        $this->writeEntriesToZip('xl/_rels/', $samples);
+        $this->writeEntriesToZip('xl/worksheets/sheet', $samples);
+        $this->writeEntriesToZip('xl/worksheets/_rels/', $samples);
+        $this->writeEntriesToZip('xl/', $samples);
+        $this->writeEntriesToZip('', $samples);
 
         $this->zip->close();
 
@@ -464,13 +485,17 @@ class Writer
      *
      * @return void
      */
-    protected function writeEntryToZip(string $entry)
+    protected function writeEntryToZip(string $entry, ?array $samples = [])
     {
         if (!isset($this->tempFiles['zip'][$entry])) {
             ExceptionFile::throwNew('Entry "%s" is not defined', $entry);
         }
-        if (!$this->zip->addFile($this->tempFiles['zip'][$entry], $entry)) {
+        $file = !empty($samples[$entry]) ? $samples[$entry] : $this->tempFiles['zip'][$entry];
+        if (!$this->zip->addFile($file, $entry)) {
             ExceptionFile::throwNew('Could not write entry "%s" to zip', $entry);
+        }
+        else {
+            $this->_log($entry . ' => ' . $file);
         }
         unset($this->tempFiles['zip'][$entry]);
     }
@@ -480,7 +505,7 @@ class Writer
      *
      * @return void
      */
-    protected function writeEntriesToZip(?string $mask)
+    protected function writeEntriesToZip(?string $mask, ?array $samples = [])
     {
         if ($mask) {
             $list = [];
@@ -496,9 +521,13 @@ class Writer
         }
         ksort($list);
         foreach ($list as $entry => $file) {
+            $file = !empty($samples[$entry]) ? $samples[$entry] : $file;
             if (!$this->zip->addFile($file, $entry)) {
                 $error = $this->zip->getStatusString();
                 ExceptionFile::throwNew('Could not write entry "%s" to zip (error: %s)', $entry, $error);
+            }
+            else {
+                $this->_log($entry . ' => ' . $file);
             }
         }
     }
@@ -534,6 +563,20 @@ class Writer
                 $this->writeToTemp($entry, $xmlContent);
             }
 
+            $chartList = $sheet->getCharts();
+            if ($chartList) {
+                // 'xl/charts/chart{%n}.xml'
+                foreach ($chartList as $chartIdx => $chart) {
+                    $entry = 'xl/charts/chart' . ($chartIdx + 1) . '.xml';
+                    $this->_writeChartFile($entry, $chart, $relationShips);
+                    if (empty($relationShips['override'][$entry])) {
+                        $relationShips['override'][$entry] = [
+                            'content_type' => 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml',
+                        ];
+                    }
+                }
+            }
+
             $commentList = $sheet->getNotes();
             if ($commentList) {
                 // 'xl/comments{%n}.xml'
@@ -549,12 +592,13 @@ class Writer
                     ];
                 }
             }
+
             $imageList = $sheet->getImages();
-            if ($imageList) {
+            if ($imageList || $chartList) {
                 // 'xl/drawings/drawing{%n}.xml'
                 // 'xl/drawings/_rels/drawing{%n}.xml.rels'
                 $entry = 'xl/drawings/drawing' . $sheet->index . '.xml';
-                $this->_writeDrawingFile($entry, $imageList, $relationShips);
+                $this->_writeDrawingFile($entry, $imageList, $chartList, $relationShips);
                 if (empty($relationShips['override'][$entry])) {
                     $relationShips['override'][$entry] = [
                         'content_type' => 'application/vnd.openxmlformats-officedocument.drawing+xml',
@@ -651,7 +695,7 @@ class Writer
                 'xmlns:xr' => 'http://schemas.microsoft.com/office/spreadsheetml/2014/revision',
             ];
             $xmlString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-            $xmlString .= '<comments' . $this->_tagOptions($nameSpaces) . '>';
+            $xmlString .= '<comments' . self::tagAttributes($nameSpaces) . '>';
             $xmlString .= '<authors><author/></authors>';
             $xmlString .= '<commentList>';
             foreach ($commentList as $comment) {
@@ -688,7 +732,7 @@ class Writer
                 'xmlns:o' => 'urn:schemas-microsoft-com:office:office',
                 'xmlns:x' => 'urn:schemas-microsoft-com:office:excel',
             ];
-            $xmlDrawing = '<xml' . $this->_tagOptions($nameSpaces) . '>';
+            $xmlDrawing = '<xml' . self::tagAttributes($nameSpaces) . '>';
             $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
             $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
             $xmlDrawing .= '<v:fill color="#0000FF"/>';
@@ -716,31 +760,40 @@ class Writer
         }
     }
 
+    protected function _writeChartFile(string $entry, Chart $chart, array &$relationShips)
+    {
+        $fileWriter = $this->makeWriteBuffer($this->tempFilename($entry));
+        $chart->writeChart($fileWriter);
+    }
+
     /**
      * @param string $entry
      * @param array $imageList
+     * @param array $chartList
      * @param array $relationShips
      */
-    protected function _writeDrawingFile(string $entry, array $imageList, array &$relationShips)
+    protected function _writeDrawingFile(string $entry, array $imageList, array $chartList, array &$relationShips)
     {
-        $error = null;
+        $fileWriter = $this->makeWriteBuffer($this->tempFilename($entry));
 
         $relations = [];
-        $xmlDrawingString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+        $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
+        
         $nameSpaces = [
             'xmlns:xdr' => 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
             'xmlns:a' => 'http://schemas.openxmlformats.org/drawingml/2006/main',
         ];
-        $xmlDrawingString .= '<xdr:wsDr' . $this->_tagOptions($nameSpaces) . '>';
+        $fileWriter->startElement('<xdr:wsDr' . self::tagAttributes($nameSpaces) . '>');
 
+        $objectId = 0;
         foreach ($imageList as $image) {
             $objectId = $image['id'];
             $rId = 'rId' . $image['id'];
             $baseName = $image['original'];
-            $width = $image['width'] * Excel::EMU_PER_PIXEL;
-            $height = $image['height'] * Excel::EMU_PER_PIXEL;
+            $width = Excel::pixelsToEMU($image['width']);
+            $height = Excel::pixelsToEMU($image['height']);
 
-            $xmlDrawingString .= <<<EOD
+            $xmlString = <<<EOD
   <xdr:oneCellAnchor>
     <xdr:from>
       <xdr:col>{$image['col_index']}</xdr:col>
@@ -772,14 +825,89 @@ class Writer
     <xdr:clientData/>
   </xdr:oneCellAnchor>
 EOD;
-            $relations[$image['name']] = [
+            $fileWriter->writeElement($xmlString);
+            $relations[] = [
                 'r_id' => $rId,
                 'target' => '../media/' . $image['name'],
                 'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
             ];
         }
-        $xmlDrawingString .= '</xdr:wsDr>';
-        if ($this->writeToTemp($entry, $xmlDrawingString) && $relations) {
+
+        $objectId++;
+        foreach ($chartList as $chartIdx => $chart) {
+            $relId = ($objectId + $chartIdx) * 1025;
+            $tl = $chart->getTopLeftPosition();
+            $tl['colRow'] = Excel::rangeDimension($tl['cell']);
+
+            $br = $chart->getBottomRightPosition();
+            $br['colRow'] = Excel::rangeDimension($br['cell']);
+
+            $fileWriter->startElement('xdr:twoCellAnchor');
+
+            $fileWriter->startElement('xdr:from');
+            $fileWriter->writeElement('xdr:col', $tl['colRow']['colIndex']);
+            $fileWriter->writeElement('xdr:colOff', Excel::pixelsToEMU($tl['xOffset']));
+            $fileWriter->writeElement('xdr:row', $tl['colRow']['rowIndex']);
+            $fileWriter->writeElement('xdr:rowOff', Excel::pixelsToEMU($tl['yOffset']));
+            $fileWriter->endElement();
+            $fileWriter->startElement('xdr:to');
+            $fileWriter->writeElement('xdr:col', $br['colRow']['colIndex']);
+            $fileWriter->writeElement('xdr:colOff', Excel::pixelsToEMU($br['xOffset']));
+            $fileWriter->writeElement('xdr:row', $br['colRow']['rowIndex']);
+            $fileWriter->writeElement('xdr:rowOff', Excel::pixelsToEMU($br['yOffset']));
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('xdr:graphicFrame');
+            $fileWriter->writeAttribute('macro', '');
+            $fileWriter->startElement('xdr:nvGraphicFramePr');
+            $fileWriter->startElement('xdr:cNvPr');
+            $fileWriter->writeAttribute('name', $chart->getName());
+            $fileWriter->writeAttribute('id', $relId);
+            $fileWriter->endElement();
+            $fileWriter->startElement('xdr:cNvGraphicFramePr');
+            $fileWriter->startElement('a:graphicFrameLocks');
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('xdr:xfrm');
+            $fileWriter->startElement('a:off');
+            $fileWriter->writeAttribute('x', '0');
+            $fileWriter->writeAttribute('y', '0');
+            $fileWriter->endElement();
+            $fileWriter->startElement('a:ext');
+            $fileWriter->writeAttribute('cx', '0');
+            $fileWriter->writeAttribute('cy', '0');
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('a:graphic');
+            $fileWriter->startElement('a:graphicData');
+            $fileWriter->writeAttribute('uri', 'http://schemas.openxmlformats.org/drawingml/2006/chart');
+            $fileWriter->startElement('c:chart');
+            $fileWriter->writeAttribute('xmlns:c', 'http://schemas.openxmlformats.org/drawingml/2006/chart');
+            $fileWriter->writeAttribute('xmlns:r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+            $fileWriter->writeAttribute('r:id', 'rId' . ($chartIdx + 1));
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('xdr:clientData');
+            $fileWriter->endElement();
+
+            $fileWriter->endElement();
+
+            $relations[] = [
+                'r_id' => 'rId' . ($chartIdx + 1),
+                'target' => '../charts/chart' . ($chartIdx + 1) . '.xml',
+                'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart',
+            ];
+        }
+
+        $fileWriter->endElement(); // '</xdr:wsDr>'
+        $fileWriter->close();
+        if ($relations) {
             $xmlRelations = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $xmlRelations .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
             foreach ($relations as $relData) {
@@ -794,9 +922,9 @@ EOD;
     /**
      * @param Sheet $sheet
      *
-     * @return WriterBuffer
+     * @return FileWriter
      */
-    protected function _writeSheetHead(Sheet $sheet): WriterBuffer
+    protected function _writeSheetHead(Sheet $sheet): FileWriter
     {
         $fileWriter = $this->makeWriteBuffer($this->tempFilename());
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
@@ -812,7 +940,7 @@ EOD;
             //'xmlns:xr3' => 'http://schemas.microsoft.com/office/spreadsheetml/2016/revision3',
             'xr:uid' => '{' . Excel::generateUuid() . '}',
         ];
-        $fileWriter->write('<worksheet' . $this->_tagOptions($nameSpaces) . '>');
+        $fileWriter->write('<worksheet' . self::tagAttributes($nameSpaces) . '>');
 
         if ($sheet->getPageFit()) {
             $fileWriter->write('<sheetPr>');
@@ -831,9 +959,9 @@ EOD;
         $fileWriter->write('<sheetViews>');
 
         $sheetViews = $sheet->getSheetViews();
-        $fileWriter->write('<sheetView' . $this->_tagOptions($sheetViews[0]['_attr']) . '>');
+        $fileWriter->write('<sheetView' . self::tagAttributes($sheetViews[0]['_attr']) . '>');
         foreach ($sheetViews[0]['_items'] as $item) {
-            $fileWriter->write('<' . $item['_tag'] . $this->_tagOptions($item['_attr']) . '/>');
+            $fileWriter->write('<' . $item['_tag'] . self::tagAttributes($item['_attr']) . '/>');
         }
         $fileWriter->write('</sheetView>');
 
@@ -843,7 +971,7 @@ EOD;
         if ($cols) {
             $fileWriter->write('<cols>');
             foreach ($cols as $colSettings) {
-                $fileWriter->write('<col' . $this->_tagOptions($colSettings) . '/>');
+                $fileWriter->write('<col' . self::tagAttributes($colSettings) . '/>');
             }
             $fileWriter->write('</cols>');
         }
@@ -865,14 +993,14 @@ EOD;
     }
 
     /**
-     * @param array $options
+     * @param array $attributes
      *
      * @return string
      */
-    protected function _tagOptions(array $options): string
+    public static function tagAttributes(array $attributes): string
     {
         $result = '';
-        foreach ($options as $key => $val) {
+        foreach ($attributes as $key => $val) {
             if ($val === true) {
                 $val = 'true';
             }
@@ -898,7 +1026,7 @@ EOD;
             unset($tagOptions['__kids']);
         }
         if ($tagOptions) {
-            $result = '<' . $tagName . $this->_tagOptions($tagOptions);
+            $result = '<' . $tagName . self::tagAttributes($tagOptions);
         }
         else {
             $result = '<' . $tagName;
@@ -929,7 +1057,7 @@ EOD;
         $sheet->writeDataEnd();
 
         if (($options = $sheet->getProtection()) && !empty($options['sheet'])) {
-            $sheet->fileWriter->write('<sheetProtection' . $this->_tagOptions($options) . '/>');
+            $sheet->fileWriter->write('<sheetProtection' . self::tagAttributes($options) . '/>');
         }
 
         $mergedCells = $sheet->getMergedCells();
@@ -1043,14 +1171,14 @@ EOD;
     }
 
     /**
-     * @param WriterBuffer $file
+     * @param FileWriter $file
      * @param int $rowNumber
      * @param int $colNumber
      * @param mixed $value
      * @param mixed $numFormatType
      * @param int|null $cellStyleIdx
      */
-    public function _writeCell(WriterBuffer $file, int $rowNumber, int $colNumber, $value, $numFormatType, ?int $cellStyleIdx = 0)
+    public function _writeCell(FileWriter $file, int $rowNumber, int $colNumber, $value, $numFormatType, ?int $cellStyleIdx = 0)
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 
@@ -1172,7 +1300,7 @@ EOD;
         ];
 
         $temporaryFilename = $this->tempFilename('xl/styles.xml');
-        $file = new WriterBuffer($temporaryFilename);
+        $file = new FileWriter($temporaryFilename);
         $file->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $links = implode("\n", $schemaLinks);
         $file->write("<styleSheet $links>");
@@ -1303,12 +1431,12 @@ EOD;
                 }
 
                 if ($kids) {
-                    $file->write('<xf ' . $this->_tagOptions($xfAttr) . '>');
+                    $file->write('<xf ' . self::tagAttributes($xfAttr) . '>');
                     $file->write(implode('', $kids));
                     $file->write('</xf>');
                 }
                 else {
-                    $file->write('<xf ' . $this->_tagOptions($xfAttr) . '/>');
+                    $file->write('<xf ' . self::tagAttributes($xfAttr) . '/>');
                 }
             }
 
@@ -1365,7 +1493,7 @@ EOD;
             'xmlns:vt' => 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes',
         ];
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
-        $xmlText .= '<Properties' . $this->_tagOptions($nameSpaces) . '>';
+        $xmlText .= '<Properties' . self::tagAttributes($nameSpaces) . '>';
         $xmlText .= '<TotalTime>0</TotalTime>';
         $xmlText .= '<Company>' . self::xmlSpecialChars($metadata['company'] ?? '') . '</Company>';
         $xmlText .= '<HyperlinksChanged>false</HyperlinksChanged>';
@@ -1431,16 +1559,16 @@ EOD;
         ];
         $sheets = $excel->getSheets();
         $xmlText = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n";
-        $xmlText .= '<workbook' . $this->_tagOptions($nameSpaces) . '>';
+        $xmlText .= '<workbook' . self::tagAttributes($nameSpaces) . '>';
         $xmlText .= '<fileVersion appName="xl" lastEdited="4" lowestEdited="4" rupBuild="4505"/>';
         $xmlText .= '<workbookPr date1904="false"/>';
         if ($options = $excel->getProtection()) {
-            $xmlText .= '<workbookProtection' . $this->_tagOptions($options) . '/>';
+            $xmlText .= '<workbookProtection' . self::tagAttributes($options) . '/>';
         }
 
         $xmlText .= '<bookViews>';
         foreach ($excel->getBookViews() as $workbookView) {
-            $xmlText .= '<workbookView' . $this->_tagOptions($workbookView) . '/>';
+            $xmlText .= '<workbookView' . self::tagAttributes($workbookView) . '/>';
         }
         $xmlText .= '</bookViews>';
 

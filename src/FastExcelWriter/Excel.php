@@ -7,6 +7,7 @@ use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
+use avadim\FastExcelWriter\Writer\Writer;
 
 /**
  * Class Excel
@@ -587,25 +588,30 @@ class Excel implements InterfaceBookWriter
     /**
      * Convert letter to number (ONE based)
      *
-     * @param $colLetter
+     * @param string $colLetter
      *
      * @return int
      */
-    public static function colNumber($colLetter): int
+    public static function colNumber(string $colLetter): int
     {
-
+        if ($colLetter && $colLetter[0] === '$') {
+            $colLetter = substr($colLetter, 1);
+        }
         return Helper::colNumber($colLetter);
     }
 
     /**
      * Convert letter to index (ZERO based)
      *
-     * @param $colLetter
+     * @param string $colLetter
      *
      * @return int
      */
-    public static function colIndex($colLetter): int
+    public static function colIndex(string $colLetter): int
     {
+        if ($colLetter && $colLetter[0] === '$') {
+            $colLetter = substr($colLetter, 1);
+        }
         $colNumber = self::colNumber($colLetter);
 
         if ($colNumber > 0) {
@@ -827,7 +833,7 @@ class Excel implements InterfaceBookWriter
                 $sheetName = null;
             }
             $range = strtoupper($range);
-            if (preg_match('/^([A-Z]+)(\d+)(:([A-Z]+)(\d+))?$/', $range, $matches)) {
+            if (preg_match('/^(\$?[A-Z]+)(\$?\d+)(:(\$?[A-Z]+)(\$?\d+))?$/', $range, $matches)) {
                 if (empty($matches[3])) {
                     $matches[4] = $matches[1];
                     $matches[5] = $matches[2];
@@ -937,6 +943,28 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * @param string $sheetName
+     * @param string $address
+     * @param bool|null $force
+     *
+     * @return string
+     */
+    public static function fullAddress(string $sheetName, string $address, ?bool $force = false): string
+    {
+        if (strpos($address, '!') && !$force) {
+            return $address;
+        }
+
+        if (strpos($address, '!')) {
+            [$sheetName, $cells] = explode('!', $address);
+        }
+        else {
+            $cells = $address;
+        }
+        return '\'' . $sheetName . '\'!' . $cells;
+    }
+
+    /**
      * Return offsets by relative address (zero based)
      *
      * @param string $relAddress
@@ -966,6 +994,16 @@ class Excel implements InterfaceBookWriter
             $rowOffset2,
             $colOffset2,
         ];
+    }
+
+    /**
+     * @param $pixels
+     *
+     * @return float|int
+     */
+    public static function pixelsToEMU($pixels)
+    {
+        return $pixels * self::EMU_PER_PIXEL;
     }
 
     /**

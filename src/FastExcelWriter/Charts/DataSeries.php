@@ -118,7 +118,7 @@ class DataSeries
     {
         $this->plotChartType = $chartType;
         if ($dataSource) {
-            $this->setDataSeriesValues($dataSource);
+            $this->setDataSeriesSource($dataSource);
         }
         if ($dataLabels) {
             $this->setDataSeriesLabels($dataLabels);
@@ -143,60 +143,114 @@ class DataSeries
      *
      * @return $this
      */
-    public function setDataSeriesValues($dataSource): DataSeries
+    public function setDataSeriesSource($dataSource): DataSeries
     {
         $this->dataSeriesValues = $this->dataSeriesLabels = $this->plotOrder = [];
-        $this->addDataSeriesValues($dataSource);
+        $this->addDataSeriesSource($dataSource);
 
         return $this;
     }
 
     /**
+     * @param string $dataSource
+     * @param string|null $formatCode
+     *
+     * @return DataSeriesValues
+     */
+    private static function makeDataSeriesValues(string $dataSource, ?string $formatCode = null): DataSeriesValues
+    {
+        $dimension = Excel::rangeDimension(str_replace('$', '', $dataSource));
+
+        return new DataSeriesValues('Number', $dimension['absAddress'], $formatCode, $dimension['cellCount']);
+    }
+
+    /**
+     * @param string $dataSource
+     *
+     * @return DataSeriesValues
+     */
+    private static function makeDataSeriesLabels(string $dataSource): DataSeriesValues
+    {
+        if ($dataSource[0] === '=') {
+            $dataSource = substr($dataSource, 1);
+        }
+        $dimension = Excel::rangeDimension(str_replace('$', '', $dataSource));
+        if (isset($dimension['absAddress'])) {
+            $value = '=' . $dimension['absAddress'];
+        }
+        else {
+            $value = $dataSource;
+        }
+
+        return new DataSeriesValues('String', $value, NULL, 1);
+    }
+
+    /**
      * @param $dataSource
+     * @param $dataLabels
      *
      * @return $this
      */
-    public function addDataSeriesValues($dataSource): DataSeries
+    public function addDataSeriesSource($dataSource, $dataLabels = null): DataSeries
     {
         $dataSeriesValues = [];
         $dataSeriesLabels = [];
         if ($dataSource instanceof DataSeriesValues) {
             $dataSeriesValues = [$dataSource];
+            if ($dataLabels instanceof DataSeriesValues) {
+                $dataSeriesLabels = [$dataLabels];
+            }
+            elseif (is_string($dataLabels)) {
+                $dataSeriesLabels = [self::makeDataSeriesLabels($dataLabels)];
+            }
         }
         elseif (is_string($dataSource)) {
-            $dimension = Excel::rangeDimension(str_replace('$', '', $dataSource));
-            $dataSeriesValues = [new DataSeriesValues('Number', $dimension['absAddress'], NULL, $dimension['cellCount'])];
+            $dataSeriesValues = [self::makeDataSeriesValues($dataSource)];
+            if ($dataLabels instanceof DataSeriesValues) {
+                $dataSeriesLabels = [$dataLabels];
+            }
+            elseif (is_string($dataLabels)) {
+                $dataSeriesLabels = [self::makeDataSeriesLabels($dataLabels)];
+            }
         }
         elseif (is_array($dataSource)) {
-            foreach ($dataSource as $name => $data) {
-                $labelSource = (!is_int($name)) ? $name : null;
+            if (is_string($dataLabels)) {
+                $dataLabels = [$dataLabels];
+            }
+            foreach ($dataSource as $key => $data) {
+                $labelSource = $dataLabels[$key] ?? ((!is_int($key)) ? $key : null);
                 if ($data instanceof DataSeriesValues) {
-                    $dataSeriesValues[$name] = $data;
+                    $dataSeriesValues[$key] = $data;
                 }
                 elseif (is_string($data)) {
-                    $dimension = Excel::rangeDimension(str_replace('$', '', $data));
-                    $dataSeriesValues[$name] = new DataSeriesValues('Number', $dimension['absAddress'], NULL, $dimension['cellCount']);
+                    $dataSeriesValues[$key] = self::makeDataSeriesValues($data);
                 }
                 if ($labelSource) {
-                    if ($labelSource[0] === '=') {
-                        $labelSource = substr($labelSource, 1);
-                    }
-                    $dimension = Excel::rangeDimension(str_replace('$', '', $labelSource));
-                    $dataSeriesLabels[$name] = new DataSeriesValues('String', '=' . $dimension['absAddress'], NULL, 1);
+                    $dataSeriesLabels[$key] = self::makeDataSeriesLabels($labelSource);
                 }
                 else {
-                    $dataSeriesLabels[$name] = null;
+                    $dataSeriesLabels[$key] = null;
                 }
             }
         }
         if ($dataSeriesValues) {
             foreach ($dataSeriesValues as $seriesKey => $seriesValues) {
-                $this->dataSeriesValues[$seriesKey] = $seriesValues;
+                if (is_int($seriesKey)) {
+                    $this->dataSeriesValues[] = $seriesValues;
+                }
+                else {
+                    $this->dataSeriesValues[$seriesKey] = $seriesValues;
+                }
             }
         }
         if ($dataSeriesLabels) {
             foreach ($dataSeriesLabels as $seriesKey => $seriesLabels) {
-                $this->dataSeriesLabels[$seriesKey] = $seriesLabels;
+                if (is_int($seriesKey)) {
+                    $this->dataSeriesLabels[] = $seriesLabels;
+                }
+                else {
+                    $this->dataSeriesLabels[$seriesKey] = $seriesLabels;
+                }
             }
         }
 
@@ -217,7 +271,7 @@ class DataSeries
             }
         }
         foreach ($this->dataSeriesLabels as $plotLabels) {
-            if ($plotLabels) {
+            if ($plotLabels && $plotLabels->isDataSourceFormula()) {
                 $plotLabels->applyDataSourceSheet($sheet, $force);
             }
         }
@@ -367,7 +421,12 @@ class DataSeries
      */
     public function getPlotOrder(): array
     {
-        return $this->plotOrder;
+        //return $this->plotOrder;
+        if ($this->dataSeriesValues) {
+            return range(0, count($this->dataSeriesValues) - 1);
+        }
+
+        return [0];
     }
 
     /**

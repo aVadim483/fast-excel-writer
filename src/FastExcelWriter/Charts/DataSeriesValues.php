@@ -119,6 +119,14 @@ class DataSeriesValues
     }
 
     /**
+     * @return bool
+     */
+    public function isDataSourceFormula(): bool
+    {
+        return $this->dataSource && $this->dataSource[0] === '=';
+    }
+
+    /**
      * Set Series Data Source (formula)
      *
      * @param string|null $dataSource

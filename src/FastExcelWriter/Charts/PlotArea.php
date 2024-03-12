@@ -64,16 +64,17 @@ class PlotArea
 
     /**
      * @param $dataSource
+     * @param $dataLabels
      *
      * @return $this
      */
-    public function addDataSeriesSet($dataSource): PlotArea
+    public function addDataSeriesSet($dataSource, $dataLabels = null): PlotArea
     {
         if ($this->getPlotDataSeriesCount() === 0) {
             $this->plotDataSeries = [new DataSeries($this->defaultChartType ?: '')];
         }
         $plotDataSeries = $this->getPlotDataSeriesByIndex(0);
-        $plotDataSeries->addDataSeriesValues($dataSource);
+        $plotDataSeries->addDataSeriesSource($dataSource, $dataLabels);
         if ($this->defaultChartType) {
             $plotDataSeries->setChartType($this->defaultChartType);
         }

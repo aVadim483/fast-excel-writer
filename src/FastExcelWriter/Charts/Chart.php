@@ -217,12 +217,13 @@ class Chart
 
     /**
      * @param $dataSource
+     * @param $dataLabels
      *
      * @return $this
      */
-    public function addDataSeriesSet($dataSource): Chart
+    public function addDataSeriesSet($dataSource, $dataLabels = null): Chart
     {
-        $this->getPlotArea()->addDataSeriesSet($dataSource);
+        $this->getPlotArea()->addDataSeriesSet($dataSource, $dataLabels);
 
         return $this;
     }
@@ -1317,7 +1318,7 @@ class Chart
             $fileWriter->endElement();
         }
 
-        //    Get these details before the loop, because we can use the count to check for varyColors
+        // Get these details before the loop, because we can use the count to check for varyColors
         $plotSeriesOrder = $plotGroup->getPlotOrder();
         $plotSeriesCount = count($plotSeriesOrder);
 

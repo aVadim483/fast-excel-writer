@@ -48,11 +48,18 @@ class DataSeries
 
 
     /**
-     * Series Plot Type
+     * Series Plot Chart Type
      *
      * @var string
      */
-    private $plotType;
+    private string $plotChartType;
+
+    /**
+     * Plot Chart Direction
+     *
+     * @var string|null
+     */
+    private ?string $plotChartDirection = null;
 
     /**
      * Plot Grouping Type
@@ -62,18 +69,11 @@ class DataSeries
     private ?string $plotGrouping = null;
 
     /**
-     * Plot Direction
-     *
-     * @var boolean
-     */
-    private $plotDirection;
-
-    /**
      * Plot Style
      *
-     * @var string
+     * @var string|null
      */
-    private $plotStyle;
+    private ?string $plotStyle = null;
 
     /**
      * Order of plots in Series
@@ -87,14 +87,14 @@ class DataSeries
      *
      * @var DataSeriesValues[] array of DataSeriesValues
      */
-    private array $plotValues = [];
+    private array $dataSeriesValues = [];
 
     /**
      * Plot Labels
      *
      * @var DataSeriesValues[] array of DataSeriesValues
      */
-    private array $plotLabels = [];
+    private array $dataSeriesLabels = [];
 
     /**
      * Plot Category
@@ -114,23 +114,93 @@ class DataSeries
     /**
      * Create a new DataSeries
      */
-    public function __construct($plotType = null, $plotValues = [], $plotLabels = [], $plotCategory = [], $plotGrouping = null, $plotDirection = null, $smoothLine = false, $plotStyle = null)
+    public function __construct(string $chartType, $dataSource = null, $dataLabels = [], $plotCategories = [], $plotGrouping = null, $plotDirection = null, $smoothLine = false, $plotStyle = null)
     {
-        $this->plotType = $plotType;
-        $this->plotValues = $plotValues;
+        $this->plotChartType = $chartType;
+        if ($dataSource) {
+            $this->setDataSeriesValues($dataSource);
+        }
+        if ($dataLabels) {
+            $this->setDataSeriesLabels($dataLabels);
+        }
+
         $this->plotGrouping = $plotGrouping;
-        $this->plotOrder = range(0, count($plotValues) - 1);
+        $this->plotOrder = range(0, count($this->dataSeriesValues) - 1);
 
-        $this->setPlotLabels($plotLabels);
 
-        $this->plotCategories = $plotCategory;
+        $this->plotCategories = $plotCategories;
         $this->smoothLine = (bool)$smoothLine;
         $this->plotStyle = $plotStyle;
 
-        if (is_null($plotDirection)) {
+        if (!$plotDirection) {
             $plotDirection = self::DIRECTION_COL;
         }
-        $this->plotDirection = $plotDirection;
+        $this->plotChartDirection = $plotDirection;
+    }
+
+    /**
+     * @param $dataSource
+     *
+     * @return $this
+     */
+    public function setDataSeriesValues($dataSource): DataSeries
+    {
+        $this->dataSeriesValues = $this->dataSeriesLabels = $this->plotOrder = [];
+        $this->addDataSeriesValues($dataSource);
+
+        return $this;
+    }
+
+    /**
+     * @param $dataSource
+     *
+     * @return $this
+     */
+    public function addDataSeriesValues($dataSource): DataSeries
+    {
+        $dataSeriesValues = [];
+        $dataSeriesLabels = [];
+        if ($dataSource instanceof DataSeriesValues) {
+            $dataSeriesValues = [$dataSource];
+        }
+        elseif (is_string($dataSource)) {
+            $dimension = Excel::rangeDimension(str_replace('$', '', $dataSource));
+            $dataSeriesValues = [new DataSeriesValues('Number', $dimension['absAddress'], NULL, $dimension['cellCount'])];
+        }
+        elseif (is_array($dataSource)) {
+            foreach ($dataSource as $name => $data) {
+                $labelSource = (!is_int($name)) ? $name : null;
+                if ($data instanceof DataSeriesValues) {
+                    $dataSeriesValues[$name] = $data;
+                }
+                elseif (is_string($data)) {
+                    $dimension = Excel::rangeDimension(str_replace('$', '', $data));
+                    $dataSeriesValues[$name] = new DataSeriesValues('Number', $dimension['absAddress'], NULL, $dimension['cellCount']);
+                }
+                if ($labelSource) {
+                    if ($labelSource[0] === '=') {
+                        $labelSource = substr($labelSource, 1);
+                    }
+                    $dimension = Excel::rangeDimension(str_replace('$', '', $labelSource));
+                    $dataSeriesLabels[$name] = new DataSeriesValues('String', '=' . $dimension['absAddress'], NULL, 1);
+                }
+                else {
+                    $dataSeriesLabels[$name] = null;
+                }
+            }
+        }
+        if ($dataSeriesValues) {
+            foreach ($dataSeriesValues as $seriesKey => $seriesValues) {
+                $this->dataSeriesValues[$seriesKey] = $seriesValues;
+            }
+        }
+        if ($dataSeriesLabels) {
+            foreach ($dataSeriesLabels as $seriesKey => $seriesLabels) {
+                $this->dataSeriesLabels[$seriesKey] = $seriesLabels;
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -141,12 +211,12 @@ class DataSeries
      */
     public function applyDataSourceSheet(Sheet $sheet, ?bool $force = false): DataSeries
     {
-        foreach ($this->plotValues as $plotValues) {
+        foreach ($this->dataSeriesValues as $plotValues) {
             if ($plotValues) {
                 $plotValues->applyDataSourceSheet($sheet, $force);
             }
         }
-        foreach ($this->plotLabels as $plotLabels) {
+        foreach ($this->dataSeriesLabels as $plotLabels) {
             if ($plotLabels) {
                 $plotLabels->applyDataSourceSheet($sheet, $force);
             }
@@ -161,25 +231,71 @@ class DataSeries
     }
 
     /**
+     * @param string $chartType
+     *
+     * @return $this
+     */
+    public function setChartType(string $chartType): DataSeries
+    {
+        $plotChartType = $chartType;
+        if (substr($chartType, -8) === '_stacked') {
+            $plotChartType = str_replace('_stacked', '', $plotChartType);
+        }
+        if ($plotChartType === Chart::TYPE_COLUMN) {
+            $plotChartType = DataSeries::TYPE_BARCHART;
+        }
+        elseif (substr($plotChartType, -5) !== 'Chart') {
+            $plotChartType .= 'Chart';
+        }
+
+        $plotChartDirection = $plotChartGrouping = null;
+        if ($chartType === Chart::TYPE_COLUMN || $chartType === Chart::TYPE_COLUMN_STACKED) {
+            $plotChartDirection = DataSeries::DIRECTION_COL;
+        }
+        elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_BAR_STACKED])) {
+            $plotChartDirection = DataSeries::DIRECTION_BAR;
+        }
+        if (substr($chartType, -8) === '_stacked') {
+            $plotChartGrouping = DataSeries::GROUPING_STACKED;
+        }
+        elseif (in_array($chartType, [Chart::TYPE_BAR])) {
+            $plotChartGrouping = DataSeries::GROUPING_CLUSTERED;
+        }
+        elseif (in_array($plotChartType, [DataSeries::TYPE_BARCHART, DataSeries::TYPE_BARCHART_3D, DataSeries::TYPE_LINECHART, DataSeries::TYPE_LINECHART_3D])) {
+            $plotChartGrouping = DataSeries::GROUPING_STANDARD;
+        }
+
+        $this->setPlotChartType($plotChartType);
+        if ($plotChartDirection) {
+            $this->setPlotChartDirection($plotChartDirection);
+        }
+        if ($this->getPlotGrouping() === null && $plotChartGrouping) {
+            $this->setPlotGrouping($plotChartGrouping);
+        }
+
+        return $this;
+    }
+
+    /**
      * Get Plot Type
      *
      * @return string
      */
-    public function getPlotType(): ?string
+    public function getPlotChartType(): ?string
     {
-        return $this->plotType;
+        return $this->plotChartType;
     }
 
     /**
      * Set Plot Type
      *
-     * @param string $plotType
+     * @param string $plotChartType
      *
      * @return DataSeries
      */
-    public function setPlotType(string $plotType = ''): DataSeries
+    public function setPlotChartType(string $plotChartType = ''): DataSeries
     {
-        $this->plotType = $plotType;
+        $this->plotChartType = $plotChartType;
 
         return $this;
     }
@@ -213,21 +329,21 @@ class DataSeries
      *
      * @return string
      */
-    public function getPlotDirection()
+    public function getPlotChartDirection()
     {
-        return $this->plotDirection;
+        return $this->plotChartDirection;
     }
 
     /**
      * Set Plot Direction
      *
-     * @param string|null $plotDirection
+     * @param string|null $plotChartDirection
      *
      * @return DataSeries
      */
-    public function setPlotDirection(string $plotDirection = null): DataSeries
+    public function setPlotChartDirection(string $plotChartDirection = null): DataSeries
     {
-        $this->plotDirection = $plotDirection;
+        $this->plotChartDirection = $plotChartDirection;
 
         return $this;
     }
@@ -255,18 +371,25 @@ class DataSeries
     }
 
     /**
-     * @param $plotLabels
+     * @param array $dataSeriesLabels
      *
      * @return $this
      */
-    public function setPlotLabels($plotLabels): DataSeries
+    public function setDataSeriesLabels(array $dataSeriesLabels): DataSeries
     {
-        foreach ($plotLabels as $n => $labels) {
-            if ($labels === null) {
-                $plotLabels[$n] = new DataSeriesValues();
+        foreach ($dataSeriesLabels as $n => $label) {
+            if ($label === null) {
+                $dataSeriesLabels[$n] = new DataSeriesValues();
+            }
+            else {
+                // PHPExcel compatible
+                $source = $label->getDataSource();
+                if ($source && $source[0] !== '=') {
+                    $label->setDataSource('=' . $source);
+                }
             }
         }
-        $this->plotLabels = $plotLabels;
+        $this->dataSeriesLabels = $dataSeriesLabels;
 
         return $this;
     }
@@ -276,9 +399,9 @@ class DataSeries
      *
      * @return array of DataSeriesValues
      */
-    public function getPlotLabels(): array
+    public function getDataSeriesLabels(): array
     {
-        return $this->plotLabels;
+        return $this->dataSeriesLabels;
     }
 
     /**
@@ -290,12 +413,12 @@ class DataSeries
      */
     public function getPlotLabelByIndex($index): ?DataSeriesValues
     {
-        $keys = array_keys($this->plotLabels);
-        if (in_array($index, $keys)) {
-            return $this->plotLabels[$index];
+        $keys = array_keys($this->dataSeriesLabels);
+        if (in_array($index, $keys, true)) {
+            return $this->dataSeriesLabels[$index];
         }
         elseif (isset($keys[$index])) {
-            return $this->plotLabels[$keys[$index]];
+            return $this->dataSeriesLabels[$keys[$index]];
         }
         return null;
     }
@@ -351,7 +474,7 @@ class DataSeries
     public function getPlotCategoryByIndex($index): ?DataSeriesValues
     {
         $keys = array_keys($this->plotCategories);
-        if (in_array($index, $keys)) {
+        if (in_array($index, $keys, true)) {
             return $this->plotCategories[$index];
         }
         elseif (isset($keys[$index])) {
@@ -364,9 +487,9 @@ class DataSeries
     /**
      * Get Plot Style
      *
-     * @return string
+     * @return string|null
      */
-    public function getPlotStyle()
+    public function getPlotStyle(): ?string
     {
         return $this->plotStyle;
     }
@@ -374,11 +497,11 @@ class DataSeries
     /**
      * Set Plot Style
      *
-     * @param string $plotStyle
+     * @param string|null $plotStyle
      *
      * @return DataSeries
      */
-    public function setPlotStyle($plotStyle = null)
+    public function setPlotStyle(?string $plotStyle = null): DataSeries
     {
         $this->plotStyle = $plotStyle;
 
@@ -390,9 +513,9 @@ class DataSeries
      *
      * @return array of DataSeriesValues
      */
-    public function getPlotValues(): array
+    public function getDataSeriesValues(): array
     {
-        return $this->plotValues;
+        return $this->dataSeriesValues;
     }
 
     /**
@@ -402,12 +525,12 @@ class DataSeries
      */
     public function getPlotValuesByIndex($index)
     {
-        $keys = array_keys($this->plotValues);
-        if (in_array($index, $keys)) {
-            return $this->plotValues[$index];
+        $keys = array_keys($this->dataSeriesValues);
+        if (in_array($index, $keys, true)) {
+            return $this->dataSeriesValues[$index];
         }
         elseif (isset($keys[$index])) {
-            return $this->plotValues[$keys[$index]];
+            return $this->dataSeriesValues[$keys[$index]];
         }
         return false;
     }
@@ -419,7 +542,7 @@ class DataSeries
      */
     public function getPlotSeriesCount(): int
     {
-        return count($this->plotValues);
+        return count($this->dataSeriesValues);
     }
 
     /**

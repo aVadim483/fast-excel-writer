@@ -98,7 +98,7 @@ class DataSeriesValues
      *                                        Normally used for chart data values
      * @return $this
      */
-    public function setDataType(?string $dataType = self::DATASERIES_TYPE_NUMBER)
+    public function setDataType(?string $dataType = self::DATASERIES_TYPE_NUMBER): DataSeriesValues
     {
         if (!in_array($dataType, self::$dataTypeValues)) {
             throw new Exception('Invalid datatype for chart data series values');
@@ -111,7 +111,7 @@ class DataSeriesValues
     /**
      * Get Series Data Source (formula)
      *
-     * @return string
+     * @return string|null
      */
     public function getDataSource(): ?string
     {
@@ -262,12 +262,18 @@ class DataSeriesValues
     /**
      * @param Sheet $sheet
      * @param bool|null $force
+     *
      * @return $this
      */
     public function applyDataSourceSheet(Sheet $sheet, ?bool $force = false): DataSeriesValues
     {
         if ($this->dataSource) {
-            $this->dataSource = Excel::fullAddress($sheet->getName(), $this->dataSource, $force);
+            if ($this->dataSource[0] === '=') {
+                $this->dataSource = '=' . Excel::fullAddress($sheet->getName(), substr($this->dataSource, 1), $force);
+            }
+            else {
+                $this->dataSource = Excel::fullAddress($sheet->getName(), $this->dataSource, $force);
+            }
         }
 
         return $this;

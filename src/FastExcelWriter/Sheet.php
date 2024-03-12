@@ -272,7 +272,6 @@ class Sheet implements InterfaceSheetWriter
         if ($values instanceof PlotArea) {
             $plotArea = $values;
             $chart = new Chart($title, $plotArea);
-            $chart->setChartType($plotType);
         }
         else {
             $dataSeries = null;
@@ -311,6 +310,7 @@ class Sheet implements InterfaceSheetWriter
             $plotArea = new PlotArea(NULL, [$dataSeries]);
             $chart = new Chart($title, $plotArea);
         }
+        $chart->setChartType($plotType);
 
         return $chart;
     }

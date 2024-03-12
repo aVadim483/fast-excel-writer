@@ -3,7 +3,22 @@
 [![License](http://poser.pugx.org/avadim/fast-excel-writer/license)](https://packagist.org/packages/avadim/fast-excel-writer) 
 [![PHP Version Require](http://poser.pugx.org/avadim/fast-excel-writer/require/php)](https://packagist.org/packages/avadim/fast-excel-writer)
 
-# FastExcelWriter
+<table>
+<tr>
+<td valign="top"><img height="240px" src="logo/logo2-680.jpg" alt="FastExcelWriter Logo"></td>
+<td valign="top">
+<p align="center">
+<img height="120px" src="logo/01-feature-fast.jpg" alt="FastExcelWriter Logo">
+<img height="120px" src="logo/02-feature-memory.jpg" alt="FastExcelWriter Logo">
+<img height="120px" src="logo/03-feature-worksheets.jpg" alt="FastExcelWriter Logo">
+<img height="120px" src="logo/04-feature-protection.jpg" alt="FastExcelWriter Logo">
+<img height="120px" src="logo/05-feature-charts.jpg" alt="FastExcelWriter Logo">
+</p>
+
+<h1 align="center"><b>FastExcelWriter</b></h1>
+</td>
+</tr>
+</table>
 
 **FastExcelWriter** is a part of the **FastExcelPhp Project** which consists of
 

@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter\Charts;
 
+use avadim\FastExcelWriter\Excel;
+
 /**
  * This class uses source code of PHPExcel
  *
@@ -14,22 +16,69 @@ class PlotArea
      *
      * @var Layout|null
      */
-    private $layout = null;
+    private ?Layout $layout = null;
 
     /**
      * Plot Series
      *
-     * @var array of DataSeries
+     * @var DataSeries[] array of DataSeries
      */
-    private $plotSeries = array();
+    private array $plotDataSeries = [];
+
+    private ?string $defaultChartType = null;
+
 
     /**
      * Create a new PlotArea
      */
-    public function __construct(Layout $layout = null, $plotSeries = array())
+    public function __construct(Layout $layout = null, $dataSeries = null)
     {
         $this->layout = $layout;
-        $this->plotSeries = $plotSeries;
+        if ($dataSeries) {
+            if ($dataSeries instanceof DataSeries) {
+                $this->plotDataSeries = [$dataSeries];
+            }
+            elseif (is_array($dataSeries) && current($dataSeries) instanceof DataSeries) {
+                $this->plotDataSeries = $dataSeries;
+            }
+            else {
+                $this->addDataSeriesSet($dataSeries);
+            }
+        }
+    }
+
+    /**
+     * @param string $chartType
+     *
+     * @return $this
+     */
+    public function setChartType(string $chartType): PlotArea
+    {
+        $this->defaultChartType = $chartType;
+        foreach ($this->getPlotDataSeries() as $plotSeries) {
+            $plotSeries->setChartType($chartType);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $dataSource
+     *
+     * @return $this
+     */
+    public function addDataSeriesSet($dataSource): PlotArea
+    {
+        if ($this->getPlotDataSeriesCount() === 0) {
+            $this->plotDataSeries = [new DataSeries($this->defaultChartType ?: '')];
+        }
+        $plotDataSeries = $this->getPlotDataSeriesByIndex(0);
+        $plotDataSeries->addDataSeriesValues($dataSource);
+        if ($this->defaultChartType) {
+            $plotDataSeries->setChartType($this->defaultChartType);
+        }
+
+        return $this;
     }
 
     /**
@@ -59,9 +108,9 @@ class PlotArea
      *
      * @return int of DataSeries
      */
-    public function getPlotGroupCount()
+    public function getPlotDataSeriesCount(): int
     {
-        return count($this->plotSeries);
+        return count($this->plotDataSeries);
     }
 
     /**
@@ -69,47 +118,44 @@ class PlotArea
      *
      * @return integer
      */
-    public function getPlotSeriesCount()
+    public function getPlotSeriesCount(): int
     {
         $seriesCount = 0;
-        foreach ($this->plotSeries as $plot) {
-            $seriesCount += $plot->getPlotSeriesCount();
+        foreach ($this->plotDataSeries as $plot) {
+            if ($plot) {
+                $seriesCount += $plot->getPlotSeriesCount();
+            }
         }
         return $seriesCount;
     }
 
     /**
-     * Get Plot Series
+     * Get array of DataSeries
      *
-     * @return array of DataSeries
+     * @return DataSeries[] array of DataSeries
      */
-    public function getPlotGroup()
+    public function getPlotDataSeries(): array
     {
-        return $this->plotSeries;
+        return $this->plotDataSeries;
     }
 
     /**
-     * Get Plot Series by Index
+     * Get DataSeries by Index
+     *
+     * @param $index
      *
      * @return DataSeries
      */
-    public function getPlotGroupByIndex($index)
+    public function getPlotDataSeriesByIndex($index): ?DataSeries
     {
-        return $this->plotSeries[$index];
+        $keys = array_keys($this->plotDataSeries);
+        if (in_array($index, $keys, true)) {
+            return $this->plotDataSeries[$index];
+        }
+        elseif (isset($keys[$index])) {
+            return $this->plotDataSeries[$keys[$index]];
+        }
+        return null;
     }
-
-    /**
-     * Set Plot Series
-     *
-     * @param [DataSeries]
-     * @return PlotArea
-     */
-    public function setPlotSeries($plotSeries = array())
-    {
-        $this->plotSeries = $plotSeries;
-
-        return $this;
-    }
-
 
 }

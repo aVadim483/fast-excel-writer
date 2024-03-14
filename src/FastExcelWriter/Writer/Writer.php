@@ -245,12 +245,27 @@ class Writer
      *
      * @return FileWriter
      */
-    public function makeWriteBuffer(string $fileName): FileWriter
+    public function makeFileWriter(string $fileName): FileWriter
     {
         if (isset($this->buffers[$fileName])) {
             $this->buffers[$fileName] = null;
         }
         $this->buffers[$fileName] = new FileWriter($fileName);
+
+        return $this->buffers[$fileName];
+    }
+
+    /**
+     * @param string $fileName
+     *
+     * @return ChartWriter
+     */
+    public function makeChartWriter(string $fileName): ChartWriter
+    {
+        if (isset($this->buffers[$fileName])) {
+            $this->buffers[$fileName] = null;
+        }
+        $this->buffers[$fileName] = new ChartWriter($fileName);
 
         return $this->buffers[$fileName];
     }
@@ -760,7 +775,7 @@ class Writer
 
     protected function _writeChartFile(string $entry, Chart $chart, array &$relationShips)
     {
-        $fileWriter = $this->makeWriteBuffer($this->tempFilename($entry));
+        $fileWriter = $this->makeFileWriter($this->tempFilename($entry));
         $chart->writeChart($fileWriter);
     }
 
@@ -772,7 +787,7 @@ class Writer
      */
     protected function _writeDrawingFile(string $entry, array $imageList, array $chartList, array &$relationShips)
     {
-        $fileWriter = $this->makeWriteBuffer($this->tempFilename($entry));
+        $fileWriter = $this->makeFileWriter($this->tempFilename($entry));
 
         $relations = [];
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
@@ -924,7 +939,7 @@ EOD;
      */
     protected function _writeSheetHead(Sheet $sheet): FileWriter
     {
-        $fileWriter = $this->makeWriteBuffer($this->tempFilename());
+        $fileWriter = $this->makeFileWriter($this->tempFilename());
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $nameSpaces = [
             'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',

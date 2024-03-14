@@ -67,9 +67,9 @@ class Legend
     /**
      * Get legend position as an excel string value
      *
-     * @return    string
+     * @return string
      */
-    public function getPosition()
+    public function getPosition(): string
     {
         return $this->position;
     }
@@ -77,22 +77,24 @@ class Legend
     /**
      * Get legend position using an excel string value
      *
-     * @param    string    $position
+     * @param string|null $position
+     *
+     * @return bool
      */
-    public function setPosition($position = self::POSITION_RIGHT)
+    public function setPosition(?string $position = self::POSITION_RIGHT): bool
     {
         if (!in_array($position, self::$positionXLref)) {
             return false;
         }
-
         $this->position = $position;
+
         return true;
     }
 
     /**
      * Get legend position as an Excel internal numeric value
      *
-     * @return    number
+     * @return number
      */
     public function getPositionXL()
     {
@@ -117,7 +119,7 @@ class Legend
     /**
      * Get allow overlay of other elements?
      *
-     * @return    boolean
+     * @return boolean
      */
     public function getOverlay()
     {
@@ -127,8 +129,9 @@ class Legend
     /**
      * Set allow overlay of other elements?
      *
-     * @param    boolean    $overlay
-     * @return    boolean
+     * @param boolean $overlay
+     *
+     * @return boolean
      */
     public function setOverlay($overlay = false)
     {

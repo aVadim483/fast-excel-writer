@@ -59,18 +59,18 @@ class Chart
     private ?Legend $legend;
 
     /**
-     * X-Axis Label
+     * Category Axis Title
      *
      * @var Title|null
      */
-    private $xAxisLabel = null;
+    private $categoryAxisTitle = null;
 
     /**
      * Y-Axis Label
      *
      * @var Title|null
      */
-    private $yAxisLabel = null;
+    private $valueAxisTitle = null;
 
     /**
      * Chart Plot Area
@@ -179,10 +179,10 @@ class Chart
         $this->setTitle($title);
         $this->legend = $legend;
         if ($xAxisLabel) {
-            $this->xAxisLabel = is_string($xAxisLabel) ? (new Title($xAxisLabel)) : $xAxisLabel;
+            $this->categoryAxisTitle = is_string($xAxisLabel) ? (new Title($xAxisLabel)) : $xAxisLabel;
         }
         if ($yAxisLabel) {
-            $this->yAxisLabel = is_string($yAxisLabel) ? (new Title($yAxisLabel)) : $yAxisLabel;
+            $this->valueAxisTitle = is_string($yAxisLabel) ? (new Title($yAxisLabel)) : $yAxisLabel;
         }
 
         $this->setPlotArea($plotArea);
@@ -390,11 +390,13 @@ class Chart
     }
 
     /**
+     * Set Category Axis Labels
+     *
      * @param $range
      *
      * @return $this
      */
-    public function setDataSeriesTickLabels($range): Chart
+    public function setCategoryAxisLabels($range): Chart
     {
         $dataSeries = $this->plotArea->getPlotDataSeriesByIndex(0);
         $dataSeries->setPlotCategories($range);
@@ -403,51 +405,116 @@ class Chart
     }
 
     /**
-     * Set X-Axis Label
-     *
-     * @param Title|string $label
+     * Backward compatible
+     * @deprecated
+
+     * @param $range
      *
      * @return $this
      */
-    public function setXAxisLabel($label): Chart
+    public function setDataSeriesTickLabels($range): Chart
     {
-        $this->xAxisLabel = is_string($label) ? (new Title($label)) : $label;
+
+        return $this->setCategoryAxisLabels($range);
+    }
+
+    /**
+     * Set Category Axis Title
+     *
+     * @param Title|string $title
+     *
+     * @return $this
+     */
+    public function setCategoryAxisTitle($title): Chart
+    {
+        $this->categoryAxisTitle = is_string($title) ? (new Title($title)) : $title;
 
         return $this;
     }
 
     /**
-     * Get X-Axis Label
+     * Get Category Axis Title
+     *
+     * @return Title
+     */
+    public function getCategoryAxisTitle(): ?Title
+    {
+        return $this->categoryAxisTitle;
+    }
+
+    /**
+     * Backward compatible
+     * @deprecated
+     *
+     * @param Title|string $title
+     *
+     * @return $this
+     */
+    public function setXAxisLabel($title): Chart
+    {
+
+        return $this->setCategoryAxisTitle($title);
+    }
+
+    /**
+     * Backward compatible
+     * @deprecated
      *
      * @return Title
      */
     public function getXAxisLabel(): ?Title
     {
-        return $this->xAxisLabel;
+        return $this->getCategoryAxisTitle();
     }
 
+
     /**
-     * Set Y-Axis Label
+     * Set Value Axis Title
      *
-     * @param Title|string $label
+     * @param Title|string $title
      *
      * @return $this
      */
-    public function setYAxisLabel($label): Chart
+    public function setValueAxisTitle($title): Chart
     {
-        $this->yAxisLabel = is_string($label) ? (new Title($label)) : $label;
+        $this->valueAxisTitle = is_string($title) ? (new Title($title)) : $title;
 
         return $this;
     }
 
     /**
-     * Get Y-Axis Label
+     * Get Value Axis Title
+     *
+     * @return Title
+     */
+    public function getValueAxisTitle(): ?Title
+    {
+        return $this->valueAxisTitle;
+    }
+
+    /**
+     * Backward compatible
+     * @deprecated
+     *
+     * @param Title|string $title
+     *
+     * @return $this
+     */
+    public function setYAxisLabel($title): Chart
+    {
+
+        return $this->setValueAxisTitle($title);
+    }
+
+    /**
+     * Backward compatible
+     * @deprecated
      *
      * @return Title
      */
     public function getYAxisLabel(): ?Title
     {
-        return $this->yAxisLabel;
+        return $this->getValueAxisTitle();
     }
 
     public function setDataSeriesNames($labels): Chart
@@ -1085,8 +1152,8 @@ class Chart
     protected function writePlotArea(FileWriter $fileWriter)
     {
         $plotArea = $this->getPlotArea();
-        $xAxisLabel = $this->getXAxisLabel();
-        $yAxisLabel = $this->getYAxisLabel();
+        $categoryAxisTitle = $this->getCategoryAxisTitle();
+        $valueAxisTitle = $this->getValueAxisTitle();
         $xAxis = $this->getChartAxisX();
         $yAxis = $this->getChartAxisY();
         $majorGridlines = $this->getMajorGridlines();
@@ -1104,15 +1171,16 @@ class Chart
         $catIsMultiLevelSeries = $valIsMultiLevelSeries = false;
         $plotGroupingType = '';
 
+        $dataSeries = $plotArea->getPlotDataSeriesByIndex(0);
         foreach ($chartTypes as $chartType) {
             $fileWriter->startElement('c:' . $chartType);
 
             $groupCount = $plotArea->getPlotDataSeriesCount();
             for ($i = 0; $i < $groupCount; ++$i) {
-                $plotGroup = $plotArea->getPlotDataSeriesByIndex($i);
-                $groupType = $plotGroup->getPlotChartType();
-                if ($groupType == $chartType) {
-                    $plotStyle = $plotGroup->getPlotStyle();
+                $dataSeries = $plotArea->getPlotDataSeriesByIndex($i);
+                $groupType = $dataSeries->getPlotChartType();
+                if ($groupType === $chartType) {
+                    $plotStyle = $dataSeries->getPlotStyle();
                     if ($groupType === DataSeries::TYPE_RADARCHART) {
                         $fileWriter->startElement('c:radarStyle');
                         $fileWriter->writeAttribute('val', $plotStyle);
@@ -1124,7 +1192,7 @@ class Chart
                         $fileWriter->endElement();
                     }
 
-                    $this->writePlotGroup($fileWriter, $plotGroup, $chartType, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType);
+                    $this->writePlotGroup($fileWriter, $dataSeries, $chartType, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType);
                 }
             }
 
@@ -1134,7 +1202,7 @@ class Chart
                 // Line only, Line3D can't be smoothed
 
                 $fileWriter->startElement('c:smooth');
-                $fileWriter->writeAttribute('val', (int)$plotGroup->getSmoothLine());
+                $fileWriter->writeAttribute('val', (int)$dataSeries->getSmoothLine());
                 $fileWriter->endElement();
             } 
             elseif ($chartType === DataSeries::TYPE_BARCHART || $chartType === DataSeries::TYPE_BARCHART_3D) {
@@ -1208,13 +1276,13 @@ class Chart
 
             if ($chartType !== DataSeries::TYPE_PIECHART && $chartType !== DataSeries::TYPE_PIECHART_3D && $chartType !== DataSeries::TYPE_DONUTCHART) {
                 if ($chartType === DataSeries::TYPE_BUBBLECHART) {
-                    $this->writeValueAxis($fileWriter, $plotArea, $xAxisLabel, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
+                    $this->writeValueAxis($fileWriter, $plotArea, $categoryAxisTitle, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
                 }
                 else {
-                    $this->writeCategoryAxis($fileWriter, $plotArea, $xAxisLabel, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis);
+                    $this->writeCategoryAxis($fileWriter, $plotArea, $categoryAxisTitle, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis);
                 }
 
-                $this->writeValueAxis($fileWriter, $plotArea, $yAxisLabel, $chartType, $id1, $id2, $valIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
+                $this->writeValueAxis($fileWriter, $plotArea, $valueAxisTitle, $chartType, $id1, $id2, $valIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
             }
         }
 
@@ -1293,37 +1361,33 @@ class Chart
      * Write Plot Group (series of related plots)
      *
      * @param  FileWriter $fileWriter
-     * @param  DataSeries $plotGroup
-     * @param  string $groupType Type of plot for data series
-     * @param  boolean &$catIsMultiLevelSeries Is category a multi-series category
+     * @param DataSeries $dataSeries
+     * @param string $chartType Type of plot for data series
+     * @param boolean &$catIsMultiLevelSeries Is category a multi-series category
      * @param  boolean &$valIsMultiLevelSeries Is value set a multi-series set
      * @param  string &$plotGroupingType Type of grouping for multi-series values
      */
-    private function writePlotGroup(FileWriter $fileWriter, $plotGroup, $groupType, &$catIsMultiLevelSeries, &$valIsMultiLevelSeries, &$plotGroupingType)
+    private function writePlotGroup(FileWriter $fileWriter, DataSeries $dataSeries, string $chartType, bool &$catIsMultiLevelSeries, &$valIsMultiLevelSeries, &$plotGroupingType)
     {
-        if (!$plotGroup) {
-            return;
-        }
-
-        if ($groupType == DataSeries::TYPE_BARCHART || $groupType == DataSeries::TYPE_BARCHART_3D) {
+        if ($chartType == DataSeries::TYPE_BARCHART || $chartType == DataSeries::TYPE_BARCHART_3D) {
             $fileWriter->startElement('c:barDir');
-            $fileWriter->writeAttribute('val', $plotGroup->getPlotChartDirection());
+            $fileWriter->writeAttribute('val', $dataSeries->getPlotChartDirection());
             $fileWriter->endElement();
         }
 
-        if (null !== $plotGroup->getPlotGrouping()) {
-            $plotGroupingType = $plotGroup->getPlotGrouping();
+        if (null !== $dataSeries->getPlotGrouping()) {
+            $plotGroupingType = $dataSeries->getPlotGrouping();
             $fileWriter->startElement('c:grouping');
             $fileWriter->writeAttribute('val', $plotGroupingType);
             $fileWriter->endElement();
         }
 
         // Get these details before the loop, because we can use the count to check for varyColors
-        $plotSeriesOrder = $plotGroup->getPlotOrder();
+        $plotSeriesOrder = $dataSeries->getPlotOrder();
         $plotSeriesCount = count($plotSeriesOrder);
 
-        if ($groupType !== DataSeries::TYPE_RADARCHART && $groupType !== DataSeries::TYPE_STOCKCHART && $groupType !== DataSeries::TYPE_LINECHART) {
-            if ($groupType === DataSeries::TYPE_PIECHART || $groupType === DataSeries::TYPE_PIECHART_3D || $groupType === DataSeries::TYPE_DONUTCHART || $plotSeriesCount > 1) {
+        if ($chartType !== DataSeries::TYPE_RADARCHART && $chartType !== DataSeries::TYPE_STOCKCHART && $chartType !== DataSeries::TYPE_LINECHART) {
+            if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART || $plotSeriesCount > 1) {
                 $fileWriter->startElement('c:varyColors');
                 $fileWriter->writeAttribute('val', 1);
                 $fileWriter->endElement();
@@ -1337,9 +1401,9 @@ class Chart
 
         $plotSeriesIdx = 0;
         foreach ($plotSeriesOrder as $plotSeriesIdx => $plotSeriesRef) {
-            $plotSeriesLabel = $plotGroup->getPlotLabelByIndex($plotSeriesRef);
-            $plotSeriesValues = $plotGroup->getPlotValuesByIndex($plotSeriesRef);
-            $plotSeriesCategory = $plotGroup->getPlotCategoryByIndex($plotSeriesRef);
+            $plotSeriesLabel = $dataSeries->getPlotLabelByIndex($plotSeriesRef);
+            $plotSeriesValues = $dataSeries->getPlotValuesByIndex($plotSeriesRef);
+            $plotSeriesCategory = $dataSeries->getPlotCategoryByIndex($plotSeriesRef);
 
             if ($plotSeriesLabel || $plotSeriesValues || $plotSeriesCategory) {
                 $fileWriter->startElement('c:ser');
@@ -1352,7 +1416,7 @@ class Chart
                 $fileWriter->writeAttribute('val', $this->_seriesIndex + $plotSeriesRef);
                 $fileWriter->endElement();
 
-                if ($groupType == DataSeries::TYPE_PIECHART || $groupType == DataSeries::TYPE_PIECHART_3D || $groupType == DataSeries::TYPE_DONUTCHART) {
+                if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
                     $fileWriter->startElement('c:dPt');
                     $fileWriter->startElement('c:idx');
                     $fileWriter->writeAttribute('val', 3);
@@ -1372,19 +1436,19 @@ class Chart
                     $fileWriter->endElement();
                 }
 
-                //    Labels
+                // Labels
                 if ($plotSeriesLabel && ($plotSeriesLabel->getPointCount() > 0)) {
                     $fileWriter->startElement('c:tx');
                     $this->writePlotSeriesLabel($fileWriter, $plotSeriesLabel);
                     $fileWriter->endElement();
                 }
 
-                //    Formatting for the points
-                if ($groupType == DataSeries::TYPE_LINECHART || $groupType == DataSeries::TYPE_STOCKCHART) {
+                // Formatting for the points
+                if ($chartType === DataSeries::TYPE_LINECHART || $chartType === DataSeries::TYPE_STOCKCHART) {
                     $fileWriter->startElement('c:spPr');
                     $fileWriter->startElement('a:ln');
                     $fileWriter->writeAttribute('w', 12700);
-                    if ($groupType == DataSeries::TYPE_STOCKCHART) {
+                    if ($chartType == DataSeries::TYPE_STOCKCHART) {
                         $fileWriter->startElement('a:noFill');
                         $fileWriter->endElement();
                     }
@@ -1421,19 +1485,19 @@ class Chart
                     }
                 }
 
-                if ($groupType === DataSeries::TYPE_BARCHART || $groupType === DataSeries::TYPE_BARCHART_3D || $groupType === DataSeries::TYPE_BUBBLECHART) {
+                if ($chartType === DataSeries::TYPE_BARCHART || $chartType === DataSeries::TYPE_BARCHART_3D || $chartType === DataSeries::TYPE_BUBBLECHART) {
                     $fileWriter->startElement('c:invertIfNegative');
                     $fileWriter->writeAttribute('val', 0);
                     $fileWriter->endElement();
                 }
 
-                //    Category Labels
+                // Category Labels
                 if ($plotSeriesCategory && ($plotSeriesCategory->getPointCount() > 0)) {
                     $catIsMultiLevelSeries = $catIsMultiLevelSeries || $plotSeriesCategory->isMultiLevelSeries();
 
-                    if ($groupType == DataSeries::TYPE_PIECHART || $groupType == DataSeries::TYPE_PIECHART_3D || $groupType == DataSeries::TYPE_DONUTCHART) {
-                        if (null !== $plotGroup->getPlotStyle()) {
-                            $plotStyle = $plotGroup->getPlotStyle();
+                    if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
+                        if (null !== $dataSeries->getPlotStyle()) {
+                            $plotStyle = $dataSeries->getPlotStyle();
                             if ($plotStyle) {
                                 $fileWriter->startElement('c:explosion');
                                 $fileWriter->writeAttribute('val', 25);
@@ -1442,14 +1506,14 @@ class Chart
                         }
                     }
 
-                    if ($groupType === DataSeries::TYPE_BUBBLECHART || $groupType === DataSeries::TYPE_SCATTERCHART) {
+                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
                         $fileWriter->startElement('c:xVal');
                     }
                     else {
                         $fileWriter->startElement('c:cat');
                     }
 
-                    $this->writePlotSeriesValues($fileWriter, $plotSeriesCategory, $groupType, 'str');
+                    $this->writePlotSeriesValues($fileWriter, $plotSeriesCategory, $chartType, 'str');
                     $fileWriter->endElement();
                 }
 
@@ -1457,18 +1521,18 @@ class Chart
                 if ($plotSeriesValues) {
                     $valIsMultiLevelSeries = $valIsMultiLevelSeries || $plotSeriesValues->isMultiLevelSeries();
 
-                    if ($groupType === DataSeries::TYPE_BUBBLECHART || $groupType === DataSeries::TYPE_SCATTERCHART) {
+                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
                         $fileWriter->startElement('c:yVal');
                     }
                     else {
                         $fileWriter->startElement('c:val');
                     }
 
-                    $this->writePlotSeriesValues($fileWriter, $plotSeriesValues, $groupType, 'num');
+                    $this->writePlotSeriesValues($fileWriter, $plotSeriesValues, $chartType, 'num');
                     $fileWriter->endElement();
                 }
 
-                if ($groupType === DataSeries::TYPE_BUBBLECHART) {
+                if ($chartType === DataSeries::TYPE_BUBBLECHART) {
                     $this->writeBubbles($fileWriter, $plotSeriesValues);
                 }
 
@@ -1488,7 +1552,7 @@ class Chart
     private function writePlotSeriesLabel(FileWriter $fileWriter, DataSeriesValues $plotSeriesLabel)
     {
         $source = $plotSeriesLabel->getDataSource();
-        if ($source && $source[0] === '=') {
+        if ($plotSeriesLabel->isDataSourceFormula()) {
             $fileWriter->startElement('c:strRef');
             $fileWriter->startElement('c:f');
             $fileWriter->writeRawData(substr($source, 1));
@@ -1523,10 +1587,10 @@ class Chart
      *
      * @param FileWriter $fileWriter
      * @param DataSeriesValues $plotSeriesValues
-     * @param string $groupType Type of plot for dataseries
+     * @param string $groupType Type of plot for DataSeries
      * @param string $dataType Datatype of series values
      */
-    private function writePlotSeriesValues(FileWriter $fileWriter, DataSeriesValues $plotSeriesValues, string $groupType, $dataType)
+    private function writePlotSeriesValues(FileWriter $fileWriter, DataSeriesValues $plotSeriesValues, string $groupType, string $dataType)
     {
         if ($plotSeriesValues->isMultiLevelSeries()) {
             $levelCount = $plotSeriesValues->multiLevelCount();
@@ -1921,7 +1985,7 @@ class Chart
         }
         $fileWriter->startElement('a:effectLst');
 
-        if (!is_null($majorGridlines->getGlowSize())) {
+        if (null !== $majorGridlines->getGlowSize()) {
             $fileWriter->startElement('a:glow');
             $fileWriter->writeAttribute('rad', $majorGridlines->getGlowSize());
             $fileWriter->startElement("a:{$majorGridlines->getGlowColor('type')}");
@@ -1947,23 +2011,23 @@ class Chart
             if (null !== $majorGridlines->getShadowProperty('algn')) {
                 $fileWriter->writeAttribute('algn', $majorGridlines->getShadowProperty('algn'));
             }
-            if (null !== $majorGridlines->getShadowProperty(array('size', 'sx'))) {
-                $fileWriter->writeAttribute('sx', $majorGridlines->getShadowProperty(array('size', 'sx')));
+            if (null !== $majorGridlines->getShadowProperty(['size', 'sx'])) {
+                $fileWriter->writeAttribute('sx', $majorGridlines->getShadowProperty(['size', 'sx']));
             }
-            if (null !== $majorGridlines->getShadowProperty(array('size', 'sy'))) {
-                $fileWriter->writeAttribute('sy', $majorGridlines->getShadowProperty(array('size', 'sy')));
+            if (null !== $majorGridlines->getShadowProperty(['size', 'sy'])) {
+                $fileWriter->writeAttribute('sy', $majorGridlines->getShadowProperty(['size', 'sy']));
             }
-            if (null !== $majorGridlines->getShadowProperty(array('size', 'kx'))) {
-                $fileWriter->writeAttribute('kx', $majorGridlines->getShadowProperty(array('size', 'kx')));
+            if (null !== $majorGridlines->getShadowProperty(['size', 'kx'])) {
+                $fileWriter->writeAttribute('kx', $majorGridlines->getShadowProperty(['size', 'kx']));
             }
             if (null !== $majorGridlines->getShadowProperty('rotWithShape')) {
                 $fileWriter->writeAttribute('rotWithShape', $majorGridlines->getShadowProperty('rotWithShape'));
             }
-            $fileWriter->startElement("a:{$majorGridlines->getShadowProperty(array('color', 'type'))}");
-            $fileWriter->writeAttribute('val', $majorGridlines->getShadowProperty(array('color', 'value')));
+            $fileWriter->startElement("a:{$majorGridlines->getShadowProperty(['color', 'type'])}");
+            $fileWriter->writeAttribute('val', $majorGridlines->getShadowProperty(['color', 'value']));
 
             $fileWriter->startElement('a:alpha');
-            $fileWriter->writeAttribute('val', $majorGridlines->getShadowProperty(array('color', 'alpha')));
+            $fileWriter->writeAttribute('val', $majorGridlines->getShadowProperty(['color', 'alpha']));
             $fileWriter->endElement(); //end alpha
 
             $fileWriter->endElement(); //end color:type
@@ -2010,17 +2074,17 @@ class Chart
                     $fileWriter->endElement();
                 }
 
-                if (null !== $minorGridlines->getLineStyleProperty(array('arrow', 'head', 'type'))) {
+                if (null !== $minorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
                     $fileWriter->startElement('a:headEnd');
-                    $fileWriter->writeAttribute('type', $minorGridlines->getLineStyleProperty(array('arrow', 'head', 'type')));
+                    $fileWriter->writeAttribute('type', $minorGridlines->getLineStyleProperty(['arrow', 'head', 'type']));
                     $fileWriter->writeAttribute('w', $minorGridlines->getLineStyleArrowParameters('head', 'w'));
                     $fileWriter->writeAttribute('len', $minorGridlines->getLineStyleArrowParameters('head', 'len'));
                     $fileWriter->endElement();
                 }
 
-                if (null !== $minorGridlines->getLineStyleProperty(array('arrow', 'end', 'type'))) {
+                if (null !== $minorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
                     $fileWriter->startElement('a:tailEnd');
-                    $fileWriter->writeAttribute('type', $minorGridlines->getLineStyleProperty(array('arrow', 'end', 'type')));
+                    $fileWriter->writeAttribute('type', $minorGridlines->getLineStyleProperty(['arrow', 'end', 'type']));
                     $fileWriter->writeAttribute('w', $minorGridlines->getLineStyleArrowParameters('end', 'w'));
                     $fileWriter->writeAttribute('len', $minorGridlines->getLineStyleArrowParameters('end', 'len'));
                     $fileWriter->endElement();
@@ -2056,22 +2120,22 @@ class Chart
                 if (null !== $minorGridlines->getShadowProperty('algn')) {
                     $fileWriter->writeAttribute('algn', $minorGridlines->getShadowProperty('algn'));
                 }
-                if (null !== $minorGridlines->getShadowProperty(array('size', 'sx'))) {
-                    $fileWriter->writeAttribute('sx', $minorGridlines->getShadowProperty(array('size', 'sx')));
+                if (null !== $minorGridlines->getShadowProperty(['size', 'sx'])) {
+                    $fileWriter->writeAttribute('sx', $minorGridlines->getShadowProperty(['size', 'sx']));
                 }
-                if (null !== $minorGridlines->getShadowProperty(array('size', 'sy'))) {
-                    $fileWriter->writeAttribute('sy', $minorGridlines->getShadowProperty(array('size', 'sy')));
+                if (null !== $minorGridlines->getShadowProperty(['size', 'sy'])) {
+                    $fileWriter->writeAttribute('sy', $minorGridlines->getShadowProperty(['size', 'sy']));
                 }
-                if (null !== $minorGridlines->getShadowProperty(array('size', 'kx'))) {
-                    $fileWriter->writeAttribute('kx', $minorGridlines->getShadowProperty(array('size', 'kx')));
+                if (null !== $minorGridlines->getShadowProperty(['size', 'kx'])) {
+                    $fileWriter->writeAttribute('kx', $minorGridlines->getShadowProperty(['size', 'kx']));
                 }
                 if (null !== $minorGridlines->getShadowProperty('rotWithShape')) {
                     $fileWriter->writeAttribute('rotWithShape', $minorGridlines->getShadowProperty('rotWithShape'));
                 }
-                $fileWriter->startElement("a:{$minorGridlines->getShadowProperty(array('color', 'type'))}");
-                $fileWriter->writeAttribute('val', $minorGridlines->getShadowProperty(array('color', 'value')));
+                $fileWriter->startElement("a:{$minorGridlines->getShadowProperty(['color', 'type'])}");
+                $fileWriter->writeAttribute('val', $minorGridlines->getShadowProperty(['color', 'value']));
                 $fileWriter->startElement('a:alpha');
-                $fileWriter->writeAttribute('val', $minorGridlines->getShadowProperty(array('color', 'alpha')));
+                $fileWriter->writeAttribute('val', $minorGridlines->getShadowProperty(['color', 'alpha']));
                 $fileWriter->endElement(); //end alpha
                 $fileWriter->endElement(); //end color:type
                 $fileWriter->endElement(); //end shadow

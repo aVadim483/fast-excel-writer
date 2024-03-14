@@ -2647,7 +2647,7 @@ class Sheet implements InterfaceSheetWriter
         }
 
         $sheetFileName = $writer->tempFilename();
-        $this->setFileWriter($writer->makeWriteBuffer($sheetFileName));
+        $this->setFileWriter($writer->makeFileWriter($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');
 

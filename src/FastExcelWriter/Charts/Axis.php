@@ -201,11 +201,11 @@ class Axis extends Properties
      *
      * @param string $property
      *
-     * @return string
+     * @return string|null
      */
-    public function getAxisOptionsProperty($property)
+    public function getAxisOptionsProperty(string $property): ?string
     {
-        return $this->axisOptions[$property];
+        return $this->axisOptions[$property] ?? null;
     }
 
     /**

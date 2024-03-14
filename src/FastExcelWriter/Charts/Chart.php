@@ -217,13 +217,27 @@ class Chart
 
     /**
      * @param $dataSource
+     * @param string|null $dataLabel
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    public function addDataSeries($dataSource, ?string $dataLabel = null, ?array $options = []): Chart
+    {
+        $this->getPlotArea()->addDataSeries($dataSource, $dataLabel, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param $dataSource
      * @param $dataLabels
      *
      * @return $this
      */
-    public function addDataSeriesSet($dataSource, $dataLabels = null): Chart
+    public function addDataSeriesSet($dataSource, $dataLabels = null, $options = []): Chart
     {
-        $this->getPlotArea()->addDataSeriesSet($dataSource, $dataLabels);
+        $this->getPlotArea()->addDataSeriesSet($dataSource, $dataLabels, $options);
 
         return $this;
     }

@@ -75,12 +75,7 @@ class DataSeries
      */
     private ?string $plotStyle = null;
 
-    /**
-     * Order of plots in Series
-     *
-     * @var array of integer
-     */
-    private array $plotOrder = [];
+    private array $dataSeriesSets = [];
 
     /**
      * Plot Values
@@ -125,8 +120,6 @@ class DataSeries
         }
 
         $this->plotGrouping = $plotGrouping;
-        $this->plotOrder = range(0, count($this->dataSeriesValues) - 1);
-
 
         $this->plotCategories = $plotCategories;
         $this->smoothLine = (bool)$smoothLine;
@@ -140,28 +133,29 @@ class DataSeries
 
     /**
      * @param $dataSource
+     * @param $dataLabels
+     * @param $dataOptions
      *
      * @return $this
      */
-    public function setDataSeriesSource($dataSource): DataSeries
+    public function setDataSeriesSource($dataSource, $dataLabels = null, $dataOptions = []): DataSeries
     {
-        $this->dataSeriesValues = $this->dataSeriesLabels = $this->plotOrder = [];
-        $this->addDataSeriesSource($dataSource);
+        $this->dataSeriesValues = $this->dataSeriesLabels = [];
+        $this->addDataSeriesSource($dataSource, $dataLabels, $dataOptions);
 
         return $this;
     }
 
     /**
      * @param string $dataSource
-     * @param string|null $formatCode
      *
      * @return DataSeriesValues
      */
-    private static function makeDataSeriesValues(string $dataSource, ?string $formatCode = null): DataSeriesValues
+    private static function makeDataSeriesValues(string $dataSource): DataSeriesValues
     {
         $dimension = Excel::rangeDimension(str_replace('$', '', $dataSource));
 
-        return new DataSeriesValues('Number', $dimension['absAddress'], $formatCode, $dimension['cellCount']);
+        return new DataSeriesValues('Number', $dimension['absAddress'], null, $dimension['cellCount']);
     }
 
     /**
@@ -182,19 +176,24 @@ class DataSeries
             $value = $dataSource;
         }
 
-        return new DataSeriesValues('String', $value, NULL, 1);
+        return new DataSeriesLabels('String', $value, NULL, 1);
     }
 
     /**
+     * @param $name
      * @param $dataSource
      * @param $dataLabels
+     * @param $dataOptions
      *
      * @return $this
      */
-    public function addDataSeriesSource($dataSource, $dataLabels = null): DataSeries
+    protected function _x_addDataSeriesSource($name, $dataSource, $dataLabels = null, $dataOptions = []): DataSeries
     {
         $dataSeriesValues = [];
         $dataSeriesLabels = [];
+        if (null === $name) {
+            $name = count($this->dataSeriesValues);
+        }
         if ($dataSource instanceof DataSeriesValues) {
             $dataSeriesValues = [$dataSource];
             if ($dataLabels instanceof DataSeriesValues) {
@@ -235,26 +234,95 @@ class DataSeries
         }
         if ($dataSeriesValues) {
             foreach ($dataSeriesValues as $seriesKey => $seriesValues) {
-                if (is_int($seriesKey)) {
-                    $this->dataSeriesValues[] = $seriesValues;
-                }
-                else {
-                    $this->dataSeriesValues[$seriesKey] = $seriesValues;
-                }
+                $key = is_int($seriesKey) ? count($this->dataSeriesValues) : $seriesKey;
+                $this->dataSeriesValues[$key] = $seriesValues;
             }
         }
         if ($dataSeriesLabels) {
             foreach ($dataSeriesLabels as $seriesKey => $seriesLabels) {
-                if (is_int($seriesKey)) {
-                    $this->dataSeriesLabels[] = $seriesLabels;
-                }
-                else {
-                    $this->dataSeriesLabels[$seriesKey] = $seriesLabels;
-                }
+                $key = is_int($seriesKey) ? count($this->dataSeriesValues) : $seriesKey;
+                $this->dataSeriesLabels[$key] = $seriesLabels;
             }
         }
 
         return $this;
+    }
+
+    /**
+     * @param $name
+     * @param $dataSource
+     * @param $dataLabels
+     * @param $dataOptions
+     *
+     * @return $this
+     */
+    protected function _addDataSeriesSource($name, $dataSource, $dataLabels = null, $dataOptions = []): DataSeries
+    {
+        $dataSeriesValues = $dataSeriesLabels = null;
+        if (null === $name) {
+            $name = count($this->dataSeriesSets);
+        }
+        if ($dataSource instanceof DataSeriesValues) {
+            $dataSeriesValues = $dataSource;
+            if ($dataLabels instanceof DataSeriesValues) {
+                $dataSeriesLabels = $dataLabels;
+            }
+            elseif (is_string($dataLabels)) {
+                $dataSeriesLabels = self::makeDataSeriesLabels($dataLabels);
+            }
+        }
+        elseif (is_string($dataSource)) {
+            $dataSeriesValues = self::makeDataSeriesValues($dataSource);
+            if ($dataLabels instanceof DataSeriesValues) {
+                $dataSeriesLabels = $dataLabels;
+            }
+            elseif (is_string($dataLabels)) {
+                $dataSeriesLabels = self::makeDataSeriesLabels($dataLabels);
+            }
+        }
+
+        $this->dataSeriesSets[$name] = [
+            'values' => $dataSeriesValues,
+            'labels' => $dataSeriesLabels,
+            'categories' => null,
+            'options' => is_array($dataOptions) ? $dataOptions : [],
+        ];
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $dataSource string|DataSeriesValues|[name => string]|[name => DataSeriesValues]
+     * @param string|null $dataLabel
+     * @param array|null $dataOptions
+     *
+     * @return $this
+     */
+    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $dataOptions = []): DataSeries
+    {
+        if (is_array($dataSource)) {
+            $source = reset($dataSource);
+            $name = key($dataSource);
+        }
+        else {
+            $source = $dataSource;
+            $name = null;
+        }
+
+        return $this->_addDataSeriesSource($name, $source, $dataLabel, $dataOptions);
+    }
+
+    /**
+     * @return array
+     */
+    public function getDataSeriesSets(): array
+    {
+        $collection = [];
+        foreach ($this->dataSeriesSets as $plotSeriesSet) {
+            $collection[] = new DataSeriesSet($plotSeriesSet['values'], $plotSeriesSet['labels'], $plotSeriesSet['categories'], $plotSeriesSet['options']);
+        }
+
+        return $collection;
     }
 
     /**
@@ -265,19 +333,15 @@ class DataSeries
      */
     public function applyDataSourceSheet(Sheet $sheet, ?bool $force = false): DataSeries
     {
-        foreach ($this->dataSeriesValues as $plotValues) {
-            if ($plotValues) {
-                $plotValues->applyDataSourceSheet($sheet, $force);
+        foreach ($this->dataSeriesSets as $name => $dataSet) {
+            if ($dataSet['values']) {
+                $dataSet['values']->applyDataSourceSheet($sheet, $force);
             }
-        }
-        foreach ($this->dataSeriesLabels as $plotLabels) {
-            if ($plotLabels && $plotLabels->isDataSourceFormula()) {
-                $plotLabels->applyDataSourceSheet($sheet, $force);
+            if ($dataSet['labels']) {
+                $dataSet['labels']->applyDataSourceSheet($sheet, $force);
             }
-        }
-        foreach ($this->plotCategories as $plotCategories) {
-            if ($plotCategories) {
-                $plotCategories->applyDataSourceSheet($sheet, $force);
+            if ($dataSet['categories']) {
+                $dataSet['categories']->applyDataSourceSheet($sheet, $force);
             }
         }
 
@@ -373,7 +437,7 @@ class DataSeries
      *
      * @return string
      */
-    public function getPlotGrouping()
+    public function getPlotGrouping(): ?string
     {
         return $this->plotGrouping;
     }
@@ -383,7 +447,7 @@ class DataSeries
      *
      * @return string
      */
-    public function getPlotChartDirection()
+    public function getPlotChartDirection(): ?string
     {
         return $this->plotChartDirection;
     }
@@ -403,25 +467,12 @@ class DataSeries
     }
 
     /**
-     * @param array $plotOrder
-     *
-     * @return $this
-     */
-    public function setPlotOrder(array $plotOrder): DataSeries
-    {
-        $this->plotOrder = $plotOrder;
-
-        return $this;
-    }
-
-    /**
      * Get Plot Order
      *
      * @return array
      */
     public function getPlotOrder(): array
     {
-        //return $this->plotOrder;
         if ($this->dataSeriesValues) {
             return range(0, count($this->dataSeriesValues) - 1);
         }
@@ -572,27 +623,27 @@ class DataSeries
      *
      * @return array of DataSeriesValues
      */
-    public function getDataSeriesValues(): array
-    {
-        return $this->dataSeriesValues;
-    }
+//    public function getDataSeriesValues(): array
+//    {
+//        return $this->dataSeriesValues;
+//    }
 
     /**
      * Get Plot Values by Index
      *
      * @return DataSeriesValues|false
      */
-    public function getPlotValuesByIndex($index)
-    {
-        $keys = array_keys($this->dataSeriesValues);
-        if (in_array($index, $keys, true)) {
-            return $this->dataSeriesValues[$index];
-        }
-        elseif (isset($keys[$index])) {
-            return $this->dataSeriesValues[$keys[$index]];
-        }
-        return false;
-    }
+//    public function getPlotValuesByIndex($index)
+//    {
+//        $keys = array_keys($this->dataSeriesValues);
+//        if (in_array($index, $keys, true)) {
+//            return $this->dataSeriesValues[$index];
+//        }
+//        elseif (isset($keys[$index])) {
+//            return $this->dataSeriesValues[$keys[$index]];
+//        }
+//        return false;
+//    }
 
     /**
      * Get Number of Plot Series
@@ -601,7 +652,7 @@ class DataSeries
      */
     public function getPlotSeriesCount(): int
     {
-        return count($this->dataSeriesValues);
+        return count($this->dataSeriesSets);
     }
 
     /**

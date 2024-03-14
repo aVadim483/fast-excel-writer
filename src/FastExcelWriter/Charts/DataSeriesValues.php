@@ -34,7 +34,7 @@ class DataSeriesValues
      *
      * @var string
      */
-    private $dataSource;
+    protected $dataSource;
 
     /**
      * Format Code

@@ -2,9 +2,11 @@
 
 namespace avadim\FastExcelWriter\Writer;
 
+use avadim\FastExcelWriter\Charts\Axis;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\DataSeries;
 use avadim\FastExcelWriter\Charts\DataSeriesValues;
+use avadim\FastExcelWriter\Charts\GridLines;
 use avadim\FastExcelWriter\Charts\Layout;
 use avadim\FastExcelWriter\Charts\Legend;
 use avadim\FastExcelWriter\Charts\PlotArea;
@@ -62,28 +64,7 @@ class ChartWriter extends FileWriter
 
         $this->startElement('c:chart');
 
-        $title = $chart->getTitle();
-        $this->startElement('c:title');
-        $this->startElement('c:tx');
-        $this->startElement('c:rich');
-
-        $this->writeElementAttr('a:bodyPr');
-
-        $this->writeElementAttr('a:lstStyle');
-
-        $this->startElement('a:p');
-        $this->startElement('<a:r>');
-        $this->writeTitle($title);
-        $this->endElement();
-        $this->endElement();
-
-        $this->endElement();
-        $this->endElement();
-        $this->writeElementAttr('<c:layout/>');
-        $this->startElement('c:overlay');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
-        $this->endElement();
+        $this->writeTitle($chart->getTitle(), false);
 
         $this->writeElementAttr('<c:autoTitleDeleted val="0"/>');
 
@@ -116,12 +97,23 @@ class ChartWriter extends FileWriter
 
     /**
      * @param Title|null $title
+     * @param bool $withLayout
      *
      * @return void
      */
-    private function writeTitle(?title $title)
+    private function writeTitle(?title $title, bool $withLayout)
     {
         if ($title) {
+            $this->startElement('c:title');
+            $this->startElement('c:tx');
+            $this->startElement('c:rich');
+
+            $this->writeElement('a:bodyPr');
+            $this->writeElement('a:lstStyle');
+
+            $this->startElement('a:p');
+            $this->startElement('a:r');
+
             $caption = $title->getCaption();
             if ($caption) {
                 $this->startElement('a:t');
@@ -132,6 +124,24 @@ class ChartWriter extends FileWriter
             else {
                 $this->writeElementAttr('<a:t/>');
             }
+            $this->endElement(); // a:r
+            $this->endElement(); // a:p
+
+            $this->endElement(); // c:rich
+            $this->endElement(); // c:tx
+
+            if ($withLayout) {
+                $this->writeLayout($title->getLayout());
+            }
+            else {
+                $this->writeElement('<c:layout/>');
+            }
+
+            $this->startElement('c:overlay');
+            $this->writeAttribute('val', 0);
+            $this->endElement();
+
+            $this->endElement(); // c:title
         }
     }
 
@@ -434,6 +444,7 @@ class ChartWriter extends FileWriter
         }
 
         $plotSeriesIdx = 0;
+        /*
         foreach ($plotSeriesOrder as $plotSeriesIdx => $plotSeriesRef) {
             $plotSeriesLabel = $dataSeries->getPlotLabelByIndex($plotSeriesRef);
             $plotSeriesValues = $dataSeries->getPlotValuesByIndex($plotSeriesRef);
@@ -498,7 +509,7 @@ class ChartWriter extends FileWriter
                     $this->endElement();
                     $this->endElement();
                     $this->endElement();
-                    */
+                    * /
                 }
 
                 if ($plotSeriesValues) {
@@ -562,6 +573,146 @@ class ChartWriter extends FileWriter
                         $this->startElement('c:val');
                     }
 
+                    $this->writePlotSeriesValues($plotSeriesValues, $chartType, 'num');
+                    $this->endElement();
+                }
+
+                if ($chartType === DataSeries::TYPE_BUBBLECHART) {
+                    $this->writeBubbles($plotSeriesValues);
+                }
+
+                $this->endElement(); // c:ser
+            }
+        }
+        */
+
+        foreach ($dataSeries->getDataSeriesSets() as $plotSeriesIdx => $dataSeriesSet) {
+            $plotSeriesLabels = $dataSeriesSet->getDataLabels();
+            $plotSeriesValues = $dataSeriesSet->getDataValues();
+            $plotSeriesCategories = $dataSeriesSet->getDataCategories();
+            $plotSeriesOption = $dataSeriesSet->getDataOptions();
+
+            if ($plotSeriesLabels || $plotSeriesValues || $plotSeriesCategories) {
+                $this->startElement('c:ser');
+
+                $this->startElement('c:idx');
+                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
+                $this->endElement();
+
+                $this->startElement('c:order');
+                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
+                $this->endElement();
+
+                if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
+                    $this->startElement('c:dPt');
+                    $this->startElement('c:idx');
+                    $this->writeAttribute('val', 3);
+                    $this->endElement();
+
+                    $this->startElement('c:bubble3D');
+                    $this->writeAttribute('val', 0);
+                    $this->endElement();
+
+                    $this->startElement('c:spPr');
+                    $this->startElement('a:solidFill');
+                    $this->startElement('a:srgbClr');
+                    $this->writeAttribute('val', 'FF9900');
+                    $this->endElement();
+                    $this->endElement();
+                    $this->endElement();
+                    $this->endElement();
+                }
+
+                // Labels
+                if ($plotSeriesLabels && ($plotSeriesLabels->getPointCount() > 0)) {
+                    $this->startElement('c:tx');
+                    $this->writePlotSeriesLabel($plotSeriesLabels);
+                    $this->endElement();
+                }
+
+                // Formatting for the points
+                if ($chartType === DataSeries::TYPE_LINECHART || $chartType === DataSeries::TYPE_STOCKCHART) {
+                    $this->startElement('c:spPr');
+                    $this->startElement('a:ln');
+                    $this->writeAttribute('w', 12700);
+                    if ($chartType === DataSeries::TYPE_STOCKCHART) {
+                        $this->startElement('a:noFill');
+                        $this->endElement();
+                    }
+                    $this->endElement();
+                    $this->endElement();
+                }
+                else {
+                    /* custom colors of data series
+                    $this->startElement('c:spPr');
+                    $this->startElement('a:solidFill');
+                    $this->startElement('a:srgbClr');
+                    $this->writeAttribute('val', '777777');
+                    $this->endElement();
+                    $this->endElement();
+                    $this->endElement();
+                    */
+                }
+
+                if ($plotSeriesValues) {
+                    $plotSeriesMarker = $plotSeriesValues->getPointMarker();
+                    if ($plotSeriesMarker) {
+                        $this->startElement('c:marker');
+                        $this->startElement('c:symbol');
+                        $this->writeAttribute('val', $plotSeriesMarker);
+                        $this->endElement();
+
+                        if ($plotSeriesMarker !== 'none') {
+                            $this->startElement('c:size');
+                            $this->writeAttribute('val', 3);
+                            $this->endElement();
+                        }
+
+                        $this->endElement();
+                    }
+                }
+
+                if ($chartType === DataSeries::TYPE_BARCHART || $chartType === DataSeries::TYPE_BARCHART_3D || $chartType === DataSeries::TYPE_BUBBLECHART) {
+                    $this->startElement('c:invertIfNegative');
+                    $this->writeAttribute('val', 0);
+                    $this->endElement();
+                }
+
+                // Category Labels
+                if ($plotSeriesCategories && ($plotSeriesCategories->getPointCount() > 0)) {
+                    $catIsMultiLevelSeries = $catIsMultiLevelSeries || $plotSeriesCategories->isMultiLevelSeries();
+
+                    if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
+                        if (null !== $dataSeries->getPlotStyle()) {
+                            $plotStyle = $dataSeries->getPlotStyle();
+                            if ($plotStyle) {
+                                $this->startElement('c:explosion');
+                                $this->writeAttribute('val', 25);
+                                $this->endElement();
+                            }
+                        }
+                    }
+
+                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
+                        $this->startElement('c:xVal');
+                    }
+                    else {
+                        $this->startElement('c:cat');
+                    }
+                    $this->writePlotSeriesValues($plotSeriesCategories, $chartType, 'str');
+                    $this->endElement();
+                }
+
+                //    Values
+                if ($plotSeriesValues) {
+                    $valIsMultiLevelSeries = $valIsMultiLevelSeries || $plotSeriesValues->isMultiLevelSeries();
+
+                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
+                        $this->startElement('c:yVal');
+                    }
+                    else {
+                        $this->startElement('c:val');
+                    }
                     $this->writePlotSeriesValues($plotSeriesValues, $chartType, 'num');
                     $this->endElement();
                 }
@@ -802,10 +953,10 @@ class ChartWriter extends FileWriter
      * @param string $id1
      * @param string $id2
      * @param boolean $isMultiLevelSeries
-     * @param $xAxis
-     * @param $yAxis
+     * @param Axis $xAxis
+     * @param Axis $yAxis
      */
-    private function writeCategoryAxis(?Title $axisTitle, string $chartType, $id1, $id2, $isMultiLevelSeries, $xAxis, $yAxis)
+    private function writeCategoryAxis(?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries, Axis $xAxis, Axis $yAxis)
     {
         $this->startElement('c:catAx');
 
@@ -829,36 +980,7 @@ class ChartWriter extends FileWriter
         $this->writeAttribute('val', "b");
         $this->endElement();
 
-        if ($axisTitle) {
-            $this->startElement('c:title');
-            $this->startElement('c:tx');
-            $this->startElement('c:rich');
-
-            $this->startElement('a:bodyPr');
-            $this->endElement();
-
-            $this->startElement('a:lstStyle');
-            $this->endElement();
-
-            $this->startElement('a:p');
-            $this->startElement('a:r');
-
-            $this->writeTitle($axisTitle);
-
-            $this->endElement();
-            $this->endElement();
-            $this->endElement();
-            $this->endElement();
-
-            $layout = $axisTitle->getLayout();
-            $this->writeLayout($layout);
-
-            $this->startElement('c:overlay');
-            $this->writeAttribute('val', 0);
-            $this->endElement();
-
-            $this->endElement();
-        }
+        $this->writeTitle($axisTitle, true);
 
         $this->startElement('c:numFmt');
         $this->writeAttribute('formatCode', $yAxis->getAxisNumberFormat());
@@ -915,16 +1037,17 @@ class ChartWriter extends FileWriter
      * @param string $id1
      * @param string $id2
      * @param boolean $isMultiLevelSeries
-     * @param $xAxis
-     * @param $yAxis
-     * @param $majorGridlines
-     * @param $minorGridlines
+     * @param Axis $xAxis
+     * @param Axis $yAxis
+     * @param GridLines $majorGridlines
+     * @param GridLines $minorGridlines
      */
-    private function writeValueAxis(?Title $axisTitle, string $chartType, $id1, $id2, $isMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines)
+    private function writeValueAxis(?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries,
+                                    Axis   $xAxis, Axis $yAxis, GridLines $majorGridlines, GridLines $minorGridlines)
     {
         $this->startElement('c:valAx');
 
-        if ($id2 > 0) {
+        if ($id2) {
             $this->startElement('c:axId');
             $this->writeAttribute('val', $id2);
             $this->endElement();
@@ -932,24 +1055,23 @@ class ChartWriter extends FileWriter
 
         $this->startElement('c:scaling');
 
-        if (null !== $xAxis->getAxisOptionsProperty('maximum')) {
+        if ($value = $xAxis->getAxisOptionsProperty('maximum')) {
             $this->startElement('c:max');
-            $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('maximum'));
+            $this->writeAttribute('val', $value);
             $this->endElement();
         }
 
-        if (null !== $xAxis->getAxisOptionsProperty('minimum')) {
+        if ($value = $xAxis->getAxisOptionsProperty('minimum')) {
             $this->startElement('c:min');
-            $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('minimum'));
+            $this->writeAttribute('val', $value);
             $this->endElement();
         }
 
         $this->startElement('c:orientation');
         $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('orientation'));
+        $this->endElement(); // c:orientation
 
-
-        $this->endElement();
-        $this->endElement();
+        $this->endElement(); // c:scaling
 
         $this->startElement('c:delete');
         $this->writeAttribute('val', 0);
@@ -962,7 +1084,7 @@ class ChartWriter extends FileWriter
         $this->startElement('c:majorGridlines');
         $this->startElement('c:spPr');
 
-        if (null !== $majorGridlines->getLineColorProperty('value')) {
+        if ($majorGridlines->getLineColorProperty('value')) {
             $this->startElement('a:ln');
             $this->writeAttribute('w', $majorGridlines->getLineStyleProperty('width'));
             $this->startElement('a:solidFill');
@@ -988,17 +1110,17 @@ class ChartWriter extends FileWriter
                 $this->endElement();
             }
 
-            if (null !== $majorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
+            if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
                 $this->startElement('a:headEnd');
-                $this->writeAttribute('type', $majorGridlines->getLineStyleProperty(array('arrow', 'head', 'type')));
+                $this->writeAttribute('type', $value);
                 $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('head', 'w'));
                 $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('head', 'len'));
                 $this->endElement();
             }
 
-            if (null !== $majorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
+            if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
                 $this->startElement('a:tailEnd');
-                $this->writeAttribute('type', $majorGridlines->getLineStyleProperty(array('arrow', 'end', 'type')));
+                $this->writeAttribute('type', $value);
                 $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('end', 'w'));
                 $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('end', 'len'));
                 $this->endElement();
@@ -1007,7 +1129,7 @@ class ChartWriter extends FileWriter
         }
         $this->startElement('a:effectLst');
 
-        if (null !== $majorGridlines->getGlowSize()) {
+        if ($majorGridlines->getGlowSize()) {
             $this->startElement('a:glow');
             $this->writeAttribute('rad', $majorGridlines->getGlowSize());
             $this->startElement("a:{$majorGridlines->getGlowColor('type')}");
@@ -1019,42 +1141,7 @@ class ChartWriter extends FileWriter
             $this->endElement(); //end glow
         }
 
-        if (null !== $majorGridlines->getShadowProperty('presets')) {
-            $this->startElement("a:{$majorGridlines->getShadowProperty('effect')}");
-            if (null !== $majorGridlines->getShadowProperty('blur')) {
-                $this->writeAttribute('blurRad', $majorGridlines->getShadowProperty('blur'));
-            }
-            if (null !== $majorGridlines->getShadowProperty('distance')) {
-                $this->writeAttribute('dist', $majorGridlines->getShadowProperty('distance'));
-            }
-            if (null !== $majorGridlines->getShadowProperty('direction')) {
-                $this->writeAttribute('dir', $majorGridlines->getShadowProperty('direction'));
-            }
-            if (null !== $majorGridlines->getShadowProperty('algn')) {
-                $this->writeAttribute('algn', $majorGridlines->getShadowProperty('algn'));
-            }
-            if (null !== $majorGridlines->getShadowProperty(['size', 'sx'])) {
-                $this->writeAttribute('sx', $majorGridlines->getShadowProperty(['size', 'sx']));
-            }
-            if (null !== $majorGridlines->getShadowProperty(['size', 'sy'])) {
-                $this->writeAttribute('sy', $majorGridlines->getShadowProperty(['size', 'sy']));
-            }
-            if (null !== $majorGridlines->getShadowProperty(['size', 'kx'])) {
-                $this->writeAttribute('kx', $majorGridlines->getShadowProperty(['size', 'kx']));
-            }
-            if (null !== $majorGridlines->getShadowProperty('rotWithShape')) {
-                $this->writeAttribute('rotWithShape', $majorGridlines->getShadowProperty('rotWithShape'));
-            }
-            $this->startElement("a:{$majorGridlines->getShadowProperty(['color', 'type'])}");
-            $this->writeAttribute('val', $majorGridlines->getShadowProperty(['color', 'value']));
-
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $majorGridlines->getShadowProperty(['color', 'alpha']));
-            $this->endElement(); //end alpha
-
-            $this->endElement(); //end color:type
-            $this->endElement(); //end shadow
-        }
+        $this->writeShadowProperty($majorGridlines);
 
         if (null !== $majorGridlines->getSoftEdgesSize()) {
             $this->startElement('a:softEdge');
@@ -1096,17 +1183,17 @@ class ChartWriter extends FileWriter
                     $this->endElement();
                 }
 
-                if (null !== $minorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
+                if ($value = $minorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
                     $this->startElement('a:headEnd');
-                    $this->writeAttribute('type', $minorGridlines->getLineStyleProperty(['arrow', 'head', 'type']));
+                    $this->writeAttribute('type', $value);
                     $this->writeAttribute('w', $minorGridlines->getLineStyleArrowParameters('head', 'w'));
                     $this->writeAttribute('len', $minorGridlines->getLineStyleArrowParameters('head', 'len'));
                     $this->endElement();
                 }
 
-                if (null !== $minorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
+                if ($value = $minorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
                     $this->startElement('a:tailEnd');
-                    $this->writeAttribute('type', $minorGridlines->getLineStyleProperty(['arrow', 'end', 'type']));
+                    $this->writeAttribute('type', $value);
                     $this->writeAttribute('w', $minorGridlines->getLineStyleArrowParameters('end', 'w'));
                     $this->writeAttribute('len', $minorGridlines->getLineStyleArrowParameters('end', 'len'));
                     $this->endElement();
@@ -1128,40 +1215,7 @@ class ChartWriter extends FileWriter
                 $this->endElement(); //end glow
             }
 
-            if (null !== $minorGridlines->getShadowProperty('presets')) {
-                $this->startElement("a:{$minorGridlines->getShadowProperty('effect')}");
-                if (null !== $minorGridlines->getShadowProperty('blur')) {
-                    $this->writeAttribute('blurRad', $minorGridlines->getShadowProperty('blur'));
-                }
-                if (null !== $minorGridlines->getShadowProperty('distance')) {
-                    $this->writeAttribute('dist', $minorGridlines->getShadowProperty('distance'));
-                }
-                if (null !== $minorGridlines->getShadowProperty('direction')) {
-                    $this->writeAttribute('dir', $minorGridlines->getShadowProperty('direction'));
-                }
-                if (null !== $minorGridlines->getShadowProperty('algn')) {
-                    $this->writeAttribute('algn', $minorGridlines->getShadowProperty('algn'));
-                }
-                if (null !== $minorGridlines->getShadowProperty(['size', 'sx'])) {
-                    $this->writeAttribute('sx', $minorGridlines->getShadowProperty(['size', 'sx']));
-                }
-                if (null !== $minorGridlines->getShadowProperty(['size', 'sy'])) {
-                    $this->writeAttribute('sy', $minorGridlines->getShadowProperty(['size', 'sy']));
-                }
-                if (null !== $minorGridlines->getShadowProperty(['size', 'kx'])) {
-                    $this->writeAttribute('kx', $minorGridlines->getShadowProperty(['size', 'kx']));
-                }
-                if (null !== $minorGridlines->getShadowProperty('rotWithShape')) {
-                    $this->writeAttribute('rotWithShape', $minorGridlines->getShadowProperty('rotWithShape'));
-                }
-                $this->startElement("a:{$minorGridlines->getShadowProperty(['color', 'type'])}");
-                $this->writeAttribute('val', $minorGridlines->getShadowProperty(['color', 'value']));
-                $this->startElement('a:alpha');
-                $this->writeAttribute('val', $minorGridlines->getShadowProperty(['color', 'alpha']));
-                $this->endElement(); //end alpha
-                $this->endElement(); //end color:type
-                $this->endElement(); //end shadow
-            }
+            $this->writeShadowProperty($minorGridlines);
 
             if (null !== $minorGridlines->getSoftEdgesSize()) {
                 $this->startElement('a:softEdge');
@@ -1174,34 +1228,7 @@ class ChartWriter extends FileWriter
             $this->endElement(); //end minorGridLines
         }
 
-        if ($axisTitle) {
-            $this->startElement('c:title');
-            $this->startElement('c:tx');
-            $this->startElement('c:rich');
-
-            $this->writeElement('a:bodyPr');
-            $this->writeElement('a:lstStyle');
-
-            $this->startElement('a:p');
-            $this->startElement('a:r');
-            $this->writeTitle($axisTitle);
-            $this->endElement(); // a:r
-            $this->endElement(); // a:p
-
-            $this->endElement(); // c:rich
-            $this->endElement(); // c:tx
-
-            if ($chartType !== DataSeries::TYPE_BUBBLECHART) {
-                $layout = $axisTitle->getLayout();
-                $this->writeLayout($layout);
-            }
-
-            $this->startElement('c:overlay');
-            $this->writeAttribute('val', 0);
-            $this->endElement();
-
-            $this->endElement(); // c:title
-        }
+        $this->writeTitle($axisTitle, $chartType !== DataSeries::TYPE_BUBBLECHART);
 
         $this->startElement('c:numFmt');
         $this->writeAttribute('formatCode', $xAxis->getAxisNumberFormat());
@@ -1222,7 +1249,7 @@ class ChartWriter extends FileWriter
 
         $this->startElement('c:spPr');
 
-        if (null !== $xAxis->getFillProperty('value')) {
+        if ($xAxis->getFillProperty('value')) {
             $this->startElement('a:solidFill');
             $this->startElement("a:" . $xAxis->getFillProperty('type'));
             $this->writeAttribute('val', $xAxis->getFillProperty('value'));
@@ -1239,7 +1266,7 @@ class ChartWriter extends FileWriter
         $this->writeAttribute('cap', $xAxis->getLineStyleProperty('cap'));
         $this->writeAttribute('cmpd', $xAxis->getLineStyleProperty('compound'));
 
-        if (null !== $xAxis->getLineProperty('value')) {
+        if ($xAxis->getLineProperty('value')) {
             $this->startElement('a:solidFill');
             $this->startElement("a:" . $xAxis->getLineProperty('type'));
             $this->writeAttribute('val', $xAxis->getLineProperty('value'));
@@ -1264,17 +1291,17 @@ class ChartWriter extends FileWriter
             $this->endElement();
         }
 
-        if (null !== $xAxis->getLineStyleProperty(['arrow', 'head', 'type'])) {
+        if ($value = $xAxis->getLineStyleProperty(['arrow', 'head', 'type'])) {
             $this->startElement('a:headEnd');
-            $this->writeAttribute('type', $xAxis->getLineStyleProperty(['arrow', 'head', 'type']));
+            $this->writeAttribute('type', $value);
             $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('head'));
             $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('head'));
             $this->endElement();
         }
 
-        if (null !== $xAxis->getLineStyleProperty(['arrow', 'end', 'type'])) {
+        if ($value = $xAxis->getLineStyleProperty(['arrow', 'end', 'type'])) {
             $this->startElement('a:tailEnd');
-            $this->writeAttribute('type', $xAxis->getLineStyleProperty(['arrow', 'end', 'type']));
+            $this->writeAttribute('type', $value);
             $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('end'));
             $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('end'));
             $this->endElement();
@@ -1296,43 +1323,7 @@ class ChartWriter extends FileWriter
             $this->endElement();
         }
 
-        if (null !== $xAxis->getShadowProperty('presets')) {
-            $this->startElement("a:{$xAxis->getShadowProperty('effect')}");
-
-            if (null !== $xAxis->getShadowProperty('blur')) {
-                $this->writeAttribute('blurRad', $xAxis->getShadowProperty('blur'));
-            }
-            if (null !== $xAxis->getShadowProperty('distance')) {
-                $this->writeAttribute('dist', $xAxis->getShadowProperty('distance'));
-            }
-            if (null !== $xAxis->getShadowProperty('direction')) {
-                $this->writeAttribute('dir', $xAxis->getShadowProperty('direction'));
-            }
-            if (null !== $xAxis->getShadowProperty('algn')) {
-                $this->writeAttribute('algn', $xAxis->getShadowProperty('algn'));
-            }
-            if (null !== $xAxis->getShadowProperty(['size','sx'])) {
-                $this->writeAttribute('sx', $xAxis->getShadowProperty(['size','sx']));
-            }
-            if (null !== $xAxis->getShadowProperty(['size','sy'])) {
-                $this->writeAttribute('sy', $xAxis->getShadowProperty(['size','sy']));
-            }
-            if (null !== $xAxis->getShadowProperty(['size','kx'])) {
-                $this->writeAttribute('kx', $xAxis->getShadowProperty(['size','kx']));
-            }
-            if (null !== $xAxis->getShadowProperty('rotWithShape')) {
-                $this->writeAttribute('rotWithShape', $xAxis->getShadowProperty('rotWithShape'));
-            }
-
-            $this->startElement("a:{$xAxis->getShadowProperty(['color','type'])}");
-            $this->writeAttribute('val', $xAxis->getShadowProperty(['color','value']));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $xAxis->getShadowProperty(['color','alpha']));
-            $this->endElement();
-            $this->endElement();
-
-            $this->endElement();
-        }
+        $this->writeShadowProperty($xAxis);
 
         if (null !== $xAxis->getSoftEdgesSize()) {
             $this->startElement('a:softEdge');
@@ -1348,9 +1339,9 @@ class ChartWriter extends FileWriter
             $this->writeAttribute('val', $id2);
             $this->endElement();
 
-            if (null !== $xAxis->getAxisOptionsProperty('horizontal_crosses_value')) {
+            if ($value = $xAxis->getAxisOptionsProperty('horizontal_crosses_value')) {
                 $this->startElement('c:crossesAt');
-                $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('horizontal_crosses_value'));
+                $this->writeAttribute('val', $value);
                 $this->endElement();
             }
             else {
@@ -1363,15 +1354,15 @@ class ChartWriter extends FileWriter
             $this->writeAttribute('val', "midCat");
             $this->endElement();
 
-            if (null !== $xAxis->getAxisOptionsProperty('major_unit')) {
+            if ($value = $xAxis->getAxisOptionsProperty('major_unit')) {
                 $this->startElement('c:majorUnit');
-                $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('major_unit'));
+                $this->writeAttribute('val', $value);
                 $this->endElement();
             }
 
-            if (null !== $xAxis->getAxisOptionsProperty('minor_unit')) {
+            if ($value = $xAxis->getAxisOptionsProperty('minor_unit')) {
                 $this->startElement('c:minorUnit');
-                $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('minor_unit'));
+                $this->writeAttribute('val', $value);
                 $this->endElement();
             }
         }
@@ -1385,4 +1376,49 @@ class ChartWriter extends FileWriter
         $this->endElement();
     }
 
+    /**
+     * @param $obj
+     *
+     * @return void
+     */
+    private function writeShadowProperty($obj)
+    {
+        if ($obj->getShadowProperty('presets')) {
+            $this->startElement("a:{$obj->getShadowProperty('effect')}");
+
+            if ($value = $obj->getShadowProperty('blur')) {
+                $this->writeAttribute('blurRad', $value);
+            }
+            if ($value = $obj->getShadowProperty('distance')) {
+                $this->writeAttribute('dist', $value);
+            }
+            if ($value = $obj->getShadowProperty('direction')) {
+                $this->writeAttribute('dir', $value);
+            }
+            if ($value = $obj->getShadowProperty('algn')) {
+                $this->writeAttribute('algn', $value);
+            }
+            if ($value = $obj->getShadowProperty(['size','sx'])) {
+                $this->writeAttribute('sx', $value);
+            }
+            if ($value = $obj->getShadowProperty(['size','sy'])) {
+                $this->writeAttribute('sy', $value);
+            }
+            if ($value = $obj->getShadowProperty(['size','kx'])) {
+                $this->writeAttribute('kx', $value);
+            }
+            if ($value = $obj->getShadowProperty('rotWithShape')) {
+                $this->writeAttribute('rotWithShape', $value);
+            }
+
+            $this->startElement("a:{$obj->getShadowProperty(['color','type'])}");
+            $this->writeAttribute('val', $obj->getShadowProperty(['color','value']));
+            $this->startElement('a:alpha');
+            $this->writeAttribute('val', $obj->getShadowProperty(['color','alpha']));
+            $this->endElement();
+            $this->endElement();
+
+            $this->endElement();
+        }
+    }
 }

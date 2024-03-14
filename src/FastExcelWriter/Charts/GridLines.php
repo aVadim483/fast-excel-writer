@@ -438,8 +438,8 @@ class GridLines extends Properties
     /**
      * Get Shadow Property
      *
-     * @param string $elements
-     * @param array $elements
+     * @param string|array $elements
+     *
      * @return string
      */
     public function getShadowProperty($elements)

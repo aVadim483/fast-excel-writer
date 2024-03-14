@@ -775,8 +775,8 @@ class Writer
 
     protected function _writeChartFile(string $entry, Chart $chart, array &$relationShips)
     {
-        $fileWriter = $this->makeFileWriter($this->tempFilename($entry));
-        $chart->writeChart($fileWriter);
+        $chartWriter = $this->makeChartWriter($this->tempFilename($entry));
+        $chartWriter->writeChartXml($chart);
     }
 
     /**

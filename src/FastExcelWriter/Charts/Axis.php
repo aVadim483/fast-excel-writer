@@ -53,11 +53,11 @@ class Axis extends Properties
      *
      * @var  array of mixed
      */
-    private array $lineProperties = array(
+    private array $lineProperties = [
         'type' => self::EXCEL_COLOR_TYPE_ARGB,
         'value' => null,
         'alpha' => 0
-    );
+    ];
 
     /**
      * Line Style Properties
@@ -129,6 +129,9 @@ class Axis extends Properties
     private array $softEdges = [
         'size' => null
     ];
+
+    private string $orientation;
+
 
     /**
      * Get Series Data Type
@@ -383,15 +386,18 @@ class Axis extends Properties
         foreach ($properties_map as $property_key => $property_val) {
             if (is_array($property_val)) {
                 if ($reference === null) {
-                    $reference = & $this->shadowProperties[$property_key];
-                } else {
-                    $reference = & $reference[$property_key];
+                    $reference = &$this->shadowProperties[$property_key];
+                }
+                else {
+                    $reference = &$reference[$property_key];
                 }
                 $this->setShadowProperiesMapValues($property_val, $reference);
-            } else {
+            }
+            else {
                 if ($base_reference === null) {
                     $this->shadowProperties[$property_key] = $property_val;
-                } else {
+                }
+                else {
                     $reference[$property_key] = $property_val;
                 }
             }
@@ -458,19 +464,16 @@ class Axis extends Properties
     private function setShadowDistance($distance)
     {
         if ($distance !== null) {
-            $this->shadowProperties['distance'] = (string) $this->getExcelPointsWidth($distance);
+            $this->shadowProperties['distance'] = (string)$this->getExcelPointsWidth($distance);
         }
 
         return $this;
     }
 
     /**
-     * Get Glow Property
+     * Get Shadow Property
      *
-     * @param float $size
-     * @param string $color_value
-     * @param int $color_alpha
-     * @param string $color_type
+     * @param $elements
      */
     public function getShadowProperty($elements)
     {
@@ -516,7 +519,7 @@ class Axis extends Properties
      */
     private function setGlowSize($size)
     {
-        if (!is_null($size)) {
+        if (null !== $size) {
             $this->glowProperties['size'] = $this->getExcelPointsWidth($size);
         }
 

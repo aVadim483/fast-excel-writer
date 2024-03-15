@@ -11,133 +11,83 @@ use avadim\FastExcelWriter\Sheet;
  *
  * @license LGPL http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
  */
-class DataSeriesValues
+class DataSeriesValues extends DataSource
 {
-
-    const DATASERIES_TYPE_STRING = 'String';
-    const DATASERIES_TYPE_NUMBER = 'Number';
-
-    private static array $dataTypeValues = [
-        self::DATASERIES_TYPE_STRING,
-        self::DATASERIES_TYPE_NUMBER,
-    ];
-
-    /**
-     * Series Data Type
-     *
-     * @var string
-     */
-    private string $dataType;
-
-    /**
-     * Series Data Source
-     *
-     * @var string
-     */
-    protected $dataSource;
-
-    /**
-     * Format Code
-     *
-     * @var string
-     */
-    private $formatCode;
-
     /**
      * Series Point Marker
      *
-     * @var string
+     * @var string|null
      */
-    private $pointMarker;
-
-    /**
-     * Point Count (The number of datapoints in the dataseries)
-     *
-     * @var integer
-     */
-    private $pointCount = 0;
+    private ?string $pointMarker = null;
 
     /**
      * Data Values
      *
      * @var array of mixed
      */
-    private $dataValues = [];
+    private array $dataValues = [];
+
+    /**
+     * @var DataSeriesLabels|null
+     */
+    private ?DataSeriesLabels $labels = null;
+
+    /**
+     * @var array
+     */
+    private array $options = [];
+
 
     /**
      * Create a new DataSeriesValues object
      */
-    public function __construct($dataType = self::DATASERIES_TYPE_NUMBER, $dataSource = null, $formatCode = null, $pointCount = 0, $dataValues = [], $marker = null)
+    public function __construct($dataSource = null, $dataLabels = null, $options = [])
     {
-        $this->setDataType($dataType);
-        $this->dataSource = $dataSource;
-        $this->formatCode = $formatCode;
-        $this->pointCount = $pointCount;
+        parent::__construct(self::DATA_TYPE_NUMBER, $dataSource);
+        $this->setLabels($dataLabels);
+        $this->setOptions($options);
+    }
+
+    /**
+     * Set Series Data Values
+     *
+     * @param array $dataValues
+     *
+     * @return $this
+     */
+    public function setDataValues(array $dataValues = []): DataSeriesValues
+    {
         $this->dataValues = $dataValues;
-        $this->pointMarker = $marker;
+        $this->pointCount = count($dataValues);
+
+        return $this;
     }
 
     /**
-     * Get Series Data Type
+     * Get Series Data Values
      *
-     * @return string
+     * @return array of mixed
      */
-    public function getDataType(): string
+    public function getDataValues(): array
     {
-        return $this->dataType;
+        return $this->dataValues;
     }
 
     /**
-     * Set Series Data Type
+     * Get the first Series Data value
      *
-     * @param string|null $dataType Datatype of this data series
-     *                              Typical values are:
-     *                              DataSeriesValues::DATASERIES_TYPE_STRING
-     *                                        Normally used for axis point values
-     *                              DataSeriesValues::DATASERIES_TYPE_NUMBER
-     *                                        Normally used for chart data values
-     * @return $this
+     * @return mixed
      */
-    public function setDataType(?string $dataType = self::DATASERIES_TYPE_NUMBER): DataSeriesValues
+    public function getDataValue()
     {
-        if (!in_array($dataType, self::$dataTypeValues)) {
-            throw new Exception('Invalid datatype for chart data series values');
+        $count = count($this->dataValues);
+        if ($count === 0) {
+            return null;
         }
-        $this->dataType = $dataType;
-
-        return $this;
-    }
-
-    /**
-     * Get Series Data Source (formula)
-     *
-     * @return string|null
-     */
-    public function getDataSource(): ?string
-    {
-        return $this->dataSource;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDataSourceFormula(): bool
-    {
-        return $this->dataSource && $this->dataSource[0] === '=';
-    }
-
-    /**
-     * Set Series Data Source (formula)
-     *
-     * @param string|null $dataSource
-     *
-     * @return $this
-     */
-    public function setDataSource(?string $dataSource = null): DataSeriesValues
-    {
-        $this->dataSource = $dataSource;
-
-        return $this;
+        elseif ($count === 1) {
+            return $this->dataValues[0];
+        }
+        return $this->dataValues;
     }
 
     /**
@@ -162,40 +112,6 @@ class DataSeriesValues
         $this->pointMarker = $marker;
 
         return $this;
-    }
-
-    /**
-     * Get Series Format Code
-     *
-     * @return string
-     */
-    public function getFormatCode(): ?string
-    {
-        return $this->formatCode;
-    }
-
-    /**
-     * Set Series Format Code
-     *
-     * @param string|null $formatCode
-     *
-     * @return $this
-     */
-    public function setFormatCode(?string $formatCode = null): DataSeriesValues
-    {
-        $this->formatCode = $formatCode;
-
-        return $this;
-    }
-
-    /**
-     * Get Series Point Count
-     *
-     * @return int
-     */
-    public function getPointCount(): int
-    {
-        return $this->pointCount;
     }
 
     /**
@@ -226,64 +142,71 @@ class DataSeriesValues
     }
 
     /**
-     * Get Series Data Values
+     * @param DataSeriesLabels|string $dataLabels
      *
-     * @return array of mixed
+     * @return void
      */
-    public function getDataValues(): array
+    public function setLabels($dataLabels)
     {
-        return $this->dataValues;
-    }
-
-    /**
-     * Get the first Series Data value
-     *
-     * @return mixed
-     */
-    public function getDataValue()
-    {
-        $count = count($this->dataValues);
-        if ($count == 0) {
-            return null;
+        if ($dataLabels instanceof DataSeriesLabels) {
+            $this->labels = $dataLabels;
         }
-        elseif ($count == 1) {
-            return $this->dataValues[0];
+        elseif (is_string($dataLabels)) {
+            $this->labels = new DataSeriesLabels($dataLabels);
         }
-        return $this->dataValues;
     }
 
     /**
-     * Set Series Data Values
-     *
-     * @param array $dataValues
-     *
-     * @return $this
+     * @return DataSeriesLabels|null
      */
-    public function setDataValues(array $dataValues = []): DataSeriesValues
+    public function getLabels(): ?DataSeriesLabels
     {
-        $this->dataValues = $dataValues;
-        $this->pointCount = count($dataValues);
-
-        return $this;
+        return $this->labels;
     }
 
     /**
-     * @param Sheet $sheet
-     * @param bool|null $force
+     * @param array|null $options
      *
-     * @return $this
+     * @return void
      */
-    public function applyDataSourceSheet(Sheet $sheet, ?bool $force = false): DataSeriesValues
+    public function setOptions(?array $options = [])
     {
-        if ($this->dataSource) {
-            if ($this->dataSource[0] === '=') {
-                $this->dataSource = '=' . Excel::fullAddress($sheet->getName(), substr($this->dataSource, 1), $force);
-            }
-            else {
-                $this->dataSource = Excel::fullAddress($sheet->getName(), $this->dataSource, $force);
+        foreach ($options as $key => $val) {
+            switch ($key) {
+                case 'color':
+                    $this->setColor($val);
+                    break;
+                case 'marker':
+                    $this->setPointMarker($val);
+                    break;
+                case 'format':
+                    $this->setFormatCode($val);
+                    break;
+                default:
+                    //
             }
         }
-
-        return $this;
+        $this->options = $options;
     }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    public function setColor($color)
+    {
+        if (preg_match('/^#?([0-9a-f]+)$/i', $color, $m)) {
+            $this->options['color'] = $m[1];
+        }
+    }
+
+    public function getColor()
+    {
+        return $this->options['color'] ?? null;
+    }
+
 }

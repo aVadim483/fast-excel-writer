@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter\Charts;
 
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Exceptions\ExceptionChart;
 use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Writer\Writer;
 use avadim\FastExcelWriter\Writer\FileWriter;
@@ -31,7 +32,26 @@ class Chart
     const TYPE_PIE_3D           = 'pie3D';
     const TYPE_DONUT            = 'doughnut';
     const TYPE_DOUGHNUT         = self::TYPE_DONUT;
+    const TYPE_COMBO            = 'combo';
 
+    public static $charTypes = [self::TYPE_BAR              ,
+        self::TYPE_BAR_STACKED      ,
+        self::TYPE_COLUMN           ,
+        self::TYPE_COLUMN_STACKED   ,
+        self::TYPE_LINE             ,
+        self::TYPE_LINE_STACKED     ,
+        self::TYPE_LINE_3D          ,
+        self::TYPE_LINE_3D_STACKED  ,
+        self::TYPE_AREA             ,
+        self::TYPE_AREA_STACKED     ,
+        self::TYPE_AREA_3D          ,
+        self::TYPE_AREA_3D_STACKED  ,
+        self::TYPE_PIE              ,
+        self::TYPE_PIE_3D           ,
+        self::TYPE_DONUT            ,
+        self::TYPE_DOUGHNUT         ,
+        self::TYPE_COMBO            ,
+    ];
     /**
      * @var Sheet|null
      */
@@ -203,11 +223,14 @@ class Chart
      */
     public static function make($chartType, $title = null, $dataSource = null): Chart
     {
+        if (!in_array($chartType, self::$charTypes)) {
+            ExceptionChart::throwNew('Invalid chart type');
+        }
         if ($dataSource instanceof PlotArea) {
             $plotArea = $dataSource;
         }
         else {
-            $plotArea = new PlotArea(NULL, $dataSource);
+            $plotArea = new PlotArea($dataSource);
         }
         $chart = new static($title, $plotArea);
         $chart->setChartType($chartType);
@@ -222,9 +245,9 @@ class Chart
      *
      * @return $this
      */
-    public function addDataSeries($dataSource, ?string $dataLabel = null, ?array $options = []): Chart
+    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $options = []): Chart
     {
-        $this->getPlotArea()->addDataSeries($dataSource, $dataLabel, $options);
+        $this->getPlotArea()->addDataSeriesSource($dataSource, $dataLabel, $options);
 
         return $this;
     }
@@ -235,7 +258,7 @@ class Chart
      *
      * @return $this
      */
-    public function addDataSeriesSet($dataSource, $dataLabels = null, $options = []): Chart
+    public function addDataSeriesType($chartType, $dataSource, $dataLabels = null, $options = []): Chart
     {
         $this->getPlotArea()->addDataSeriesSet($dataSource, $dataLabels, $options);
 
@@ -303,14 +326,8 @@ class Chart
         if ($plotValues instanceof PlotArea) {
             $this->plotArea = $plotValues;
         }
-        elseif ($plotValues instanceof DataSeries) {
-            $this->plotArea = new PlotArea(NULL, [$plotValues]);
-        }
-        elseif (is_array($plotValues)) {
-            $plotValues = array_values($plotValues);
-            if ($plotValues[0] instanceof DataSeries) {
-                $this->plotArea = new PlotArea(NULL, $plotValues);
-            }
+        else {
+            $this->plotArea = new PlotArea($plotValues);
         }
 
         return $this;
@@ -394,7 +411,7 @@ class Chart
     public function setLegendPosition(string $position): Chart
     {
         if (!$this->legend) {
-            $this->legend = new Legend($position, NULL, false);
+            $this->legend = new Legend($position);
         }
         else {
             $this->legend->setPosition($position);
@@ -404,16 +421,92 @@ class Chart
     }
 
     /**
+     * @return $this
+     */
+    public function setLegendPositionTop(): Chart
+    {
+        if (!$this->legend) {
+            $this->legend = new Legend(Legend::POSITION_TOP);
+        }
+        else {
+            $this->legend->setPosition(Legend::POSITION_TOP);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLegendPositionRight(): Chart
+    {
+        if (!$this->legend) {
+            $this->legend = new Legend(Legend::POSITION_RIGHT);
+        }
+        else {
+            $this->legend->setPosition(Legend::POSITION_RIGHT);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLegendPositionBottom(): Chart
+    {
+        if (!$this->legend) {
+            $this->legend = new Legend(Legend::POSITION_BOTTOM);
+        }
+        else {
+            $this->legend->setPosition(Legend::POSITION_BOTTOM);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setLegendPositionLeft(): Chart
+    {
+        if (!$this->legend) {
+            $this->legend = new Legend(Legend::POSITION_LEFT);
+        }
+        else {
+            $this->legend->setPosition(Legend::POSITION_LEFT);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set Category Axis Labels
      *
-     * @param $range
+     * @param $labels
      *
      * @return $this
      */
-    public function setCategoryAxisLabels($range): Chart
+    public function setCategoryAxisLabels($labels): Chart
     {
         $dataSeries = $this->plotArea->getPlotDataSeriesByIndex(0);
-        $dataSeries->setPlotCategories($range);
+        $dataSeries->setCategoryAxisLabels($labels);
+
+        return $this;
+    }
+
+    /**
+     * @param $labels
+     * @param $title
+     *
+     * @return $this
+     */
+    public function setCategoryAxis($labels, $title = null): Chart
+    {
+        $this->setCategoryAxisLabels($labels);
+        if ($title) {
+            $this->setCategoryAxisTitle($title);
+        }
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace avadim\FastExcelWriter\Writer;
 use avadim\FastExcelWriter\Charts\Axis;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\DataSeries;
+use avadim\FastExcelWriter\Charts\DataSeriesLabels;
 use avadim\FastExcelWriter\Charts\DataSeriesValues;
 use avadim\FastExcelWriter\Charts\GridLines;
 use avadim\FastExcelWriter\Charts\Layout;
@@ -444,21 +445,18 @@ class ChartWriter extends FileWriter
         }
 
         $plotSeriesIdx = 0;
-        /*
-        foreach ($plotSeriesOrder as $plotSeriesIdx => $plotSeriesRef) {
-            $plotSeriesLabel = $dataSeries->getPlotLabelByIndex($plotSeriesRef);
-            $plotSeriesValues = $dataSeries->getPlotValuesByIndex($plotSeriesRef);
-            $plotSeriesCategory = $dataSeries->getPlotCategoryByIndex($plotSeriesRef);
 
-            if ($plotSeriesLabel || $plotSeriesValues || $plotSeriesCategory) {
+        foreach ($dataSeries->getDataSeriesValues() as $dataSeriesIdx => $dataSeriesValues) {
+            if ($dataSeriesValues && $dataSeriesValues->getDataSource()) {
+
                 $this->startElement('c:ser');
 
                 $this->startElement('c:idx');
-                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
+                $this->writeAttribute('val', $this->_seriesIndex + $dataSeriesIdx);
                 $this->endElement();
 
                 $this->startElement('c:order');
-                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesRef);
+                $this->writeAttribute('val', $this->_seriesIndex + $dataSeriesIdx);
                 $this->endElement();
 
                 if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
@@ -482,9 +480,10 @@ class ChartWriter extends FileWriter
                 }
 
                 // Labels
-                if ($plotSeriesLabel && ($plotSeriesLabel->getPointCount() > 0)) {
+                $dataSeriesLabels = $dataSeriesValues->getLabels();
+                if ($dataSeriesLabels && $dataSeriesLabels->getDataSource()) {
                     $this->startElement('c:tx');
-                    $this->writePlotSeriesLabel($plotSeriesLabel);
+                    $this->writeDataSeriesLabel($dataSeriesLabels);
                     $this->endElement();
                 }
 
@@ -500,34 +499,31 @@ class ChartWriter extends FileWriter
                     $this->endElement();
                     $this->endElement();
                 }
-                else {
-                    /* custom colors of data series
+                elseif ($color = $dataSeriesValues->getColor()) {
+                    /* custom colors of data series */
                     $this->startElement('c:spPr');
                     $this->startElement('a:solidFill');
                     $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', '777777');
+                    $this->writeAttribute('val', $color);
                     $this->endElement();
                     $this->endElement();
                     $this->endElement();
-                    * /
                 }
 
-                if ($plotSeriesValues) {
-                    $plotSeriesMarker = $plotSeriesValues->getPointMarker();
-                    if ($plotSeriesMarker) {
-                        $this->startElement('c:marker');
-                        $this->startElement('c:symbol');
-                        $this->writeAttribute('val', $plotSeriesMarker);
-                        $this->endElement();
+                $plotSeriesMarker = $dataSeriesValues->getPointMarker();
+                if ($plotSeriesMarker) {
+                    $this->startElement('c:marker');
+                    $this->startElement('c:symbol');
+                    $this->writeAttribute('val', $plotSeriesMarker);
+                    $this->endElement();
 
-                        if ($plotSeriesMarker !== 'none') {
-                            $this->startElement('c:size');
-                            $this->writeAttribute('val', 3);
-                            $this->endElement();
-                        }
-
+                    if ($plotSeriesMarker !== 'none') {
+                        $this->startElement('c:size');
+                        $this->writeAttribute('val', 3);
                         $this->endElement();
                     }
+
+                    $this->endElement();
                 }
 
                 if ($chartType === DataSeries::TYPE_BARCHART || $chartType === DataSeries::TYPE_BARCHART_3D || $chartType === DataSeries::TYPE_BUBBLECHART) {
@@ -537,160 +533,16 @@ class ChartWriter extends FileWriter
                 }
 
                 // Category Labels
-                if ($plotSeriesCategory && ($plotSeriesCategory->getPointCount() > 0)) {
-                    $catIsMultiLevelSeries = $catIsMultiLevelSeries || $plotSeriesCategory->isMultiLevelSeries();
+                $plotSeriesCategories = $dataSeries->getCategoryAxisLabelsByIndex($dataSeriesIdx);
+                if ($plotSeriesCategories && $plotSeriesCategories->getDataSource()) {
+                    //$catIsMultiLevelSeries = $catIsMultiLevelSeries || $plotSeriesCategories->isMultiLevelSeries();
 
                     if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
-                        if (null !== $dataSeries->getPlotStyle()) {
-                            $plotStyle = $dataSeries->getPlotStyle();
-                            if ($plotStyle) {
-                                $this->startElement('c:explosion');
-                                $this->writeAttribute('val', 25);
-                                $this->endElement();
-                            }
-                        }
-                    }
-
-                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
-                        $this->startElement('c:xVal');
-                    }
-                    else {
-                        $this->startElement('c:cat');
-                    }
-
-                    $this->writePlotSeriesValues($plotSeriesCategory, $chartType, 'str');
-                    $this->endElement();
-                }
-
-                //    Values
-                if ($plotSeriesValues) {
-                    $valIsMultiLevelSeries = $valIsMultiLevelSeries || $plotSeriesValues->isMultiLevelSeries();
-
-                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
-                        $this->startElement('c:yVal');
-                    }
-                    else {
-                        $this->startElement('c:val');
-                    }
-
-                    $this->writePlotSeriesValues($plotSeriesValues, $chartType, 'num');
-                    $this->endElement();
-                }
-
-                if ($chartType === DataSeries::TYPE_BUBBLECHART) {
-                    $this->writeBubbles($plotSeriesValues);
-                }
-
-                $this->endElement(); // c:ser
-            }
-        }
-        */
-
-        foreach ($dataSeries->getDataSeriesSets() as $plotSeriesIdx => $dataSeriesSet) {
-            $plotSeriesLabels = $dataSeriesSet->getDataLabels();
-            $plotSeriesValues = $dataSeriesSet->getDataValues();
-            $plotSeriesCategories = $dataSeriesSet->getDataCategories();
-            $plotSeriesOption = $dataSeriesSet->getDataOptions();
-
-            if ($plotSeriesLabels || $plotSeriesValues || $plotSeriesCategories) {
-                $this->startElement('c:ser');
-
-                $this->startElement('c:idx');
-                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
-                $this->endElement();
-
-                $this->startElement('c:order');
-                $this->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
-                $this->endElement();
-
-                if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
-                    $this->startElement('c:dPt');
-                    $this->startElement('c:idx');
-                    $this->writeAttribute('val', 3);
-                    $this->endElement();
-
-                    $this->startElement('c:bubble3D');
-                    $this->writeAttribute('val', 0);
-                    $this->endElement();
-
-                    $this->startElement('c:spPr');
-                    $this->startElement('a:solidFill');
-                    $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', 'FF9900');
-                    $this->endElement();
-                    $this->endElement();
-                    $this->endElement();
-                    $this->endElement();
-                }
-
-                // Labels
-                if ($plotSeriesLabels && ($plotSeriesLabels->getPointCount() > 0)) {
-                    $this->startElement('c:tx');
-                    $this->writePlotSeriesLabel($plotSeriesLabels);
-                    $this->endElement();
-                }
-
-                // Formatting for the points
-                if ($chartType === DataSeries::TYPE_LINECHART || $chartType === DataSeries::TYPE_STOCKCHART) {
-                    $this->startElement('c:spPr');
-                    $this->startElement('a:ln');
-                    $this->writeAttribute('w', 12700);
-                    if ($chartType === DataSeries::TYPE_STOCKCHART) {
-                        $this->startElement('a:noFill');
-                        $this->endElement();
-                    }
-                    $this->endElement();
-                    $this->endElement();
-                }
-                else {
-                    /* custom colors of data series
-                    $this->startElement('c:spPr');
-                    $this->startElement('a:solidFill');
-                    $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', '777777');
-                    $this->endElement();
-                    $this->endElement();
-                    $this->endElement();
-                    */
-                }
-
-                if ($plotSeriesValues) {
-                    $plotSeriesMarker = $plotSeriesValues->getPointMarker();
-                    if ($plotSeriesMarker) {
-                        $this->startElement('c:marker');
-                        $this->startElement('c:symbol');
-                        $this->writeAttribute('val', $plotSeriesMarker);
-                        $this->endElement();
-
-                        if ($plotSeriesMarker !== 'none') {
-                            $this->startElement('c:size');
-                            $this->writeAttribute('val', 3);
+                        if ($dataSeries->getPlotStyle()) {
+                            $this->startElement('c:explosion');
+                            $this->writeAttribute('val', 25);
                             $this->endElement();
                         }
-
-                        $this->endElement();
-                    }
-                }
-
-                if ($chartType === DataSeries::TYPE_BARCHART || $chartType === DataSeries::TYPE_BARCHART_3D || $chartType === DataSeries::TYPE_BUBBLECHART) {
-                    $this->startElement('c:invertIfNegative');
-                    $this->writeAttribute('val', 0);
-                    $this->endElement();
-                }
-
-                // Category Labels
-                if ($plotSeriesCategories && ($plotSeriesCategories->getPointCount() > 0)) {
-                    $catIsMultiLevelSeries = $catIsMultiLevelSeries || $plotSeriesCategories->isMultiLevelSeries();
-
-                    if ($chartType === DataSeries::TYPE_PIECHART || $chartType === DataSeries::TYPE_PIECHART_3D || $chartType === DataSeries::TYPE_DONUTCHART) {
-                        if (null !== $dataSeries->getPlotStyle()) {
-                            $plotStyle = $dataSeries->getPlotStyle();
-                            if ($plotStyle) {
-                                $this->startElement('c:explosion');
-                                $this->writeAttribute('val', 25);
-                                $this->endElement();
-                            }
-                        }
                     }
 
                     if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
@@ -699,26 +551,23 @@ class ChartWriter extends FileWriter
                     else {
                         $this->startElement('c:cat');
                     }
-                    $this->writePlotSeriesValues($plotSeriesCategories, $chartType, 'str');
+                    $this->writeDataSeriesValues($plotSeriesCategories, $chartType, 'str');
                     $this->endElement();
                 }
 
                 //    Values
-                if ($plotSeriesValues) {
-                    $valIsMultiLevelSeries = $valIsMultiLevelSeries || $plotSeriesValues->isMultiLevelSeries();
-
-                    if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
-                        $this->startElement('c:yVal');
-                    }
-                    else {
-                        $this->startElement('c:val');
-                    }
-                    $this->writePlotSeriesValues($plotSeriesValues, $chartType, 'num');
-                    $this->endElement();
+                $valIsMultiLevelSeries = $valIsMultiLevelSeries || $dataSeriesValues->isMultiLevelSeries();
+                if ($chartType === DataSeries::TYPE_BUBBLECHART || $chartType === DataSeries::TYPE_SCATTERCHART) {
+                    $this->startElement('c:yVal');
                 }
+                else {
+                    $this->startElement('c:val');
+                }
+                $this->writeDataSeriesValues($dataSeriesValues, $chartType, 'num');
+                $this->endElement();
 
                 if ($chartType === DataSeries::TYPE_BUBBLECHART) {
-                    $this->writeBubbles($plotSeriesValues);
+                    $this->writeBubbles($dataSeriesValues);
                 }
 
                 $this->endElement(); // c:ser
@@ -731,32 +580,18 @@ class ChartWriter extends FileWriter
     /**
      * Write Plot Series Label
      *
-     * @param DataSeriesValues $plotSeriesLabel
+     * @param DataSeriesLabels $plotSeriesLabel
      */
-    private function writePlotSeriesLabel(DataSeriesValues $plotSeriesLabel)
+    private function writeDataSeriesLabel(DataSeriesLabels $plotSeriesLabel)
     {
         $source = $plotSeriesLabel->getDataSource();
         if ($plotSeriesLabel->isDataSourceFormula()) {
             $this->startElement('c:strRef');
+
             $this->startElement('c:f');
             $this->writeRawData(substr($source, 1));
             $this->endElement(); // c:f
 
-            $this->startElement('c:strCache');
-            $this->startElement('c:ptCount');
-            $this->writeAttribute('val', $plotSeriesLabel->getPointCount());
-            $this->endElement();
-
-            foreach ($plotSeriesLabel->getDataValues() as $plotLabelKey => $plotLabelValue) {
-                $this->startElement('c:pt');
-                $this->writeAttribute('idx', $plotLabelKey);
-
-                $this->startElement('c:v');
-                $this->writeRawData($plotLabelValue);
-                $this->endElement();
-                $this->endElement();
-            }
-            $this->endElement(); // c:strCache
             $this->endElement(); // c:strRef
         }
         else {
@@ -769,11 +604,11 @@ class ChartWriter extends FileWriter
     /**
      * Write Plot Series Values
      *
-     * @param DataSeriesValues $plotSeriesValues
+     * @param DataSeriesValues|DataSeriesLabels $plotSeriesValues
      * @param string $groupType Type of plot for DataSeries
      * @param string $dataType Datatype of series values
      */
-    private function writePlotSeriesValues(DataSeriesValues $plotSeriesValues, string $groupType, string $dataType)
+    private function writeDataSeriesValues($plotSeriesValues, string $groupType, string $dataType)
     {
         if ($plotSeriesValues->isMultiLevelSeries()) {
             $levelCount = $plotSeriesValues->multiLevelCount();
@@ -796,7 +631,6 @@ class ChartWriter extends FileWriter
 
             for ($level = 0; $level < $levelCount; ++$level) {
                 $this->startElement('c:lvl');
-
                 foreach ($plotSeriesValues->getDataValues() as $plotSeriesKey => $plotSeriesValue) {
                     if (isset($plotSeriesValue[$level])) {
                         $this->startElement('c:pt');
@@ -808,8 +642,7 @@ class ChartWriter extends FileWriter
                         $this->endElement();
                     }
                 }
-
-                $this->endElement();
+                $this->endElement(); // c:lvl
             }
 
             $this->endElement();
@@ -826,37 +659,40 @@ class ChartWriter extends FileWriter
             $this->startElement('c:f');
             $this->writeRawData($source);
             $this->endElement();
-
-            $this->startElement('c:' . $dataType . 'Cache');
-
-            if ($groupType !== DataSeries::TYPE_PIECHART && $groupType !== DataSeries::TYPE_PIECHART_3D && $groupType !== DataSeries::TYPE_DONUTCHART) {
-                if (($plotSeriesValues->getFormatCode() !== null) && ($plotSeriesValues->getFormatCode() !== '')) {
-                    $this->startElement('c:formatCode');
-                    $this->writeRawData($plotSeriesValues->getFormatCode());
-                    $this->endElement();
-                }
-            }
-
-            $this->startElement('c:ptCount');
-            $this->writeAttribute('val', $plotSeriesValues->getPointCount());
-            $this->endElement();
-
+/*
             $dataValues = $plotSeriesValues->getDataValues();
             if ($dataValues) {
-                foreach ($dataValues as $plotSeriesKey => $plotSeriesValue) {
-                    $this->startElement('c:pt');
-                    $this->writeAttribute('idx', $plotSeriesKey);
+                $this->startElement('c:' . $dataType . 'Cache');
 
-                    $this->startElement('c:v');
-                    $this->writeRawData($plotSeriesValue);
-                    $this->endElement();
-                    $this->endElement();
+                if ($groupType !== DataSeries::TYPE_PIECHART && $groupType !== DataSeries::TYPE_PIECHART_3D && $groupType !== DataSeries::TYPE_DONUTCHART) {
+                    if (($plotSeriesValues->getFormatCode() !== null) && ($plotSeriesValues->getFormatCode() !== '')) {
+                        $this->startElement('c:formatCode');
+                        $this->writeRawData($plotSeriesValues->getFormatCode());
+                        $this->endElement();
+                    }
                 }
+
+                $this->startElement('c:ptCount');
+                $this->writeAttribute('val', $plotSeriesValues->getPointCount());
+                $this->endElement();
+
+                $dataValues = $plotSeriesValues->getDataValues();
+                if ($dataValues) {
+                    foreach ($dataValues as $plotSeriesKey => $plotSeriesValue) {
+                        $this->startElement('c:pt');
+                        $this->writeAttribute('idx', $plotSeriesKey);
+
+                        $this->startElement('c:v');
+                        $this->writeRawData($plotSeriesValue);
+                        $this->endElement();
+                        $this->endElement();
+                    }
+                }
+
+                $this->endElement();
             }
-
-            $this->endElement();
-
-            $this->endElement();
+*/
+            $this->endElement(); // 'c:' . $dataType . 'Ref'
         }
     }
 

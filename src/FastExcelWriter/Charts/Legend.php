@@ -92,36 +92,43 @@ class Legend
     }
 
     /**
-     * Get legend position as an Excel internal numeric value
-     *
-     * @return number
+     * @return bool
      */
-    public function getPositionXL()
+    public function setPositionTop(): bool
     {
-        return array_search($this->position, self::$positionXLref);
+        return $this->setPosition(self::POSITION_TOP);
     }
 
     /**
-     * Set legend position using an Excel internal numeric value
-     *
-     * @param    number    $positionXL
+     * @return bool
      */
-    public function setPositionXL($positionXL = self::xlLegendPositionRight)
+    public function setPositionRight(): bool
     {
-        if (!array_key_exists($positionXL, self::$positionXLref)) {
-            return false;
-        }
+        return $this->setPosition(self::POSITION_RIGHT);
+    }
 
-        $this->position = self::$positionXLref[$positionXL];
-        return true;
+    /**
+     * @return bool
+     */
+    public function setPositionBottom(): bool
+    {
+        return $this->setPosition(self::POSITION_BOTTOM);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setPositionLeft(): bool
+    {
+        return $this->setPosition(self::POSITION_LEFT);
     }
 
     /**
      * Get allow overlay of other elements?
      *
-     * @return boolean
+     * @return bool
      */
-    public function getOverlay()
+    public function getOverlay(): bool
     {
         return $this->overlay;
     }
@@ -129,11 +136,11 @@ class Legend
     /**
      * Set allow overlay of other elements?
      *
-     * @param boolean $overlay
+     * @param bool $overlay
      *
-     * @return boolean
+     * @return bool
      */
-    public function setOverlay($overlay = false)
+    public function setOverlay(bool $overlay = false): bool
     {
         if (!is_bool($overlay)) {
             return false;
@@ -148,7 +155,7 @@ class Legend
      *
      * @return Layout
      */
-    public function getLayout()
+    public function getLayout(): ?Layout
     {
         return $this->layout;
     }

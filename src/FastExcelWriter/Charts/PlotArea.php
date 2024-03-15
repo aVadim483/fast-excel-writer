@@ -31,7 +31,7 @@ class PlotArea
     /**
      * Create a new PlotArea
      */
-    public function __construct(Layout $layout = null, $dataSeries = null)
+    public function __construct($dataSeries = null, Layout $layout = null)
     {
         $this->layout = $layout;
         if ($dataSeries) {
@@ -63,18 +63,33 @@ class PlotArea
     }
 
     /**
+     * @return string|null
+     */
+    protected function getDefaultColor(): ?string
+    {
+        static $colors = ['5b9bd5', 'ed7d31', 'a5a5a5', 'ffc000', '4472c4', '70ad47'];
+
+        $index = $this->getDataSeriesCount();
+
+        return $colors[$index] ?? null;
+    }
+
+    /**
      * @param $dataSource
      * @param string|null $dataLabel
      * @param array|null $options
      *
      * @return $this
      */
-    public function addDataSeries($dataSource, ?string $dataLabel = null, ?array $options = []): PlotArea
+    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $options = []): PlotArea
     {
         if ($this->getPlotDataSeriesCount() === 0) {
             $this->plotDataSeries = [new DataSeries($this->defaultChartType ?: '')];
         }
         $plotDataSeries = $this->getPlotDataSeriesByIndex(0);
+        if (!isset($options['color']) && ($color = $this->getDefaultColor())) {
+            $options['color'] = $color;
+        }
         $plotDataSeries->addDataSeriesSource($dataSource, $dataLabel, $options);
         if ($this->defaultChartType) {
             $plotDataSeries->setChartType($this->defaultChartType);
@@ -90,15 +105,8 @@ class PlotArea
      */
     public function addDataSeriesSet(array $dataSource): PlotArea
     {
-        if ($this->getPlotDataSeriesCount() === 0) {
-            $this->plotDataSeries = [new DataSeries($this->defaultChartType ?: '')];
-        }
-        $plotDataSeries = $this->getPlotDataSeriesByIndex(0);
         foreach ($dataSource as $name => $values) {
-            $plotDataSeries->addDataSeriesSource($values, $name);
-        }
-        if ($this->defaultChartType) {
-            $plotDataSeries->setChartType($this->defaultChartType);
+            $this->addDataSeriesSource($values, $name);
         }
 
         return $this;
@@ -139,14 +147,14 @@ class PlotArea
     /**
      * Get Number of Plot Series
      *
-     * @return integer
+     * @return int
      */
-    public function getPlotSeriesCount(): int
+    public function getDataSeriesCount(): int
     {
         $seriesCount = 0;
         foreach ($this->plotDataSeries as $plot) {
             if ($plot) {
-                $seriesCount += $plot->getPlotSeriesCount();
+                $seriesCount += $plot->getDataSeriesCount();
             }
         }
         return $seriesCount;

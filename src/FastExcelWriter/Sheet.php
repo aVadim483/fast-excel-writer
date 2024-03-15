@@ -266,55 +266,6 @@ class Sheet implements InterfaceSheetWriter
         }
     }
 
-
-    public function makeChart($plotType, $title = null, $values = null)
-    {
-        if ($values instanceof PlotArea) {
-            $plotArea = $values;
-            $chart = new Chart($title, $plotArea);
-        }
-        else {
-            $dataSeries = null;
-            if ($values instanceof DataSeries) {
-                $dataSeries = $values;
-            }
-            elseif ($values instanceof DataSeriesValues) {
-                $dataSeries = new DataSeries(
-                    $plotType,		// plotType
-                    [$values],		// plotValues
-                );
-            }
-            elseif (is_array($values)) {
-                $dataSeriesValues = [];
-                foreach ($values as $data) {
-                    if ($data instanceof DataSeriesValues) {
-                        $dataSeriesValues[] = $data;
-                    }
-                    elseif (is_string($data)) {
-                        $dimension = Excel::rangeDimension(str_replace('$', '', $data));
-                        if (!strpos($dimension['absAddress'], '!')) {
-                            $range = $this->getName() . '!' . $dimension['absAddress'];
-                        }
-                        else {
-                            $range = $dimension['absAddress'];
-                        }
-                        $dataSeriesValues[] = new DataSeriesValues('Number', $range, NULL, $dimension['cellCount']);
-
-                    }
-                }
-                $dataSeries = new DataSeries(
-                    $plotType,		// plotType
-                    $dataSeriesValues,		// plotValues
-                );
-            }
-            $plotArea = new PlotArea(NULL, [$dataSeries]);
-            $chart = new Chart($title, $plotArea);
-        }
-        $chart->setChartType($plotType);
-
-        return $chart;
-    }
-
     /**
      * @param FileWriter $fileWriter
      *

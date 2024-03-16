@@ -18,7 +18,7 @@ class DataSeriesValues extends DataSource
      *
      * @var string|null
      */
-    private ?string $pointMarker = null;
+    private ?string $pointMarker = 'none';
 
     /**
      * Data Values
@@ -45,6 +45,9 @@ class DataSeriesValues extends DataSource
     {
         parent::__construct(self::DATA_TYPE_NUMBER, $dataSource);
         $this->setLabels($dataLabels);
+        if (!isset($options['width'])) {
+            $options['width'] = 3;
+        }
         $this->setOptions($options);
     }
 
@@ -103,12 +106,18 @@ class DataSeriesValues extends DataSource
     /**
      * Set Point Marker
      *
-     * @param string|null $marker
+     * @param string|bool $marker
      *
      * @return $this
      */
-    public function setPointMarker(?string $marker = null): DataSeriesValues
+    public function setPointMarker($marker): DataSeriesValues
     {
+        if ($marker === true) {
+            $marker = null; // auto
+        }
+        elseif ($marker === false) {
+            $marker = 'none';
+        }
         $this->pointMarker = $marker;
 
         return $this;
@@ -182,11 +191,13 @@ class DataSeriesValues extends DataSource
                 case 'format':
                     $this->setFormatCode($val);
                     break;
+                case 'width':
+                    $this->setWidth($val);
+                    break;
                 default:
                     //
             }
         }
-        $this->options = $options;
     }
 
     /**
@@ -199,14 +210,29 @@ class DataSeriesValues extends DataSource
 
     public function setColor($color)
     {
-        if (preg_match('/^#?([0-9a-f]+)$/i', $color, $m)) {
+        if (preg_match('/^#?([0-9a-f]{6})$/i', $color, $m)) {
             $this->options['color'] = $m[1];
+        }
+        elseif (preg_match('/^#?([0-9a-f]{3})$/i', $color, $m)) {
+            $this->options['color'] = $m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2];
         }
     }
 
     public function getColor()
     {
         return $this->options['color'] ?? null;
+    }
+
+    public function setWidth($width)
+    {
+        if ($width = (float)$width) {
+            $this->options['width'] = (int)Properties::excelPointsWidth($width);
+        }
+    }
+
+    public function getWidth()
+    {
+        return $this->options['width'] ?? null;
     }
 
 }

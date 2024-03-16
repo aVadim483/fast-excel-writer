@@ -12,23 +12,22 @@ use avadim\FastExcelWriter\Sheet;
  */
 class DataSeries
 {
-    const TYPE_BARCHART = 'barChart';
-    const TYPE_BARCHART_3D = 'bar3DChart';
-    const TYPE_LINECHART = 'lineChart';
-    const TYPE_LINECHART_3D = 'line3DChart';
-    const TYPE_AREACHART = 'areaChart';
-    const TYPE_AREACHART_3D = 'area3DChart';
-    const TYPE_PIECHART = 'pieChart';
-    const TYPE_PIECHART_3D = 'pie3DChart';
-    const TYPE_DOUGHTNUTCHART = 'doughnutChart';
-    const TYPE_DONUTCHART = self::TYPE_DOUGHTNUTCHART;    //    Synonym
-    const TYPE_SCATTERCHART = 'scatterChart';
-    const TYPE_SURFACECHART = 'surfaceChart';
-    const TYPE_SURFACECHART_3D = 'surface3DChart';
-    const TYPE_RADARCHART = 'radarChart';
-    const TYPE_BUBBLECHART = 'bubbleChart';
-    const TYPE_STOCKCHART = 'stockChart';
-    const TYPE_CANDLECHART = self::TYPE_STOCKCHART;       //    Synonym
+    const TYPE_BAR_CHART = 'barChart';
+    const TYPE_BAR_3D_CHART = 'bar3DChart';
+    const TYPE_LINE_CHART = 'lineChart';
+    const TYPE_LINE_3D_CHART = 'line3DChart';
+    const TYPE_AREA_CHART = 'areaChart';
+    const TYPE_AREA_3D_CHART = 'area3DChart';
+    const TYPE_PIE_CHART = 'pieChart';
+    const TYPE_PIE_3D_CHART = 'pie3DChart';
+    const TYPE_DOUGHTNUT_CHART = 'doughnutChart';
+    const TYPE_DONUT_CHART = self::TYPE_DOUGHTNUT_CHART;    //    Synonym
+    const TYPE_SCATTER_CHART = 'scatterChart';
+    const TYPE_SURFACE_CHART = 'surfaceChart';
+    const TYPE_SURFACE_3D_CHART = 'surface3DChart';
+    const TYPE_RADAR_CHART = 'radarChart';
+    const TYPE_BUBBLE_CHART = 'bubbleChart';
+    const TYPE_STOCK_CHART = 'stockChart';
 
     const GROUPING_CLUSTERED = 'clustered';
     const GROUPING_STACKED = 'stacked';
@@ -46,6 +45,11 @@ class DataSeries
     const STYLE_MARKER = 'marker';
     const STYLE_FILLED = 'filled';
 
+
+    /**
+     * @var string|null
+     */
+    private ?string $chartType = null;
 
     /**
      * Series Plot Chart Type
@@ -110,7 +114,7 @@ class DataSeries
      */
     public function __construct(string $chartType, $dataSource = null, $dataLabels = [], $plotCategories = [], $plotGrouping = null, $plotDirection = null, $smoothLine = false, $plotStyle = null)
     {
-        $this->plotChartType = $chartType;
+        $this->setChartType($chartType);
         if ($dataSource) {
             $this->setDataSeriesSource($dataSource);
         }
@@ -140,7 +144,7 @@ class DataSeries
     public function setDataSeriesSource($dataSource, $dataLabels = null, ?array $dataOptions = []): DataSeries
     {
         $this->dataSeriesValues = $this->dataSeriesLabels = [];
-        $this->addDataSeriesSource($dataSource, $dataLabels, $dataOptions);
+        $this->addDataSeriesValues($dataSource, $dataLabels, $dataOptions);
 
         return $this;
     }
@@ -178,7 +182,7 @@ class DataSeries
      *
      * @return $this
      */
-    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $dataOptions = []): DataSeries
+    public function addDataSeriesValues($dataSource, ?string $dataLabel = null, ?array $dataOptions = []): DataSeries
     {
         if (is_array($dataSource)) {
             $source = reset($dataSource);
@@ -222,12 +226,12 @@ class DataSeries
      */
     public function setChartType(string $chartType): DataSeries
     {
-        $plotChartType = $chartType;
+        $this->chartType = $plotChartType = $chartType;
         if (substr($chartType, -8) === '_stacked') {
             $plotChartType = str_replace('_stacked', '', $plotChartType);
         }
         if ($plotChartType === Chart::TYPE_COLUMN) {
-            $plotChartType = DataSeries::TYPE_BARCHART;
+            $plotChartType = DataSeries::TYPE_BAR_CHART;
         }
         elseif (substr($plotChartType, -5) !== 'Chart') {
             $plotChartType .= 'Chart';
@@ -243,10 +247,10 @@ class DataSeries
         if (substr($chartType, -8) === '_stacked') {
             $plotChartGrouping = DataSeries::GROUPING_STACKED;
         }
-        elseif (in_array($chartType, [Chart::TYPE_BAR])) {
+        elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_COLUMN])) {
             $plotChartGrouping = DataSeries::GROUPING_CLUSTERED;
         }
-        elseif (in_array($plotChartType, [DataSeries::TYPE_BARCHART, DataSeries::TYPE_BARCHART_3D, DataSeries::TYPE_LINECHART, DataSeries::TYPE_LINECHART_3D])) {
+        elseif (in_array($plotChartType, [DataSeries::TYPE_BAR_CHART, DataSeries::TYPE_BAR_3D_CHART, DataSeries::TYPE_LINE_CHART, DataSeries::TYPE_LINE_3D_CHART])) {
             $plotChartGrouping = DataSeries::GROUPING_STANDARD;
         }
 
@@ -259,6 +263,14 @@ class DataSeries
         }
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getChartType(): ?string
+    {
+        return $this->chartType;
     }
 
     /**
@@ -488,7 +500,7 @@ class DataSeries
     /**
      * Get Plot Values
      *
-     * @return array of DataSeriesValues
+     * @return DataSeriesValues[] of DataSeriesValues
      */
     public function getDataSeriesValues(): array
     {
@@ -515,6 +527,20 @@ class DataSeries
     }
 
     /**
+     * Set Smooth Line
+     *
+     * @param bool $smoothLine
+     *
+     * @return DataSeries
+     */
+    public function setSmoothLine(bool $smoothLine = true): DataSeries
+    {
+        $this->smoothLine = $smoothLine;
+
+        return $this;
+    }
+
+    /**
      * Get Number of Plot Series
      *
      * @return int
@@ -532,20 +558,6 @@ class DataSeries
     public function getSmoothLine(): bool
     {
         return $this->smoothLine;
-    }
-
-    /**
-     * Set Smooth Line
-     *
-     * @param bool $smoothLine
-     *
-     * @return DataSeries
-     */
-    public function setSmoothLine(bool $smoothLine = true): DataSeries
-    {
-        $this->smoothLine = $smoothLine;
-
-        return $this;
     }
 
 }

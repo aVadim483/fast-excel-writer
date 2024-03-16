@@ -3,6 +3,8 @@
 namespace avadim\FastExcelWriter\Charts;
 
 use avadim\FastExcelWriter\Excel;
+use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Exceptions\ExceptionChart;
 
 /**
  * This class uses source code of PHPExcel
@@ -27,12 +29,15 @@ class PlotArea
 
     private ?string $defaultChartType = null;
 
+    private array $defaultColors = [];
+
 
     /**
      * Create a new PlotArea
      */
     public function __construct($dataSeries = null, Layout $layout = null)
     {
+        $this->defaultColors = ['5b9bd5', 'ed7d31', 'a5a5a5', 'ffc000', '4472c4', '70ad47'];
         $this->layout = $layout;
         if ($dataSeries) {
             if ($dataSeries instanceof DataSeries) {
@@ -63,15 +68,27 @@ class PlotArea
     }
 
     /**
+     * @param array $colors
+     *
+     * @return $this
+     */
+    public function setDefaultColors(array $colors): PlotArea
+    {
+        foreach (array_values($colors) as $n => $color) {
+            $this->defaultColors[$n] = $color;
+        }
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
-    protected function getDefaultColor(): ?string
-    {
-        static $colors = ['5b9bd5', 'ed7d31', 'a5a5a5', 'ffc000', '4472c4', '70ad47'];
-
+    protected function selectDefaultColor(): ?string
+    { return null;
         $index = $this->getDataSeriesCount();
 
-        return $colors[$index] ?? null;
+        return $this->defaultColors[$index] ?? null;
     }
 
     /**
@@ -81,32 +98,43 @@ class PlotArea
      *
      * @return $this
      */
-    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $options = []): PlotArea
+    public function addDataSeriesValues($dataSource, ?string $dataLabel = null, ?array $options = []): PlotArea
     {
+        $chartType = $options['type'] ?? $this->defaultChartType;
         if ($this->getPlotDataSeriesCount() === 0) {
-            $this->plotDataSeries = [new DataSeries($this->defaultChartType ?: '')];
+            $this->plotDataSeries = [new DataSeries($chartType)];
         }
-        $plotDataSeries = $this->getPlotDataSeriesByIndex(0);
-        if (!isset($options['color']) && ($color = $this->getDefaultColor())) {
+        // select DataSeries by chart type
+        foreach ($this->plotDataSeries as $dataSeries) {
+            if ($dataSeries->getChartType() === $chartType) {
+                break;
+            }
+        }
+        if (empty($dataSeries) || $dataSeries->getChartType() !== $chartType) {
+            $dataSeries = new DataSeries($chartType);
+            $this->plotDataSeries[] = $dataSeries;
+        }
+
+        if (!isset($options['color']) && ($color = $this->selectDefaultColor())) {
             $options['color'] = $color;
         }
-        $plotDataSeries->addDataSeriesSource($dataSource, $dataLabel, $options);
+        $dataSeries->addDataSeriesValues($dataSource, $dataLabel, $options);
         if ($this->defaultChartType) {
-            $plotDataSeries->setChartType($this->defaultChartType);
+            $dataSeries->setChartType($chartType);
         }
 
         return $this;
     }
 
     /**
-     * @param array $dataSource
+     * @param array $dataSources
      *
      * @return $this
      */
-    public function addDataSeriesSet(array $dataSource): PlotArea
+    public function addDataSeriesSet(array $dataSources): PlotArea
     {
-        foreach ($dataSource as $name => $values) {
-            $this->addDataSeriesSource($values, $name);
+        foreach ($dataSources as $name => $dataSource) {
+            $this->addDataSeriesValues($dataSource, $name);
         }
 
         return $this;
@@ -189,4 +217,21 @@ class PlotArea
         return null;
     }
 
+    /**
+     * @return array
+     */
+    public function getChartTypes(): array
+    {
+        $chartTypes = [];
+        foreach ($this->plotDataSeries as $dataSeries) {
+            if ($type = $dataSeries->getPlotChartType()) {
+                $chartTypes[] = $type;
+            }
+        }
+        if (!$chartTypes) {
+            throw new ExceptionChart('Chart is not yet implemented');
+        }
+
+        return $chartTypes;
+    }
 }

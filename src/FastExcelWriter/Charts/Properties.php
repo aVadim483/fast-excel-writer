@@ -114,17 +114,17 @@ abstract class Properties
         SHADOW_PRESETS_PERSPECTIVE_LOWER_RIGHT = 22,
         SHADOW_PRESETS_PERSPECTIVE_LOWER_LEFT = 23;
 
-    protected function getExcelPointsWidth($width)
+    public static function excelPointsWidth($width)
     {
         return $width * 12700;
     }
 
-    protected function getExcelPointsAngle($angle)
+    public function excelPointsAngle($angle)
     {
         return $angle * 60000;
     }
 
-    protected function getTrueAlpha($alpha)
+    public function trueAlpha($alpha)
     {
         return (100 - $alpha) . '000';
     }
@@ -134,7 +134,7 @@ abstract class Properties
         return [
             'type' => (string) $type,
             'value' => (string) $color,
-            'alpha' => (string) $this->getTrueAlpha($alpha)
+            'alpha' => (string) $this->trueAlpha($alpha)
         ];
     }
 

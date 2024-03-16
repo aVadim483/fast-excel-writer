@@ -34,7 +34,8 @@ class Chart
     const TYPE_DOUGHNUT         = self::TYPE_DONUT;
     const TYPE_COMBO            = 'combo';
 
-    public static $charTypes = [self::TYPE_BAR              ,
+    public static array $charTypes = [
+        self::TYPE_BAR              ,
         self::TYPE_BAR_STACKED      ,
         self::TYPE_COLUMN           ,
         self::TYPE_COLUMN_STACKED   ,
@@ -52,6 +53,9 @@ class Chart
         self::TYPE_DOUGHNUT         ,
         self::TYPE_COMBO            ,
     ];
+
+    private string $chartType;
+
     /**
      * @var Sheet|null
      */
@@ -224,7 +228,7 @@ class Chart
     public static function make($chartType, $title = null, $dataSource = null): Chart
     {
         if (!in_array($chartType, self::$charTypes)) {
-            ExceptionChart::throwNew('Invalid chart type');
+            ExceptionChart::throwNew('Invalid chart type "' . $chartType . '"');
         }
         if ($dataSource instanceof PlotArea) {
             $plotArea = $dataSource;
@@ -245,22 +249,49 @@ class Chart
      *
      * @return $this
      */
-    public function addDataSeriesSource($dataSource, ?string $dataLabel = null, ?array $options = []): Chart
+    public function addDataSeriesValues($dataSource, ?string $dataLabel = null, ?array $options = []): Chart
     {
-        $this->getPlotArea()->addDataSeriesSource($dataSource, $dataLabel, $options);
+        if ($this->chartType === Chart::TYPE_COMBO) {
+            ExceptionChart::throwNew('Please use method addDataSeriesType() for Chart "' . Chart::TYPE_COMBO . '"');
+        }
+        $this->getPlotArea()->addDataSeriesValues($dataSource, $dataLabel, $options);
 
         return $this;
     }
 
     /**
-     * @param $dataSource
-     * @param $dataLabels
+     * @param array $dataSources
      *
      * @return $this
      */
-    public function addDataSeriesType($chartType, $dataSource, $dataLabels = null, $options = []): Chart
+    public function addDataSeriesSet(array $dataSources): Chart
     {
-        $this->getPlotArea()->addDataSeriesSet($dataSource, $dataLabels, $options);
+        $this->getPlotArea()->addDataSeriesSet($dataSources);
+
+        return $this;
+    }
+
+    /**
+     * @param string $chartType
+     * @param DataSeriesValues|string $dataSource
+     * @param string|null $dataLabel
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    public function addDataSeriesType(string $chartType, $dataSource, ?string $dataLabel = null, ?array $options = []): Chart
+    {
+        //if (($this->chartType === self::TYPE_COLUMN && $chartType === self::TYPE_LINE) || ($this->chartType === self::TYPE_LINE && $chartType === self::TYPE_COLUMN)) {
+        //    $this->chartType = self::TYPE_COMBO;
+        //}
+        if ($this->chartType === self::TYPE_COMBO && !in_array($chartType, [self::TYPE_COLUMN, self::TYPE_LINE])) {
+            ExceptionChart::throwNew('Invalid chart type of DataSeries "' . $chartType . '" for Chart "' . self::TYPE_COMBO . '"');
+        }
+        elseif ($this->chartType !== self::TYPE_COMBO && $this->chartType !== $chartType) {
+            ExceptionChart::throwNew('Invalid chart type of DataSeries "' . $chartType . '" for Chart "' . $this->chartType . '"');
+        }
+        $options['type'] = $chartType;
+        $this->getPlotArea()->addDataSeriesValues($dataSource, $dataLabel, $options);
 
         return $this;
     }
@@ -1067,6 +1098,10 @@ class Chart
      */
     public function setChartType(string $chartType): Chart
     {
+        if (!in_array($chartType, self::$charTypes)) {
+            ExceptionChart::throwNew('Invalid chart type "' . $chartType . '"');
+        }
+        $this->chartType = $chartType;
         $this->plotArea->setChartType($chartType);
 
         return $this;
@@ -1075,31 +1110,11 @@ class Chart
     /**
      * Get the data series type(s) for a chart plot series
      *
-     * @param PlotArea $plotArea
-     *
      * @return array
-     *
-     * @throws Exception
      */
-    public function getPlotChartTypes(PlotArea $plotArea): array
+    public function getPlotChartTypes(): array
     {
-        $groupCount = $plotArea->getPlotDataSeriesCount();
-
-        if ($groupCount === 1) {
-            $chartType = [$plotArea->getPlotDataSeriesByIndex(0)->getPlotChartType()];
-        }
-        else {
-            $chartTypes = [];
-            for ($i = 0; $i < $groupCount; ++$i) {
-                $chartTypes[] = $plotArea->getPlotDataSeriesByIndex($i)->getPlotChartType();
-            }
-            $chartType = array_unique($chartTypes);
-            if (count($chartTypes) == 0) {
-                throw new Exception('Chart is not yet implemented');
-            }
-        }
-
-        return $chartType;
+        return $this->plotArea->getChartTypes();
     }
 
 }

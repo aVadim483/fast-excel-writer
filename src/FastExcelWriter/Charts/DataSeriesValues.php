@@ -185,6 +185,9 @@ class DataSeriesValues extends DataSource
                 case 'color':
                     $this->setColor($val);
                     break;
+                case 'segment_colors':
+                    $this->setSegmentColors($val);
+                    break;
                 case 'marker':
                     $this->setPointMarker($val);
                     break;
@@ -208,19 +211,59 @@ class DataSeriesValues extends DataSource
         return $this->options;
     }
 
+    private function parseColor($color)
+    {
+        $color = trim($color);
+        if (preg_match('/^#?([0-9a-f]{6})$/i', $color, $m)) {
+            return strtolower($m[1]);
+        }
+        if (preg_match('/^#?([0-9a-f]{3})$/i', $color, $m)) {
+            return strtolower($m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2]);
+        }
+
+        return null;
+    }
+
     public function setColor($color)
     {
-        if (preg_match('/^#?([0-9a-f]{6})$/i', $color, $m)) {
-            $this->options['color'] = $m[1];
-        }
-        elseif (preg_match('/^#?([0-9a-f]{3})$/i', $color, $m)) {
-            $this->options['color'] = $m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2];
-        }
+        $this->options['color'] = $this->parseColor($color);
     }
 
     public function getColor()
     {
         return $this->options['color'] ?? null;
+    }
+
+    /**
+     * @param array|string $colors
+     *
+     * @return void
+     */
+    public function setSegmentColors($colors)
+    {
+        if (is_string($colors)) {
+            if (strpos($colors, ',') !== false) {
+                $segmentColors = explode(',', $colors);
+            }
+            elseif (strpos($colors, ';') !== false) {
+                $segmentColors = explode(';', $colors);
+            }
+            $segmentColors = [$colors];
+        }
+        else {
+            $segmentColors = $colors;
+        }
+        foreach ($segmentColors as $color) {
+            $this->options['segment_colors'][] = $this->parseColor($color);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getSegmentColors(): array
+    {
+        return $this->options['segment_colors'] ?? [];
     }
 
     public function setWidth($width)

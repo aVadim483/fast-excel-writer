@@ -456,24 +456,32 @@ class ChartWriter extends FileWriter
                 $this->writeAttribute('val', $this->_seriesIndex);
                 $this->endElement();
 
+                $dataColor = $dataSeriesValues->getColor();
                 if ($chartType === DataSeries::TYPE_PIE_CHART || $chartType === DataSeries::TYPE_PIE_3D_CHART || $chartType === DataSeries::TYPE_DONUT_CHART) {
-                    $this->startElement('c:dPt');
-                    $this->startElement('c:idx');
-                    $this->writeAttribute('val', 3);
-                    $this->endElement();
+                    $count = $dataSeriesValues->getPointCount();
+                    $segmentColors = $dataSeriesValues->getSegmentColors();
+                    for ($idx = 0; $idx < $count; $idx++) {
+                        $this->startElement('c:dPt');
+                        $this->startElement('c:idx');
+                        $this->writeAttribute('val', $idx);
+                        $this->endElement();
 
-                    $this->startElement('c:bubble3D');
-                    $this->writeAttribute('val', 0);
-                    $this->endElement();
+                        $this->startElement('c:bubble3D');
+                        $this->writeAttribute('val', 0);
+                        $this->endElement();
 
-                    $this->startElement('c:spPr');
-                    $this->startElement('a:solidFill');
-                    $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', 'FF9900');
-                    $this->endElement();
-                    $this->endElement();
-                    $this->endElement();
-                    $this->endElement();
+                        $this->startElement('c:spPr');
+                        $color = $segmentColors[$idx] ?? null;
+                        if ($color) {
+                            $this->startElement('a:solidFill');
+                            $this->startElement('a:srgbClr');
+                            $this->writeAttribute('val', $color);
+                            $this->endElement(); // a:srgbClr
+                            $this->endElement(); // a:solidFill
+                        }
+                        $this->endElement(); // c:spPr
+                        $this->endElement(); // c:dPt
+                    }
                 }
 
                 // Labels
@@ -494,22 +502,22 @@ class ChartWriter extends FileWriter
                         $this->startElement('a:noFill');
                         $this->endElement();
                     }
-                    elseif ($color = $dataSeriesValues->getColor()) {
+                    elseif ($dataColor) {
                         $this->startElement('a:solidFill');
                         $this->startElement('a:srgbClr');
-                        $this->writeAttribute('val', $color);
+                        $this->writeAttribute('val', $dataColor);
                         $this->endElement();
                         $this->endElement();
                     }
                     $this->endElement(); // a:ln
                     $this->endElement(); // c:spPr
                 }
-                elseif ($color = $dataSeriesValues->getColor()) {
+                elseif ($dataColor) {
                     /* custom colors of data series */
                     $this->startElement('c:spPr');
                     $this->startElement('a:solidFill');
                     $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', $color);
+                    $this->writeAttribute('val', $dataColor);
                     $this->endElement();
                     $this->endElement();
                     $this->endElement(); // c:spPr
@@ -517,8 +525,7 @@ class ChartWriter extends FileWriter
 
                 if ($chartType === DataSeries::TYPE_LINE_CHART) {
                     $plotSeriesMarker = $dataSeriesValues->getPointMarker();
-                    $color = $dataSeriesValues->getColor();
-                    if ($plotSeriesMarker !== null || $color) {
+                    if ($plotSeriesMarker !== null || $dataColor) {
                         $this->startElement('c:marker');
 
                         if ($plotSeriesMarker > '' && $plotSeriesMarker !== 'none') {
@@ -527,15 +534,15 @@ class ChartWriter extends FileWriter
                             $this->writeAttribute('val', 3);
                             $this->endElement();
                         }
-                        if ($color) {
+                        if ($dataColor) {
                             $this->startElement('c:spPr');
                             $this->startElement('a:solidFill');
-                            $this->writeElementAttr('a:srgbClr', ['val' => $color]);
+                            $this->writeElementAttr('a:srgbClr', ['val' => $dataColor]);
                             $this->endElement(); // a:solidFill
 
                             $this->startElement('a:ln');
                             $this->startElement('a:solidFill');
-                            $this->writeElementAttr('a:srgbClr', ['val' => $color]);
+                            $this->writeElementAttr('a:srgbClr', ['val' => $dataColor]);
                             $this->endElement(); // a:solidFill
                             $this->endElement();
 

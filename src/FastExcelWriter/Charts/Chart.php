@@ -234,13 +234,20 @@ class Chart
             $plotArea = $dataSource;
         }
         else {
-            $plotArea = new PlotArea($dataSource);
+            if (in_array($chartType, [Chart::TYPE_PIE, Chart::TYPE_PIE_3D, Chart::TYPE_DONUT])) {
+                $plotArea = new PlotArea(new DataSeries($chartType, $dataSource));
+            }
+            else {
+                $plotArea = new PlotArea($dataSource);
+            }
         }
+        $plotArea->setChartType($chartType);
         $chart = new static($title, $plotArea);
         $chart->setChartType($chartType);
 
         return $chart;
     }
+
 
     /**
      * @param $dataSource
@@ -664,41 +671,6 @@ class Chart
     }
 
     /**
-     * Set source as an address
-     *
-     * @param $index
-     * @param string $address
-     *
-     * @return $this
-     */
-    public function setDataSeriesRef($index, string $address): Chart
-    {
-        $dataSeries = $this->plotArea->getPlotDataSeriesByIndex(0);
-        $plotLabel = $dataSeries->getPlotLabelByIndex($index);
-        $plotLabel->setDataValues();
-        $plotLabel->setDataSource(($address && $address[0] === '=') ? $address : '=' . $address);
-
-        return $this;
-    }
-
-    /**
-     * Set source as a string
-     *
-     * @param $index
-     * @param string $labels
-     *
-     * @return $this
-     */
-    public function setDataSeriesLabel($index, string $labels): Chart
-    {
-        $dataSeries = $this->plotArea->getPlotDataSeriesByIndex(0);
-        $plotLabel = $dataSeries->getPlotLabelByIndex($index);
-        $plotLabel->setDataSource($labels);
-
-        return $this;
-    }
-
-    /**
      * Get Plot Area
      *
      * @return PlotArea
@@ -952,7 +924,7 @@ class Chart
      *
      * @return $this
      */
-    public function setBottomRightPosition(string $cell, ?int $xOffset = null, ?int $yOffset = null): Chart
+    public function setPosition(string $cell, ?int $xOffset = null, ?int $yOffset = null): Chart
     {
         $this->bottomRightCellRef = $cell;
         if ($xOffset !== null) {
@@ -1087,6 +1059,18 @@ class Chart
             }
         }
         $this->sheet = $sheet;
+
+        return $this;
+    }
+
+    /**
+     * @param array $colors
+     *
+     * @return $this
+     */
+    public function setChartColors(array $colors): Chart
+    {
+        $this->plotArea->setDefaultColors($colors);
 
         return $this;
     }

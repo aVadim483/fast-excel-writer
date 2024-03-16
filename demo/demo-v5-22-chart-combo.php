@@ -30,33 +30,16 @@ foreach ($data as $row) {
     $sheet->writeRow($row);
 }
 
-$chart = Chart::make(Chart::TYPE_COLUMN, 'Column Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
+$chart = Chart::make(Chart::TYPE_COMBO, 'Combo Chart', )
+    ->addDataSeriesType(Chart::TYPE_COLUMN, 'B2:B5', 'B1')
+    ->addDataSeriesType(Chart::TYPE_COLUMN, 'C2:C5', 'C1')
+    ->addDataSeriesType(Chart::TYPE_LINE, 'D2:D5', 'D1')
     ->setCategoryAxisLabels('A2:A5')
     ->setLegendPosition(Legend::POSITION_TOPRIGHT)
 ;
 
 //	Add the chart to the worksheet
 $sheet->addChart('a9:h22', $chart);
-
-$chart = Chart::make(Chart::TYPE_PIE, 'Pie Chart', ['b6:d6'])
-    ->setCategoryAxisLabels('b1:d1')
-    ->setLegendPosition(Legend::POSITION_TOPRIGHT)
-    ->setPlotShowPercent(true)
-;
-$sheet->addChart('i9:m22', $chart);
-
-$chart = Chart::make(Chart::TYPE_BAR_STACKED, 'Stacked Bar Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
-    ->setCategoryAxisLabels('A2:A5')
-    ->setLegendPosition(Legend::POSITION_TOPRIGHT)
-;
-$sheet->addChart('a23:h36', $chart);
-
-$chart = Chart::make(Chart::TYPE_PIE_3D, '3D Pie Chart', ['b6:d6'])
-    ->setCategoryAxisLabels('b1:d1')
-    ->setLegendPosition(Legend::POSITION_TOPRIGHT)
-    ->setPlotShowPercent(true)
-;
-$sheet->addChart('i23:m36', $chart);
 
 // Save to XLSX-file
 $excel->save($outFileName);

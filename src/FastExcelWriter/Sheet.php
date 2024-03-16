@@ -3125,7 +3125,7 @@ class Sheet implements InterfaceSheetWriter
     {
         $dimension = Excel::rangeDimension($range, true);
         $chart->setTopLeftPosition($dimension['cell1']);
-        $chart->setBottomRightPosition($dimension['cell2']);
+        $chart->setPosition($dimension['cell2']);
         $chart->setSheet($this);
 
         $this->charts[] = $chart;

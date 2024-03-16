@@ -112,9 +112,11 @@ class DataSeries
     /**
      * Create a new DataSeries
      */
-    public function __construct(string $chartType, $dataSource = null, $dataLabels = [], $plotCategories = [], $plotGrouping = null, $plotDirection = null, $smoothLine = false, $plotStyle = null)
+    public function __construct(?string $chartType, $dataSource = null, $dataLabels = [], $plotCategories = [], $plotGrouping = null, $plotDirection = null, $smoothLine = false, $plotStyle = null)
     {
-        $this->setChartType($chartType);
+        if ($chartType) {
+            $this->setChartType($chartType);
+        }
         if ($dataSource) {
             $this->setDataSeriesSource($dataSource);
         }

@@ -62,6 +62,12 @@ class PlotArea
         $this->defaultChartType = $chartType;
         foreach ($this->getPlotDataSeries() as $plotSeries) {
             $plotSeries->setChartType($chartType);
+            if (in_array($plotSeries->getChartType(), [Chart::TYPE_PIE, Chart::TYPE_PIE_3D, Chart::TYPE_DONUT])) {
+                $dataSeriesValues = $plotSeries->getDataSeriesValues();
+                if (!$dataSeriesValues[0]->getSegmentColors()) {
+                    $dataSeriesValues[0]->setSegmentColors($this->defaultColors);
+                }
+            }
         }
 
         return $this;
@@ -85,7 +91,7 @@ class PlotArea
      * @return string|null
      */
     protected function selectDefaultColor(): ?string
-    { return null;
+    {
         $index = $this->getDataSeriesCount();
 
         return $this->defaultColors[$index] ?? null;

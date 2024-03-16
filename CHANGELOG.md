@@ -1,3 +1,15 @@
+## v.5.1
+
+* Combo charts
+* Custom colors
+* Custom chart lines width
+* Some methods have been renamed
+  * setDataSeriesTickLabels() => setCategoryAxisLabels()
+  * setXAxisLabel() => setCategoryAxisTitle()
+  * getXAxisLabel() => getCategoryAxisTitle()
+  * setYAxisLabel() => setValueAxisTitle()
+  * getYAxisLabel() => getValueAxisTitle()
+
 ## v.5.0
 
 Chart support!

@@ -84,6 +84,7 @@ Jump To:
   * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
 * [Charts](/docs/05-charts.md)
   * [Simple usage](/docs/05-charts.md#simple-usage-of-chart)
+  * [Combo charts](/docs/05-charts.md#combo-charts)
   * [Multiple charts](/docs/05-charts.md#multiple-charts)
   * [Chart types](/docs/05-charts.md#chart-types)
   * [Useful Chart Methods](/docs/05-charts.md#useful-chart-methods)

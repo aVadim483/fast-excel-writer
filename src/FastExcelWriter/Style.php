@@ -364,28 +364,20 @@ class Style
                             ];
                             break;
                         case 'left':
-                            $result = [
-                                'border-left-style' => $style,
-                                'border-left-color' => $color,
-                            ];
+                            $result['border-left-style'] = $style;
+                            $result['border-left-color'] = $color;
                             break;
                         case 'right':
-                            $result = [
-                                'border-right-style' => $style,
-                                'border-right-color' => $color,
-                            ];
+                            $result['border-right-style'] = $style;
+                            $result['border-right-color'] = $color;
                             break;
                         case 'top':
-                            $result = [
-                                'border-top-style' => $style,
-                                'border-top-color' => $color,
-                            ];
+                            $result['border-top-style'] = $style;
+                            $result['border-top-color'] = $color;
                             break;
                         case 'bottom':
-                            $result = [
-                                'border-bottom-style' => $style,
-                                'border-bottom-color' => $color,
-                            ];
+                            $result['border-bottom-style'] = $style;
+                            $result['border-bottom-color'] = $color;
                             break;
                         default:
                             $result[$side] = $sideOptions;

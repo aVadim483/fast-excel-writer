@@ -33,15 +33,9 @@ class ChartWriter extends FileWriter
         $this->writeAttribute('xmlns:a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
         $this->writeAttribute('xmlns:r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
 
-        $this->startElement('c:date1904');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
-        $this->startElement('c:lang');
-        $this->writeAttribute('val', "en-GB");
-        $this->endElement();
-        $this->startElement('c:roundedCorners');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
+        $this->writeElementAttr('c:date1904', ['val' => 0]);
+        $this->writeElementAttr('c:lang', ['val' => 'en-GB']);
+        $this->writeElementAttr('c:roundedCorners', ['val' => 0]);
 
         $this->startElement('mc:AlternateContent');
         $this->writeAttribute('xmlns:mc', 'http://schemas.openxmlformats.org/markup-compatibility/2006');
@@ -59,7 +53,7 @@ class ChartWriter extends FileWriter
         $this->startElement('c:style');
         $this->writeAttribute('val', '2');
         $this->endElement();
-        $this->endElement();
+        $this->endElement(); // mc:Fallback
 
         $this->endElement();
 
@@ -75,17 +69,9 @@ class ChartWriter extends FileWriter
             $this->writeLegend($chart->getLegend());
         }
 
-        $this->startElement('c:plotVisOnly');
-        $this->writeAttribute('val', 1);
-        $this->endElement();
-
-        $this->startElement('c:dispBlanksAs');
-        $this->writeAttribute('val', "gap");
-        $this->endElement();
-
-        $this->startElement('c:showDLblsOverMax');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
+        $this->writeElementAttr('c:plotVisOnly', ['val' => 1]);
+        $this->writeElementAttr('c:dispBlanksAs', ['val' => 'gap']);
+        $this->writeElementAttr('c:showDLblsOverMax', ['val' => 0]);
 
         $this->endElement();
 
@@ -202,12 +188,13 @@ class ChartWriter extends FileWriter
         $plotArea = $chart->getPlotArea();
         $categoryAxisTitle = $chart->getCategoryAxisTitle();
         $valueAxisTitle = $chart->getValueAxisTitle();
+        $valueAxisTitle2 = $chart->getValueAxisTitle2();
         $xAxis = $chart->getChartAxisX();
         $yAxis = $chart->getChartAxisY();
+        $yAxis2 = $chart->getChartAxisY2();
         $majorGridlines = $chart->getMajorGridlines();
         $minorGridlines = $chart->getMinorGridlines();
 
-        $id1 = $id2 = 0;
         $this->_seriesIndex = 0;
         $this->startElement('c:plotArea');
 
@@ -219,117 +206,92 @@ class ChartWriter extends FileWriter
         $catIsMultiLevelSeries = $valIsMultiLevelSeries = false;
         $plotGroupingType = '';
 
-        $dataSeries = $plotArea->getPlotDataSeriesByIndex(0);
-        foreach ($chartTypes as $chartType) {
-            $this->startElement('c:' . $chartType);
-
-            $groupCount = $plotArea->getPlotDataSeriesCount();
-            for ($i = 0; $i < $groupCount; ++$i) {
-                $dataSeries = $plotArea->getPlotDataSeriesByIndex($i);
-                $groupType = $dataSeries->getPlotChartType();
-                if ($groupType === $chartType) {
-                    $plotStyle = $dataSeries->getPlotStyle();
-                    if ($groupType === DataSeries::TYPE_RADAR_CHART) {
-                        $this->startElement('c:radarStyle');
-                        $this->writeAttribute('val', $plotStyle);
-                        $this->endElement();
-                    }
-                    elseif ($groupType === DataSeries::TYPE_SCATTER_CHART) {
-                        $this->startElement('c:scatterStyle');
-                        $this->writeAttribute('val', $plotStyle);
-                        $this->endElement();
-                    }
-
-                    $this->writePlotGroup($dataSeries, $chartType, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType);
-                }
+        $dataSeriesGroups = $plotArea->getPlotDataSeries();
+        $axes = [];
+        foreach ($dataSeriesGroups as $dataSeries) {
+            $plotChartType = $dataSeries->getPlotChartType();
+            $id1 = $dataSeries->getAxisId1();
+            $id2 = $dataSeries->getAxisId2();
+            $axisNum = $dataSeries->getAxisNum();
+            if (!isset($axes[$axisNum])) {
+                $axes[$axisNum] = [
+                    'type' => $plotChartType,
+                    'id1' => $id1,
+                    'id2' => $id2,
+                ];
             }
 
+            $this->startElement('c:' . $plotChartType);
+            $plotStyle = $dataSeries->getPlotStyle();
+            if ($plotChartType === DataSeries::TYPE_RADAR_CHART) {
+                $this->writeElementAttr('c:radarStyle', ['val' => $plotStyle]);
+            }
+            elseif ($plotChartType === DataSeries::TYPE_SCATTER_CHART) {
+                $this->writeElementAttr('c:scatterStyle', ['val' => $plotStyle]);
+            }
+
+            $this->writePlotGroup($dataSeries, $plotChartType, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType);
             $this->writeDataLabels($layout);
 
-            if ($chartType === DataSeries::TYPE_LINE_CHART) {
+            if ($plotChartType === DataSeries::TYPE_LINE_CHART) {
                 // Line only, Line3D can't be smoothed
                 $this->startElement('c:smooth');
                 $this->writeAttribute('val', (int)$dataSeries->getSmoothLine());
                 $this->endElement();
             }
-            elseif ($chartType === DataSeries::TYPE_BAR_CHART || $chartType === DataSeries::TYPE_BAR_3D_CHART) {
-                $this->startElement('c:gapWidth');
-                $this->writeAttribute('val', 150);
-                $this->endElement();
+            elseif ($plotChartType === DataSeries::TYPE_BAR_CHART || $plotChartType === DataSeries::TYPE_BAR_3D_CHART) {
+                $this->writeElementAttr('c:gapWidth', ['val' => 150]);
 
                 if ($plotGroupingType === 'percentStacked' || $plotGroupingType === 'stacked') {
-                    $this->startElement('c:overlap');
-                    $this->writeAttribute('val', 100);
-                    $this->endElement();
+                    $this->writeElementAttr('c:overlap', ['val' => 100]);
                 }
             }
-            elseif ($chartType === DataSeries::TYPE_BUBBLE_CHART) {
-                $this->startElement('c:bubbleScale');
-                $this->writeAttribute('val', 25);
-                $this->endElement();
-
-                $this->startElement('c:showNegBubbles');
-                $this->writeAttribute('val', 0);
-                $this->endElement();
+            elseif ($plotChartType === DataSeries::TYPE_BUBBLE_CHART) {
+                $this->writeElementAttr('c:bubbleScale', ['val' => 25]);
+                $this->writeElementAttr('c:showNegBubbles', ['val' => 0]);
             }
-            elseif ($chartType === DataSeries::TYPE_STOCK_CHART) {
-                $this->startElement('c:hiLowLines');
-                $this->endElement();
+            elseif ($plotChartType === DataSeries::TYPE_STOCK_CHART) {
+                $this->writeElementAttr('c:hiLowLines');
 
                 $this->startElement('c:upDownBars');
 
-                $this->startElement('c:gapWidth');
-                $this->writeAttribute('val', 300);
-                $this->endElement();
-
-                $this->startElement('c:upBars');
-                $this->endElement();
-
-                $this->startElement('c:downBars');
-                $this->endElement();
+                $this->writeElementAttr('c:gapWidth', ['val' => 300]);
+                $this->writeElementAttr('c:upBars');
+                $this->writeElementAttr('c:downBars');
 
                 $this->endElement();
             }
-
-            //    Generate 2 unique numbers to use for axId values
-            //                    $id1 = $id2 = rand(10000000,99999999);
-            //                    do {
-            //                        $id2 = rand(10000000,99999999);
-            //                    } while ($id1 == $id2);
-            $id1 = '75091328';
-            $id2 = '75089408';
-
-            if ($chartType !== DataSeries::TYPE_PIE_CHART && $chartType !== DataSeries::TYPE_PIE_3D_CHART && $chartType !== DataSeries::TYPE_DONUT_CHART) {
-                $this->startElement('c:axId');
-                $this->writeAttribute('val', $id1);
-                $this->endElement();
-                $this->startElement('c:axId');
-                $this->writeAttribute('val', $id2);
-                $this->endElement();
+            if ($plotChartType !== DataSeries::TYPE_PIE_CHART && $plotChartType !== DataSeries::TYPE_PIE_3D_CHART && $plotChartType !== DataSeries::TYPE_DONUT_CHART) {
+                $this->writeElementAttr('c:axId', ['val' => $id1]);
+                $this->writeElementAttr('c:axId', ['val' => $id2]);
             }
             else {
-                $this->startElement('c:firstSliceAng');
-                $this->writeAttribute('val', 0);
-                $this->endElement();
-
-                if ($chartType === DataSeries::TYPE_DONUT_CHART) {
-                    $this->startElement('c:holeSize');
-                    $this->writeAttribute('val', 50);
-                    $this->endElement(); // c:holeSize
+                $this->writeElementAttr('c:firstSliceAng', ['val' => 0]);
+                if ($plotChartType === DataSeries::TYPE_DONUT_CHART) {
+                    $this->writeElementAttr('c:holeSize', ['val' => 50]);
                 }
             }
 
-            $this->endElement();
+            $this->endElement(); // 'c:' . $chartType
         }
-        if (!empty($chartType) && $chartType !== DataSeries::TYPE_PIE_CHART && $chartType !== DataSeries::TYPE_PIE_3D_CHART && $chartType !== DataSeries::TYPE_DONUT_CHART) {
-            if ($chartType === DataSeries::TYPE_BUBBLE_CHART) {
-                $this->writeValueAxis($categoryAxisTitle, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
-            }
-            else {
-                $this->writeCategoryAxis($categoryAxisTitle, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $yAxis);
-            }
 
-            $this->writeValueAxis($valueAxisTitle, $chartType, $id1, $id2, $valIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
+        if (isset($axes[1])) {
+            $plotChartType = $axes[1]['type'];
+            if ($plotChartType !== DataSeries::TYPE_PIE_CHART && $plotChartType !== DataSeries::TYPE_PIE_3D_CHART && $plotChartType !== DataSeries::TYPE_DONUT_CHART) {
+                if ($plotChartType === DataSeries::TYPE_BUBBLE_CHART) {
+                    $this->writeValueAxis(1, $categoryAxisTitle, $plotChartType, $axes[1]['id1'], $axes[1]['id2'], $catIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
+                }
+                else {
+                    $this->writeCategoryAxis(1, $categoryAxisTitle, $plotChartType, $axes[1]['id1'], $axes[1]['id2'], $catIsMultiLevelSeries, $xAxis, $yAxis);
+                }
+
+                $this->writeValueAxis(1, $valueAxisTitle, $plotChartType, $axes[1]['id1'], $axes[1]['id2'], $valIsMultiLevelSeries, $xAxis, $yAxis, $majorGridlines, $minorGridlines);
+            }
+        }
+        if (isset($axes[2])) {
+            $plotChartType = $axes[2]['type'];
+            $this->writeValueAxis(2, $valueAxisTitle2, $plotChartType, $axes[2]['id1'], $axes[2]['id2'], $valIsMultiLevelSeries, $xAxis, $yAxis2, $majorGridlines, $minorGridlines);
+            $this->writeCategoryAxis(2, null, $plotChartType, $axes[2]['id1'], $axes[2]['id2'], $catIsMultiLevelSeries, $xAxis, $yAxis2);
         }
 
         $this->endElement(); // c:plotArea
@@ -414,16 +376,17 @@ class ChartWriter extends FileWriter
     private function writePlotGroup(DataSeries $dataSeries, string $chartType, bool &$catIsMultiLevelSeries, &$valIsMultiLevelSeries, &$plotGroupingType)
     {
         if ($chartType === DataSeries::TYPE_BAR_CHART || $chartType === DataSeries::TYPE_BAR_3D_CHART) {
-            $this->startElement('c:barDir');
-            $this->writeAttribute('val', $dataSeries->getPlotChartDirection());
-            $this->endElement();
+            //$this->startElement('c:barDir');
+            //$this->writeAttribute('val', $dataSeries->getPlotChartDirection());
+            //$this->endElement();
+            $this->writeElementAttr('c:barDir', ['val' => $dataSeries->getPlotChartDirection()]);
         }
 
-        if (null !== $dataSeries->getPlotGrouping()) {
-            $plotGroupingType = $dataSeries->getPlotGrouping();
-            $this->startElement('c:grouping');
-            $this->writeAttribute('val', $plotGroupingType);
-            $this->endElement();
+        if ($plotGroupingType = $dataSeries->getPlotGrouping()) {
+            //$this->startElement('c:grouping');
+            //$this->writeAttribute('val', $plotGroupingType);
+            //$this->endElement();
+            $this->writeElementAttr('c:grouping', ['val' => $plotGroupingType]);
         }
 
         // Get these details before the loop, because we can use the count to check for varyColors
@@ -432,14 +395,16 @@ class ChartWriter extends FileWriter
 
         if ($chartType !== DataSeries::TYPE_RADAR_CHART && $chartType !== DataSeries::TYPE_STOCK_CHART && $chartType !== DataSeries::TYPE_LINE_CHART) {
             if ($chartType === DataSeries::TYPE_PIE_CHART || $chartType === DataSeries::TYPE_PIE_3D_CHART || $chartType === DataSeries::TYPE_DONUT_CHART || $plotSeriesCount > 1) {
-                $this->startElement('c:varyColors');
-                $this->writeAttribute('val', 1);
-                $this->endElement();
+                //$this->startElement('c:varyColors');
+                //$this->writeAttribute('val', 1);
+                //$this->endElement();
+                $this->writeElementAttr('c:varyColors', ['val' => 1]);
             }
             else {
-                $this->startElement('c:varyColors');
-                $this->writeAttribute('val', 0);
-                $this->endElement();
+                //$this->startElement('c:varyColors');
+                //$this->writeAttribute('val', 0);
+                //$this->endElement();
+                $this->writeElementAttr('c:varyColors', ['val' => 0]);
             }
         }
 
@@ -685,39 +650,6 @@ class ChartWriter extends FileWriter
             $this->startElement('c:f');
             $this->writeRawData($source);
             $this->endElement();
-/*
-            $dataValues = $plotSeriesValues->getDataValues();
-            if ($dataValues) {
-                $this->startElement('c:' . $dataType . 'Cache');
-
-                if ($groupType !== DataSeries::TYPE_PIECHART && $groupType !== DataSeries::TYPE_PIECHART_3D && $groupType !== DataSeries::TYPE_DONUTCHART) {
-                    if (($plotSeriesValues->getFormatCode() !== null) && ($plotSeriesValues->getFormatCode() !== '')) {
-                        $this->startElement('c:formatCode');
-                        $this->writeRawData($plotSeriesValues->getFormatCode());
-                        $this->endElement();
-                    }
-                }
-
-                $this->startElement('c:ptCount');
-                $this->writeAttribute('val', $plotSeriesValues->getPointCount());
-                $this->endElement();
-
-                $dataValues = $plotSeriesValues->getDataValues();
-                if ($dataValues) {
-                    foreach ($dataValues as $plotSeriesKey => $plotSeriesValue) {
-                        $this->startElement('c:pt');
-                        $this->writeAttribute('idx', $plotSeriesKey);
-
-                        $this->startElement('c:v');
-                        $this->writeRawData($plotSeriesValue);
-                        $this->endElement();
-                        $this->endElement();
-                    }
-                }
-
-                $this->endElement();
-            }
-*/
             $this->endElement(); // 'c:' . $dataType . 'Ref'
         }
     }
@@ -810,6 +742,7 @@ class ChartWriter extends FileWriter
     /**
      * Write Category Axis
      *
+     * @param int $axisNum
      * @param Title|null $axisTitle
      * @param string $chartType Chart type
      * @param string $id1
@@ -818,75 +751,61 @@ class ChartWriter extends FileWriter
      * @param Axis $xAxis
      * @param Axis $yAxis
      */
-    private function writeCategoryAxis(?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries, Axis $xAxis, Axis $yAxis)
+    private function writeCategoryAxis(int $axisNum, ?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries, Axis $xAxis, Axis $yAxis)
     {
         $this->startElement('c:catAx');
 
         if ($id1 > 0) {
-            $this->startElement('c:axId');
-            $this->writeAttribute('val', $id1);
-            $this->endElement();
+            $this->writeElementAttr('c:axId', ['val' => $id1]);
         }
 
         $this->startElement('c:scaling');
-        $this->startElement('c:orientation');
-        $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('orientation'));
-        $this->endElement();
-        $this->endElement();
-
-        $this->startElement('c:delete');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
-
-        $this->startElement('c:axPos');
-        $this->writeAttribute('val', "b");
-        $this->endElement();
-
-        $this->writeTitle($axisTitle, true);
-
-        $this->startElement('c:numFmt');
-        $this->writeAttribute('formatCode', $yAxis->getAxisNumberFormat());
-        $this->writeAttribute('sourceLinked', $yAxis->getAxisNumberSourceLinked());
-        $this->endElement();
-
-        $this->startElement('c:majorTickMark');
-        $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('major_tick_mark'));
-        $this->endElement();
-
-        $this->startElement('c:minorTickMark');
-        $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('minor_tick_mark'));
-        $this->endElement();
-
-        $this->startElement('c:tickLblPos');
-        $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('axis_labels'));
-        $this->endElement();
-
-        if ($id2 > 0) {
-            $this->startElement('c:crossAx');
-            $this->writeAttribute('val', $id2);
+            $this->startElement('c:orientation');
+            $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('orientation'));
             $this->endElement();
+        $this->endElement();
 
-            $this->startElement('c:crosses');
-            $this->writeAttribute('val', $yAxis->getAxisOptionsProperty('horizontal_crosses'));
-            $this->endElement();
+        if ($axisNum === 1) {
+            $this->writeElementAttr('c:delete', ['val' => 0]);
+        }
+        else {
+            $this->writeElementAttr('c:delete', ['val' => 1]);
+        }
+        $this->writeElementAttr('c:axPos', ['val' => 'b']);
+
+        if ($axisNum === 1 && $axisTitle) {
+            $this->writeTitle($axisTitle, true);
         }
 
-        $this->startElement('c:auto');
-        $this->writeAttribute('val', 1);
-        $this->endElement();
+        $this->writeElementAttr('c:numFmt', [
+            'formatCode' => $yAxis->getAxisNumberFormat(),
+            'sourceLinked' => $yAxis->getAxisNumberSourceLinked(),
+        ]);
 
-        $this->startElement('c:lblAlgn');
-        $this->writeAttribute('val', "ctr");
-        $this->endElement();
+        if ($axisNum === 1) {
+            $this->writeElementAttr('c:majorTickMark', ['val' => $yAxis->getAxisOptionsProperty('major_tick_mark')]);
+        }
+        else {
+            $this->writeElementAttr('c:majorTickMark', ['val' => 'out']);
+        }
+        $this->writeElementAttr('c:minorTickMark', ['val' => $yAxis->getAxisOptionsProperty('minor_tick_mark')]);
 
-        $this->startElement('c:lblOffset');
-        $this->writeAttribute('val', 100);
-        $this->endElement();
+        $this->writeElementAttr('c:tickLblPos', ['val' => $yAxis->getAxisOptionsProperty('axis_labels')]);
+
+        if ($id2 > 0) {
+            $this->writeElementAttr('c:crossAx', ['val' => $id2]);
+            $this->writeElementAttr('c:crosses', ['val' => $yAxis->getAxisOptionsProperty('horizontal_crosses')]);
+        }
+
+        $this->writeElementAttr('c:auto', ['val' => 1]);
+        $this->writeElementAttr('c:lblAlgn', ['val' => 'ctr']);
+        $this->writeElementAttr('c:lblOffset', ['val' => 100]);
 
         if ($isMultiLevelSeries) {
-            $this->startElement('c:noMultiLvlLbl');
-            $this->writeAttribute('val', 0);
-            $this->endElement();
+            $this->writeElementAttr('c:noMultiLvlLbl', ['val' => 0]);
+        }
+        else {
+            $this->writeElementAttr('c:noMultiLvlLbl', ['val' => 0]);
         }
         $this->endElement();
     }
@@ -894,6 +813,7 @@ class ChartWriter extends FileWriter
     /**
      * Write Value Axis
      *
+     * @param int $axisNum
      * @param Title|null $axisTitle
      * @param string $chartType Chart type
      * @param string $id1
@@ -904,116 +824,105 @@ class ChartWriter extends FileWriter
      * @param GridLines $majorGridlines
      * @param GridLines $minorGridlines
      */
-    private function writeValueAxis(?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries,
-                                    Axis   $xAxis, Axis $yAxis, GridLines $majorGridlines, GridLines $minorGridlines)
+    private function writeValueAxis(int $axisNum, ?Title $axisTitle, string $chartType, string $id1, string $id2, bool $isMultiLevelSeries,
+                                    Axis $xAxis, Axis $yAxis, GridLines $majorGridlines, GridLines $minorGridlines)
     {
         $this->startElement('c:valAx');
 
         if ($id2) {
-            $this->startElement('c:axId');
-            $this->writeAttribute('val', $id2);
-            $this->endElement();
+            $this->writeElementAttr('c:axId', ['val' => $id2]);
         }
 
         $this->startElement('c:scaling');
 
         if ($value = $xAxis->getAxisOptionsProperty('maximum')) {
-            $this->startElement('c:max');
-            $this->writeAttribute('val', $value);
-            $this->endElement();
+            $this->writeElementAttr('c:max', ['val' => $value]);
         }
-
         if ($value = $xAxis->getAxisOptionsProperty('minimum')) {
-            $this->startElement('c:min');
-            $this->writeAttribute('val', $value);
-            $this->endElement();
+            $this->writeElementAttr('c:min', ['val' => $value]);
         }
-
-        $this->startElement('c:orientation');
-        $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('orientation'));
-        $this->endElement(); // c:orientation
+        $this->writeElementAttr('c:orientation', ['val' => $xAxis->getAxisOptionsProperty('orientation')]);
 
         $this->endElement(); // c:scaling
 
-        $this->startElement('c:delete');
-        $this->writeAttribute('val', 0);
-        $this->endElement();
-
-        $this->startElement('c:axPos');
-        $this->writeAttribute('val', "l");
-        $this->endElement();
-
-        $this->startElement('c:majorGridlines');
-        $this->startElement('c:spPr');
-
-        if ($majorGridlines->getLineColorProperty('value')) {
-            $this->startElement('a:ln');
-            $this->writeAttribute('w', $majorGridlines->getLineStyleProperty('width'));
-            $this->startElement('a:solidFill');
-            $this->startElement("a:{$majorGridlines->getLineColorProperty('type')}");
-            $this->writeAttribute('val', $majorGridlines->getLineColorProperty('value'));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $majorGridlines->getLineColorProperty('alpha'));
-            $this->endElement(); //end alpha
-            $this->endElement(); //end srgbClr
-            $this->endElement(); //end solidFill
-
-            $this->startElement('a:prstDash');
-            $this->writeAttribute('val', $majorGridlines->getLineStyleProperty('dash'));
-            $this->endElement();
-
-            if ($majorGridlines->getLineStyleProperty('join') === 'miter') {
-                $this->startElement('a:miter');
-                $this->writeAttribute('lim', '800000');
-                $this->endElement();
-            }
-            else {
-                $this->startElement('a:bevel');
-                $this->endElement();
-            }
-
-            if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
-                $this->startElement('a:headEnd');
-                $this->writeAttribute('type', $value);
-                $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('head', 'w'));
-                $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('head', 'len'));
-                $this->endElement();
-            }
-
-            if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
-                $this->startElement('a:tailEnd');
-                $this->writeAttribute('type', $value);
-                $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('end', 'w'));
-                $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('end', 'len'));
-                $this->endElement();
-            }
-            $this->endElement(); //end ln
+        $this->writeElementAttr('c:delete', ['val' => 0]);
+        if ($axisNum === 2) {
+            $this->writeElementAttr('c:axPos', ['val' => 'r']);
         }
-        $this->startElement('a:effectLst');
-
-        if ($majorGridlines->getGlowSize()) {
-            $this->startElement('a:glow');
-            $this->writeAttribute('rad', $majorGridlines->getGlowSize());
-            $this->startElement("a:{$majorGridlines->getGlowColor('type')}");
-            $this->writeAttribute('val', $majorGridlines->getGlowColor('value'));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $majorGridlines->getGlowColor('alpha'));
-            $this->endElement(); //end alpha
-            $this->endElement(); //end schemeClr
-            $this->endElement(); //end glow
+        else {
+            $this->writeElementAttr('c:axPos', ['val' => 'l']);
         }
 
-        $this->writeShadowProperty($majorGridlines);
+        if ($axisNum === 1) {
+            $this->startElement('c:majorGridlines');
+            $this->startElement('c:spPr');
 
-        if (null !== $majorGridlines->getSoftEdgesSize()) {
-            $this->startElement('a:softEdge');
-            $this->writeAttribute('rad', $majorGridlines->getSoftEdgesSize());
-            $this->endElement(); //end softEdge
+            if ($majorGridlines->getLineColorProperty('value')) {
+                $this->startElement('a:ln');
+                $this->writeAttribute('w', $majorGridlines->getLineStyleProperty('width'));
+                $this->startElement('a:solidFill');
+                $this->startElement("a:{$majorGridlines->getLineColorProperty('type')}");
+                $this->writeAttribute('val', $majorGridlines->getLineColorProperty('value'));
+                $this->startElement('a:alpha');
+                $this->writeAttribute('val', $majorGridlines->getLineColorProperty('alpha'));
+                $this->endElement(); //end alpha
+                $this->endElement(); //end srgbClr
+                $this->endElement(); //end solidFill
+
+                $this->startElement('a:prstDash');
+                $this->writeAttribute('val', $majorGridlines->getLineStyleProperty('dash'));
+                $this->endElement();
+
+                if ($majorGridlines->getLineStyleProperty('join') === 'miter') {
+                    $this->writeElementAttr('a:miter', ['lim' => '800000']);
+                }
+                else {
+                    $this->writeElementAttr('a:bevel');
+                }
+
+                if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'head', 'type'])) {
+                    $this->startElement('a:headEnd');
+                    $this->writeAttribute('type', $value);
+                    $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('head', 'w'));
+                    $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('head', 'len'));
+                    $this->endElement();
+                }
+
+                if ($value = $majorGridlines->getLineStyleProperty(['arrow', 'end', 'type'])) {
+                    $this->startElement('a:tailEnd');
+                    $this->writeAttribute('type', $value);
+                    $this->writeAttribute('w', $majorGridlines->getLineStyleArrowParameters('end', 'w'));
+                    $this->writeAttribute('len', $majorGridlines->getLineStyleArrowParameters('end', 'len'));
+                    $this->endElement();
+                }
+                $this->endElement(); //end ln
+            }
+            $this->startElement('a:effectLst');
+
+            if ($majorGridlines->getGlowSize()) {
+                $this->startElement('a:glow');
+                $this->writeAttribute('rad', $majorGridlines->getGlowSize());
+                $this->startElement("a:{$majorGridlines->getGlowColor('type')}");
+                $this->writeAttribute('val', $majorGridlines->getGlowColor('value'));
+                $this->startElement('a:alpha');
+                $this->writeAttribute('val', $majorGridlines->getGlowColor('alpha'));
+                $this->endElement(); //end alpha
+                $this->endElement(); //end schemeClr
+                $this->endElement(); //end glow
+            }
+
+            $this->writeShadowProperty($majorGridlines);
+
+            if (null !== $majorGridlines->getSoftEdgesSize()) {
+                $this->startElement('a:softEdge');
+                $this->writeAttribute('rad', $majorGridlines->getSoftEdgesSize());
+                $this->endElement(); //end softEdge
+            }
+
+            $this->endElement(); //end effectLst
+            $this->endElement(); //end spPr
+            $this->endElement(); //end majorGridLines
         }
-
-        $this->endElement(); //end effectLst
-        $this->endElement(); //end spPr
-        $this->endElement(); //end majorGridLines
 
         if ($minorGridlines->getObjectState()) {
             $this->startElement('c:minorGridlines');
@@ -1090,16 +999,21 @@ class ChartWriter extends FileWriter
             $this->endElement(); //end minorGridLines
         }
 
-        $this->writeTitle($axisTitle, $chartType !== DataSeries::TYPE_BUBBLE_CHART);
+        if ($axisTitle) {
+            $this->writeTitle($axisTitle, $chartType !== DataSeries::TYPE_BUBBLE_CHART);
+        }
 
         $this->startElement('c:numFmt');
         $this->writeAttribute('formatCode', $xAxis->getAxisNumberFormat());
         $this->writeAttribute('sourceLinked', $xAxis->getAxisNumberSourceLinked());
         $this->endElement();
 
-        $this->startElement('c:majorTickMark');
-        $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('major_tick_mark'));
-        $this->endElement();
+        if ($axisNum === 1) {
+            $this->writeElementAttr('c:majorTickMark', ['val' => $xAxis->getAxisOptionsProperty('major_tick_mark')]);
+        }
+        else {
+            $this->writeElementAttr('c:majorTickMark', ['val' => 'out']);
+        }
 
         $this->startElement('c:minorTickMark');
         $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('minor_tick_mark'));
@@ -1109,111 +1023,114 @@ class ChartWriter extends FileWriter
         $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('axis_labels'));
         $this->endElement();
 
-        $this->startElement('c:spPr');
+        if ($axisNum === 1) {
+            $this->startElement('c:spPr');
 
-        if ($xAxis->getFillProperty('value')) {
-            $this->startElement('a:solidFill');
-            $this->startElement("a:" . $xAxis->getFillProperty('type'));
-            $this->writeAttribute('val', $xAxis->getFillProperty('value'));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $xAxis->getFillProperty('alpha'));
-            $this->endElement();
-            $this->endElement();
-            $this->endElement();
-        }
+            if ($xAxis->getFillProperty('value')) {
+                $this->startElement('a:solidFill');
+                $this->startElement("a:" . $xAxis->getFillProperty('type'));
+                $this->writeAttribute('val', $xAxis->getFillProperty('value'));
+                $this->startElement('a:alpha');
+                $this->writeAttribute('val', $xAxis->getFillProperty('alpha'));
+                $this->endElement();
+                $this->endElement();
+                $this->endElement();
+            }
 
-        $this->startElement('a:ln');
+            $this->startElement('a:ln');
+            $this->writeAttribute('w', $xAxis->getLineStyleProperty('width'));
+            $this->writeAttribute('cap', $xAxis->getLineStyleProperty('cap'));
+            $this->writeAttribute('cmpd', $xAxis->getLineStyleProperty('compound'));
 
-        $this->writeAttribute('w', $xAxis->getLineStyleProperty('width'));
-        $this->writeAttribute('cap', $xAxis->getLineStyleProperty('cap'));
-        $this->writeAttribute('cmpd', $xAxis->getLineStyleProperty('compound'));
+            if ($xAxis->getLineProperty('value')) {
+                $this->startElement('a:solidFill');
+                $this->startElement("a:" . $xAxis->getLineProperty('type'));
+                $this->writeAttribute('val', $xAxis->getLineProperty('value'));
+                $this->startElement('a:alpha');
+                $this->writeAttribute('val', $xAxis->getLineProperty('alpha'));
+                $this->endElement();
+                $this->endElement();
+                $this->endElement();
+            }
 
-        if ($xAxis->getLineProperty('value')) {
-            $this->startElement('a:solidFill');
-            $this->startElement("a:" . $xAxis->getLineProperty('type'));
-            $this->writeAttribute('val', $xAxis->getLineProperty('value'));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $xAxis->getLineProperty('alpha'));
-            $this->endElement();
-            $this->endElement();
-            $this->endElement();
-        }
-
-        $this->startElement('a:prstDash');
-        $this->writeAttribute('val', $xAxis->getLineStyleProperty('dash'));
-        $this->endElement();
-
-        if ($xAxis->getLineStyleProperty('join') === 'miter') {
-            $this->startElement('a:miter');
-            $this->writeAttribute('lim', '800000');
-            $this->endElement();
-        }
-        else {
-            $this->startElement('a:bevel');
-            $this->endElement();
-        }
-
-        if ($value = $xAxis->getLineStyleProperty(['arrow', 'head', 'type'])) {
-            $this->startElement('a:headEnd');
-            $this->writeAttribute('type', $value);
-            $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('head'));
-            $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('head'));
-            $this->endElement();
-        }
-
-        if ($value = $xAxis->getLineStyleProperty(['arrow', 'end', 'type'])) {
-            $this->startElement('a:tailEnd');
-            $this->writeAttribute('type', $value);
-            $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('end'));
-            $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('end'));
-            $this->endElement();
-        }
-
-        $this->endElement();
-
-        $this->startElement('a:effectLst');
-
-        if (null !== $xAxis->getGlowProperty('size')) {
-            $this->startElement('a:glow');
-            $this->writeAttribute('rad', $xAxis->getGlowProperty('size'));
-            $this->startElement("a:{$xAxis->getGlowProperty(['color','type'])}");
-            $this->writeAttribute('val', $xAxis->getGlowProperty(['color','value']));
-            $this->startElement('a:alpha');
-            $this->writeAttribute('val', $xAxis->getGlowProperty(['color','alpha']));
-            $this->endElement();
-            $this->endElement();
-            $this->endElement();
-        }
-
-        $this->writeShadowProperty($xAxis);
-
-        if (null !== $xAxis->getSoftEdgesSize()) {
-            $this->startElement('a:softEdge');
-            $this->writeAttribute('rad', $xAxis->getSoftEdgesSize());
-            $this->endElement();
-        }
-
-        $this->endElement(); //effectList
-        $this->endElement(); //end spPr
-
-        if ($id1 > 0) {
-            $this->startElement('c:crossAx');
-            $this->writeAttribute('val', $id2);
+            $this->startElement('a:prstDash');
+            $this->writeAttribute('val', $xAxis->getLineStyleProperty('dash'));
             $this->endElement();
 
-            if ($value = $xAxis->getAxisOptionsProperty('horizontal_crosses_value')) {
-                $this->startElement('c:crossesAt');
-                $this->writeAttribute('val', $value);
+            if ($xAxis->getLineStyleProperty('join') === 'miter') {
+                $this->startElement('a:miter');
+                $this->writeAttribute('lim', '800000');
                 $this->endElement();
             }
             else {
-                $this->startElement('c:crosses');
-                $this->writeAttribute('val', $xAxis->getAxisOptionsProperty('horizontal_crosses'));
+                $this->startElement('a:bevel');
                 $this->endElement();
             }
 
+            if ($value = $xAxis->getLineStyleProperty(['arrow', 'head', 'type'])) {
+                $this->startElement('a:headEnd');
+                $this->writeAttribute('type', $value);
+                $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('head'));
+                $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('head'));
+                $this->endElement();
+            }
+
+            if ($value = $xAxis->getLineStyleProperty(['arrow', 'end', 'type'])) {
+                $this->startElement('a:tailEnd');
+                $this->writeAttribute('type', $value);
+                $this->writeAttribute('w', $xAxis->getLineStyleArrowWidth('end'));
+                $this->writeAttribute('len', $xAxis->getLineStyleArrowLength('end'));
+                $this->endElement();
+            }
+
+            $this->endElement();
+
+            $this->startElement('a:effectLst');
+
+            if (null !== $xAxis->getGlowProperty('size')) {
+                $this->startElement('a:glow');
+                $this->writeAttribute('rad', $xAxis->getGlowProperty('size'));
+                $this->startElement("a:{$xAxis->getGlowProperty(['color','type'])}");
+                $this->writeAttribute('val', $xAxis->getGlowProperty(['color','value']));
+                $this->startElement('a:alpha');
+                $this->writeAttribute('val', $xAxis->getGlowProperty(['color','alpha']));
+                $this->endElement();
+                $this->endElement();
+                $this->endElement();
+            }
+
+            $this->writeShadowProperty($xAxis);
+
+            if (null !== $xAxis->getSoftEdgesSize()) {
+                $this->startElement('a:softEdge');
+                $this->writeAttribute('rad', $xAxis->getSoftEdgesSize());
+                $this->endElement();
+            }
+
+            $this->endElement(); //effectList
+            $this->endElement(); //end spPr
+        }
+
+        if ($id1 > 0) {
+            $this->startElement('c:crossAx');
+            $this->writeAttribute('val', $id1);
+            $this->endElement();
+
+            if ($value = $xAxis->getAxisOptionsProperty('horizontal_crosses_value')) {
+                $this->writeElementAttr('c:crossesAt', ['val' => $value]);
+            }
+            else {
+                if ($axisNum === 1) {
+                    $this->writeElementAttr('c:crosses', ['val' => $xAxis->getAxisOptionsProperty('horizontal_crosses')]);
+                }
+                else {
+                    $this->writeElementAttr('c:crosses', ['val' => 'max']);
+                }
+            }
+
             $this->startElement('c:crossBetween');
-            $this->writeAttribute('val', "midCat");
+            //$this->writeAttribute('val', "midCat");
+            $this->writeAttribute('val', "between");
             $this->endElement();
 
             if ($value = $xAxis->getAxisOptionsProperty('major_unit')) {
@@ -1230,9 +1147,7 @@ class ChartWriter extends FileWriter
         }
 
         if ($isMultiLevelSeries && $chartType !== DataSeries::TYPE_BUBBLE_CHART) {
-            $this->startElement('c:noMultiLvlLbl');
-            $this->writeAttribute('val', 0);
-            $this->endElement();
+            $this->writeElementAttr('c:noMultiLvlLbl', ['val' => 0]);
         }
 
         $this->endElement();

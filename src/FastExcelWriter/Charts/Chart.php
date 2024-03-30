@@ -90,11 +90,18 @@ class Chart
     private $categoryAxisTitle = null;
 
     /**
-     * Y-Axis Label
+     * Y-Axis Title
      *
      * @var Title|null
      */
     private $valueAxisTitle = null;
+
+    /**
+     * Y2-Axis Title
+     *
+     * @var Title|null
+     */
+    private $valueAxisTitle2 = null;
 
     /**
      * Chart Plot Area
@@ -118,18 +125,25 @@ class Chart
     private $displayBlanksAs = '0';
 
     /**
-     * Chart Asix Y as
+     * Chart Axis X as
+     *
+     * @var Axis|null
+     */
+    private ?Axis $xAxis;
+
+    /**
+     * Chart Axis Y as
      *
      * @var Axis|null
      */
     private ?Axis $yAxis;
 
     /**
-     * Chart Asix X as
+     * Chart Axis Y2 as
      *
      * @var Axis|null
      */
-    private ?Axis $xAxis;
+    private ?Axis $yAxis2;
 
     /**
      * Chart Major Gridlines as
@@ -288,19 +302,31 @@ class Chart
      */
     public function addDataSeriesType(string $chartType, $dataSource, ?string $dataLabel = null, ?array $options = []): Chart
     {
-        //if (($this->chartType === self::TYPE_COLUMN && $chartType === self::TYPE_LINE) || ($this->chartType === self::TYPE_LINE && $chartType === self::TYPE_COLUMN)) {
-        //    $this->chartType = self::TYPE_COMBO;
-        //}
         if ($this->chartType === self::TYPE_COMBO && !in_array($chartType, [self::TYPE_COLUMN, self::TYPE_LINE])) {
             ExceptionChart::throwNew('Invalid chart type of DataSeries "' . $chartType . '" for Chart "' . self::TYPE_COMBO . '"');
         }
         elseif ($this->chartType !== self::TYPE_COMBO && $this->chartType !== $chartType) {
             ExceptionChart::throwNew('Invalid chart type of DataSeries "' . $chartType . '" for Chart "' . $this->chartType . '"');
         }
-        $options['type'] = $chartType;
+        $options['chart_type'] = $chartType;
         $this->getPlotArea()->addDataSeriesValues($dataSource, $dataLabel, $options);
 
         return $this;
+    }
+
+    /**
+     * @param string $chartType
+     * @param DataSeriesValues|string $dataSource
+     * @param string|null $dataLabel
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    public function addDataSeriesType2(string $chartType, $dataSource, ?string $dataLabel = null, ?array $options = []): Chart
+    {
+        $options['axis_num'] = 2;
+
+        return $this->addDataSeriesType($chartType, $dataSource, $dataLabel, $options);
     }
 
     /**
@@ -638,6 +664,30 @@ class Chart
     }
 
     /**
+     * Set Y2 Axis Title
+     *
+     * @param Title|string $title
+     *
+     * @return $this
+     */
+    public function setValueAxisTitle2($title): Chart
+    {
+        $this->valueAxisTitle2 = is_string($title) ? (new Title($title)) : $title;
+
+        return $this;
+    }
+
+    /**
+     * Get Y2 Axis Title
+     *
+     * @return Title
+     */
+    public function getValueAxisTitle2(): ?Title
+    {
+        return $this->valueAxisTitle2;
+    }
+
+    /**
      * Backward compatible
      * @deprecated
      *
@@ -724,6 +774,19 @@ class Chart
         $this->displayBlanksAs = $displayBlanksAs;
     }
 
+    /**
+     * Get xAxis
+     *
+     * @return Axis
+     */
+    public function getChartAxisX(): ?Axis
+    {
+        if ($this->xAxis !== null) {
+            return $this->xAxis;
+        }
+
+        return new Axis();
+    }
 
     /**
      * Get yAxis
@@ -740,14 +803,14 @@ class Chart
     }
 
     /**
-     * Get xAxis
+     * Get yAxis
      *
      * @return Axis
      */
-    public function getChartAxisX(): ?Axis
+    public function getChartAxisY2(): ?Axis
     {
-        if ($this->xAxis !== null) {
-            return $this->xAxis;
+        if ($this->yAxis !== null) {
+            return $this->yAxis;
         }
 
         return new Axis();

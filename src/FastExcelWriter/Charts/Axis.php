@@ -138,7 +138,7 @@ class Axis extends Properties
      *
      * @return $this
      */
-    public function setAxisNumberProperties($format_code)
+    public function setAxisNumberProperties($format_code): Axis
     {
         $this->axisNumber['format'] = (string) $format_code;
         $this->axisNumber['source_linked'] = 0;
@@ -151,7 +151,7 @@ class Axis extends Properties
      *
      * @return  string
      */
-    public function getAxisNumberFormat()
+    public function getAxisNumberFormat(): string
     {
         return $this->axisNumber['format'];
     }
@@ -161,7 +161,7 @@ class Axis extends Properties
      *
      * @return  string
      */
-    public function getAxisNumberSourceLinked()
+    public function getAxisNumberSourceLinked(): string
     {
         return (string) $this->axisNumber['source_linked'];
     }

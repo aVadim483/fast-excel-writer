@@ -79,6 +79,7 @@ class DataSeries
      */
     private ?string $plotStyle = null;
 
+    private int $plotAxisNum = 1;
 
     /**
      * Plot Values
@@ -108,6 +109,10 @@ class DataSeries
      */
     private bool $smoothLine = false;
 
+    private array $axisId = [
+        1 => [1 => 75091328, 2 => 75089408],
+        2 => [1 => 1623884543, 2 => 1648528079],
+    ];
 
     /**
      * Create a new DataSeries
@@ -167,8 +172,7 @@ class DataSeries
         }
         if ($dataSource instanceof DataSeriesValues) {
             $dataSeriesValues = $dataSource;
-        }
-        elseif (is_string($dataSource)) {
+        } elseif (is_string($dataSource)) {
             $dataSeriesValues = new DataSeriesValues($dataSource, $dataLabels, $dataOptions);
         }
 
@@ -189,8 +193,7 @@ class DataSeries
         if (is_array($dataSource)) {
             $source = reset($dataSource);
             $name = key($dataSource);
-        }
-        else {
+        } else {
             $source = $dataSource;
             $name = null;
         }
@@ -234,25 +237,21 @@ class DataSeries
         }
         if ($plotChartType === Chart::TYPE_COLUMN) {
             $plotChartType = DataSeries::TYPE_BAR_CHART;
-        }
-        elseif (substr($plotChartType, -5) !== 'Chart') {
+        } elseif (substr($plotChartType, -5) !== 'Chart') {
             $plotChartType .= 'Chart';
         }
 
         $plotChartDirection = $plotChartGrouping = null;
         if ($chartType === Chart::TYPE_COLUMN || $chartType === Chart::TYPE_COLUMN_STACKED) {
             $plotChartDirection = DataSeries::DIRECTION_COL;
-        }
-        elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_BAR_STACKED])) {
+        } elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_BAR_STACKED])) {
             $plotChartDirection = DataSeries::DIRECTION_BAR;
         }
         if (substr($chartType, -8) === '_stacked') {
             $plotChartGrouping = DataSeries::GROUPING_STACKED;
-        }
-        elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_COLUMN])) {
+        } elseif (in_array($chartType, [Chart::TYPE_BAR, Chart::TYPE_COLUMN])) {
             $plotChartGrouping = DataSeries::GROUPING_CLUSTERED;
-        }
-        elseif (in_array($plotChartType, [DataSeries::TYPE_BAR_CHART, DataSeries::TYPE_BAR_3D_CHART, DataSeries::TYPE_LINE_CHART, DataSeries::TYPE_LINE_3D_CHART])) {
+        } elseif (in_array($plotChartType, [DataSeries::TYPE_BAR_CHART, DataSeries::TYPE_BAR_3D_CHART, DataSeries::TYPE_LINE_CHART, DataSeries::TYPE_LINE_3D_CHART])) {
             $plotChartGrouping = DataSeries::GROUPING_STANDARD;
         }
 
@@ -371,8 +370,7 @@ class DataSeries
         foreach ($dataSeriesLabels as $n => $label) {
             if ($label === null) {
                 $dataSeriesLabels[$n] = new DataSeriesValues();
-            }
-            else {
+            } else {
                 // PHPExcel compatible
                 $source = $label->getDataSource();
                 if ($source && $source[0] !== '=') {
@@ -407,8 +405,7 @@ class DataSeries
         $keys = array_keys($this->dataSeriesLabels);
         if (in_array($index, $keys, true)) {
             return $this->dataSeriesLabels[$index];
-        }
-        elseif (isset($keys[$index])) {
+        } elseif (isset($keys[$index])) {
             return $this->dataSeriesLabels[$keys[$index]];
         }
         return null;
@@ -424,19 +421,16 @@ class DataSeries
         $plotCategories = [];
         if ($categories instanceof DataSeriesValues) {
             $plotCategories = [$categories];
-        }
-        elseif (is_array($categories)) {
+        } elseif (is_array($categories)) {
             foreach ($categories as $category) {
                 if ($category instanceof DataSeriesValues) {
                     $plotCategories[] = $category;
-                }
-                elseif (is_string($category)) {
+                } elseif (is_string($category)) {
                     $dimension = Excel::rangeDimension(str_replace('$', '', $category));
                     $plotCategories[] = new DataSeriesLabels($dimension['absAddress'], NULL, $dimension['cellCount']);
                 }
             }
-        }
-        elseif (is_string($categories)) {
+        } elseif (is_string($categories)) {
             $dimension = Excel::rangeDimension(str_replace('$', '', $categories));
             $plotCategories = [new DataSeriesLabels($dimension['absAddress'], NULL, $dimension['cellCount'])];
         }
@@ -467,8 +461,7 @@ class DataSeries
         $keys = array_keys($this->categoryAxisLabels);
         if (in_array($index, $keys, true)) {
             return $this->categoryAxisLabels[$index];
-        }
-        elseif (isset($keys[$index])) {
+        } elseif (isset($keys[$index])) {
             return $this->categoryAxisLabels[$keys[$index]];
         }
 
@@ -521,8 +514,7 @@ class DataSeries
         $keys = array_keys($this->dataSeriesValues);
         if (in_array($index, $keys, true)) {
             return $this->dataSeriesValues[$index];
-        }
-        elseif (isset($keys[$index])) {
+        } elseif (isset($keys[$index])) {
             return $this->dataSeriesValues[$keys[$index]];
         }
         return null;
@@ -562,4 +554,35 @@ class DataSeries
         return $this->smoothLine;
     }
 
+    /**
+     * @param int $axisNum
+     *
+     * @return $this
+     */
+    public function setAxisNum(int $axisNum): DataSeries
+    {
+        if ($axisNum >= 1 && $axisNum <= 2) {
+            $this->plotAxisNum = $axisNum;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAxisNum(): int
+    {
+        return $this->plotAxisNum;
+    }
+
+    public function getAxisId1()
+    {
+        return $this->axisId[$this->plotAxisNum][1];
+    }
+
+    public function getAxisId2()
+    {
+        return $this->axisId[$this->plotAxisNum][2];
+    }
 }

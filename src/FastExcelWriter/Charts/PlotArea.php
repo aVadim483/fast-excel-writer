@@ -106,10 +106,23 @@ class PlotArea
      */
     public function addDataSeriesValues($dataSource, ?string $dataLabel = null, ?array $options = []): PlotArea
     {
-        $chartType = $options['type'] ?? $this->defaultChartType;
+        $chartType = $options['chart_type'] ?? $this->defaultChartType;
         if ($this->getPlotDataSeriesCount() === 0) {
-            $this->plotDataSeries = [new DataSeries($chartType)];
+            //$this->plotDataSeries = [new DataSeries($chartType)];
         }
+        $axisNum = $options['axis_num'] ?? 1;
+/* */
+        $key = $chartType . '-' . $axisNum;
+        if (isset($this->plotDataSeries[$key])) {
+            $dataSeries = $this->plotDataSeries[$key];
+        }
+        else {
+            $dataSeries = new DataSeries($chartType);
+            $dataSeries->setAxisNum($axisNum);
+            $this->plotDataSeries[$key] = $dataSeries;
+        }
+/* */
+/* * /
         // select DataSeries by chart type
         foreach ($this->plotDataSeries as $dataSeries) {
             if ($dataSeries->getChartType() === $chartType) {
@@ -120,7 +133,7 @@ class PlotArea
             $dataSeries = new DataSeries($chartType);
             $this->plotDataSeries[] = $dataSeries;
         }
-
+/* */
         if (!isset($options['color']) && ($color = $this->selectDefaultColor())) {
             $options['color'] = $color;
         }

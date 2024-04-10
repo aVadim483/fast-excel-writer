@@ -13,7 +13,7 @@ for ($j = 0; $j < 16192; $j++) {
     $s .= $chars[mt_rand() % 36];
 }
 
-$countK = $_GET['count'] ? (int)$_GET['count'] : 199;
+$countK = isset($_GET['count']) ? (int)$_GET['count'] : 199;
 $rowCount = $countK * 1024;
 
 $timer = microtime(true);

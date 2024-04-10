@@ -27,12 +27,12 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-intl": "*",
-        "avadim/fast-excel-helper": "^1.0"
+        "avadim/fast-excel-helper": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
         "ext-fileinfo": "*",
-        "avadim/fast-excel-reader": "^2.11"
+        "avadim/fast-excel-reader": "^2.15"
     },
     "funding": [
         {

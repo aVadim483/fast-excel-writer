@@ -187,7 +187,7 @@ You can write values to rows
 // Sheet::nextRow()
 
 // Write values to the current row and set format of columns A and B 
-$sheet->writeHeader(['title1' => '@integer', 'title2' => '@date']);
+$sheet1->writeHeader(['title1' => '@integer', 'title2' => '@date']);
 
 $data = [
     [184, '2022-01-23'],
@@ -196,7 +196,7 @@ $data = [
 ];
 
 foreach ($data as $rowData) {
-    $sheet->writeRow($rowData);
+    $sheet1->writeRow($rowData);
 }
 
 
@@ -207,9 +207,9 @@ foreach ($data as $rowData) {
 If you need to write directly to cells, you must define the area.
 
 ```php
-$area = $sheet->makeArea('B4:F12'); // Make write area from B4 to F12
-$area = $sheet->makeArea('B4:12'); // Make write area from B4 to B12
-$area = $sheet->beginArea('B4');  // Make write area from B4 to max column and max row
+$area = $sheet1->makeArea('B4:F12'); // Make write area from B4 to F12
+$area = $sheet1->makeArea('B4:12'); // Make write area from B4 to B12
+$area = $sheet1->beginArea('B4');  // Make write area from B4 to max column and max row
 
 // Set style for single cell of area (new style will replace previous)
 $area->setStyle('B4', $style1); 
@@ -231,11 +231,11 @@ $area
 
 ```php
 // Set height of row 2 to 33
-$sheet->setRowHeight(2, 33);
+$sheet1->setRowHeight(2, 33);
 // Set heights of several rows
-$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
+$sheet1->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 // Write row data and set height
-$sheet->writeRow($rowData, ['height' => 20]);
+$sheet1->writeRow($rowData, ['height' => 20]);
 
 // Set width of column D to 24
 $this->setColWidth('D', 24);
@@ -246,10 +246,10 @@ $this->setColWidthAuto('D');
 $this->setColOptions('D', ['width' => 'auto']);
 
 // Set width of specific columns
-$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
-$sheet->setColOptions(['B' => ['width' => 10], 'C' => ['width' => 'auto'], 'E' => ['width' => 30], 'F' => ['width' => 40]]);
+$sheet1->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+$sheet1->setColOptions(['B' => ['width' => 10], 'C' => ['width' => 'auto'], 'E' => ['width' => 30], 'F' => ['width' => 40]]);
 // Set width of columns from 'A'
-$sheet->setColWidths([10, 20, 30, 40]);
+$sheet1->setColWidths([10, 20, 30, 40]);
 
 ```
 
@@ -401,13 +401,13 @@ You can insert URLs as active hyperlinks
 
 ```php
 // Write URL as simple string (not hyperlink)
-$sheet->writeCell('https://google.com');
+$sheet1->writeCell('https://google.com');
 
 // Write URL as an active hyperlink
-$sheet->writeCell('https://google.com', ['hyperlink' => true]);
+$sheet1->writeCell('https://google.com', ['hyperlink' => true]);
 
 // Write text with an active hyperlink
-$sheet->writeCell('Google', ['hyperlink' => 'https://google.com']);
+$sheet1->writeCell('Google', ['hyperlink' => 'https://google.com']);
 
 ```
 

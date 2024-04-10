@@ -226,6 +226,7 @@ $excel->save('simple.xlsx');
 
 You can set row options (styles and height) by the second argument when you use the function ```writeRow()```.
 Note that in this case these styles will only be applied to those cells in the row where data is written
+
 ```php
 // Write row data and set height
 $rowOptions = [
@@ -233,38 +234,40 @@ $rowOptions = [
     'border' => 'thin',
     'height' => 28,
 ];
-$sheet->writeRow(['aaa', 'bbb', 'ccc'], $rowOptions);
+$sheet1->writeRow(['aaa', 'bbb', 'ccc'], $rowOptions);
 ```
 Other way with the same result
+
 ```php
-$sheet->writeRow(['aaa', 'bbb', 'ccc', null, 'eee'])
+$sheet1->writeRow(['aaa', 'bbb', 'ccc', null, 'eee'])
     ->applyFillColor('#fffeee')
     ->applyBorder('thin')
     ->applyRowHeight(28);
 
 ```
 You can set row's height or visibility
+
 ```php
 // Set height of row 2 to 33
-$sheet->setRowHeight(2, 33);
+$sheet1->setRowHeight(2, 33);
 
 // Set height of rows 3,5 and 7 to 33
-$sheet->setRowHeight([3, 5, 7], 33);
+$sheet1->setRowHeight([3, 5, 7], 33);
 
 // Set heights of several rows
-$sheet->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
+$sheet1->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
 
 // Hide row 8
-$sheet->setRowVisible(8, false);
+$sheet1->setRowVisible(8, false);
 
 // Other way
-$sheet->setRowHidden(8);
+$sheet1->setRowHidden(8);
 
 // Hide rows 9, 10, 11
-$sheet->setRowVisible([9, 10, 11], false);
+$sheet1->setRowVisible([9, 10, 11], false);
 
 // Show row 10
-$sheet->setRowVisible(10, true);
+$sheet1->setRowVisible(10, true);
 ```
 IMPORTANT: You can only use the setRowXX() functions on rows numbered at least as high as the current one.
 See [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
@@ -284,6 +287,7 @@ $sheet->setRowHeight(1, 33);
 ### Column's settings
 
 Column widths can be set in several ways
+
 ```php
 // Set width of column D to 24
 $this->setColWidth('D', 24);
@@ -294,9 +298,9 @@ $this->setColWidthAuto('D');
 $this->setColOptions('D', ['width' => 'auto']);
 
 // Set width of specific columns
-$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+$sheet1->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 // Set width of columns from 'A'
-$sheet->setColWidths([10, 20, 30, 40], 24);
+$sheet1->setColWidths([10, 20, 30, 40], 24);
 
 $colOptions = [
     'B' => ['width' => 10], 
@@ -304,7 +308,7 @@ $colOptions = [
     'E' => ['width' => 30], 
     'F' => ['width' => 40],
 ];
-$sheet->setColOptions($colOptions);
+$sheet1->setColOptions($colOptions);
 
 ```
 You can define a minimal width of columns. Note that the minimum value has higher priority
@@ -358,17 +362,17 @@ You can add notes to any cells using method ```addNote()```
 
 ```php
 
-$sheet->writeCell('Text to A1');
-$sheet->addNote('A1', 'This is a note for cell A1');
+$sheet1->writeCell('Text to A1');
+$sheet1->addNote('A1', 'This is a note for cell A1');
 
-$sheet->writeCell('Text to B1')->addNote('This is a note for B1');
-$sheet->writeTo('C4', 'Text to C4')->addNote('Note for C1');
+$sheet1->writeCell('Text to B1')->addNote('This is a note for B1');
+$sheet1->writeTo('C4', 'Text to C4')->addNote('Note for C1');
 
 // If you specify a range of cells, then the note will be added to the left top cell
-$sheet->addNote('E4:F8', "This note\nwill added to E4");
+$sheet1->addNote('E4:F8', "This note\nwill added to E4");
 
 // You can split text into multiple lines
-$sheet->addNote('D7', "Line 1\nLine 2");
+$sheet1->addNote('D7', "Line 1\nLine 2");
 
 ```
 
@@ -380,7 +384,7 @@ You can change some note options. Allowed options of a note are:
 
 ```php
 
-$sheet->addNote('A1', 'This is a note for cell A1', ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
+$sheet1->addNote('A1', 'This is a note for cell A1', ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
 
 // Parameters "width" and "height" can be numeric, by default these values are in points
 // The "fill_color" parameter can be shortened
@@ -389,26 +393,26 @@ $noteStyle = [
     'height' => 100, // equivalent to '100pt'
     'fill_color' => 'fcc', // equivalent to '#ffcccc'
 ];
-$sheet->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
+$sheet1->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
 
 // This note is visible when the Excel workbook is displayed
-$sheet->addNote('C8', 'This note is always visible', ['show' => true]);
+$sheet1->addNote('C8', 'This note is always visible', ['show' => true]);
 ```
 
 ###  Adding Images
 
 ```php
 // Insert an image to the cell A1
-$sheet->addImage('A1', 'path/to/file');
+$sheet1->addImage('A1', 'path/to/file');
 
 // Insert an image to the cell B2 and set with to 150 pixels (height will change proportionally)
-$sheet->addImage('B2', 'path/to/file', ['width' => 150]);
+$sheet1->addImage('B2', 'path/to/file', ['width' => 150]);
 
 // Set height to 150 pixels (with will change proportionally)
-$sheet->addImage('C3', 'path/to/file', ['height' => 150]);
+$sheet1->addImage('C3', 'path/to/file', ['height' => 150]);
 
 // Set size in pixels
-$sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
+$sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
 
 ```
 

@@ -73,47 +73,48 @@ If the sheet is not protected, then these methods will be ignored
 You can unlock particular cell in the protected sheet
 
 ```php
-$sheet->protect();
+$sheet1->protect();
 
 // Unlock cell when the sheet is protected
-$sheet->writeCell('')->applyBorder('thin')->applyUnlock();
+$sheet1->writeCell('')->applyBorder('thin')->applyUnlock();
 
 // Hidden cell 
 // Contents of the cell will not be displayed in the formula bar when the sheet is protected
 // If the cell contains a formula then the cell should display the calculated result, but will not display the formula
-$sheet->writeCell('=SUM(A1:B3)')->applyHide();
+$sheet1->writeCell('=SUM(A1:B3)')->applyHide();
 
 ```
 
 You can unlock particular cell in the protected sheet
 
 ```php
-$sheet->protect();
+$sheet1->protect();
 
 // Unlock cell B4 when the sheet is protected
-$sheet->cell('B4')->applyBorder('thin')->applyUnlock();
+$sheet1->cell('B4')->applyBorder('thin')->applyUnlock();
 
 // Hidden cell 
 // Contents of the cell will not be displayed in the formula bar when the sheet is protected
 // If the cell contains a formula then the cell should display the calculated result, but will not display the formula
-$sheet->writeCell('=SUM(A1:B3)')->applyHide();
+$sheet1->writeCell('=SUM(A1:B3)')->applyHide();
 
 ```
 Also, you can unlock cells for the any area
-```php
-$sheet->protect();
 
-$area1 = $sheet->makeArea('C3:F9')
+```php
+$sheet1->protect();
+
+$area1 = $sheet1->makeArea('C3:F9')
     ->applyOuterBorder('thin')
     ->applyBgColor('#ccc');
     
 // Unlock cells inside an area    
-$area2 = $sheet->makeArea('d4:e8')
+$area2 = $sheet1->makeArea('d4:e8')
     ->applyOuterBorder('thin')
     ->applyBgColor('none')
     ->applyUnlock();
 
-$sheet->clearAreas();
+$sheet1->clearAreas();
 
 ```
 

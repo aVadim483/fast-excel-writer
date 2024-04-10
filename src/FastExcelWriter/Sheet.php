@@ -3148,7 +3148,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @return array
+     * @return Chart[]
      */
     public function getCharts(): array
     {

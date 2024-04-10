@@ -56,7 +56,7 @@ $data = [
     ['2021', 110, 220, 330, 440],
     ['2022', 100, 200, 300, 400],
 ];
-$sheet->writeArrayTo('E5', $data);
+$sheet1->writeArrayTo('E5', $data);
 
 ```
 
@@ -89,12 +89,12 @@ You can define any number of areas, and they can overlap
 
 ```php
 // Define are from D3 to max column and max row
-$area1 = $sheet->beginArea('D3');
+$area1 = $sheet1->beginArea('D3');
 
 // make write area from B4 to F12
-$area2 = $sheet->makeArea('B4:F12');
+$area2 = $sheet1->makeArea('B4:F12');
 // you can define any number of areas and they can overlap
-$area3 = $sheet->makeArea('C6:G18'); 
+$area3 = $sheet1->makeArea('C6:G18'); 
 
 // the left column will be D and the first row of this area is 3
 $area1->writeRow([100, 101, 102]);
@@ -106,14 +106,14 @@ $area1->writeTo('H3', 'text');
 $area1->writeTo('B2', 'text');
 
 // Close and write all areas
-$sheet->writeAreas();
+$sheet1->writeAreas();
 
 ```
 You can write two-dimensional array
 
 ```php
 // Define are from D3 to max column and max row
-$area = $sheet->beginArea('D3');
+$area = $sheet1->beginArea('D3');
 // But data will be written to cells from E5 to I8
 $array = [
     ['', 'Q1', 'Q2', 'Q3', 'Q4'],
@@ -220,16 +220,16 @@ foreach ($data as $rowData) {
 
 ```php
 // Merge C4:E4, write value to merged cells
-$sheet->writeTo('C4:E4', 'other value');
+$sheet1->writeTo('C4:E4', 'other value');
 
 // Write value to the cell
-$sheet->writeTo('D1', 'Title');
-$sheet->writeRow(['...']);
-$sheet->writeRow(['...']);
-$sheet->writeRow(['...']);
+$sheet1->writeTo('D1', 'Title');
+$sheet1->writeRow(['...']);
+$sheet1->writeRow(['...']);
+$sheet1->writeRow(['...']);
 
 // Merge cells range
-$sheet->mergeCells('D1:F1');
+$sheet1->mergeCells('D1:F1');
 ```
 Note: function mergeCells() does not write values or styles, it sets the properties of the sheet, 
 so it can be called for previous rows when all the data has already been written.
@@ -325,13 +325,14 @@ $sheet->writeTo('A1', '=SE(FALSO,1.23+A4,4.56+B3)');
 ```
 
 You can define formula for the specified column
+
 ```php
-$sheet->setColFormula('C', '=RC[-1]*0.1');
+$sheet1->setColFormula('C', '=RC[-1]*0.1');
 
 // We write values only to columns 'A' and 'B', formula to 'C' will be added automatically
-$sheet->writeRow([100, 230]);
-$sheet->writeRow([120, 560]);
-$sheet->writeRow([130, 117]);
+$sheet1->writeRow([100, 230]);
+$sheet1->writeRow([120, 560]);
+$sheet1->writeRow([130, 117]);
 ```
 
 ### Hyperlinks
@@ -339,16 +340,17 @@ You can insert URLs as active hyperlinks
 
 ```php
 // Write URL as simple string (not hyperlink)
-$sheet->writeCell('https://google.com');
+$sheet1->writeCell('https://google.com');
 
 // Write URL as an active hyperlink
-$sheet->writeCell('https://google.com', ['hyperlink' => true]);
+$sheet1->writeCell('https://google.com', ['hyperlink' => true]);
 
 // Write text with an active hyperlink
-$sheet->writeCell('Google', ['hyperlink' => 'https://google.com']);
+$sheet1->writeCell('Google', ['hyperlink' => 'https://google.com']);
 
 ```
 Write hyperlink using writeRow()
+
 ```php
 $rowValues = [
     'text',
@@ -362,7 +364,7 @@ $cellStyles = [
     [], // 3rd cell
 ];
 
-$sheet->writeRow($rowValues, $rowStyle, $cellStyles);
+$sheet1->writeRow($rowValues, $rowStyle, $cellStyles);
 ```
 Here is the other way
 ```php

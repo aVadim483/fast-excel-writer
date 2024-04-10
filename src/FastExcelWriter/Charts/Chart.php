@@ -54,6 +54,8 @@ class Chart
         self::TYPE_COMBO            ,
     ];
 
+    public string $fileName;
+
     private string $chartType;
 
     /**

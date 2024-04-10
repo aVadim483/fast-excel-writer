@@ -98,7 +98,7 @@ $chart1 = Chart::make(Chart::TYPE_COLUMN, 'Column Chart', ['b1' => 'B2:B5', 'c1'
 ;
 
 //	Add the chart to the worksheet
-$sheet->addChart('a9:h22', $chart1);
+$sheet1->addChart('a9:h22', $chart1);
 
 // Make chart 2
 $chart2 = Chart::make(Chart::TYPE_PIE, 'Pie Chart', ['b6:d6'])
@@ -108,7 +108,7 @@ $chart2 = Chart::make(Chart::TYPE_PIE, 'Pie Chart', ['b6:d6'])
 ;
 
 //	Add the chart to the worksheet
-$sheet->addChart('i9:m22', $chart2);
+$sheet1->addChart('i9:m22', $chart2);
 ```
 
 ### Combo charts
@@ -132,7 +132,7 @@ $chart = Chart::make(Chart::TYPE_COMBO, 'Combo Chart', )
 ;
 
 //	Add the chart to the worksheet
-$sheet->addChart('a9:h22', $chart);
+$sheet1->addChart('a9:h22', $chart);
 ```
 Result of this code:
 

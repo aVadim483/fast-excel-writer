@@ -553,6 +553,7 @@ class Writer
      */
     protected function _writeSheetsFiles(array $sheets, array &$relationShips = []): bool
     {
+        $chartIdx = 0;
         foreach ($sheets as $sheet) {
             if (!$sheet->open) {
                 // open and write areas
@@ -579,8 +580,9 @@ class Writer
             $chartList = $sheet->getCharts();
             if ($chartList) {
                 // 'xl/charts/chart{%n}.xml'
-                foreach ($chartList as $chartIdx => $chart) {
-                    $entry = 'xl/charts/chart' . ($chartIdx + 1) . '.xml';
+                foreach ($chartList as $chart) {
+                    $chart->fileName = 'chart' . (++$chartIdx) . '.xml';
+                    $entry = 'xl/charts/' . $chart->fileName;
                     $this->_writeChartFile($entry, $chart, $relationShips);
                     if (empty($relationShips['override'][$entry])) {
                         $relationShips['override'][$entry] = [
@@ -913,7 +915,7 @@ EOD;
 
             $relations[] = [
                 'r_id' => 'rId' . ($chartIdx + 1),
-                'target' => '../charts/chart' . ($chartIdx + 1) . '.xml',
+                'target' => '../charts/' . $chart->fileName,
                 'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart',
             ];
         }

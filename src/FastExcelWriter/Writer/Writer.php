@@ -1200,13 +1200,21 @@ EOD;
         if (is_array($value) && isset($value['shared_index'])) {
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value['shared_index'] . '</v></c>');
         }
-        elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');
-        }
-        elseif (is_string($value) && $value[0] === '=') {
+        elseif ($value && is_string($value) && $value[0] === '=') {
             // formula
             $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"><f>' . self::xmlSpecialChars($value) . '</f></c>');
+        }
+        elseif (is_array($value) && !empty($value[0]) && $value[0][0] === '=' && isset($value[1])) {
+            // formula & value
+            $formula = $this->_convertFormula($value[0], [$rowNumber, $colNumber]);
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '">');
+            $file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
+            $file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
+            $file->write('</c>');
+        }
+        elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');
         }
         elseif ($numFormatType === 'n_shared_string') {
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value . '</v></c>');

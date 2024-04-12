@@ -335,6 +335,24 @@ $sheet1->writeRow([120, 560]);
 $sheet1->writeRow([130, 117]);
 ```
 
+**Important!** The library cannot pre-calculate values of formulas. It save formulas as is, without pre-calculation.
+But when the saved file is opened in Excel, Excel recalculates all cells with formulas and show results.
+There's only one way to save pre-calculations: you do those calculations in your code and save them along with the formula
+```php
+$a1 = 10;
+$b1 = 30;
+$a2 = 50;
+$b2 = 70;
+$sheet->writeRow([$a1, $b1]);
+$sheet->writeRow([$a2, $b2]);
+
+// formula and pre-calculated result
+$a3 = ['=A1+A2', $a1 + $a2];
+$b3 = ['=B1+B2', $b1 + $b2];
+$sheet->writeRow([$a3, $b3]);
+```
+
+
 ### Hyperlinks
 You can insert URLs as active hyperlinks
 

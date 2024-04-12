@@ -536,6 +536,7 @@ final class FastExcelWriterTest extends TestCase
         $data = [
             [2, 2, '=RC[-1]+RC[-2]', 2],
             [3, 3, '=RC[-1]+RC[-2]', 3],
+            [4, 4, ['=RC[-1]+RC[-2]', 8], 4], // formula & value
         ];
         $area = $sheet->beginArea('b2');
         $area->moveTo('c3');
@@ -548,6 +549,10 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $this->assertEquals([1, 1, '=D3+C3', '1'], $this->getValues(['c3', 'd3', 'e3', 'f3']));
+
+        // formula & value
+        $this->assertEquals(8, $this->cells[6]['E']['v']);
+        $this->assertEquals('=D6+C6', $this->cells[6]['E']['f']);
 
         $style = $this->getStyle('c3', true);
         $this->assertEquals('21', $style['font-size']);

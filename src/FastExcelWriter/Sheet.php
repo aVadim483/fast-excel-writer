@@ -2311,7 +2311,10 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($value !== null) {
-            if (!is_scalar($value)) {
+            if (is_array($value) && !empty($value[0]) && is_string($value[0]) && ($value[0][0] === '=') && count($value) === 2) {
+                // it's a formula & value ['=A1+B2', 123]
+            }
+            elseif (!is_scalar($value)) {
                 $addr = Excel::cellAddress($colIdx + 1, $rowIdx + 1);
                 Exception::throwNew('Value for cell %s must be scalar', $addr);
             }
@@ -2377,7 +2380,6 @@ class Sheet implements InterfaceSheetWriter
             $value = '=' . $value;
         }
 
-        ///-- $styles = $styles ? Style::normalize($styles) : null;
         $this->_setCellData($cellAddress, $value, $styles, true);
 
         return $this;

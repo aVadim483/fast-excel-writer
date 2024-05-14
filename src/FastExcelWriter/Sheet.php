@@ -20,13 +20,6 @@ use avadim\FastExcelWriter\Writer\FileWriter;
  */
 class Sheet implements InterfaceSheetWriter
 {
-    // constants for auo width
-    protected const WIDTH_LOWER_CASE_LETTER = 1.05;
-    protected const WIDTH_UPPER_CASE_LETTER = 1.25;
-    protected const WIDTH_WIDE_LETTER = 1.70;
-    protected const WIDTH_DOTS_SYMBOLS = 0.50;
-    protected const WIDTH_PADDING = 5;
-
     // constants for notes
     protected const NOTE_LEFT_OFFSET = 1.5;
     protected const NOTE_LEFT_INC = 48.65;
@@ -1396,99 +1389,6 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @param string $str
-     * @param int|float $fontSize
-     * @param bool|null $numFormat
-     *
-     * @return float
-     */
-    protected function _calcWidth(string $str, $fontSize, ?bool $numFormat = false): float
-    {
-        if ($numFormat && strpos($str, ';')) {
-            $lenArray = [];
-            foreach (explode(';', $str) as $part) {
-                $lenArray[] = $this->_calcWidth($part, $fontSize);
-            }
-
-            return max(...$lenArray);
-        }
-
-        $len = mb_strlen($str);
-        $wideCount = 0;
-        $upperCount = 0;
-        $dotsCount = 0;
-        if (preg_match_all("/[@%&WM]/u", $str, $matches)) {
-            $wideCount = count($matches[0]);
-            $str = preg_replace("/[@%&WM]/u", '', $str);
-        }
-        if (preg_match_all("/[,.\-:';`Iil\[\]]/u", $str, $matches)) {
-            $dotsCount = count($matches[0]);
-            $str = preg_replace("/[,.\-:';`Iil\[\]]/u", '', $str);
-        }
-        if (preg_match_all("/[[:upper:]#@w]/u", $str, $matches)) {
-            $upperCount = count($matches[0]);
-        }
-
-        // width = Truncate([{Number of Characters} * {Maximum Digit Width} + {5 pixel padding}]/{Maximum Digit Width}*256)/256
-        $k = $fontSize * 0.66;
-
-        $n = ($len - $wideCount - $upperCount - $dotsCount) * self::WIDTH_LOWER_CASE_LETTER * $k +
-            $wideCount * self::WIDTH_WIDE_LETTER * $k +
-            $upperCount * self::WIDTH_UPPER_CASE_LETTER * $k +
-            $dotsCount * self::WIDTH_DOTS_SYMBOLS * $k + self::WIDTH_PADDING;
-
-        return round($n / $k, 8);
-    }
-
-    /**
-     * @param mixed $value
-     * @param string $format
-     *
-     * @return string
-     */
-    protected function _formatValue($value, string $format): string
-    {
-        if (is_numeric($value)) {
-            if (strpos($format, ';')) {
-                $formats = explode(';', $format);
-                if ($value > 0 && !empty($formats[0])) {
-                    return $this->_formatValue($value, $formats[0]);
-                }
-                if ($value < 0 && !empty($formats[1])) {
-                    return $this->_formatValue($value, $formats[1]);
-                }
-                if ((int)$value === 0 && !empty($formats[2])) {
-                    return $this->_formatValue($value, $formats[2]);
-                }
-                return $this->_formatValue($value, '0');
-            }
-            else {
-                if (preg_match('/[#0](\.0+)/', $format, $m)) {
-                    $value = number_format($value, strlen($m[1]) - 1);
-                }
-                else {
-                    $value = number_format($value, 0);
-                }
-                $cnt = substr_count($format, '\\');
-                if ($cnt) {
-                    $value .= str_repeat('-', $cnt);
-                }
-                if (preg_match('/\[\$.+]/U', $format, $m)) {
-                    $value .= str_replace(['[$', ']'], '', $m[0]);
-                }
-
-                return $value;
-            }
-        }
-        elseif (strpos($format, ';')) {
-            // value is not numeric but format for number
-            return $value;
-        }
-
-        return $format;
-    }
-
-    /**
      * @param int $colIdx
      * @param $cellValue
      * @param $numberFormat
@@ -1496,23 +1396,13 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style)
     {
-        static $cache = [];
-
         if ($cellValue) {
-            $fontSize = $style['font']['val']['size'] ?? 10;
+            $fontName = $style['font']['val']['name'] ?? Style::DEFAULT_FONT_NAME;
+            $fontSize = $style['font']['val']['size'] ?? Style::DEFAULT_FONT_SIZE;
             $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
-            $key = '[[[' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
-            if (isset($cache[$key])) {
-                $len = $cache[$key];
-            }
-            else {
-                $len = $this->_calcWidth($value, $fontSize);
-                if ($numberFormat !== 'GENERAL' && $numberFormat !== '0' && $numberFormat != '@') {
-                    $numberFormat = $this->_formatValue($value, $numberFormat);
-                    $len = max($len, $this->_calcWidth(str_replace('\\', '', $numberFormat), $fontSize, true));
-                }
-                $cache[$key] = $len;
-            }
+
+            $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
+
             if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
                 $this->colAttributes[$colIdx]['width'] = $len;
             }

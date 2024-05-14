@@ -205,6 +205,55 @@ class Excel implements InterfaceBookWriter
         }
     }
 
+
+    /**
+     * @param mixed $value
+     * @param string $format
+     *
+     * @return string
+     */
+    public static function _formatValue($value, string $format): string
+    {
+        if (is_numeric($value)) {
+            if (strpos($format, ';')) {
+                $formats = explode(';', $format);
+                if ($value > 0 && !empty($formats[0])) {
+                    return self::_formatValue($value, $formats[0]);
+                }
+                if ($value < 0 && !empty($formats[1])) {
+                    return self::_formatValue($value, $formats[1]);
+                }
+                if ((int)$value === 0 && !empty($formats[2])) {
+                    return self::_formatValue($value, $formats[2]);
+                }
+                return self::_formatValue($value, '0');
+            }
+            else {
+                if (preg_match('/[#0](\.0+)/', $format, $m)) {
+                    $value = number_format($value, strlen($m[1]) - 1);
+                }
+                else {
+                    $value = number_format($value, 0);
+                }
+                $cnt = substr_count($format, '\\');
+                if ($cnt) {
+                    $value .= str_repeat('-', $cnt);
+                }
+                if (preg_match('/\[\$.+]/U', $format, $m)) {
+                    $value .= str_replace(['[$', ']'], '', $m[0]);
+                }
+
+                return $value;
+            }
+        }
+        elseif (strpos($format, ';')) {
+            // value is not numeric but format for number
+            return $value;
+        }
+
+        return $format;
+    }
+
     /**
      * @param string|object $class
      * @param string|array $options

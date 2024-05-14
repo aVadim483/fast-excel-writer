@@ -144,7 +144,7 @@ Result of this code:
 | const name of class<br/>Chart       | chart type            |                                                                         |
 |-------------------------------------|-----------------------|-------------------------------------------------------------------------|
 | TYPE_BAR                            | bar chart             | ![img/chart-bar_240.jpg](img/chart-bar_240.jpg)                         |
-| TYPE_BAR_STACKED                    | stacked bar chart     | ![img/chart-bar_240.jpg](img/chart-bar_240.jpg)                         |
+| TYPE_BAR_STACKED                    | stacked bar chart     | ![img/chart-bar-stacked_240.jpg](img/chart-bar-stacked_240.jpg)         |
 | TYPE_COLUMN                         | column chart          | ![img/chart-column_240.jpg](img/chart-column_240.jpg)                   |
 | TYPE_COLUMN_STACKED                 | stacked column chart  | ![img/chart-column-stacked_240.jpg](img/chart-column-stacked_240.jpg)   |
 | TYPE_LINE                           | line chart            | ![img/chart-line_240.jpg](img/chart-line_240.jpg)                       |

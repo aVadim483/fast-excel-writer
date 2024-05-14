@@ -78,6 +78,10 @@ class Style
     public const BORDER_STYLE_MIN = self::BORDER_NONE;
     public const BORDER_STYLE_MAX = self::BORDER_SLANT_DASH_DOT;
 
+    public const DEFAULT_FONT_NAME = 'Calibri';
+
+    public const DEFAULT_FONT_SIZE = 11;
+
     protected static $instance;
 
     public array $localeSettings = [];
@@ -126,8 +130,8 @@ class Style
     {
         self::$instance = $this;
         $defaultFont = [
-            'font-name' => 'Calibri',
-            'font-size' => 11,
+            'font-name' => self::DEFAULT_FONT_NAME,
+            'font-size' => self::DEFAULT_FONT_SIZE,
         ];
         $defaultStyle = [];
         $defaultFormatStyles = [];

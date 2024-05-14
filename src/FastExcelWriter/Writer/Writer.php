@@ -748,9 +748,9 @@ class Writer
                 'xmlns:x' => 'urn:schemas-microsoft-com:office:excel',
             ];
             $xmlDrawing = '<xml' . self::tagAttributes($nameSpaces) . '>';
-            $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe" fillcolor="#0000FF">';
+            $xmlDrawing .= '<o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout>';
+            $xmlDrawing .= '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">';
             $xmlDrawing .= '<v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/>';
-            $xmlDrawing .= '<v:fill color="#0000FF"/>';
             $xmlDrawing .= '</v:shapetype>';
             foreach ($commentList as $comment) {
                 $id = 1024 + (++$drawingCnt);

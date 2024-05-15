@@ -545,6 +545,8 @@ final class FastExcelWriterTest extends TestCase
 
         $sheet->endAreas();
 
+        $sheet->writeRow([null, null, 6, 7, '=RC[-2]+R3C4']);
+
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
 
@@ -553,6 +555,7 @@ final class FastExcelWriterTest extends TestCase
         // formula & value
         $this->assertEquals(8, $this->cells[6]['E']['v']);
         $this->assertEquals('=D6+C6', $this->cells[6]['E']['f']);
+        $this->assertEquals('=C7+$D$3', $this->cells[7]['E']['f']);
 
         $style = $this->getStyle('c3', true);
         $this->assertEquals('21', $style['font-size']);
@@ -562,7 +565,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('21', $style['font-size']);
         $this->assertEquals('Century', $style['font-name']);
 
-        unlink($testFileName);
+        //unlink($testFileName);
     }
 
     public function testExcelWriter5()

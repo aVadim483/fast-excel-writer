@@ -27,7 +27,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-intl": "*",
-        "avadim/fast-excel-helper": "^1.1"
+        "avadim/fast-excel-helper": "^1.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",

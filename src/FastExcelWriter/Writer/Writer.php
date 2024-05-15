@@ -2,11 +2,13 @@
 
 namespace avadim\FastExcelWriter\Writer;
 
+use avadim\FastExcelHelper\Helper;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Sheet;
+use PHPUnit\TextUI\Help;
 
 /**
  * Class Writer
@@ -1141,15 +1143,11 @@ EOD;
         }
         // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
         $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
-            $indexes = Excel::rangeRelOffsets($matches[2]);
-            if (isset($indexes[0], $indexes[1])) {
-                $row = $baseAddress[0] + $indexes[0];
-                $col = $baseAddress[1] + $indexes[1];
-                $cell = Excel::cellAddress($row, $col);
-                if ($cell) {
-                    return $matches[1] . $cell;
-                }
+            $cell = Excel::cellAddress($baseAddress[0], $baseAddress[1]);
+            if ($cell && ($address = Helper::RCtoA1($matches[2], $cell))) {
+                return $matches[1] . $address;
             }
+
             return $matches[0];
         }, $formula);
 

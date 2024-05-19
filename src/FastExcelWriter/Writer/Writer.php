@@ -8,7 +8,6 @@ use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Sheet;
-use PHPUnit\TextUI\Help;
 
 /**
  * Class Writer
@@ -181,6 +180,7 @@ class Writer
 
     /** @var array */
     protected array $tempFiles = [];
+    protected string $tempFilePrefix = '';
 
     /** @var string */
     protected $tempDir = '';
@@ -197,18 +197,21 @@ class Writer
      */
     public function __construct(?array $options = [])
     {
+        if (!class_exists('\ZipArchive')) {
+            throw new Exception('Error: ZipArchive class does not exist');
+        }
         date_default_timezone_get() || date_default_timezone_set('UTC');//php.ini missing tz, avoid warning
         if (isset($options['excel'])) {
             $this->excel = $options['excel'];
         }
-        if (isset($options['temp_dir'])) {
-            $this->tempDir = $options['temp_dir'];
+        if (!empty($options['temp_prefix'])) {
+            $this->tempFilePrefix = $options['temp_prefix'];
         }
-        if (!is_writable($this->tempFilename())) {
-            throw new Exception('Warning: tempdir ' . sys_get_temp_dir() . ' is not writeable, use ->setTempDir()');
+        else {
+            $this->tempFilePrefix = uniqid('xlsx_writer_') . '_';
         }
-        if (!class_exists('\ZipArchive')) {
-            throw new Exception('Error: ZipArchive class does not exist');
+        if (!empty($options['temp_dir'])) {
+            $this->setTempDir($options['temp_dir']);
         }
     }
 
@@ -225,16 +228,7 @@ class Writer
             }
         }
         */
-        if (!empty($this->tempFiles['tmp'])) {
-            foreach ($this->tempFiles['tmp'] as $tempFile) {
-                if (is_file($tempFile)) {
-                    @unlink($tempFile);
-                }
-            }
-        }
-        if (!empty($this->zip) && is_file($this->zip->filename)) {
-            @unlink($this->zip->filename);
-        }
+        $this->removeFiles();
     }
 
     protected function _log($msg)
@@ -285,24 +279,37 @@ class Writer
      */
     public function setTempDir(?string $tempDir = '')
     {
-        $this->tempDir = $tempDir;
+        if ($tempDir) {
+            if (!is_dir($tempDir)) {
+                $res = @mkdir($tempDir, 0755, true);
+                if (!$res) {
+                    throw new Exception('Cannot create directory "' . $tempDir . '"');
+                }
+            }
+            $this->tempDir = realpath($tempDir);
+            if ($tempFile = $this->makeTempFile('test')) {
+                $this->removeTempFile($tempFile);
+            }
+        }
+        else {
+            $this->tempDir = '';
+        }
     }
 
     /**
      * @return bool|string
      */
-    public function tempFilename($localName = null)
+    public function _x_makeTempFile($localName = null)
     {
-        $tempPrefix = 'xlsx_writer_';
         if (!$this->tempDir) {
             $tempDir = sys_get_temp_dir();
-            $filename = tempnam($tempDir, $tempPrefix);
+            $filename = tempnam($tempDir, $this->tempFilePrefix);
             if (!$filename) {
-                $filename = tempnam(getcwd(), $tempPrefix);
+                $filename = tempnam(getcwd(), $this->tempFilePrefix);
             }
         }
         else {
-            $filename = tempnam($this->tempDir, $tempPrefix);
+            $filename = tempnam($this->tempDir, $this->tempFilePrefix);
         }
         if ($filename) {
             if ($localName) {
@@ -315,6 +322,90 @@ class Writer
     }
 
     /**
+     * @param string|null $key
+     * @param string|null $zipName
+     *
+     * @return bool|string
+     */
+    public function makeTempFile(?string $key = null, ?string $zipName = null)
+    {
+        if (!$this->tempDir) {
+            $tempDir = sys_get_temp_dir();
+            if (!is_writable($tempDir)) {
+                $tempDir = getcwd();
+            }
+        }
+        else {
+            $tempDir = $this->tempDir;
+        }
+        $filename = $tempDir . '/' . uniqid($this->tempFilePrefix, true) . '.tmp';
+        if (touch($filename, time(), time()) && is_writable($filename)) {
+            $filename = realpath($filename);
+            if ($zipName) {
+                $this->tempFiles['zip'][$zipName] = $filename;
+                if (!$key) {
+                    $key = $zipName;
+                }
+            }
+            if ($key) {
+                $this->tempFiles['tmp'][$key] = $filename;
+            }
+            else {
+                $this->tempFiles['tmp'][] = $filename;
+            }
+        }
+        else {
+            $error = 'Warning: tempdir ' . $tempDir . ' is not writeable';
+            if (!$this->tempDir) {
+                $error .= ', use ->setTempDir()';
+            }
+            throw new Exception($error);
+        }
+        if (!is_file($filename)) {
+            throw new Exception('Cannot create temp file "' . $filename . '"');
+        }
+
+        return $filename;
+    }
+
+    /**
+     * @param string $fileName
+     *
+     * @return void
+     */
+    protected function removeTempFile(string $fileName)
+    {
+        if (!empty($this->tempFiles['tmp'])) {
+            foreach ($this->tempFiles['tmp'] as $key => $tempFile) {
+                if ($tempFile === $fileName) {
+                    if (is_file($tempFile)) {
+                        @unlink($tempFile);
+                    }
+                    unset($this->tempFiles['tmp'][$key]);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function removeFiles()
+    {
+        if (!empty($this->tempFiles['tmp'])) {
+            foreach ($this->tempFiles['tmp'] as $tempFile) {
+                if (is_file($tempFile)) {
+                    @unlink($tempFile);
+                }
+            }
+        }
+        if (!empty($this->zip) && is_file($this->zip->filename)) {
+            @unlink($this->zip->filename);
+        }
+    }
+
+    /**
      * @param string $localName
      * @param string $contents
      *
@@ -322,7 +413,7 @@ class Writer
      */
     public function writeToTemp(string $localName, string $contents)
     {
-        $tmpFile = $this->tempFilename($localName);
+        $tmpFile = $this->makeTempFile(null, $localName);
         if ($tmpFile) {
             return file_put_contents($tmpFile, $contents);
         }
@@ -430,7 +521,8 @@ class Writer
         $this->writeToTemp('docProps/core.xml', $this->_buildCoreXML($metadata));
         $this->writeToTemp('_rels/.rels', $this->_buildRelationshipsXML($relationShips));
         $this->writeToTemp('[Content_Types].xml', $this->_buildContentTypesXML($relationShips));
-/*
+/* for debug
+------------
         $samplesFile = __DIR__ . '/../samples.php';
         if (is_file($samplesFile)) {
             $samples = include($samplesFile);
@@ -497,6 +589,7 @@ class Writer
 
     /**
      * @param string $entry
+     * @param array|null $samples
      *
      * @return void
      */
@@ -779,7 +872,7 @@ class Writer
 
     protected function _writeChartFile(string $entry, Chart $chart, array &$relationShips)
     {
-        $chartWriter = $this->makeChartWriter($this->tempFilename($entry));
+        $chartWriter = $this->makeChartWriter($this->makeTempFile(null, $entry));
         $chartWriter->writeChartXml($chart);
     }
 
@@ -791,7 +884,7 @@ class Writer
      */
     protected function _writeDrawingFile(string $entry, array $imageList, array $chartList, array &$relationShips)
     {
-        $fileWriter = $this->makeFileWriter($this->tempFilename($entry));
+        $fileWriter = $this->makeFileWriter($this->makeTempFile(null, $entry));
 
         $relations = [];
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
@@ -943,7 +1036,7 @@ EOD;
      */
     protected function _writeSheetHead(Sheet $sheet): FileWriter
     {
-        $fileWriter = $this->makeFileWriter($this->tempFilename());
+        $fileWriter = $this->makeFileWriter($this->makeTempFile('sheetHead'));
         $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $nameSpaces = [
             'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
@@ -1109,7 +1202,7 @@ EOD;
         $sheet->fileWriter->flush(true);
 
         $headWriter = $this->_writeSheetHead($sheet);
-        $headWriter->appendFileWriter($sheet->fileWriter, $this->tempFilename('xl/worksheets/' . $sheet->xmlName));;
+        $headWriter->appendFileWriter($sheet->fileWriter, $this->makeTempFile(null, 'xl/worksheets/' . $sheet->xmlName));;
 
         $sheet->fileWriter->close();
         $sheet->close = true;
@@ -1320,7 +1413,7 @@ EOD;
             //'xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"',
         ];
 
-        $temporaryFilename = $this->tempFilename('xl/styles.xml');
+        $temporaryFilename = $this->makeTempFile(null, 'xl/styles.xml');
         $file = new FileWriter($temporaryFilename);
         $file->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $links = implode("\n", $schemaLinks);

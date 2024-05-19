@@ -230,7 +230,7 @@ class FileWriter
     }
 
 
-    public function getFileHandler()
+    public function getFileResource()
     {
         return $this->fd;
     }
@@ -248,12 +248,14 @@ class FileWriter
     }
 
     /**
-     * @param $fileWriter
-     * @param $newFileName
+     * Append content of $fileWriter to this file and save all to $newFileName
+     *
+     * @param FileWriter $fileWriter
+     * @param string $newFileName
      *
      * @return int
      */
-    public function appendFileWriter($fileWriter, $newFileName): int
+    public function appendFileWriter(FileWriter $fileWriter, string $newFileName): int
     {
         $fdTarget = fopen($newFileName, 'wb');
 

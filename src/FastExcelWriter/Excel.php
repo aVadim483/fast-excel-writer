@@ -167,6 +167,9 @@ class Excel implements InterfaceBookWriter
         if (isset($options['temp_dir']) && $options['temp_dir']) {
             $writerOptions['temp_dir'] = $options['temp_dir'];
         }
+        if (isset($options['temp_prefix']) && $options['temp_prefix']) {
+            $writerOptions['temp_prefix'] = $options['temp_prefix'];
+        }
         if (isset($options['writer_class'])) {
             $this->writer = $this->getObject($options['writer_class'], $writerOptions);
             $this->writer->setExcel($this);
@@ -1360,7 +1363,7 @@ class Excel implements InterfaceBookWriter
             if ($info) {
                 $imageId = (empty($this->media['images']) ? 1 : count($this->media['images']) + 1);
                 $name = 'image' . $imageId . '.' . $info['extension'];
-                $fileName = $this->writer->tempFilename('xl/media/' . $name);
+                $fileName = $this->writer->makeTempFile(null, 'xl/media/' . $name);
                 if ($fileName && file_put_contents($fileName, $imageBlob)) {
                     $this->media['images'][$imageHash] =  [
                         'filename' => $fileName,
@@ -1500,7 +1503,7 @@ class Excel implements InterfaceBookWriter
      */
     public function download(string $name = null)
     {
-        $tmpFile = $this->writer->tempFilename();
+        $tmpFile = $this->writer->makeTempFile();
         $this->save($tmpFile);
         if (!$name) {
             $name = basename($tmpFile) . '.xlsx';

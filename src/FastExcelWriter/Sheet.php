@@ -1988,6 +1988,23 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Write values from two-dimensional array
+     *
+     * @param array $rowArray Array of rows
+     * @param array|null $rowStyle Style applied to each row
+     *
+     * @return $this
+     */
+    public function writeArray(array $rowArray = [], array $rowStyle = null): Sheet
+    {
+        foreach ($rowArray as $rowValues) {
+            $this->writeRow($rowValues, $rowStyle);
+        }
+
+        return $this;
+    }
+
+    /**
      * Move to the next row
      *
      * @param array|null $options
@@ -2485,14 +2502,14 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return void
      */
-    public function writeDataBegin($writer)
+    public function writeDataBegin(Writer $writer)
     {
         // if already initialized
         if ($this->open) {
             return;
         }
 
-        $sheetFileName = $writer->tempFilename();
+        $sheetFileName = $writer->makeTempFile('sheetData');
         $this->setFileWriter($writer->makeFileWriter($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');

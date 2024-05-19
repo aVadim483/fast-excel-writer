@@ -491,9 +491,7 @@ final class FastExcelWriterTest extends TestCase
             ['AA', 'BB', 'CC', 'DD'],
             ['AAA', 'BBB', 'CCC', 'DDD'],
         ];
-        foreach ($data as $rowData) {
-            $sheet->writeRow($rowData);
-        }
+        $sheet->writeArray($data);
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
@@ -779,7 +777,7 @@ final class FastExcelWriterTest extends TestCase
         foreach ($chartTypes1 as $charType) {
             $chart = Chart::make($charType, $charType, $dataSeries)
                 // X axis tick values
-                ->setDataSeriesTickLabels('A2:A5')
+                ->setCategoryAxisLabels('A2:A5')
                 // Position of legend
                 ->setLegendPosition(Legend::POSITION_TOPRIGHT)
             ;
@@ -789,7 +787,7 @@ final class FastExcelWriterTest extends TestCase
         foreach ($chartTypes2 as $charType) {
             $chart = Chart::make($charType, $charType, ['b6:d6'])
                 // X axis tick values
-                ->setDataSeriesTickLabels('A2:A5')
+                ->setCategoryAxisLabels('A2:A5')
                 // Position of legend
                 ->setLegendPosition(Legend::POSITION_TOPRIGHT)
             ;
@@ -802,4 +800,43 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
         $this->cells = [];
     }
+
+
+    protected function rmdir($tempDir)
+    {
+        if (is_dir($tempDir)) {
+            foreach (glob($tempDir . '/*.tmp') as $file) {
+                unlink($file);
+            }
+            clearstatcache();
+            rmdir($tempDir);
+        }
+    }
+/*
+    public function testWorkDir()
+    {
+        $testFileName = __DIR__ . '/test0.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $tempDir = __DIR__ . '/tmp';
+        $tempPrefix = uniqid();
+        $this->rmdir($tempDir);
+
+        $excel = Excel::create(null, ['temp_dir' => $tempDir, 'temp_prefix' => $tempPrefix]);
+        $sheet = $excel->sheet();
+
+        $sheet->writeArray([['aaa'], ['bbb'], ['ccc']]);
+        $tmpFiles = glob($tempDir . '/' . $tempPrefix . '*.tmp');
+        $this->assertNotEmpty($tmpFiles);
+        $excel->save($testFileName);
+
+        unlink($testFileName);
+        $this->rmdir($tempDir);
+
+        $this->excelReader = null;
+        $this->cells = [];
+    }
+*/
 }

@@ -1,3 +1,11 @@
+## v.5.2
+
+* Sheet::writeArray()
+* New option 'temp_prefix' - custom prefix for temporary files
+* upd: Improved column width calculation
+* fix: Note shape
+* fix: R1C1 in formulas
+
 ## v.5.1
 
 * Combo charts

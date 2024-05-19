@@ -2509,7 +2509,7 @@ class Sheet implements InterfaceSheetWriter
             return;
         }
 
-        $sheetFileName = $writer->makeTempFile('sheetData');
+        $sheetFileName = $writer->makeTempFile($this->index . ':sheetData');
         $this->setFileWriter($writer->makeFileWriter($sheetFileName));
 
         $this->fileWriter->write('<sheetData>');

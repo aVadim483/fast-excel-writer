@@ -563,7 +563,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('21', $style['font-size']);
         $this->assertEquals('Century', $style['font-name']);
 
-        //unlink($testFileName);
+        unlink($testFileName);
     }
 
     public function testExcelWriter5()

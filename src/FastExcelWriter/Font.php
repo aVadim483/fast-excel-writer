@@ -5,26 +5,68 @@ namespace avadim\FastExcelWriter;
 class Font
 {
     // constants for auo width
-    protected const WIDTH_LOWER_CASE_LETTER = 1.1;
-    protected const WIDTH_UPPER_CASE_LETTER = 1.31;
-    protected const WIDTH_WIDE_LETTER = 1.75;
-    protected const WIDTH_DOTS_SYMBOLS = 0.50;
     protected const WIDTH_PADDING = 0.81;
+    protected const DEFAULT_FONT_SIZE = 11;
+    protected const DEFAULT_FONT_NAME = 'Calibri';
+    protected const DEFAULT_FONT_RANGE = 'default';
+    protected const DEFAULT_FONT_WIDTH = 1.2;
+
 
     protected static array $fontWidths = [
+        'Aptos' => [
+            'default' => 1.07,
+            'dots' => 0.55,
+            'upper' => 1.48,
+            'wide' => 1.76,
+            'arabic' => 1.00,
+            'hebrew' => 0.80,
+            'chinese' => 2.18
+        ],
         'Arial' => [
+            'default' => 1.10,
             'dots' => 0.50,
-            'lower' => 1.1,
-            'upper' => 1.31,
-            'wide' => 1.75,
+            'upper' => 1.35,
+            'wide' => 1.77,
+            'arabic' => 1.00,
+            'hebrew' => 0.92,
+            'chinese' => 2.18
         ],
         'Calibri' => [
+            'default' => 1.07,
             'dots' => 0.60,
-            'lower' => 1.07,
             'upper' => 1.21,
-            'wide' => 1.71,
+            'wide' => 1.72,
+            'arabic' => 1.00,
+            'hebrew' => 0.86,
+            'chinese' => 2.18
+        ],
+        'Tahoma' => [
+            'default' => 1.11,
+            'dots' => 0.68,
+            'upper' => 1.22,
+            'wide' => 1.89,
+            'arabic' => 0.76,
+            'hebrew' => 1.10,
+            'chinese' => 2.20
+        ],
+        'Times New Roman' => [
+            'default' => 1.00,
+            'dots' => 0.58,
+            'upper' => 1.48,
+            'wide' => 1.91,
+            'arabic' => 0.60,
+            'hebrew' => 1.12,
+            'chinese' => 2.20
         ],
     ];
+
+    protected static float $widthFactor = 1.0;
+
+
+    public static function setFontWidthFactor(float $factor)
+    {
+        self::$widthFactor = $factor;
+    }
 
     /**
      * @param string $fontName
@@ -54,6 +96,23 @@ class Font
         return $len;
     }
 
+    protected static function _ranges(): array
+    {
+        static $ranges = [];
+
+        if (!$ranges) {
+            $ranges = [
+                'dots' => "/[,.\-:'\";`IiJjfl\[\]\(\)\{\}]/u",
+                'wide' => "/[@%&WMQ]/u",
+                'upper' => "/[[:upper:]#@w]/u",
+                'hebrew' => '/[' . mb_chr(0x0590) . '-' . mb_chr(0x05FF) . ']/u',
+                'arabic' => '/[' . mb_chr(0x0600) . '-' . mb_chr(0x06FF) . ']/u',
+                'chinese' => '/[' . mb_chr(0x4e00) . '-' . mb_chr(0x9FCC) . ']/u',
+            ];
+        }
+        return $ranges;
+    }
+
     /**
      * @param string $str
      * @param string $fontName
@@ -74,30 +133,38 @@ class Font
         }
 
         $len = mb_strlen($str);
-        $wideCount = 0;
-        $upperCount = 0;
-        $dotsCount = 0;
-        if (preg_match_all("/[,.\-:';`IiJjfl\[\]\(\)\{\}]/u", $str, $matches)) {
-            $dotsCount = count($matches[0]);
-            $str = preg_replace("/[,.\-:';`IiJjfl\[\]\(\)\{\}]/u", '', $str);
+        $strWidth = 0;
+        foreach (self::_ranges() as $range => $pattern) {
+            if (preg_match_all($pattern, $str, $matches)) {
+                $count = count($matches[0]);
+                if (isset(self::$fontWidths[$fontName][$range])) {
+                    $charWidth = self::$fontWidths[$fontName][$range];
+                }
+                elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][$range])) {
+                    $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][$range];
+                }
+                elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE])) {
+                    $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE];
+                }
+                else {
+                    $charWidth = self::DEFAULT_FONT_WIDTH;
+                }
+                $strWidth += $count * $charWidth;
+                $len -= $count;
+                $str = preg_replace($pattern, '', $str);
+            }
         }
-        if (preg_match_all("/[@%&WMQ]/u", $str, $matches)) {
-            $wideCount = count($matches[0]);
-            $str = preg_replace("/[@%&WMQ]/u", '', $str);
+        if (isset(self::$fontWidths[$fontName][self::DEFAULT_FONT_RANGE])) {
+            $charWidth = self::$fontWidths[$fontName][self::DEFAULT_FONT_RANGE];
         }
-        if (preg_match_all("/[[:upper:]#@w]/u", $str, $matches)) {
-            $upperCount = count($matches[0]);
+        elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE])) {
+            $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE];
         }
-
-        // width = Truncate([{Number of Characters} * {Maximum Digit Width} + {5 pixel padding}]/{Maximum Digit Width}*256)/256
-
-        $widths = self::$fontWidths[$fontName] ?? self::$fontWidths['Calibri'];
-        $n = ($len - $wideCount - $upperCount - $dotsCount) * $widths['lower'] +
-            $wideCount * $widths['wide'] +
-            $upperCount * $widths['upper'] +
-            $dotsCount * $widths['dots'] + self::WIDTH_PADDING;
-
-        $k = $fontSize / 11;
+        else {
+            $charWidth = self::DEFAULT_FONT_WIDTH;
+        }
+        $n = $strWidth + $len * $charWidth + self::WIDTH_PADDING;
+        $k = $fontSize / self::DEFAULT_FONT_SIZE * self::$widthFactor;
 
         return round($n * $k, 8);
 

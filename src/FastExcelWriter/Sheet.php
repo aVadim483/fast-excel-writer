@@ -1402,6 +1402,9 @@ class Sheet implements InterfaceSheetWriter
             $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
 
             $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
+            if ($this->autoFilter) {
+                $len += 1;
+            }
 
             if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
                 $this->colAttributes[$colIdx]['width'] = $len;

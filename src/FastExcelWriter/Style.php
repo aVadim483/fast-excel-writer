@@ -9,6 +9,8 @@ namespace avadim\FastExcelWriter;
  */
 class Style
 {
+    public const FORMAT = 'format';
+
     public const FONT               = 'font';
     public const FONT_NAME          = 'font-name';
     public const FONT_STYLE         = 'font-style';

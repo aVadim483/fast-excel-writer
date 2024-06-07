@@ -213,6 +213,8 @@ class Writer
         if (!empty($options['temp_dir'])) {
             $this->setTempDir($options['temp_dir']);
         }
+
+        register_shutdown_function([$this, 'removeFiles']);
     }
 
     /**
@@ -220,14 +222,6 @@ class Writer
      */
     public function __destruct()
     {
-        /* moved to saveToFile()
-        foreach ($this->buffers as $name => $buffer) {
-            if ($buffer) {
-                $buffer->close();
-                $this->buffers[$name] = null;
-            }
-        }
-        */
         $this->removeFiles();
     }
 
@@ -297,37 +291,11 @@ class Writer
     }
 
     /**
-     * @return bool|string
-     */
-    public function _x_makeTempFile($localName = null)
-    {
-        if (!$this->tempDir) {
-            $tempDir = sys_get_temp_dir();
-            $filename = tempnam($tempDir, $this->tempFilePrefix);
-            if (!$filename) {
-                $filename = tempnam(getcwd(), $this->tempFilePrefix);
-            }
-        }
-        else {
-            $filename = tempnam($this->tempDir, $this->tempFilePrefix);
-        }
-        if ($filename) {
-            if ($localName) {
-                $this->tempFiles['zip'][$localName] = $filename;
-            }
-            $this->tempFiles['tmp'][] = $filename;
-        }
-
-        return $filename;
-    }
-
-    /**
-     * @param string|null $key
-     * @param string|null $zipName
+     * @param string $name
      *
-     * @return bool|string
+     * @return false|string
      */
-    public function makeTempFile(?string $key = null, ?string $zipName = null)
+    public function makeTempFileName(string $name)
     {
         if (!$this->tempDir) {
             $tempDir = sys_get_temp_dir();
@@ -338,21 +306,9 @@ class Writer
         else {
             $tempDir = $this->tempDir;
         }
-        $filename = $tempDir . '/' . uniqid($this->tempFilePrefix, true) . '.tmp';
+        $filename = $tempDir . '/' . $name . '.tmp';
         if (touch($filename, time(), time()) && is_writable($filename)) {
-            $filename = realpath($filename);
-            if ($zipName) {
-                $this->tempFiles['zip'][$zipName] = $filename;
-                if (!$key) {
-                    $key = $zipName;
-                }
-            }
-            if ($key) {
-                $this->tempFiles['tmp'][$key] = $filename;
-            }
-            else {
-                $this->tempFiles['tmp'][] = $filename;
-            }
+            return realpath($filename);
         }
         else {
             $error = 'Warning: tempdir ' . $tempDir . ' is not writeable';
@@ -361,8 +317,32 @@ class Writer
             }
             throw new Exception($error);
         }
+    }
+
+    /**
+     * @param string|null $key
+     * @param string|null $zipName
+     *
+     * @return bool|string
+     */
+    public function makeTempFile(?string $key = null, ?string $zipName = null)
+    {
+        $filename = $this->makeTempFileName(uniqid($this->tempFilePrefix, true));
         if (!is_file($filename)) {
             throw new Exception('Cannot create temp file "' . $filename . '"');
+        }
+
+        if ($zipName) {
+            $this->tempFiles['zip'][$zipName] = $filename;
+            if (!$key) {
+                $key = $zipName;
+            }
+        }
+        if ($key) {
+            $this->tempFiles['tmp'][$key] = $filename;
+        }
+        else {
+            $this->tempFiles['tmp'][] = $filename;
         }
 
         return $filename;
@@ -391,8 +371,15 @@ class Writer
     /**
      * @return void
      */
-    protected function removeFiles()
+    public function removeFiles()
     {
+        foreach ($this->buffers as $name => $buffer) {
+            if ($buffer) {
+                $buffer->close();
+                $this->buffers[$name] = null;
+            }
+        }
+
         if (!empty($this->tempFiles['tmp'])) {
             foreach ($this->tempFiles['tmp'] as $tempFile) {
                 if (is_file($tempFile)) {
@@ -874,6 +861,7 @@ class Writer
     {
         $chartWriter = $this->makeChartWriter($this->makeTempFile(null, $entry));
         $chartWriter->writeChartXml($chart);
+        $chartWriter->close();
     }
 
     /**

@@ -116,6 +116,8 @@ final class FastExcelWriterTest extends TestCase
             unlink($testFileName);
         }
 
+        $tempDir = __DIR__ . '/tmp';
+        Excel::setTempDir($tempDir);
         $excel = Excel::create();
         $sheet = $excel->sheet();
 
@@ -143,6 +145,7 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeTo('E9', 'E9');
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->assertCount(0, glob($tempDir . '/*.*'));
         $this->cells = $this->excelReader->readCells();
 
         $this->assertEquals('A1', $this->cells['A1']);

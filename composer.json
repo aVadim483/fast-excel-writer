@@ -9,9 +9,9 @@
         "xls",
         "xlsx",
         "export",
-		"spreadsheet",
-		"ms office",
-		"office 2007"
+        "spreadsheet",
+        "ms office",
+        "office 2007"
     ],
     "type": "library",
     "homepage": "https://github.com/aVadim483/fast-excel-writer",

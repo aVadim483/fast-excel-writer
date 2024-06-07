@@ -1490,10 +1490,10 @@ class Excel implements InterfaceBookWriter
 
         if ($this->writer->saveToFile($fileName, $overWrite, $this->getMetadata())) {
             $this->saved = true;
-            return true;
         }
+        $this->writer->removeFiles();
 
-        return false;
+        return $this->saved;
     }
 
     /**
@@ -1503,7 +1503,7 @@ class Excel implements InterfaceBookWriter
      */
     public function download(string $name = null)
     {
-        $tmpFile = $this->writer->makeTempFile();
+        $tmpFile = $this->writer->makeTempFileName(uniqid('xlsx_writer_'));
         $this->save($tmpFile);
         if (!$name) {
             $name = basename($tmpFile) . '.xlsx';
@@ -1520,6 +1520,7 @@ class Excel implements InterfaceBookWriter
         header('Content-Disposition: attachment; filename="' . $name . '"');
 
         readfile($tmpFile);
+        unlink($tmpFile);
     }
 
     /**

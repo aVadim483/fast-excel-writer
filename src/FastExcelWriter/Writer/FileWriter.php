@@ -42,6 +42,16 @@ class FileWriter
     }
 
     /**
+     *
+     */
+    public function __destruct()
+    {
+        if ($this->buffer || $this->fd) {
+            $this->close();
+        }
+    }
+
+    /**
      * @return string
      */
     public function getFileName(): string
@@ -216,16 +226,6 @@ class FileWriter
                 $this->fd = null;
             }
             $this->close = true;
-        }
-    }
-
-    /**
-     *
-     */
-    public function __destruct()
-    {
-        if ($this->buffer || $this->fd) {
-            $this->close();
         }
     }
 

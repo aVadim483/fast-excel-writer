@@ -1,4 +1,8 @@
-## v.5.2
+## v.5.5
+
+* Support rich text in cells and notes
+
+## v.5.3
 
 * Sheet::writeArray()
 * New option 'temp_prefix' - custom prefix for temporary files

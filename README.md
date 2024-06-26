@@ -50,9 +50,6 @@ Jump To:
 * [Changes in version 5](#changes-in-version-5)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
-* [Row's settings](#rows-settings)
-* [Column's settings](#columns-settings)
-* [Define Named Ranges](#define-named-ranges)
 * [Adding Notes](#adding-notes)
 * [Adding Images](#adding-images)
 * [Workbook](/docs/01-workbook.md)
@@ -64,6 +61,9 @@ Jump To:
   * [Create, select and remove sheet](/docs/02-sheets.md#create-select-and-remove-sheet)
   * [Sheet settings](/docs/02-sheets.md#sheet-settings)
   * [Page settings](/docs/02-sheets.md#page-settings)
+  * [Row's settings](/docs/02-sheets.md#rows-settings)
+  * [Column's settings](/docs/02-sheets.md#columns-settings)
+  * [Define Named Ranges](/docs/02-sheets.md#define-named-ranges)
   * [Freeze Panes and Autofilter](/docs/02-sheets.md#freeze-panes-and-autofilter)
   * [Setting Active Cells](/docs/02-sheets.md#setting-active-cells)
 * [Writing](/docs/03-writing.md)
@@ -74,6 +74,7 @@ Jump To:
   * [Cell Formats](/docs/03-writing.md#cell-formats)
   * [Formulas](/docs/03-writing.md#formulas)
   * [Hyperlinks](/docs/03-writing.md#hyperlinks)
+  * [Using Rich Text](/docs/03-writing.md#using-rich-text)
 * [Styles](/docs/04-styles.md)
   * [Cell Styles](/docs/04-styles.md#cell-styles)
   * [Row Styles](/docs/04-styles.md#row-styles)
@@ -114,7 +115,7 @@ composer require avadim/fast-excel-writer
 
 ## Changes In Version 5
 
-* General is Chart support
+* The general news is Chart support
 
 ## Usage
 
@@ -222,136 +223,6 @@ $excel->save('simple.xlsx');
 ```
 
 
-### Row's settings
-
-You can set row options (styles and height) by the second argument when you use the function ```writeRow()```.
-Note that in this case these styles will only be applied to those cells in the row where data is written
-
-```php
-// Write row data and set height
-$rowOptions = [
-    'fill-color' => '#fffeee',
-    'border' => 'thin',
-    'height' => 28,
-];
-$sheet1->writeRow(['aaa', 'bbb', 'ccc'], $rowOptions);
-```
-Other way with the same result
-
-```php
-$sheet1->writeRow(['aaa', 'bbb', 'ccc', null, 'eee'])
-    ->applyFillColor('#fffeee')
-    ->applyBorder('thin')
-    ->applyRowHeight(28);
-
-```
-You can set row's height or visibility
-
-```php
-// Set height of row 2 to 33
-$sheet1->setRowHeight(2, 33);
-
-// Set height of rows 3,5 and 7 to 33
-$sheet1->setRowHeight([3, 5, 7], 33);
-
-// Set heights of several rows
-$sheet1->setRowHeights([1 => 20, 2 => 33, 3 => 40]);
-
-// Hide row 8
-$sheet1->setRowVisible(8, false);
-
-// Other way
-$sheet1->setRowHidden(8);
-
-// Hide rows 9, 10, 11
-$sheet1->setRowVisible([9, 10, 11], false);
-
-// Show row 10
-$sheet1->setRowVisible(10, true);
-```
-IMPORTANT: You can only use the setRowXX() functions on rows numbered at least as high as the current one.
-See [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
-Therefore, the following code will throw an error "Row number must be greater then written rows"
-
-```php
-$sheet = $excel->sheet();
-// Write row 1
-$sheet->writeRow(['aaa1', 'bbb1', 'ccc1']);
-// Write row 2
-$sheet->writeRow(['aaa2', 'bbb2', 'ccc2']);
-// Try to set height of previous row 1
-$sheet->setRowHeight(1, 33);
-
-```
-
-### Column's settings
-
-Column widths can be set in several ways
-
-```php
-// Set width of column D to 24
-$this->setColWidth('D', 24);
-$this->setColOptions('D', ['width' => 24]);
-// Set auto width
-$this->setColWidth('D', 'auto');
-$this->setColWidthAuto('D');
-$this->setColOptions('D', ['width' => 'auto']);
-
-// Set width of specific columns
-$sheet1->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
-// Set width of columns from 'A'
-$sheet1->setColWidths([10, 20, 30, 40], 24);
-
-$colOptions = [
-    'B' => ['width' => 10], 
-    'C' => ['width' => 'auto'], 
-    'E' => ['width' => 30], 
-    'F' => ['width' => 40],
-];
-$sheet1->setColOptions($colOptions);
-
-```
-You can define a minimal width of columns. Note that the minimum value has higher priority
-```php
-// Set minimum width to 20 
-$this->setColMinWidth('D', 20);
-// The value 10 will not be set because it is less than the minimum value
-$this->setColWidth('D', 10);
-// But width 30 will be set
-$this->setColWidth('D', 30);
-// The column width will be set to the width of the content, but not less than 20
-$this->setColWidthAuto('D');
-```
-
-### Define Named Ranges
-
-FastExcelWriter supports _named ranges_ and does not support _named formulae_.
-A _named ranges_ provides a name reference to a cell or a range of cells.
-All _named ranges_ are added to the workbook so all names must be unique, but you can define _named ranges_ in a sheet or in a workbook.
-
-Also range names must start with a letter or underscore, have no spaces, and be no longer than 255 characters.
-
-```php
-$excel = Excel::create();
-$excel->setFileName($outFileName);
-$sheet = $excel->sheet();
-
-// Named a single cell
-$sheet->addNamedRange('B2', 'cell_name');
-
-// Named range in a sheet
-$sheet->addNamedRange('c2:e3', 'range_name');
-
-// Add named range in a workbook (sheet name required)
-$excel->addNamedRange('Sheet1!A1:F5', 'A1_F5');
-
-// You can define name using applyNamedRange()
-$sheet->writeCell(1000)->applyNamedRange('Value');
-$sheet->writeCell(0.12)->applyNamedRange('Rate');
-// Add the formula using names
-$sheet->writeCell('=Value*Rate');
-
-```
 
 ###  Adding Notes
 
@@ -398,6 +269,15 @@ $sheet1->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
 // This note is visible when the Excel workbook is displayed
 $sheet1->addNote('C8', 'This note is always visible', ['show' => true]);
 ```
+
+Also, you can use rich text in notes
+
+```php
+$richText = new \avadim\FastExcelWriter\RichText('here is <c=f00>red</c> and <c=00f>blue</c> text');
+$sheet1->addNote('C8', $richText);
+```
+
+For more information on using rich text, see here: [Using Rich Text](/docs/03-writing.md#using-rich-text)
 
 ###  Adding Images
 

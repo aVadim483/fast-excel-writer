@@ -1093,13 +1093,14 @@ class Excel implements InterfaceBookWriter
 
     /**
      * @param string $string
+     * @param bool|null $richText
      *
      * @return int
      */
-    public function addSharedString(string $string): int
+    public function addSharedString(string $string, ?bool $richText = false): int
     {
         if (!isset($this->sharedStrings[$string])) {
-            $this->sharedStrings[$string] = ['id' => $this->sharedStringsCount++, 'count' => 1];
+            $this->sharedStrings[$string] = ['id' => $this->sharedStringsCount++, 'count' => 1, 'rich_text' => $richText];
         }
         else {
             $this->sharedStrings[$string]['count']++;

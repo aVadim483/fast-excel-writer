@@ -391,4 +391,48 @@ $cellStyles = [
 ];
 ```
 
+### Using Rich Text
+
+Writing rich text to a cell can be done using RichText instances. Here's an example, which creates the following rich text string:
+
+**ATTENTION!** The product is reserved for <u>5 days</u>
+
+```php
+$richText = new \avadim\FastExcelWriter\RichText();
+$richText->addText('ATTENTION!')->setBold();
+$richText->addText(' The product is reserved for ');
+$richText->addText('5 days')->setUnderline();
+
+$sheet->writeCell($richText);
+$sheet->writeTo('B2', $richText);
+$sheet->writeRow(['plain text', $richText]);
+
+```
+
+You can use the following functions to format rich text:
+* setBold()
+* setItalic()
+* setUnderline()
+* setFont($fontName)
+* setSize($size)
+* setColor($color)
+
+Also, you can use simple tags to format rich text
+
+```php
+$richText = new \avadim\FastExcelWriter\RichText('<b>ATTENTION!</b> The product is reserved for <u>5 days</u>');
+$sheet->writeTo('B2', $richText);
+```
+
+The following tags can be used:
+
+| short tag       | full tag            | example                          |
+|-----------------|---------------------|----------------------------------|
+| \<b\>           | \<bold\>            | \<b\>bold text\</b\>             |
+| \<i\>           | \<italic\>          | \<i\>italic text\</i\>           |
+| \<u\>           | \<underline\>       | \<u\>underline text\</u\>        |
+| \<f=fontName\>  | \<font=fontName\>   | \<f="Times New Roman"\>text\<f\> |
+| \<s=fontSize\>  | \<size=fontSize\>   | \<s=18\>text with size 18\</s\>  |
+| \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
+
 Returns to [README.md](/README.md)

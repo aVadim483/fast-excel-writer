@@ -7,6 +7,7 @@ use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
+use avadim\FastExcelWriter\RichText;
 use avadim\FastExcelWriter\Sheet;
 
 /**
@@ -740,7 +741,12 @@ class Writer
             $result = '';
             foreach ($sharedStrings as $string => $info) {
                 $count += $info['count'];
-                $result .= '<si><t>' . $string . '</t></si>';
+                if (empty($info['rich_text'])) {
+                    $result .= '<si><t>' . $string . '</t></si>';
+                }
+                else {
+                    $result .= '<si>' . $string . '</si>';
+                }
             }
             $xmlSharedStrings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
                 . '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="' . $count . '" uniqueCount="' . $uniqueCount . '">'
@@ -797,9 +803,7 @@ class Writer
             $xmlString .= '<commentList>';
             foreach ($commentList as $comment) {
                 $xmlString .= '<comment ref="' . $comment['cell'] . '" authorId="0"  shapeId="0" xr:uid="{' . Excel::generateUuid() . '}">';
-                $xmlString .= '<text><r>';
-                $xmlString .= '<t xml:space="preserve">' . $comment['text'] . '</t>';
-                $xmlString .= '</r></text>';
+                $xmlString .= '<text>' . $comment['text'] . '</text>';
                 $xmlString .= '</comment>';
             }
             $xmlString .= '</commentList>';
@@ -1291,6 +1295,10 @@ EOD;
             $file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
             $file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
             $file->write('</c>');
+        }
+        elseif ($value instanceof RichText) {
+            $sharedStrIndex = $this->excel->addSharedString($value->outXml(), true);
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
         }
         elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');

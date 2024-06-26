@@ -2221,14 +2221,17 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($value !== null) {
-            if (is_array($value) && !empty($value[0]) && is_string($value[0]) && ($value[0][0] === '=') && count($value) === 2) {
+            if (is_scalar($value)
+                || ($value instanceof RichText)
                 // it's a formula & value ['=A1+B2', 123]
+                || (is_array($value) && !empty($value[0]) && is_string($value[0]) && ($value[0][0] === '=') && count($value) === 2)
+            ) {
+                $this->cells['values'][$rowIdx][$colIdx] = $value;
             }
-            elseif (!is_scalar($value)) {
+            else {
                 $addr = Excel::cellAddress($colIdx + 1, $rowIdx + 1);
                 Exception::throwNew('Value for cell %s must be scalar', $addr);
             }
-            $this->cells['values'][$rowIdx][$colIdx] = $value;
             if ($changeCurrent) {
                 $this->currentRowIdx = $rowIdx;
                 $this->currentColIdx = $colIdx;
@@ -2858,13 +2861,13 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->addNote('A1', $noteText, $noteStyle)
      * $sheet->writeCell($cellValue)->addNote($noteText, $noteStyle)
      *
-     * @param string $cell
+     * @param string|mixed $cell
      * @param string|array|null $comment
      * @param array $noteStyle
      *
      * @return $this
      */
-    public function addNote(string $cell, $comment = null, array $noteStyle = []): Sheet
+    public function addNote($cell, $comment = null, array $noteStyle = []): Sheet
     {
         if (func_num_args() === 1 || (func_num_args() === 2 && is_array($comment)) ) {
             if ( func_num_args() === 2) {
@@ -2901,11 +2904,18 @@ class Sheet implements InterfaceSheetWriter
             if (!empty($noteStyle['height']) && (is_int($noteStyle['height']) || is_float($noteStyle['height']))) {
                 $noteStyle['height'] = number_format($noteStyle['height'], 2, '.', '') . 'pt';
             }
+
+            if ($comment instanceof RichText) {
+                $text = $comment->outXml();
+            }
+            else {
+                $text = (new RichText(htmlspecialchars($comment)))->outXml();
+            }
             $this->notes[$cell] = [
                 'cell' => $cell,
                 'row_index' => $rowIdx,
                 'col_index' => $colIdx,
-                'text' => htmlspecialchars($comment),
+                'text' => $text,
                 'style' => array_merge( [
                     'width' => self::NOTE_DEFAULT_WIDTH,
                     'height' => self::NOTE_DEFAULT_HEIGHT,

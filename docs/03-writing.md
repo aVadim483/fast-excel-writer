@@ -395,7 +395,7 @@ $cellStyles = [
 
 Writing rich text to a cell can be done using RichText instances. Here's an example, which creates the following rich text string:
 
-**ATTENTION!** The product is reserved for <u>5 days</u>
+![img/rich-text.jpg](img/rich-text.jpg)
 
 ```php
 $richText = new \avadim\FastExcelWriter\RichText();

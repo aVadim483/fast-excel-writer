@@ -1116,6 +1116,16 @@ EOD;
     }
 
     /**
+     * @param $value
+     *
+     * @return string
+     */
+    public static function floatStr($value): string
+    {
+        return str_replace(',', '.', (float)$value);
+    }
+
+    /**
      * @param string $tagName
      * @param array $tagOptions
      *

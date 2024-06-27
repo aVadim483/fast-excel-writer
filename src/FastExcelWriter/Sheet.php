@@ -78,11 +78,11 @@ class Sheet implements InterfaceSheetWriter
     public ?string $autoFilter = null;
     public string $absoluteAutoFilter = '';
 
-    // ZERO based
+    // ++ ZERO based
     public array $colFormulas = [];
     public array $colStyles = [];
-
     protected array $colAttributes = [];
+    // --
 
     // minimal with of columns
     protected array $colMinWidths = [];
@@ -91,10 +91,11 @@ class Sheet implements InterfaceSheetWriter
     // special styles by field names
     protected array $fieldStyles = [];
 
-    // ZERO based
+    // ++ ZERO based
     protected array $rowSettings = [];
-
     public array $rowStyles = [];
+    protected array $rowAttributes = [];
+    // --
 
     // ZERO based
     protected array $cells = [];
@@ -105,6 +106,9 @@ class Sheet implements InterfaceSheetWriter
     // Current column index
     protected int $currentColIdx = 0;
 
+    protected int $rowOutlineLevel = 0;
+    protected array $rowOutlineCollapsed = [];
+
     protected int $offsetCol = 0;
 
     protected array $mergeCells = [];
@@ -114,8 +118,6 @@ class Sheet implements InterfaceSheetWriter
     protected int $relationshipId = 0;
 
     protected array $relationships = [];
-
-    //protected array $externalLinks = [];
 
     protected array $lastTouch = [];
     protected int $minRow = 0;
@@ -747,7 +749,7 @@ class Sheet implements InterfaceSheetWriter
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
-                $this->colAttributes[$colIdx]['hidden'] = (int)$val;
+                $this->_setColAttributes($colIdx, ['hidden' => (int)$val]);
             }
         }
 
@@ -788,13 +790,11 @@ class Sheet implements InterfaceSheetWriter
                         if ($min) {
                             $this->colMinWidths[$colIdx] = $width;
                             if (!isset($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $width) {
-                                $this->colAttributes[$colIdx]['width'] = $width;
+                                $this->_setColAttributes($colIdx, ['width' => $width, 'customWidth' => '1']);
                             }
                         }
                         elseif (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $width) {
-                            $this->colAttributes[$colIdx]['width'] = $width;
-                            $this->colAttributes[$colIdx]['min'] = $colIdx + 1;
-                            $this->colAttributes[$colIdx]['max'] = $colIdx + 1;
+                            $this->_setColAttributes($colIdx, ['width' => $width, 'customWidth' => '1']);
                         }
                     }
                 }
@@ -875,6 +875,29 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param int|string|array $col Column number or column letter (or array of these)
+     * @param int $outlineLevel
+     *
+     * @return $this
+     */
+    public function setColOutlineLevel($col, int $outlineLevel): Sheet
+    {
+        $colIndexes = Excel::colIndexRange($col);
+        foreach($colIndexes as $colIdx) {
+            if ($colIdx >= 0) {
+                $attr = ['outlineLevel' => $outlineLevel];
+                if (!isset($this->colAttributes[$colIdx]['width'])) {
+                    $attr['width'] = '8.83984375';
+                }
+                $this->_setColAttributes($colIdx, $attr);
+            }
+        }
+
+        return $this;
+
+    }
+
+    /**
      * @return array
      */
     public function getColAttributes(): array
@@ -891,15 +914,14 @@ class Sheet implements InterfaceSheetWriter
                         $result[$colIdx]['max'] = $colIdx + 1;
                     }
                     if (isset($attributes['width'])) {
-                        $result[$colIdx]['width'] = number_format($attributes['width'], 6, '.', '');
-                        $result[$colIdx]['customWidth'] = '1';
+                        $result[$colIdx]['width'] = number_format($attributes['width'], 8, '.', '');
                     }
-                    if (isset($attributes['hidden'])) {
+                    if (!empty($attributes['hidden'])) {
                         $result[$colIdx]['hidden'] = '1';
                     }
                 }
             }
-            ksort($result);
+            //ksort($result);
         }
 
         return $result;
@@ -913,7 +935,13 @@ class Sheet implements InterfaceSheetWriter
      */
     public function _setColAttributes(int $colIdx, array $settings)
     {
-        $this->colAttributes[$colIdx] = $settings;
+        if (!isset($this->colAttributes[$colIdx]['min'])) {
+            $this->colAttributes[$colIdx]['min'] = $colIdx + 1;
+            $this->colAttributes[$colIdx]['max'] = $colIdx + 1;
+        }
+        foreach ($settings as $key => $val) {
+            $this->colAttributes[$colIdx][$key] = $val;
+        }
     }
 
     /**
@@ -1051,22 +1079,29 @@ class Sheet implements InterfaceSheetWriter
         return $this;
     }
 
+    /**
+     * @param $rowNum
+     * @param $key
+     * @param $val
+     *
+     * @return void
+     */
     protected function _setRowSettings($rowNum, $key, $val)
     {
         if ($rowNum <= $this->rowCountWritten) {
-            ExceptionAddress::throwNew('Row number must be greater then written rows');
+            ExceptionAddress::throwNew('Row number must be greater than written rows');
         }
         $rowIdx = (int)$rowNum - 1;
-        $this->rowSettings[$rowIdx][$key] = $val;
-        /*
-        if ($key === 'height' || $key === 'ht') {
-            $cellAddress = [
-                'row_idx' => $rowIdx,
-                'col_idx' => 0,
-            ];
-            $this->_setCellData($cellAddress, null, ['height' => $val], true, true);
+        if ($key === 'height') {
+            $this->rowAttributes[$rowIdx]['customHeight'] = 1;
+            $this->rowAttributes[$rowIdx]['ht'] = $val;
         }
-        */
+        elseif ($key === 'hidden' || $key === 'outlineLevel' || $key === 'collapsed') {
+            $this->rowAttributes[$rowIdx][$key] = $val;
+        }
+        else {
+            $this->rowSettings[$rowIdx][$key] = $val;
+        }
     }
 
     /**
@@ -1085,10 +1120,10 @@ class Sheet implements InterfaceSheetWriter
             }
         }
         elseif (is_numeric($rowNum)) {
-            $this->_setRowSettings($rowNum, 'height', str_replace(',', '.', (float)$height));
+            $this->_setRowSettings($rowNum, 'height', Writer::floatStr($height));
         }
         else {
-            $address = $this->_parseAddress($rowNum);
+            $address = $this->_parseAddress($rowNum, null, true);
             for ($row = $address['rowNum1']; $row <= $address['rowNum2']; $row++) {
                 $this->setRowHeight($row, $height);
             }
@@ -1131,7 +1166,7 @@ class Sheet implements InterfaceSheetWriter
             $this->_setRowSettings($rowNum, 'hidden', $visible ? 0 : 1);
         }
         else {
-            $address = $this->_parseAddress($rowNum);
+            $address = $this->_parseAddress($rowNum, null, true);
             for ($row = $address['rowNum1']; $row <= $address['rowNum2']; $row++) {
                 $this->setRowVisible($row, $visible);
             }
@@ -1151,6 +1186,79 @@ class Sheet implements InterfaceSheetWriter
     {
 
         return $this->setRowVisible($rowNum, false);
+    }
+
+    /**
+     * setRowOutlineLevel(5, 1)
+     * setRowOutlineLevel([5, 6, 7], 1)
+     * setRowOutlineLevel('5:7', 1)
+     *
+     * @param $rowNum
+     * @param int $outlineLevel
+     * @param bool|null $collapsed
+     *
+     * @return $this
+     */
+    public function setRowOutlineLevel($rowNum, int $outlineLevel, ?bool $collapsed = null): Sheet
+    {
+        if (is_array($rowNum)) {
+            foreach ($rowNum as $row) {
+                $this->setRowOutlineLevel($row, $outlineLevel, $collapsed);
+            }
+        }
+        elseif (is_numeric($rowNum)) {
+            $this->_setRowSettings($rowNum, 'outlineLevel', $outlineLevel);
+            if ($collapsed !== null && !isset($this->rowOutlineCollapsed[$rowNum])) {
+                $this->rowOutlineCollapsed[$outlineLevel] = $collapsed;
+            }
+            if (!empty($this->rowOutlineCollapsed[$outlineLevel])) {
+                $this->_setRowSettings($rowNum, 'hidden', 1);
+            }
+        }
+        else {
+            $address = $this->_parseAddress($rowNum, null, true);
+            for ($row = $address['rowNum1']; $row <= $address['rowNum2']; $row++) {
+                $this->setRowOutlineLevel($row, $outlineLevel, $collapsed);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function beginOutlineLevel(?bool $collapsed = false): Sheet
+    {
+        $this->rowOutlineLevel++;
+        $this->rowOutlineCollapsed[$this->rowOutlineLevel] = $collapsed;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function endOutlineLevel(): Sheet
+    {
+        if ($this->rowOutlineLevel > 0) {
+            $collapsed = !empty($this->rowOutlineCollapsed[$this->rowOutlineLevel]);
+            if ($collapsed) {
+                // collapse the next row
+                $this->_setRowSettings($this->currentRowIdx + 2, 'collapsed', 1);
+            }
+            $this->rowOutlineLevel--;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOutlineLevel(): int
+    {
+        return $this->rowOutlineLevel;
     }
 
     /**
@@ -1201,6 +1309,12 @@ class Sheet implements InterfaceSheetWriter
         return $this;
     }
 
+    /**
+     * @param $arg1
+     * @param array|null $arg2
+     *
+     * @return $this
+     */
     public function setRowStyles($arg1, array $arg2 = null): Sheet
     {
         return $this->setRowOptions($arg1, $arg2);
@@ -1234,19 +1348,23 @@ class Sheet implements InterfaceSheetWriter
             $_styleCache = [];
         }
 
-        if (isset($this->rowSettings[$this->rowCountWritten])) {
-            $rowOptions = array_replace($this->rowSettings[$this->rowCountWritten], $rowOptions);
+        $rowIdx = $this->rowCountWritten;
+        if (isset($this->rowSettings[$rowIdx])) {
+            $rowOptions = array_replace($this->rowSettings[$rowIdx], $rowOptions);
         }
-        $rowAttr = '';
+
+        $rowAttributes = $this->rowAttributes[$rowIdx] ?? [];
         if (!empty($rowOptions['height'])) {
-            $rowAttr .= ' customHeight="1" ht="' . (float)$rowOptions['height'] . '" ';
+            $rowAttributes['customHeight'] = 1;
+            $rowAttributes['ht'] = Writer::floatStr($rowOptions['height']);
         }
         if (!empty($rowOptions['hidden'])) {
-            $rowAttr .= ' hidden="1" ';
+            $rowAttributes['hidden'] = 1;
         }
         if (!empty($rowOptions['collapsed'])) {
-            $rowAttr .= ' collapsed="1" ';
+            $rowAttributes['collapsed'] = 1;
         }
+        $rowAttrStr = Writer::tagAttributes($rowAttributes);
 
         // add auto formulas of columns
         if ($this->colFormulas && $row) {
@@ -1258,7 +1376,7 @@ class Sheet implements InterfaceSheetWriter
             ksort($row);
         }
 
-        if ($row || ($row === [null] && $rowAttr)) {
+        if ($row || ($row === [null] && $rowAttrStr)) {
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
@@ -1274,8 +1392,7 @@ class Sheet implements InterfaceSheetWriter
                 }
             }
             if ($row && $row !== [null]) {
-                $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '>');
-                $rowIdx = $this->rowCountWritten;
+                $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttrStr . '>');
                 foreach ($row as $colIdx => $cellValue) {
                     if (!isset($this->colStylesSummary[$colIdx])) {
                         if (!isset($this->colStyles[$colIdx])) {
@@ -1381,8 +1498,8 @@ class Sheet implements InterfaceSheetWriter
                 }
                 $this->fileWriter->write('</row>');
             }
-            elseif ($rowAttr) {
-                $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttr . '/>');
+            elseif ($rowAttrStr) {
+                $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttrStr . '/>');
             }
         }
         $this->rowCountWritten++;
@@ -1407,7 +1524,7 @@ class Sheet implements InterfaceSheetWriter
             }
 
             if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
-                $this->colAttributes[$colIdx]['width'] = $len;
+                $this->_setColAttributes($colIdx, ['width' => $len]);
             }
         }
     }
@@ -1659,7 +1776,7 @@ class Sheet implements InterfaceSheetWriter
             ExceptionAddress::throwNew('Wrong cell address %s', print_r($address, 1));
         }
         elseif ($address['row'] <= $this->rowCountWritten) {
-            ExceptionAddress::throwNew('Row number must be greater then written rows');
+            ExceptionAddress::throwNew('Row number must be greater than written rows');
         }
         else {
             $cellAddress = $address;
@@ -1880,6 +1997,10 @@ class Sheet implements InterfaceSheetWriter
                         $styles = [];
                     }
                     $rowSettings = $this->rowSettings[$rowIdx] ?? [];
+                    if ($this->rowOutlineLevel) {
+                        $this->setRowOutlineLevel($this->rowCountWritten + 1, $this->rowOutlineLevel);
+                    }
+
                     if ($values || $styles) {
                         ksort($values);
                         ksort($styles);
@@ -1952,6 +2073,10 @@ class Sheet implements InterfaceSheetWriter
             if (isset($rowStyle['options']['height'])) {
                 $this->setRowHeight($this->currentRowIdx + 1, $rowStyle['options']['height']);
             }
+        }
+
+        if ($this->rowOutlineLevel) {
+            $this->setRowOutlineLevel($this->currentRowIdx + 1, $this->rowOutlineLevel);
         }
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
@@ -2095,7 +2220,7 @@ class Sheet implements InterfaceSheetWriter
         }
         $dimension = Excel::rangeDimension($cellAddress, true);
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
-            throw new Exception("Cannot make area from $cellAddress (row number must be greater then written rows)");
+            throw new Exception("Cannot make area from $cellAddress (row number must be greater than written rows)");
         }
         $maxCell = Excel::cellAddress(Excel::MAX_ROW, Excel::MAX_COL);
 
@@ -2117,7 +2242,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return array
      */
-    protected function _parseAddress($cellAddress): ?array
+    protected function _parseAddress($cellAddress, ?bool $colOnly = false, ?bool $rowOnly = false): ?array
     {
         $result = ['row' => null, 'col' => null];
         if (is_array($cellAddress)) {
@@ -2135,7 +2260,15 @@ class Sheet implements InterfaceSheetWriter
             }
         }
         elseif (is_string($cellAddress)) {
-            $result = $this->_rangeDimension($cellAddress);
+            if ($rowOnly && preg_match('/^(\d+)(:(\d+))?$/', $cellAddress, $m)) {
+                $result['rowNum1'] = (int)$m[1];
+                $result['rowNum2'] = !empty($m[3]) ? (int)$m[3] : $result['rowNum1'];
+                $result['rowIndex'] = $result['rowNum1'] - 1;
+                $result['height'] = $result['rowNum2'] - $result['rowNum1'] + 1;
+            }
+            else {
+                $result = $this->_rangeDimension($cellAddress);
+            }
         }
 
         return $result;
@@ -2205,7 +2338,7 @@ class Sheet implements InterfaceSheetWriter
                     ExceptionAddress::throwNew('Wrong cell address %s', print_r($cellAddress, 1));
                 }
                 if ($row <= $this->rowCountWritten /* $this->currentRowIdx */) {
-                    ExceptionAddress::throwNew('Row number must be greater then written rows');
+                    ExceptionAddress::throwNew('Row number must be greater than written rows');
                 }
                 $rowIdx = $row - 1;
                 $colIdx = $col - 1;
@@ -2332,7 +2465,7 @@ class Sheet implements InterfaceSheetWriter
     {
         $dimension = $this->_rangeDimension($cellAddress);
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
-            throw new Exception('Row number must be greater then written rows');
+            throw new Exception('Row number must be greater than written rows');
         }
         $style = Style::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
@@ -2539,11 +2672,15 @@ class Sheet implements InterfaceSheetWriter
             $this->_writeCurrentRow();
         }
 
-        if ($this->rowSettings) {
-            $maxRowSettings = max(array_keys($this->rowSettings));
+        if ($this->rowSettings || $this->rowAttributes) {
+            $maxRowSettings = max(array_merge(array_keys($this->rowSettings), array_keys($this->rowAttributes)));
             for ($rowIdx = $this->rowCountWritten; $rowIdx <= $maxRowSettings; $rowIdx++) {
                 $this->_writeRow($this->excel->getWriter(), [null], [], []);
             }
+        }
+
+        for ($level = $this->rowOutlineLevel; $this->rowOutlineLevel > 0; $level--, $this->rowOutlineLevel--) {
+            $this->_writeRow($this->excel->getWriter(), [null], ['outlineLevel' => $level], []);
         }
 
         $this->fileWriter->flush(true);
@@ -2778,7 +2915,7 @@ class Sheet implements InterfaceSheetWriter
     {
         $dimension = self::_rangeDimension($range);
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
-            throw new Exception('Row number must be greater then written rows');
+            throw new Exception('Row number must be greater than written rows');
         }
 
         $this->lastTouch['area'] = [
@@ -3655,6 +3792,18 @@ class Sheet implements InterfaceSheetWriter
     public function applyRowHeight(float $height): Sheet
     {
         $this->setRowHeight($this->currentRowIdx + 1, $height);
+
+        return $this;
+    }
+
+    /**
+     * @param int $outlineLevel
+     *
+     * @return $this
+     */
+    public function applyRowOutlineLevel(int $outlineLevel): Sheet
+    {
+        $this->setRowOutlineLevel($this->currentRowIdx + 1, $outlineLevel);
 
         return $this;
     }

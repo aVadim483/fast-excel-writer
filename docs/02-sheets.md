@@ -123,7 +123,7 @@ $sheet1->setRowVisible(10, true);
 ```
 IMPORTANT: You can only use the setRowXX() functions on rows numbered at least as high as the current one.
 See [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
-Therefore, the following code will throw an error "Row number must be greater then written rows"
+Therefore, the following code will throw an error "Row number must be greater than written rows"
 
 ```php
 $sheet = $excel->sheet();
@@ -173,6 +173,87 @@ $this->setColWidth('D', 10);
 $this->setColWidth('D', 30);
 // The column width will be set to the width of the content, but not less than 20
 $this->setColWidthAuto('D');
+```
+### Group/outline rows and columns
+
+Set group level for the specified rows
+
+```php
+$sheet = $excel->sheet();
+
+// the first level
+$sheet->writeRow($rowData1)->applyRowOutlineLevel(1);
+$sheet->writeRow($rowData2)->applyRowOutlineLevel(1);
+
+// the second level
+$sheet->writeRow($rowData3)->applyRowOutlineLevel(2);
+$sheet->writeRow($rowData4)->applyRowOutlineLevel(2);
+
+// back to the first level
+$sheet->writeRow($rowData5)->applyRowOutlineLevel(1);
+
+// write rows without grouping
+$sheet->writeRow($rowData6);
+$sheet->writeRow($rowData7);
+```
+
+You can set up grouping for future rows.
+
+```php
+// set level 1 for row 4
+$sheet->setRowOutlineLevel(4, 1);
+
+// set level 1 for rows 5, 6, 7
+$sheet->setRowOutlineLevel([5, 6, 7], 1);
+
+// set level 1 for rows from 9 to 15
+$sheet->setRowOutlineLevel('9:15', 1);
+// set level 2 for rows from 11 to 13
+$sheet->setRowOutlineLevel('11:13', 2);
+```
+
+You can set up grouping for a sequence of rows.
+
+```php
+$sheet = $excel->sheet();
+
+// Writing rows without grouping
+$sheet->writeRow([...]);
+$sheet->writeRow([...]);
+
+// Increase group level (set level to 1)
+$sheet->beginOutlineLevel();
+$sheet->writeRow([...]);
+$sheet->writeRow([...]);
+
+// Increase group level again (set level to 2) with collapsing
+$sheet->beginOutlineLevel(true);
+$sheet->writeRow([...]);
+$sheet
+    ->writeCell('...')
+    ->writeCell('...')
+    ->writeCell('...')
+    ->nextRow();
+$sheet->writeRow([...]);
+
+// Decrease group level (back to 1)
+$sheet->endOutlineLevel();
+$sheet->writeRow([...]);
+
+// Set zero level
+$sheet->endOutlineLevel();
+```
+
+Set group level for the specified columns
+
+```php
+$sheet->setColOutlineLevel('B', 1);
+$sheet->setColOutlineLevel('C', 1);
+$sheet->setColOutlineLevel('D', 1);
+
+$sheet->setColOutlineLevel(['F', 'g', 'h', 'i', 'J'], 1);
+$sheet->setColOutlineLevel('g:i', 2);
+
 ```
 
 ### Define Named Ranges

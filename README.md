@@ -63,6 +63,7 @@ Jump To:
   * [Page settings](/docs/02-sheets.md#page-settings)
   * [Row's settings](/docs/02-sheets.md#rows-settings)
   * [Column's settings](/docs/02-sheets.md#columns-settings)
+  * [Group/outline rows and columns](/docs/02-sheets.md#groupoutline-rows-and-columns)
   * [Define Named Ranges](/docs/02-sheets.md#define-named-ranges)
   * [Freeze Panes and Autofilter](/docs/02-sheets.md#freeze-panes-and-autofilter)
   * [Setting Active Cells](/docs/02-sheets.md#setting-active-cells)

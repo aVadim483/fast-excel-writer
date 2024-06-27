@@ -760,8 +760,8 @@ class Excel implements InterfaceBookWriter
 
                     return array_merge(...$columns);
                 }
-                elseif (strpos($colKeys, '-')) {
-                    [$num1, $num2] = explode('-', $colKeys);
+                elseif (($p1 = strpos($colKeys, '-')) || ($p2 = strpos($colKeys, ':'))) {
+                    [$num1, $num2] = $p1 ? explode('-', $colKeys) : explode(':', $colKeys);
                     $columns = [];
                     for ($colNum = self::colNumber($num1); $colNum <= self::colNumber($num2); $colNum++) {
                         $columns[] = self::colLetter($colNum);

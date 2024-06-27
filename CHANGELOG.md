@@ -1,6 +1,7 @@
 ## v.5.5
 
-* Support rich text in cells and notes
+* Support rich text in cells and notes\
+* Group/outline columns and rows
 
 ## v.5.3
 

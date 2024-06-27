@@ -76,7 +76,7 @@ class Area
             $dimension = Excel::rangeDimension($range, true);
         }
         if ($dimension['rowNum1'] <= $sheet->rowCountWritten) {
-            throw new Exception("Cannot make area range $range (row number must be greater then written rows)");
+            throw new Exception("Cannot make area range $range (row number must be greater than written rows)");
         }
 
         $this->sheet = $sheet;

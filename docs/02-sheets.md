@@ -142,12 +142,12 @@ Column widths can be set in several ways
 
 ```php
 // Set width of column D to 24
-$this->setColWidth('D', 24);
-$this->setColOptions('D', ['width' => 24]);
+$sheet->setColWidth('D', 24);
+$sheet->setColOptions('D', ['width' => 24]);
 // Set auto width
-$this->setColWidth('D', 'auto');
-$this->setColWidthAuto('D');
-$this->setColOptions('D', ['width' => 'auto']);
+$sheet->setColWidth('D', 'auto');
+$sheet->setColWidthAuto('D');
+$sheet->setColOptions('D', ['width' => 'auto']);
 
 // Set width of specific columns
 $sheet1->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);

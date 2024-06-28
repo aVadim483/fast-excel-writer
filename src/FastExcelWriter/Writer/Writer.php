@@ -1069,6 +1069,11 @@ EOD;
 
         $fileWriter->write('</sheetViews>');
 
+        $sheetFormatPr = $sheet->getSheetFormatPr();
+        if ($sheetFormatPr) {
+            $fileWriter->write('<sheetFormatPr ') . self::tagAttributes($sheetFormatPr) . '/>';
+        }
+
         $cols = $sheet->getColAttributes();
         if ($cols) {
             $fileWriter->write('<cols>');

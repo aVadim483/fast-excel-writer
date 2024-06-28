@@ -140,6 +140,8 @@ class Sheet implements InterfaceSheetWriter
 
     protected array $sheetViews = [];
 
+    protected array $sheetFormatPr = [];
+
     // bottom sheet nodes
     protected array $bottomNodesOptions = [];
 
@@ -3736,6 +3738,11 @@ class Sheet implements InterfaceSheetWriter
         }
 
         return $result;
+    }
+
+    public function getSheetFormatPr(): array
+    {
+        return $this->sheetFormatPr;
     }
 
     /**

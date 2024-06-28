@@ -1062,8 +1062,10 @@ EOD;
 
         $sheetViews = $sheet->getSheetViews();
         $fileWriter->write('<sheetView' . self::tagAttributes($sheetViews[0]['_attr']) . '>');
-        foreach ($sheetViews[0]['_items'] as $item) {
-            $fileWriter->write('<' . $item['_tag'] . self::tagAttributes($item['_attr']) . '/>');
+        if (!empty($sheetViews[0]['_items'])) {
+            foreach ($sheetViews[0]['_items'] as $item) {
+                $fileWriter->write('<' . $item['_tag'] . self::tagAttributes($item['_attr']) . '/>');
+            }
         }
         $fileWriter->write('</sheetView>');
 

@@ -1071,7 +1071,7 @@ EOD;
 
         $sheetFormatPr = $sheet->getSheetFormatPr();
         if ($sheetFormatPr) {
-            $fileWriter->write('<sheetFormatPr ') . self::tagAttributes($sheetFormatPr) . '/>';
+            $fileWriter->write('<sheetFormatPr ' . self::tagAttributes($sheetFormatPr) . '/>');
         }
 
         $cols = $sheet->getColAttributes();

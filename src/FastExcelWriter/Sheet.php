@@ -36,6 +36,9 @@ class Sheet implements InterfaceSheetWriter
     /** @var int Index of the sheet */
     public int $index;
 
+    /** @var int Local ID of the sheet */
+    public int $localSheetId;
+
     /** @var string Key of the sheet */
     public string $key;
 
@@ -145,6 +148,10 @@ class Sheet implements InterfaceSheetWriter
     // bottom sheet nodes
     protected array $bottomNodesOptions = [];
 
+    protected array $printAreas = [];
+    protected string $printTopRows = '';
+    protected string $printLeftColumns = '';
+
 
     /**
      * Sheet constructor
@@ -155,6 +162,7 @@ class Sheet implements InterfaceSheetWriter
     {
         $this->setName($sheetName);
         $this->bottomNodesOptions = [
+            'printOptions' => [],
             'pageMargins' => [
                 'left' => '0.5',
                 'right' => '0.5',
@@ -2312,6 +2320,40 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param string|array $range1
+     * @param string|array $range2
+     *
+     * @return bool
+     */
+    protected function _checkIntersection($range1, $range2): bool
+    {
+        $dim1 = isset($range1['rowNum1'], $range1['colNum1']) ? $range1 : $this->_rangeDimension($range1);
+        $dim2 = isset($range2['rowNum1'], $range2['colNum1']) ? $range2 : $this->_rangeDimension($range2);
+        if (
+            ((($dim1['rowNum1'] >= $dim2['rowNum1']) && ($dim1['rowNum1'] <= $dim2['rowNum2']))
+                || (($dim1['rowNum2'] >= $dim2['rowNum1']) && ($dim1['rowNum2'] <= $dim2['rowNum2'])))
+            && ((($dim1['colNum1'] >= $dim2['colNum1']) && ($dim1['colNum1'] <= $dim2['colNum2']))
+                || (($dim1['colNum2'] >= $dim2['colNum1']) && ($dim1['colNum2'] <= $dim2['colNum2'])))
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string|array $range
+     *
+     * @return string
+     */
+    protected function _fullRangeAddress($range): string
+    {
+        $dim = isset($range['range']) ? $range : $this->_rangeDimension($range);
+
+        return "'" . $this->sanitizedSheetName . "'!" . $dim['range'];
+    }
+
+    /**
      * @param string|array|null $cellAddress
      * @param mixed $value
      * @param mixed|null $styles
@@ -2927,7 +2969,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function withRange($range): Sheet
     {
-        $dimension = self::_rangeDimension($range);
+        $dimension = $this->_rangeDimension($range);
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater than written rows');
         }
@@ -2945,6 +2987,7 @@ class Sheet implements InterfaceSheetWriter
 
     /**
      * Define named range
+     * addNamedRange('B3:C5', 'Demo')
      *
      * @param string $range
      * @param string $name
@@ -2954,7 +2997,7 @@ class Sheet implements InterfaceSheetWriter
     public function addNamedRange(string $range, string $name): Sheet
     {
         if ($range) {
-            $dimension = self::_rangeDimension($range);
+            $dimension = $this->_rangeDimension($range);
         }
         else {
             $cell1 = Excel::cellAddress($this->lastTouch['area']['row_idx1'] + 1, $this->lastTouch['area']['col_idx1'] + 1, true);
@@ -2990,6 +3033,8 @@ class Sheet implements InterfaceSheetWriter
             $this->namedRanges[] = ['range' => $dimension['absAddress'], 'name' => $name];
             $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
             $this->_setDimension($dimension['rowNum2'], $dimension['colNum2']);
+
+            $this->excel->addDefinedName($name, $this->_fullRangeAddress($dimension));
         }
 
         return $this;
@@ -3030,7 +3075,7 @@ class Sheet implements InterfaceSheetWriter
             $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
         }
         else {
-            $dimension = self::_rangeDimension($cell);
+            $dimension = $this->_rangeDimension($cell);
             $cell = $dimension['cell1'];
             $rowIdx = $dimension['rowIndex'];
             $colIdx = $dimension['colIndex'];
@@ -3130,7 +3175,7 @@ class Sheet implements InterfaceSheetWriter
             $cell = Excel::cellAddress($rowIdx + 1, $colIdx + 1);
         }
         else {
-            $dimension = self::_rangeDimension($cell);
+            $dimension = $this->_rangeDimension($cell);
             $cell = $dimension['cell1'];
             $rowIdx = $dimension['rowIndex'];
             $colIdx = $dimension['colIndex'];
@@ -3666,6 +3711,107 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param string $range
+     *
+     * @return $this
+     */
+    public function setPrintArea(string $range): Sheet
+    {
+        if (strpos($range, ',')) {
+            $ranges = explode(',', $range);
+        }
+        elseif (strpos($range, ';')) {
+            $ranges = explode(';', $range);
+        }
+        else {
+            $ranges = [$range];
+        }
+        $address = '';
+        foreach ($ranges as $range) {
+            $dimension = $this->_rangeDimension($range);
+            // checking intersections
+            foreach ($this->printAreas as $printArea) {
+                if ($this->_checkIntersection($dimension, $printArea)) {
+                    throw new Exception('Print areas should not overlap (' . $printArea['localRange'] . ' & ' . $dimension['localRange'] . ')');
+                }
+            }
+            $this->printAreas[] = $dimension;
+            if ($address) {
+                $address .= ',';
+            }
+            $address .= $this->_fullRangeAddress($dimension);
+        }
+        $this->excel->addDefinedName('_xlnm.Print_Area', $address, ['localSheetId' => $this->localSheetId]);
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $rowsAtTop
+     * @param string|null $colsAtLeft
+     *
+     * @return $this
+     */
+    public function setPrintTitles(?string $rowsAtTop, ?string $colsAtLeft = null): Sheet
+    {
+        $rowsTitle = $colsTitle = null;
+        if ($rowsAtTop && preg_match('/(\d+)(:(\d+))?/', $rowsAtTop, $m)) {
+            $rowsTitle = "'" . $this->sanitizedSheetName . "'!" . (empty($m[3]) ? '$' . $m[1] . ':$' . $m[1] : '$' . $m[1] . ':$' . $m[3]);
+        }
+        if ($colsAtLeft && preg_match('/([A-Z]+)(:([A-Z]+))?/', strtoupper($colsAtLeft), $m)) {
+            $colsTitle = "'" . $this->sanitizedSheetName . "'!" . (empty($m[3]) ? '$' . $m[1] . ':$' . $m[1] : '$' . $m[1] . ':$' . $m[3]);
+        }
+        if ($rowsTitle || $colsTitle) {
+            $address = '';
+            if ($colsTitle) {
+                $address = $colsTitle;
+            }
+            if ($rowsTitle) {
+                $address .= ($address ? ',' : '') . $rowsTitle;
+            }
+            $this->excel->addDefinedName('_xlnm.Print_Titles', $address, ['localSheetId' => $this->localSheetId]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $range
+     *
+     * @return $this
+     */
+    public function setPrintTopRows(string $range): Sheet
+    {
+        $this->printTopRows = $range;
+
+        return $this->setPrintTitles($this->printTopRows, $this->printLeftColumns);
+    }
+
+    /**
+     * @param string $range
+     *
+     * @return $this
+     */
+    public function setPrintLeftColumns(string $range): Sheet
+    {
+        $this->printLeftColumns = $range;
+
+        return $this->setPrintTitles($this->printTopRows, $this->printLeftColumns);
+    }
+
+    /**
+     * @param bool $bool
+     *
+     * @return $this
+     */
+    public function setPrintGridlines(bool $bool): Sheet
+    {
+        $this->setBottomNodeOption('printOptions', 'gridLines', $bool ? '1' : '0');
+
+        return $this;
+    }
+
+    /**
      * @return array|array[]
      */
     public function getSheetViews(): array
@@ -3779,6 +3925,7 @@ class Sheet implements InterfaceSheetWriter
     {
         // need specified order for some nodes
         $order = [
+            'printOptions',
             'pageMargins',
             'pageSetup',
             'drawing',

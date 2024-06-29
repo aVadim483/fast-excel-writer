@@ -67,6 +67,7 @@ Jump To:
   * [Define Named Ranges](/docs/02-sheets.md#define-named-ranges)
   * [Freeze Panes and Autofilter](/docs/02-sheets.md#freeze-panes-and-autofilter)
   * [Setting Active Cells](/docs/02-sheets.md#setting-active-cells)
+  * [Print Settings](/docs/02-sheets.md#print-settings)
 * [Writing](/docs/03-writing.md)
   * [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
   * [Direct Writing To Cells](/docs/03-writing.md#direct-writing-to-cells)

@@ -286,7 +286,16 @@ $sheet->writeCell('=Value*Rate');
 
 ```
 
-### Setting Active Cells
+### Setting Active Sheet and Cells
+
+You can select active (default) sheet in workbook
+
+```php
+// Set active (default) sheet by case-insensitive name
+$excel->setActiveSheet($name);
+```
+
+To select active cell on specified sheet use the following code:
 
 ```php
 // Selecting one active cell
@@ -294,6 +303,32 @@ $sheet1->setActiveCell('B2');
 
 // Selecting a range of cells
 $sheet1->setActiveCell('B2:C3');
+```
+
+### Print settings
+
+Specify printing area
+
+```php
+$sheet->setPrintArea('A2:F3,A8:F10');
+```
+
+To repeat specific rows/columns at top/left of a printing page, use the following code:
+
+```php
+$sheet->setPrintTopRows('1')->setPrintLeftColumns('A');
+```
+
+The following code is an example of how to repeat row 1 to 5 on each printed page:
+
+```php
+$sheet->setPrintTopRows('1:5');
+```
+
+To show/hide gridlines when printing, use the following code:
+
+```php
+$sheet->setPrintGridlines(true);
 ```
 
 Returns to [README.md](/README.md)

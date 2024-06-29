@@ -1700,25 +1700,18 @@ EOD;
         $xmlText .= '</bookViews>';
 
         $xmlText .= '<sheets>';
-        $definedNames = '';
-        $i = 0;
         foreach ($sheets as $sheet) {
             $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
-            if ($sheet->absoluteAutoFilter) {
-                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
-                $definedNames .= '<definedName name="_xlnm._FilterDatabase" localSheetId="' . $i . '" hidden="1">\'' . $sheet->sanitizedSheetName . '\'!' . $filterRange . '</definedName>';
-            }
-            $i++;
         }
         $xmlText .= '</sheets>';
-        foreach ($sheets as $sheet) {
-            foreach ($sheet->getNamedRanges() as $range) {
-                $definedNames .= '<definedName name="' . self::xmlSpecialChars($range['name']) . '">\'' . $sheet->sanitizedSheetName . '\'!' . $range['range'] . '</definedName>';
-            }
-        }
 
+        $definedNames = $excel->getDefinedNames();
         if ($definedNames) {
-            $xmlText .= '<definedNames>' . $definedNames . '</definedNames>';
+            $xmlText .= '<definedNames>';
+            foreach ($definedNames as $item) {
+                $xmlText .= '<definedName ' . self::tagAttributes($item['_attr']) . '>' . $item['_value'] . '</definedName>';
+            }
+            $xmlText .= '</definedNames>';
         }
         else {
             $xmlText .= '<definedNames/>';

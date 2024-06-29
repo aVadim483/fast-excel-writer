@@ -1,6 +1,10 @@
-## New
-Sheet::isName($name): bool -- Case-insensitive name checking
+## v.5.6
 Excel::setActiveSheet($name): Excel -- Set active (default) sheet by case-insensitive name
+Sheet::isName($name): bool -- Case-insensitive name checking
+Sheet::setPrintArea($range): Sheet
+Sheet::setPrintTopRows($rows): Sheet
+Sheet::setPrintLeftColumns($cols): Sheet
+Sheet::setPrintGridlines($bool): Sheet
 
 ## v.5.5
 

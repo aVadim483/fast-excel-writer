@@ -137,6 +137,8 @@ class Excel implements InterfaceBookWriter
 
     protected array $bookViews = [];
 
+    protected array $definedNames = [];
+
     /** @var bool */
     protected bool $isRightToLeft = false;
 
@@ -1176,7 +1178,10 @@ class Excel implements InterfaceBookWriter
         }
         $key = mb_strtolower($sheetName);
         if (!isset($this->sheets[$key])) {
-            $this->sheets[$key] = static::createSheet($sheetName);
+            $sheet = static::createSheet($sheetName);
+            $sheet->localSheetId = count($this->sheets);
+            $this->sheets[$key] = $sheet;
+
             $this->sheets[$key]->excel = $this;
             $this->sheets[$key]->key = $key;
             $this->sheets[$key]->index = count($this->sheets);
@@ -1238,8 +1243,10 @@ class Excel implements InterfaceBookWriter
      * Removes the first sheet of index omitted
      *
      * @param int|string|null $index
+     *
+     * @return $this
      */
-    public function removeSheet($index = null): void
+    public function removeSheet($index = null): Excel
     {
         if (null === $index) {
             array_shift($this->sheets);
@@ -1259,6 +1266,12 @@ class Excel implements InterfaceBookWriter
             }
             unset($this->sheets[$key]);
         }
+        $localSheetId = 0;
+        foreach ($this->sheets as $sheet) {
+            $sheet->localSheetId = $localSheetId++;
+        }
+
+        return $this;
     }
 
     /**
@@ -1289,6 +1302,70 @@ class Excel implements InterfaceBookWriter
             }
         }
         ExceptionRangeName::throwNew('Sheet name not defined in range address');
+    }
+
+    /**
+     * @param string $name
+     * @param string $range
+     * @param array|null $attributes
+     *
+     * @return $this
+     */
+    public function addDefinedName(string $name, string $range, ?array $attributes = []): Excel
+    {
+        $attributes = array_replace(['name' => Writer::xmlSpecialChars($name)], $attributes);
+        if ($name === '_xlnm.Print_Area' && isset($attributes['localSheetId'])) {
+            // add print area
+            foreach ($this->definedNames as $key => $definedName) {
+                if ($definedName['_attr']['name'] === $name && isset($definedName['localSheetId']) && $definedName['localSheetId'] === $attributes['localSheetId']) {
+                    $this->definedNames[$key]['_value'] .= $range;
+                    return $this;
+                }
+            }
+            $this->definedNames[] = [
+                '_value' => $range,
+                '_attr' => $attributes,
+            ];
+        }
+        elseif ($name === '_xlnm.Print_Titles' && isset($attributes['localSheetId'])) {
+            // set print title
+            foreach ($this->definedNames as $key => $definedName) {
+                if ($definedName['_attr']['name'] === $name && isset($definedName['localSheetId']) && $definedName['localSheetId'] === $attributes['localSheetId']) {
+                    unset($this->definedNames[$key]);
+                }
+            }
+            $this->definedNames[] = [
+                '_value' => $range,
+                '_attr' => $attributes,
+            ];
+        }
+        else {
+            $this->definedNames[$name] = [
+                '_value' => $range,
+                '_attr' => $attributes,
+            ];
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefinedNames(): array
+    {
+        $result = $this->definedNames;
+        foreach ($this->sheets as $sheet) {
+            if ($sheet->absoluteAutoFilter) {
+                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
+                $fullAddress = "'" . $sheet->sanitizedSheetName . "'!" . $filterRange;
+                $result[] = [
+                    '_value' => $fullAddress,
+                    '_attr' => ['name' => '_xlnm._FilterDatabase', 'localSheetId' => $sheet->localSheetId, 'hidden' => '1'],
+                ];
+            }
+        }
+        return $result;
     }
 
     /**

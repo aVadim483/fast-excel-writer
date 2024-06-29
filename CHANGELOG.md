@@ -1,6 +1,10 @@
+## New
+Sheet::isName($name): bool -- Case-insensitive name checking
+Excel::setActiveSheet($name): Excel -- Set active (default) sheet by case-insensitive name
+
 ## v.5.5
 
-* Support rich text in cells and notes\
+* Support rich text in cells and notes
 * Group/outline columns and rows
 
 ## v.5.3

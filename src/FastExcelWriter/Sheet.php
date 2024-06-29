@@ -348,6 +348,18 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Case-insensitive name checking
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function isName(string $name): bool
+    {
+        return strcasecmp($this->sheetName, $name) === 0;
+    }
+
+    /**
      * @param string $node
      * @param string $key
      * @param mixed $value

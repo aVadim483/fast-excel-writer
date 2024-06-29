@@ -638,6 +638,29 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set active (default) sheet by case-insensitive name
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function setActiveSheet(string $name): Excel
+    {
+        $tabIndex = 0;
+        foreach ($this->sheets as $sheet) {
+            if ($sheet->isName($name)) {
+                $sheet->active = true;
+                $this->bookViews[0]['activeTab'] = $tabIndex;
+            }
+            else {
+                $sheet->active = false;
+            }
+            $tabIndex++;
+        }
+        return $this;
+    }
+
+    /**
      * Convert letter to number (ONE based)
      *
      * @param string $colLetter

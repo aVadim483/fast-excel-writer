@@ -302,6 +302,22 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+    * @return int
+    */
+    public function getCurrentRowId(): int
+    {
+        return $this->currentRowIdx;
+    }
+
+    /**
+    * @return int
+    */
+    public function getCurrentColId(): int
+    {
+        return $this->currentColIdx;
+    }
+    
+    /**
      * @return array
      */
     public function getExternalLinks(): array

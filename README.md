@@ -1,5 +1,5 @@
-[![Latest Stable Version](http://poser.pugx.org/avadim/fast-excel-writer/v)](https://packagist.org/packages/avadim/fast-excel-writer) 
-[![Total Downloads](http://poser.pugx.org/avadim/fast-excel-writer/downloads)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![GitHub Release](https://img.shields.io/github/v/release/aVadim483/fast-excel-writer)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![Packagist Downloads](https://img.shields.io/packagist/dt/avadim/fast-excel-writer?color=%2300aa00)](https://packagist.org/packages/avadim/fast-excel-writer) 
 [![License](http://poser.pugx.org/avadim/fast-excel-writer/license)](https://packagist.org/packages/avadim/fast-excel-writer) 
 [![PHP Version Require](http://poser.pugx.org/avadim/fast-excel-writer/require/php)](https://packagist.org/packages/avadim/fast-excel-writer)
 

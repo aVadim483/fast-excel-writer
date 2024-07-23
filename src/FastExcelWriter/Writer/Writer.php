@@ -1179,6 +1179,12 @@ EOD;
             $sheet->fileWriter->write('<sheetProtection' . self::tagAttributes($options) . '/>');
         }
 
+        if ($sheet->autoFilter) {
+            $minCell = $sheet->autoFilter;
+            $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
+            $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
+        }
+
         $mergedCells = $sheet->getMergedCells();
         if ($mergedCells) {
             $sheet->fileWriter->write('<mergeCells>');
@@ -1186,12 +1192,6 @@ EOD;
                 $sheet->fileWriter->write('<mergeCell ref="' . $range . '"/>');
             }
             $sheet->fileWriter->write('</mergeCells>');
-        }
-
-        if ($sheet->autoFilter) {
-            $minCell = $sheet->autoFilter;
-            $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
-            $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
         $links = $sheet->getExternalLinks();

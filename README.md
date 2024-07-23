@@ -1,7 +1,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/aVadim483/fast-excel-writer)](https://packagist.org/packages/avadim/fast-excel-writer) 
-[![Packagist Downloads](https://img.shields.io/packagist/dt/avadim/fast-excel-writer?color=%2300aa00)](https://packagist.org/packages/avadim/fast-excel-writer) 
-[![License](http://poser.pugx.org/avadim/fast-excel-writer/license)](https://packagist.org/packages/avadim/fast-excel-writer) 
-[![PHP Version Require](http://poser.pugx.org/avadim/fast-excel-writer/require/php)](https://packagist.org/packages/avadim/fast-excel-writer)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/avadim/fast-excel-writer?color=%23aa00aa)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![GitHub License](https://img.shields.io/github/license/aVadim483/fast-excel-writer)](https://packagist.org/packages/avadim/fast-excel-writer) 
+[![Static Badge](https://img.shields.io/badge/php-%3E%3D7.4-005fc7)](https://packagist.org/packages/avadim/fast-excel-writer)
 
 <table border="0">
 <tr>

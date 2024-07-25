@@ -890,44 +890,58 @@ class Writer
         $objectId = 0;
         foreach ($imageList as $image) {
             $objectId = $image['id'];
-            $rId = 'rId' . $image['id'];
+            $rId = $image['r_id'];
             $baseName = $image['original'];
             $width = Excel::pixelsToEMU($image['width']);
             $height = Excel::pixelsToEMU($image['height']);
 
-            $xmlString = <<<EOD
-  <xdr:oneCellAnchor>
-    <xdr:from>
-      <xdr:col>{$image['col_index']}</xdr:col>
-      <xdr:colOff>0</xdr:colOff>
-      <xdr:row>{$image['row_index']}</xdr:row>
-      <xdr:rowOff>0</xdr:rowOff>
-    </xdr:from>
-    <xdr:ext cx="{$width}" cy="{$height}"/>
-    <xdr:pic>
-      <xdr:nvPicPr>
-        <xdr:cNvPr id="{$objectId}" name="{$baseName}"/>
-        <xdr:cNvPicPr>
-          <a:picLocks noChangeAspect="1"/>
-        </xdr:cNvPicPr>
-      </xdr:nvPicPr>
-      <xdr:blipFill>
-        <a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="{$rId}"/>
-        <a:stretch>
-          <a:fillRect/>
-        </a:stretch>
-      </xdr:blipFill>
-      <xdr:spPr>
-        <a:xfrm rot="0"/>
-        <a:prstGeom prst="rect">
-          <a:avLst/>
-        </a:prstGeom>
-      </xdr:spPr>
-    </xdr:pic>
-    <xdr:clientData/>
-  </xdr:oneCellAnchor>
-EOD;
-            $fileWriter->writeElement($xmlString);
+            $fileWriter->startElement('xdr:oneCellAnchor');
+
+            $fileWriter->startElement('xdr:from');
+            $fileWriter->writeElement("<xdr:col>{$image['col_index']}</xdr:col>");
+            $fileWriter->writeElement('<xdr:colOff>0</xdr:colOff>');
+            $fileWriter->writeElement("<xdr:row>{$image['row_index']}</xdr:row>");
+            $fileWriter->writeElement('<xdr:rowOff>0</xdr:rowOff>');
+            $fileWriter->endElement();
+
+            $fileWriter->writeElement("<xdr:ext cx=\"{$width}\" cy=\"{$height}\"/>");
+            $fileWriter->startElement('xdr:pic');
+
+            $fileWriter->startElement('xdr:nvPicPr');
+            if (!empty($image['hyperlink'])) {
+                $fileWriter->startElement('xdr:cNvPr', ['id' => $objectId, 'name' => $baseName]);
+                $fileWriter->writeElement("<a:hlinkClick xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" . $image['hyperlink']['r_id'] . "\"/>");
+                $fileWriter->endElement();
+                $relations[] = [
+                    'r_id' => $image['hyperlink']['r_id'],
+                    'target' => $image['hyperlink']['link'],
+                    'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
+                    'target_mode' => 'External',
+                ];
+            }
+            else {
+                $fileWriter->writeElement("<xdr:cNvPr id=\"{$objectId}\" name=\"{$baseName}\"/>");
+            }
+            $fileWriter->startElement('xdr:cNvPicPr');
+            $fileWriter->writeElement("<a:picLocks noChangeAspect=\"1\"/>");
+            $fileWriter->endElement();
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('xdr:blipFill');
+            $fileWriter->writeElement("<a:blip xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:embed=\"{$rId}\"/>");
+            $fileWriter->writeElement("<a:stretch><a:fillRect/></a:stretch>");
+            $fileWriter->endElement();
+
+            $fileWriter->startElement('xdr:spPr');
+            $fileWriter->writeElement("<a:xfrm rot=\"0\"/><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>");
+            $fileWriter->endElement();
+
+            $fileWriter->endElement();
+
+            $fileWriter->writeElement('<xdr:clientData/>');
+
+            $fileWriter->endElement();
+
             $relations[] = [
                 'r_id' => $rId,
                 'target' => '../media/' . $image['name'],
@@ -989,7 +1003,8 @@ EOD;
             $fileWriter->startElement('c:chart');
             $fileWriter->writeAttribute('xmlns:c', 'http://schemas.openxmlformats.org/drawingml/2006/chart');
             $fileWriter->writeAttribute('xmlns:r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
-            $fileWriter->writeAttribute('r:id', 'rId' . ($chartIdx + 1));
+            //$fileWriter->writeAttribute('r:id', 'rId' . ($chartIdx + 1));
+            $fileWriter->writeAttribute('r:id', $chart->rId);
             $fileWriter->endElement();
             $fileWriter->endElement();
             $fileWriter->endElement();
@@ -1001,7 +1016,8 @@ EOD;
             $fileWriter->endElement();
 
             $relations[] = [
-                'r_id' => 'rId' . ($chartIdx + 1),
+                //'r_id' => 'rId' . ($chartIdx + 1),
+                'r_id' => $chart->rId,
                 'target' => '../charts/' . $chart->fileName,
                 'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart',
             ];
@@ -1013,7 +1029,11 @@ EOD;
             $xmlRelations = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $xmlRelations .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
             foreach ($relations as $relData) {
-                $xmlRelations .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . $relData['target'] . '"/>';
+                $xmlRelations .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . $relData['target'] . '"';
+                if (!empty($relData['target_mode'])) {
+                    $xmlRelations .= ' TargetMode="' . $relData['target_mode'] . '"';
+                }
+                $xmlRelations .= '/>';
             }
             $xmlRelations .= '</Relationships>';
             $entryRel = str_replace('xl/drawings/drawing', 'xl/drawings/_rels/drawing', $entry) . '.rels'; //xl/drawings/_rels/drawing' . $sheet->index . '.xml.rels';

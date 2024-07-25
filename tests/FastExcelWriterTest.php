@@ -662,7 +662,7 @@ final class FastExcelWriterTest extends TestCase
         $sheet->addImage('B10', $imgDir . '/excel-logo.jpg');
         $sheet->addImage('C10', $imgDir . '/excel-logo.png');
         $sheet->addImage('D10', $imgDir . '/excel-logo.svg');
-        $sheet->addImage('E10', $imgDir . '/excel-logo.webp');
+        $sheet->addImage('E10', $imgDir . '/excel-logo.webp', ['hyperlink' => 'https://github.com/aVadim483/fast-excel-writer']);
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
 

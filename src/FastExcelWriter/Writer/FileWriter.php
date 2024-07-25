@@ -83,7 +83,7 @@ class FileWriter
         }
     }
 
-    public function startElement($name)
+    public function startElement($name, ?array $attr = [])
     {
         $this->closeElement();
         $name = trim($name);
@@ -103,7 +103,7 @@ class FileWriter
         else {
             $this->elements[++$this->level] = [
                 'name' => $name,
-                'attr' => [],
+                'attr' => $attr,
                 'short' => true,
                 'close' => false,
             ];

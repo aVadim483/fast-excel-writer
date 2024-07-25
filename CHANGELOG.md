@@ -1,4 +1,7 @@
 ## v.5.6
+* $sheet->addImage($cell, $path, \['hyperlink' => $url\]);
+
+## v.5.6
 * Excel::setActiveSheet($name): Excel -- Set active (default) sheet by case-insensitive name
 * Sheet::isName($name): bool -- Case-insensitive name checking
 * Sheet::setPrintArea($range): Sheet

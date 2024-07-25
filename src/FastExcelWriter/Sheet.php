@@ -136,6 +136,8 @@ class Sheet implements InterfaceSheetWriter
 
     protected array $charts = [];
 
+    protected int $drawingRelsId = 0;
+
     protected array $protection = [];
 
     protected ?string $activeCell = null;
@@ -344,6 +346,14 @@ class Sheet implements InterfaceSheetWriter
         }
 
         return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function incDrawingRelsId(): string
+    {
+        return 'rId' . (++$this->drawingRelsId);
     }
 
     /**
@@ -3221,6 +3231,10 @@ class Sheet implements InterfaceSheetWriter
                         $imageData['height'] = $imageStyle['height'];
                     }
                 }
+                if (!empty($imageStyle['hyperlink'])) {
+                    $imageData['hyperlink'] = ['r_id' => $this->incDrawingRelsId(), 'link' => $imageStyle['hyperlink']];
+                }
+                $imageData['r_id'] = $this->incDrawingRelsId();
                 $this->media['images'][] = $imageData;
                 $this->_setDimension($rowIdx + 1, $colIdx + 1);
 
@@ -3262,6 +3276,7 @@ class Sheet implements InterfaceSheetWriter
         $chart->setPosition($dimension['cell2']);
         $chart->setSheet($this);
 
+        $chart->rId = $this->incDrawingRelsId();
         $this->charts[] = $chart;
         if (!$chart->getName()) {
             $chart->setName('Chart ' . count($this->charts));

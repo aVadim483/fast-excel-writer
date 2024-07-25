@@ -56,6 +56,8 @@ class Chart
 
     public string $fileName;
 
+    public string $rId;
+
     private string $chartType;
 
     /**

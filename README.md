@@ -296,6 +296,9 @@ $sheet1->addImage('C3', 'path/to/file', ['height' => 150]);
 // Set size in pixels
 $sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
 
+// Add hyperlink to the image
+$sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150, 'hyperlink' => 'https://www.google.com/']);
+
 ```
 
 ## **FastExcelWriter** vs **PhpSpreadsheet**

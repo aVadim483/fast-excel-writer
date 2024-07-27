@@ -1,4 +1,4 @@
-## v.5.6
+## v.5.7
 * $sheet->addImage($cell, $path, \['hyperlink' => $url\]);
 * cell merge optimization
 

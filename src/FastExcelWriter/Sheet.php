@@ -2,6 +2,7 @@
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelHelper\Helper;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\DataSeries;
 use avadim\FastExcelWriter\Charts\DataSeriesValues;
@@ -115,6 +116,8 @@ class Sheet implements InterfaceSheetWriter
     protected int $offsetCol = 0;
 
     protected array $mergeCells = [];
+    protected array $mergedCellsArray = ['rowNum1' => Excel::MAX_ROW, 'colNum1' => Excel::MAX_COL, 'rowNum2' => 0, 'colNum2' => 0];
+
     protected array $totalArea = [];
     protected array $areas = [];
 
@@ -1913,53 +1916,6 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Merge cells
-     *
-     * mergeCells('A1:C3')
-     * mergeCells(['A1:B2', 'C1:D2'])
-     *
-     * @param array|string|int $rangeSet
-     * @param int|null $actionMode 0 - exception, 1 - replace, 2 - keep
-     *
-     * @return $this
-     */
-    public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
-    {
-        foreach((array)$rangeSet as $range) {
-            if (isset($this->mergeCells[$range]) || empty($range)) {
-                // cells are already merged
-                continue;
-            }
-            $dimension = Excel::rangeDimension($range, true);
-            // check intersection with saved merged cells
-            foreach ($this->mergeCells as $savedRange => $savedDimension) {
-                if (
-                    ((($dimension['rowNum1'] >= $savedDimension['rowNum1']) && ($dimension['rowNum1'] <= $savedDimension['rowNum2']))
-                        || (($dimension['rowNum2'] >= $savedDimension['rowNum1']) && ($dimension['rowNum2'] <= $savedDimension['rowNum2'])))
-                    && ((($dimension['colNum1'] >= $savedDimension['colNum1']) && ($dimension['colNum1'] <= $savedDimension['colNum2']))
-                        || (($dimension['colNum2'] >= $savedDimension['colNum1']) && ($dimension['colNum2'] <= $savedDimension['colNum2'])))
-                ) {
-                    if ($actionMode === 1) {
-                        unset($this->mergeCells[$savedRange]);
-                    }
-                    elseif ($actionMode === 2) {
-                        $dimension = [];
-                        break;
-                    }
-                    else {
-                        throw new Exception("Cannot merge cells $range because they are intersecting with $savedRange");
-                    }
-                }
-            }
-            if ($dimension) {
-                $this->mergeCells[$dimension['range']] = $dimension;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Merge relative cells
      *
      * mergeCells(3) -> 3 columns of current row -> mergeCells('A5:C5') // if current row is 5
@@ -1975,26 +1931,98 @@ class Sheet implements InterfaceSheetWriter
             $rangeSet = 'A' . $this->rowCountWritten . ':' . Excel::colLetter($rangeSet)  . $this->rowCountWritten;
         }
         foreach((array)$rangeSet as $range) {
+            $dimension = $this->_rangeDimension($range, 1, 0);
+            $this->mergeCells($dimension['range']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Merge cells
+     *
+     * mergeCells('A1:C3')
+     * mergeCells(['A1:B2', 'C1:D2'])
+     *
+     * @param array|string|int $rangeSet
+     * @param int|null $actionMode Action in case of intersection
+     *      0 - exception
+     *      1 - replace
+     *      2 - keep
+     *      -1 - skip intersection check
+     *
+     * @return $this
+     */
+    public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
+    {
+        foreach((array)$rangeSet as $range) {
             if (isset($this->mergeCells[$range]) || empty($range)) {
                 // cells are already merged
                 continue;
             }
-            $dimension = $this->_rangeDimension($range, 1, 0);
-            // check intersection with saved merged cells
-            foreach ($this->mergeCells as $savedRange => $savedDimension) {
-                if (
-                    ((($dimension['rowNum1'] >= $savedDimension['rowNum1']) && ($dimension['rowNum1'] <= $savedDimension['rowNum2']))
-                        || (($dimension['rowNum2'] >= $savedDimension['rowNum1']) && ($dimension['rowNum2'] <= $savedDimension['rowNum2'])))
-                    && ((($dimension['colNum1'] >= $savedDimension['colNum1']) && ($dimension['colNum1'] <= $savedDimension['colNum2']))
-                        || (($dimension['colNum2'] >= $savedDimension['colNum1']) && ($dimension['colNum2'] <= $savedDimension['colNum2'])))
-                ) {
-                    if ($range !== $dimension['range']) {
-                        $range .= ' (' . $dimension['range'] . ')';
+            $range = strtoupper($range);
+            if (preg_match('/^(\$?[A-Z]+)(\$?\d+)(:(\$?[A-Z]+)(\$?\d+))?$/', $range, $matches)) {
+                if (empty($matches[3])) {
+                    $matches[4] = $matches[1];
+                    $matches[5] = $matches[2];
+                }
+                $dimension = [
+                    'range' => $range,
+                    'rowNum1' => ($matches[2] <= Excel::MAX_ROW) ? (int)$matches[2] : -1,
+                    'rowNum2' => ($matches[5] <= Excel::MAX_ROW) ? (int)$matches[5] : -1,
+                    'colNum1' => Excel::colNumber($matches[1]),
+                    'colNum2' => Excel::colNumber($matches[4]),
+                ];
+
+                if ($actionMode > -1) {
+                    if (!(
+                        $dimension['rowNum1'] > $this->mergedCellsArray['rowNum2'] ||
+                        $dimension['rowNum2'] < $this->mergedCellsArray['rowNum1'] ||
+                        $dimension['colNum1'] > $this->mergedCellsArray['colNum2'] ||
+                        $dimension['colNum2'] < $this->mergedCellsArray['colNum1']
+                    )) {
+                        // is intersection
+                        foreach ($this->mergeCells as $savedRange => $savedDimension) {
+                            if (!(
+                                $dimension['rowNum1'] > $savedDimension['rowNum2'] ||
+                                $dimension['rowNum2'] < $savedDimension['rowNum1'] ||
+                                $dimension['colNum1'] > $savedDimension['colNum2'] ||
+                                $dimension['colNum2'] < $savedDimension['colNum1']
+                            )) {
+                                if ($actionMode === 1) {
+                                    unset($this->mergeCells[$savedRange]);
+                                }
+                                elseif ($actionMode === 2) {
+                                    $dimension = [];
+                                    break;
+                                }
+                                else {
+                                    ExceptionAddress::throwNew('Cannot merge cells %s because they intersect with %s', $range, $savedRange);
+                                }
+                            }
+                        }
                     }
-                    throw new Exception("Cannot merge cells $range because they are intersecting with $savedRange");
                 }
             }
-            $this->mergeCells[$dimension['range']] = $dimension;
+            else {
+                ExceptionAddress::throwNew('Wrong range ' . print_r($range, true));
+            }
+
+            if (!empty($dimension)) {
+                $this->mergeCells[$range] = $dimension;
+                if ($this->mergedCellsArray['rowNum1'] > $dimension['rowNum1']) {
+                    $this->mergedCellsArray['rowNum1'] = $dimension['rowNum1'];
+                }
+                if ($this->mergedCellsArray['rowNum2'] < $dimension['rowNum2']) {
+                    $this->mergedCellsArray['rowNum2'] = $dimension['rowNum2'];
+                }
+                if ($this->mergedCellsArray['colNum1'] > $dimension['colNum1']) {
+                    $this->mergedCellsArray['colNum1'] = $dimension['colNum1'];
+                }
+                if ($this->mergedCellsArray['colNum2'] < $dimension['colNum2']) {
+                    $this->mergedCellsArray['colNum2'] = $dimension['colNum2'];
+                }
+            }
         }
 
         return $this;

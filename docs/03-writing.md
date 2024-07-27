@@ -231,8 +231,19 @@ $sheet1->writeRow(['...']);
 // Merge cells range
 $sheet1->mergeCells('D1:F1');
 ```
-Note: function mergeCells() does not write values or styles, it sets the properties of the sheet, 
+**Note**: function mergeCells() does not write values or styles, it sets the properties of the sheet, 
 so it can be called for previous rows when all the data has already been written.
+
+Each time the mergeCells() method is called, a check is performed to see if the specified range overlaps with other merged cells. 
+If the file being generated is large and there are many cells to be merged, this may slow down file generation.
+If you are sure that your cells to be merged do not overlap, you can disable the check to speed up file generation by passing -1 as the second argument.
+
+```php
+$sheet1->mergeCells('D1:F1', -1);
+$sheet1->mergeCells('D2:F2', -1);
+$sheet1->mergeCells('D3:F3', -1);
+
+```
 
 ### Cell Formats
 

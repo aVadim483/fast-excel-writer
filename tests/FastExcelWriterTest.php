@@ -6,6 +6,7 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\Legend;
+use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use PHPUnit\Framework\TestCase;
 use avadim\FastExcelReader\Excel as ExcelReader;
 
@@ -626,10 +627,20 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeCell(32);
         $sheet->writeCell(43);
         $sheet->mergeCells('A4:C4');
+        $sheet->mergeCells('D3:F3');
+        $sheet->mergeCells('A5:A7');
+        $className = null;
+        try {
+            $sheet->mergeCells('B1:B2'); // intersect with A2:D2
+        }
+        catch (\Throwable $e) {
+            $className = get_class($e);
+        }
+        $this->assertSame(ExceptionAddress::class, $className);
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $mergedCells = $this->excelReader->sheet()->getMergedCells();
-        $a = ['A2' => 'A2:D2', 'A4' => 'A4:C4'];
+        $a = ['A2' => 'A2:D2', 'A4' => 'A4:C4', 'D3' => 'D3:F3', 'A5' => 'A5:A7'];
         $this->assertEquals($a, $mergedCells);
 
         unlink($testFileName);

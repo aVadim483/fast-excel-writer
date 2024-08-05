@@ -48,6 +48,7 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 Jump To:
 * [Changes in version 4](#changes-in-version-4)
 * [Changes in version 5](#changes-in-version-5)
+* [Important changes in version 5.8](#important-changes-in-version-58)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
 * [Adding Notes](#adding-notes)
@@ -66,7 +67,7 @@ Jump To:
   * [Group/outline rows and columns](/docs/02-sheets.md#groupoutline-rows-and-columns)
   * [Define Named Ranges](/docs/02-sheets.md#define-named-ranges)
   * [Freeze Panes and Autofilter](/docs/02-sheets.md#freeze-panes-and-autofilter)
-  * [Setting Active Cells](/docs/02-sheets.md#setting-active-cells)
+  * [Setting Active Sheet and Cells](/docs/02-sheets.md#setting-active-sheet-and-cells)
   * [Print Settings](/docs/02-sheets.md#print-settings)
 * [Writing](/docs/03-writing.md)
   * [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
@@ -82,7 +83,7 @@ Jump To:
   * [Row Styles](/docs/04-styles.md#row-styles)
   * [Column Styles](/docs/04-styles.md#column-styles)
   * [Other Columns Options](/docs/04-styles.md#other-columns-options)
-  * [Apply Styles (The Fluent Interface)](/docs/04-styles.md#apply-styles--the-fluent-interface-)
+  * [Apply Styles (The Fluent Interface)](/docs/04-styles.md#apply-styles-the-fluent-interface)
   * [Apply Borders](/docs/04-styles.md#apply-borders)
   * [Apply Fonts](/docs/04-styles.md#apply-fonts)
   * [Apply Colors](/docs/04-styles.md#apply-colors)
@@ -118,6 +119,31 @@ composer require avadim/fast-excel-writer
 ## Changes In Version 5
 
 * The general news is Chart support
+
+## Important changes in version 5.8
+
+Before v.5.8
+```php
+$sheet->writeCell(12345); // The number 12345 will be written into the cell
+$sheet->writeCell('12345'); // The number 12345 will also be written here
+
+```
+
+In version 5.8 and later
+```php
+$sheet->writeCell(12345); // The number 12345 will be written into the cell
+$sheet->writeCell('12345'); // Here the string '12345' will be written into the cell
+
+```
+If you want to keep the previous behavior for backward compatibility, 
+you should use option 'auto_convert_number' when creating a workbook.
+```php
+$excel = Excel::create(['Sheet1'], ['auto_convert_number' => true]);
+$sheet = $excel->sheet();
+$sheet->writeCell('12345'); // String '12345' will be automatically converted to a number
+
+```
+
 
 ## Usage
 
@@ -299,6 +325,15 @@ $sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
 // Add hyperlink to the image
 $sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150, 'hyperlink' => 'https://www.google.com/']);
 
+```
+
+## Shared Strings
+
+By default, strings are written directly to sheets. This increases the file size a little, 
+but speeds up data writing and saves memory. If you want strings to be written to the shared string xml, 
+you need to use the 'shared_string' option.
+```php
+$excel = Excel::create([], ['shared_string' => true]);
 ```
 
 ## **FastExcelWriter** vs **PhpSpreadsheet**

@@ -172,6 +172,9 @@ class Excel implements InterfaceBookWriter
         if (isset($options['temp_prefix']) && $options['temp_prefix']) {
             $writerOptions['temp_prefix'] = $options['temp_prefix'];
         }
+        $writerOptions['auto_convert_number'] = !empty($options['auto_convert_number']);
+        $writerOptions['shared_string'] = !empty($options['shared_string']);
+
         if (isset($options['writer_class'])) {
             $this->writer = $this->getObject($options['writer_class'], $writerOptions);
             $this->writer->setExcel($this);
@@ -191,6 +194,10 @@ class Excel implements InterfaceBookWriter
         }
 
         $this->setDefaultLocale();
+        if (!empty($options['locale'])) {
+            $this->setLocale($options['locale']);
+        }
+
         $this->bookViews = [
             [
                 'activeTab' => '0',

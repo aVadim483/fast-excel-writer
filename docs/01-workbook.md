@@ -20,9 +20,18 @@ $font = [
 // Creates workbook with default font style
 $excel = Excel::create(['Foo', 'Bar'], [Style::FONT => $font]);
 
+// Automatically convert strings containing numbers to numbers
+$excel = Excel::create([], ['auto_convert_number' => true]);
+
+// Saving strings to the shared string xml
+$excel = Excel::create([], ['shared_string' => true]);
+
 // Sets locale
 // In most cases, the locale is automatically set correctly,
 // but sometimes you need to do it manually
+$excel = Excel::create([], ['locale' => 'fr']);
+// or other way
+$excel = Excel::create();
 $excel->setLocale('fr');
 
 // Sets default font

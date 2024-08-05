@@ -37,6 +37,7 @@ $sheet1->setDefaultFontStyleUnderline(true);
 $sheet1->setDefaultFontStyleStrikethrough();
 $sheet1->setDefaultFontColor($font);
 
+$sheet1->setTabColor('#ff0099');
 ```
 
 ### Page Settings

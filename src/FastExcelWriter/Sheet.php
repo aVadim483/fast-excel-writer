@@ -150,6 +150,8 @@ class Sheet implements InterfaceSheetWriter
 
     protected array $sheetFormatPr = [];
 
+    protected array $sheetProperties = [];
+
     // bottom sheet nodes
     protected array $bottomNodesOptions = [];
 
@@ -548,6 +550,22 @@ class Sheet implements InterfaceSheetWriter
     /**
      * @return array
      */
+    public function getSheetProperties(): array
+    {
+        $result = $this->sheetProperties;
+        if ($this->getPageFit()) {
+            $this->sheetProperties['pageSetUpPr'] = [
+                '_tag' => 'pageSetUpPr',
+                '_attr' => ['fitToPage' => '1'],
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
     public function getPageSetup(): array
     {
         return $this->bottomNodesOptions['pageSetup'];
@@ -671,6 +689,29 @@ class Sheet implements InterfaceSheetWriter
 
         $this->currentRowIdx = $address['rowIndex'];
         $this->currentColIdx = $this->offsetCol = $address['colIndex'];
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $color
+     *
+     * @return $this
+     */
+    public function setTabColor(?string $color): Sheet
+    {
+        if (!$color) {
+            if (isset($this->sheetProperties['tabColor'])) {
+                unset($this->sheetProperties['tabColor']);
+            }
+        }
+        else {
+            $color = Style::normalizeColor($color);
+            $this->sheetProperties['tabColor'] = [
+                '_tag' => 'tabColor',
+                '_attr' => ['rgb' => $color],
+            ];
+        }
 
         return $this;
     }

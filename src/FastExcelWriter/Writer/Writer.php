@@ -173,7 +173,7 @@ class Writer
     . '|sort'
     . ')\s*\(/mui';
 
-    //protected static array $buffers = [];
+
     protected array $buffers = [];
 
     /** @var Excel */
@@ -183,12 +183,14 @@ class Writer
     protected array $tempFiles = [];
     protected string $tempFilePrefix = '';
 
-    /** @var string */
-    protected $tempDir = '';
+    /** @var string|null */
+    protected ?string $tempDir = '';
 
     /** @var \ZipArchive */
     protected \ZipArchive $zip;
 
+    protected bool $autoConvertNumber = false;
+    protected bool $sharedString = false;
 
 
     /**
@@ -214,6 +216,8 @@ class Writer
         if (!empty($options['temp_dir'])) {
             $this->setTempDir($options['temp_dir']);
         }
+        $this->autoConvertNumber = !empty($options['auto_convert_number']);
+        $this->sharedString = !empty($options['shared_string']);
 
         register_shutdown_function([$this, 'removeFiles']);
     }
@@ -1064,11 +1068,16 @@ class Writer
         ];
         $fileWriter->write('<worksheet' . self::tagAttributes($nameSpaces) . '>');
 
-        if ($sheet->getPageFit()) {
+        $sheetPr = $sheet->getSheetProperties();
+        if ($sheetPr) {
             $fileWriter->write('<sheetPr>');
+            foreach ($sheetPr as $item) {
+                $fileWriter->write('<' . $item['_tag'] . self::tagAttributes($item['_attr']) . '/>');
+            }
             $fileWriter->write('<pageSetUpPr fitToPage="1"/>');
             $fileWriter->write('</sheetPr>');
         }
+
         $minCell = $sheet->minCell();
         $maxCell = $sheet->maxCell();
         if ($minCell === $maxCell) {
@@ -1369,16 +1378,33 @@ class Writer
                 }
                 $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" ><v>' . $value . '</v></c>');//int,float,currency
             }
-            elseif ($numFormatType === 'n_auto' || 1) { //auto-detect unknown column types
-                if (!is_string($value) || $value === '0' || ($value[0] !== '0' && preg_match('/^\d+$/', $value)) || preg_match("/^-?(0|[1-9]\d*)(\.\d+)?$/", $value)) {
+            elseif ($numFormatType === 'n_auto') {
+                if ($this->autoConvertNumber) {
+                    //auto-detect unknown types
+                    if (!is_string($value) || $value === '0' || ($value[0] !== '0' && preg_match('/^\d+$/', $value)) || preg_match("/^-?(0|[1-9]\d*)(\.\d+)?$/", $value)) {
+                        $isStr = false;
+                    }
+                    else {
+                        $isStr = true;
+                    }
+                }
+                else {
+                    $isStr = is_string($value);
+                }
+                if (!$isStr) {
                     $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');//int,float,currency
                 }
                 else {
-                    //implied: ($cellFormat=='string')
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
-                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+                    if ($this->sharedString) {
+                        $sharedStrIndex = $this->excel->addSharedString($value);
+                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
+                    }
+                    else {
+                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+                    }
                 }
             }
         }

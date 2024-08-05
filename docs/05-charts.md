@@ -159,7 +159,7 @@ Result of this code:
 | TYPE_PIE_3D                         | pie 3D chart          | ![img/chart-pie-3d_240.jpg](img/chart-pie-3d_240.jpg)                   |
 | TYPE_DONUT                          | doughnut chart        | ![img/chart-donut_240.jpg](img/chart-donut_240.jpg)                     |
 
-### Useful Chart Methods 
+### Useful Chart Methods
 
 * setTitle(\<string>) - chart title
 * setChartColors(\<array>) - chart colors

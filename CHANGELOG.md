@@ -1,8 +1,17 @@
+## v.5.8
+
+* $sheet->setTabColor($color);
+* New Excel option - 'auto_convert_number';
+* New Excel option - 'shared_string';
+* New Excel option - 'locale';
+
 ## v.5.7
+
 * $sheet->addImage($cell, $path, \['hyperlink' => $url\]);
 * cell merge optimization
 
 ## v.5.6
+
 * Excel::setActiveSheet($name): Excel -- Set active (default) sheet by case-insensitive name
 * Sheet::isName($name): bool -- Case-insensitive name checking
 * Sheet::setPrintArea($range): Sheet
@@ -77,7 +86,7 @@ Deprecated
 
 ## v.4.5
 
-* Supports workbook and sheet protection with/without passwords (see [Protection of workbook and sheets](/docs/05-protection.md) )
+* Supports workbook and sheet protection with/without passwords (see [Protection of workbook and sheets](/docs/06-protection.md) )
 
 New methods for cells
 * Sheet::applyUnlock()

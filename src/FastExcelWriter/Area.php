@@ -549,7 +549,7 @@ class Area
         }
 
         $trace = debug_backtrace();
-        $error = 'Uncaught Error: Call to undefined method ' . get_class() . '::' . $name
+        $error = 'Uncaught Error: Call to undefined method ' . __CLASS__ . '::' . $name
             . ' (called in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'] . ')';
         throw new \Exception($error);
     }

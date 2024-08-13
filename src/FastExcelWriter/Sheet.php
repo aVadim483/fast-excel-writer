@@ -248,7 +248,7 @@ class Sheet implements InterfaceSheetWriter
         $trace = debug_backtrace();
 
         trigger_error(
-            'Undefined property: ' . get_class() . '::$' . $name .
+            'Undefined property: ' . __CLASS__ . '::$' . $name .
             ' (call in file ' . $trace[0]['file'] .
             ' on line ' . $trace[0]['line'] . ') ',
             E_USER_NOTICE);

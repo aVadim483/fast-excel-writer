@@ -1642,6 +1642,62 @@ class Excel implements InterfaceBookWriter
     {
         $this->download($name);
     }
+
+    public function getDefaultStyle(): array
+    {
+        return $this->style->getDefaultStyle();
+    }
+
+    public function getHyperlinkStyle(): array
+    {
+        return $this->style->getHyperlinkStyle();
+    }
+
+    public function getDefaultFormatStyles(): array
+    {
+        return $this->style->getDefaultFormatStyles();
+    }
+
+    public function getStyleLocaleSettings(): array
+    {
+        return $this->style->getLocaleSettings();
+    }
+
+    public function getStyleFonts(): array
+    {
+        return $this->style->getStyleFonts();
+    }
+
+    public function getStyleFills(): array
+    {
+        return $this->style->getStyleFonts();
+    }
+
+    public function getStyleBorders(): array
+    {
+        return $this->style->getStyleBorders();
+    }
+
+    public function getStyleCellXfs(): array
+    {
+        return $this->style->getStyleCellXfs();
+    }
+
+    public function getStyleIndexedColors(): array
+    {
+        return $this->style->getIndexedColors();
+    }
+
+    public function addStyle($cellStyle, &$resultStyle): array
+    {
+        return $this->style->addStyle($cellStyle, $resultStyle);
+    }
+
+    public function getStyleNumberFormats(): array
+    {
+        return $this->style->_getNumberFormats();
+    }
+
 }
 
  // EOF

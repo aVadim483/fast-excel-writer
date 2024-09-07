@@ -1670,7 +1670,7 @@ class Excel implements InterfaceBookWriter
 
     public function getStyleFills(): array
     {
-        return $this->style->getStyleFonts();
+        return $this->style->getStyleFills();
     }
 
     public function getStyleBorders(): array
@@ -1688,14 +1688,15 @@ class Excel implements InterfaceBookWriter
         return $this->style->getIndexedColors();
     }
 
-    public function addStyle($cellStyle, &$resultStyle): array
-    {
-        return $this->style->addStyle($cellStyle, $resultStyle);
-    }
 
     public function getStyleNumberFormats(): array
     {
         return $this->style->_getNumberFormats();
+    }
+
+    public function addStyle($cellStyle, &$resultStyle): int
+    {
+        return $this->style->addStyle($cellStyle, $resultStyle);
     }
 
 }

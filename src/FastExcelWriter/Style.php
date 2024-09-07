@@ -86,20 +86,20 @@ class Style
 
     protected static $instance;
 
-    public array $localeSettings = [];
+    protected array $localeSettings = [];
 
     public array $defaultFont = [];
     protected int $defaultFontId = -1;
 
-    public array $defaultStyle = [];
+    protected array $defaultStyle = [];
 
     /** @var array Specified styles for hyperlinks */
-    public array $hyperlinkStyle = [];
+    protected array $hyperlinkStyle = [];
 
     /** @var array Specified styles for formats '@...'  */
-    public array $defaultFormatStyles = [];
+    protected array $defaultFormatStyles = [];
 
-    public array $indexedColors = ['00000000',
+    protected array $indexedColors = ['00000000',
         '00FFFFFF', '00FF0000', '0000FF00', '000000FF', '00FFFF00', '00FF00FF', '0000FFFF', '00000000', '00FFFFFF',
         '00FF0000', '0000FF00', '000000FF', '00FFFF00', '00FF00FF', '0000FFFF', '00800000', '00008000', '00000080',
         '00808000', '00800080', '00008080', '00C0C0C0', '00808080', '009999FF', '00993366', '00FFFFCC', '00CCFFFF',
@@ -1605,6 +1605,30 @@ class Style
             return array_keys($this->elements['numFmts']);
         }
         return [];
+    }
+
+    public function getDefaultStyle(): array
+    {
+        return $this->defaultStyle;
+    }
+    public function getHyperlinkStyle(): array
+    {
+        return $this->hyperlinkStyle;
+    }
+
+    public function getDefaultFormatStyles(): array
+    {
+        return $this->defaultFormatStyles;
+    }
+
+    public function getLocaleSettings(): array
+    {
+        return $this->localeSettings;
+    }
+
+    public function getIndexedColors(): array
+    {
+        return $this->indexedColors;
     }
 }
 

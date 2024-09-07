@@ -1282,11 +1282,11 @@ class Writer
             return $matches[0];
         }, $formula);
 
-        if (!empty($this->excel->style->localeSettings['functions']) && strpos($formula, '(')) {
+        if (!empty($this->excel->getStyleLocaleSettings()['functions']) && strpos($formula, '(')) {
             // replace national function names
             if (empty($functionNames)) {
                 $functionNames = [[], []];
-                foreach ($this->excel->style->localeSettings['functions'] as $name => $nameEn) {
+                foreach ($this->excel->getStyleLocaleSettings()['functions'] as $name => $nameEn) {
                     $functionNames[0][] = '/' . $name . '\s*\(/ui';
                     $functionNames[1][] = $nameEn . '(';
                     if ($nameEn === 'FALSE' || $nameEn === 'TRUE') {
@@ -1482,7 +1482,7 @@ class Writer
 
         //// +++++++++++
         //// <numFmts/>
-        $numberFormats = $this->excel->style->_getNumberFormats();
+        $numberFormats = $this->excel->getStyleNumberFormats();
         if (!$numberFormats) {
             $file->write('<numFmts count="0"/>');
         } else {
@@ -1495,7 +1495,7 @@ class Writer
 
         //// +++++++++++
         //// <fonts/>
-        $fonts = $this->excel->style->getStyleFonts();
+        $fonts = $this->excel->getStyleFonts();
         if (!$fonts) {
             $file->write('<fonts count="0"/>');
         }
@@ -1511,7 +1511,7 @@ class Writer
 
         //// +++++++++++
         //// <fills/>
-        $fills = $this->excel->style->getStyleFills();
+        $fills = $this->excel->getStyleFills();
         if (!$fills) {
             $file->write('<fills count="0"/>');
         }
@@ -1525,7 +1525,7 @@ class Writer
 
         //// +++++++++++
         // <borders/>
-        $borders = $this->excel->style->getStyleBorders();
+        $borders = $this->excel->getStyleBorders();
         if (!$borders) {
             $file->write('<borders count="0"/>');
         }
@@ -1550,7 +1550,7 @@ class Writer
 
         //// +++++++++++
         // <cellXfs/>
-        $cellXfs = $this->excel->style->getStyleCellXfs();
+        $cellXfs = $this->excel->getStyleCellXfs();
         if (!$cellXfs) {
             $file->write('<cellXfs count="1">');
             $file->write('<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>');
@@ -1640,9 +1640,9 @@ class Writer
         // <tableStyles/>
         $file->write('<tableStyles count="0"/>');
 
-        if ($this->excel->style->indexedColors) {
+        if ($this->excel->getStyleIndexedColors()) {
             $file->write('<colors><indexedColors>');
-            foreach ($this->excel->style->indexedColors as $color) {
+            foreach ($this->excel->getStyleIndexedColors() as $color) {
                 $file->write('<rgbColor rgb="' . $color . '"/>');
             }
             $file->write('</indexedColors></colors>');

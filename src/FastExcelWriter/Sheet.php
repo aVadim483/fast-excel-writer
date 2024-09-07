@@ -1472,14 +1472,14 @@ class Sheet implements InterfaceSheetWriter
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
-                        'general_style' => Style::mergeStyles([$this->excel->style->defaultStyle, $this->defaultStyle]),
-                        'hyperlink_style' => Style::mergeStyles([$this->excel->style->hyperlinkStyle, $this->defaultStyle]),
+                        'general_style' => Style::mergeStyles([$this->excel->getDefaultStyle(), $this->defaultStyle]),
+                        'hyperlink_style' => Style::mergeStyles([$this->excel->getHyperlinkStyle(), $this->defaultStyle]),
                     ];
                 }
                 else {
                     $this->sheetStylesSummary = [
-                        'general_style' => $this->excel->style->defaultStyle,
-                        'hyperlink_style' => $this->excel->style->hyperlinkStyle,
+                        'general_style' => $this->excel->getDefaultStyle(),
+                        'hyperlink_style' => $this->excel->getHyperlinkStyle(),
                     ];
                 }
             }
@@ -1534,8 +1534,8 @@ class Sheet implements InterfaceSheetWriter
                         else {
                             $cellStyle = $styleStack ? $styleStack[0] : [];
                         }
-                        if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']])) {
-                            $cellStyle = Style::mergeStyles([$this->excel->style->defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
+                        if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']])) {
+                            $cellStyle = Style::mergeStyles([$this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']], $cellStyle]);
                         }
 
                         if (isset($cellStyle['hyperlink'])) {
@@ -1551,8 +1551,8 @@ class Sheet implements InterfaceSheetWriter
                                     'shared_index' => $this->excel->addSharedString($cellValue),
                                 ];
                                 $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
-                                if (!empty($this->excel->style->hyperlinkStyle)) {
-                                    $cellStyle = Style::mergeStyles([$this->excel->style->hyperlinkStyle, $cellStyle]);
+                                if (!empty($this->excel->getHyperlinkStyle())) {
+                                    $cellStyle = Style::mergeStyles([$this->excel->getHyperlinkStyle(), $cellStyle]);
                                 }
                             }
                             unset($cellStyle['hyperlink']);
@@ -1560,7 +1560,7 @@ class Sheet implements InterfaceSheetWriter
 
                         $styleHash = $cellStyle ? json_encode($cellStyle) : '';
                         if (!isset($_styleCache[$styleHash])) {
-                            $cellStyleIdx = $this->excel->style->addStyle($cellStyle, $resultStyle);
+                            $cellStyleIdx = $this->excel->addStyle($cellStyle, $resultStyle);
                             $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
                         }
                         else {

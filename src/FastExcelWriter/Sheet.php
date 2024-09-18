@@ -841,7 +841,12 @@ class Sheet implements InterfaceSheetWriter
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
-                $this->_setColAttributes($colIdx, ['hidden' => (int)$val]);
+                if ($val) {
+                    $this->_delColAttributes($colIdx, ['hidden']);
+                }
+                else {
+                    $this->_setColAttributes($colIdx, ['hidden' => 1]);
+                }
             }
         }
 
@@ -998,6 +1003,10 @@ class Sheet implements InterfaceSheetWriter
         if ($this->colAttributes) {
             foreach ($this->colAttributes as $colIdx => $attributes) {
                 if ($attributes) {
+                    if (isset($this->colAttributes[$colIdx]['min'], $this->colAttributes[$colIdx]['min']) && count($this->colAttributes[$colIdx]) === 2) {
+                        // only 'min' & 'max'
+                        continue;
+                    }
                     $result[$colIdx] = $attributes;
                     if (!isset($result[$colIdx]['min'])) {
                         $result[$colIdx]['min'] = $colIdx + 1;
@@ -1033,6 +1042,21 @@ class Sheet implements InterfaceSheetWriter
         }
         foreach ($settings as $key => $val) {
             $this->colAttributes[$colIdx][$key] = $val;
+        }
+    }
+
+    /**
+     * @param int $colIdx
+     * @param array $settings
+     *
+     * @return void
+     */
+    public function _delColAttributes(int $colIdx, array $settings)
+    {
+        foreach ($settings as $key) {
+            if ($this->colAttributes[$colIdx][$key]) {
+                unset($this->colAttributes[$colIdx][$key]);
+            }
         }
     }
 

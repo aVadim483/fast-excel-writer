@@ -467,8 +467,9 @@ class Writer
         }
 
         $this->zip = new \ZipArchive();
-        if (!$this->zip->open($fileName, \ZIPARCHIVE::CREATE)) {
-            ExceptionFile::throwNew('Unable to create zip "%s"', $fileName);
+        $result = $this->zip->open($fileName, \ZIPARCHIVE::CREATE);
+        if ($result !== TRUE) {
+            ExceptionFile::throwNew('Unable to create zip "%s". Error code "%s"', $fileName, $result);
         }
 
         // add sheets
@@ -553,8 +554,9 @@ class Writer
         }
 
         $this->zip = new \ZipArchive();
-        if (!$this->zip->open($outputFile)) {
-            ExceptionFile::throwNew('Unable to open zip "%s"', $outputFile);
+        $result = $this->zip->open($outputFile, \ZIPARCHIVE::CREATE);
+        if ($result !== TRUE) {
+            ExceptionFile::throwNew('Unable to open zip "%s". Error code "%s"', $outputFile, $result);
         }
         $entryList = [];
         for ($i = 0; $i < $this->zip->numFiles; $i++) {

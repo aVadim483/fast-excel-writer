@@ -7,8 +7,10 @@ use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\DataSeries;
 use avadim\FastExcelWriter\Charts\DataSeriesValues;
 use avadim\FastExcelWriter\Charts\PlotArea;
+use avadim\FastExcelWriter\DataValidation\DataValidation;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
+use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 use avadim\FastExcelWriter\Writer\Writer;
@@ -140,6 +142,8 @@ class Sheet implements InterfaceSheetWriter
     protected array $charts = [];
 
     protected int $drawingRelsId = 0;
+
+    protected array $validations = [];
 
     protected array $protection = [];
 
@@ -3395,6 +3399,36 @@ class Sheet implements InterfaceSheetWriter
     public function getCharts(): array
     {
         return $this->charts;
+    }
+
+    /**
+     * @param string $range
+     * @param DataValidation $validation
+     *
+     * @return $this
+     */
+    public function addDataValidation(string $range, DataValidation $validation): Sheet
+    {
+        $dimension = Excel::rangeDimension($range, true);
+        if ($dimension['cellCount'] === 1) {
+            $validation->setSqref($dimension['cell1']);
+        }
+        else {
+            $validation->setSqref($dimension['localRange']);
+        }
+        $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
+
+        $this->validations[$dimension['localRange']] = $validation;
+
+        return $this;
+    }
+
+    /**
+     * @return DataValidation[]
+     */
+    public function getDataValidations(): array
+    {
+        return $this->validations;
     }
 
     // === PROTECTION === //

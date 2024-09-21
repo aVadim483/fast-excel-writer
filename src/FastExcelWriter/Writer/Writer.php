@@ -1206,6 +1206,14 @@ class Writer
 
         $sheet->writeDataEnd();
 
+        if ($validations = $sheet->getDataValidations()) {
+            $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
+            foreach ($validations as $validation) {
+                $sheet->fileWriter->write($validation->toXml());
+            }
+            $sheet->fileWriter->write('</dataValidations>');
+        }
+
         if (($options = $sheet->getProtection()) && !empty($options['sheet'])) {
             $sheet->fileWriter->write('<sheetProtection' . self::tagAttributes($options) . '/>');
         }

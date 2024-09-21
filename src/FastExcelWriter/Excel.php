@@ -348,6 +348,21 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * @param $value
+     *
+     * @return bool|float|int
+     */
+    public static function toTimestamp($value)
+    {
+        $result = Writer::convertDateTime($value);
+        if ($result === false) {
+            Exception::throwNew('Cannot convert "' . $value . '" to Excel timestamp');
+        }
+
+        return $result;
+    }
+
+    /**
      * Set default locale from the current environment
      */
     public function setDefaultLocale()

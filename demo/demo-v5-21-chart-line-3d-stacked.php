@@ -8,7 +8,7 @@ $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\Legend;
 use \avadim\FastExcelWriter\Excel;
-use avadim\FastExcelWriter\Style;
+use avadim\FastExcelWriter\StyleManager;
 
 $timer = microtime(true);
 

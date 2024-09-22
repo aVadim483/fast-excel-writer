@@ -710,7 +710,7 @@ class Sheet implements InterfaceSheetWriter
             }
         }
         else {
-            $color = Style::normalizeColor($color);
+            $color = StyleManager::normalizeColor($color);
             $this->sheetProperties['tabColor'] = [
                 '_tag' => 'tabColor',
                 '_attr' => ['rgb' => $color],
@@ -766,7 +766,7 @@ class Sheet implements InterfaceSheetWriter
             $options = array_combine(Excel::colLetterRange(array_keys($arg1)), array_values($arg1));
             foreach ($options as $col => $colOptions) {
                 if ($colOptions) {
-                    $options[$col] = Style::normalize($colOptions);
+                    $options[$col] = StyleManager::normalize($colOptions);
                 }
                 else {
                     $options[$col] = null;
@@ -777,7 +777,7 @@ class Sheet implements InterfaceSheetWriter
             $options = [];
             $colNumbers = Excel::colNumberRange($arg1);
             if ($colNumbers) {
-                $colOptions = Style::normalize($arg2);
+                $colOptions = StyleManager::normalize($arg2);
                 foreach ($colNumbers as $col) {
                     $options[$col] = $colOptions;
                 }
@@ -886,7 +886,7 @@ class Sheet implements InterfaceSheetWriter
                     $this->colStyles[$colIdx]['options']['width-auto'] = true;
                 }
                 elseif ($width !== null) {
-                    $width = ($width ? Style::numFloat($width) : 0);
+                    $width = ($width ? StyleManager::numFloat($width) : 0);
                     if (is_numeric($width)) {
                         if ($min) {
                             $this->colMinWidths[$colIdx] = $width;
@@ -1081,7 +1081,7 @@ class Sheet implements InterfaceSheetWriter
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
-                $style = Style::normalize($style);
+                $style = StyleManager::normalize($style);
                 if (!empty($this->colStyles[$colIdx])) {
                     $this->colStyles[$colIdx] = array_replace_recursive($this->colStyles[$colIdx], $style);
                 }
@@ -1168,7 +1168,7 @@ class Sheet implements InterfaceSheetWriter
     {
         if ($styles) {
             foreach ($styles as $field => $style) {
-                $style = Style::normalize($style);
+                $style = StyleManager::normalize($style);
                 if (empty($this->fieldStyles[$field])) {
                     $this->fieldStyles[$field] = $style;
                 }
@@ -1191,7 +1191,7 @@ class Sheet implements InterfaceSheetWriter
         if ($formats) {
             $styles = [];
             foreach ($formats as $field => $format) {
-                $styles[$field] = Style::normalize(['format' => $format]);
+                $styles[$field] = StyleManager::normalize(['format' => $format]);
             }
             $this->setFieldStyles($styles);
         }
@@ -1413,7 +1413,7 @@ class Sheet implements InterfaceSheetWriter
         foreach ($options as $rowNum => $rowOptions) {
             $rowIdx = (int)$rowNum - 1;
             if ($rowOptions) {
-                $rowOptions = Style::normalize($rowOptions);
+                $rowOptions = StyleManager::normalize($rowOptions);
                 if (isset($rowOptions['height'])) {
                     $this->setRowHeight($rowNum, $rowOptions['height']);
                     unset($rowOptions['height']);
@@ -1500,8 +1500,8 @@ class Sheet implements InterfaceSheetWriter
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
-                        'general_style' => Style::mergeStyles([$this->excel->getDefaultStyle(), $this->defaultStyle]),
-                        'hyperlink_style' => Style::mergeStyles([$this->excel->getHyperlinkStyle(), $this->defaultStyle]),
+                        'general_style' => StyleManager::mergeStyles([$this->excel->getDefaultStyle(), $this->defaultStyle]),
+                        'hyperlink_style' => StyleManager::mergeStyles([$this->excel->getHyperlinkStyle(), $this->defaultStyle]),
                     ];
                 }
                 else {
@@ -1520,11 +1520,11 @@ class Sheet implements InterfaceSheetWriter
                         }
                         else {
                             $this->colStylesSummary[$colIdx] = [
-                                'general_style' => Style::mergeStyles([
+                                'general_style' => StyleManager::mergeStyles([
                                     $this->sheetStylesSummary['general_style'],
                                     $this->colStyles[$colIdx],
                                 ]),
-                                'hyperlink_style' => Style::mergeStyles([
+                                'hyperlink_style' => StyleManager::mergeStyles([
                                     $this->sheetStylesSummary['hyperlink_style'],
                                     $this->colStyles[$colIdx],
                                 ]),
@@ -1557,13 +1557,13 @@ class Sheet implements InterfaceSheetWriter
                             $styleStack[] = $cellsOptions[$colIdx];
                         }
                         if (count($styleStack) > 1) {
-                            $cellStyle = Style::mergeStyles($styleStack);
+                            $cellStyle = StyleManager::mergeStyles($styleStack);
                         }
                         else {
                             $cellStyle = $styleStack ? $styleStack[0] : [];
                         }
                         if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']])) {
-                            $cellStyle = Style::mergeStyles([$this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']], $cellStyle]);
+                            $cellStyle = StyleManager::mergeStyles([$this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']], $cellStyle]);
                         }
 
                         if (isset($cellStyle['hyperlink'])) {
@@ -1580,7 +1580,7 @@ class Sheet implements InterfaceSheetWriter
                                 ];
                                 $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
                                 if (!empty($this->excel->getHyperlinkStyle())) {
-                                    $cellStyle = Style::mergeStyles([$this->excel->getHyperlinkStyle(), $cellStyle]);
+                                    $cellStyle = StyleManager::mergeStyles([$this->excel->getHyperlinkStyle(), $cellStyle]);
                                 }
                             }
                             unset($cellStyle['hyperlink']);
@@ -1634,8 +1634,8 @@ class Sheet implements InterfaceSheetWriter
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style)
     {
         if ($cellValue) {
-            $fontName = $style['font']['val']['name'] ?? Style::DEFAULT_FONT_NAME;
-            $fontSize = $style['font']['val']['size'] ?? Style::DEFAULT_FONT_SIZE;
+            $fontName = $style['font']['val']['name'] ?? Font::DEFAULT_FONT_NAME;
+            $fontSize = $style['font']['val']['size'] ?? Font::DEFAULT_FONT_SIZE;
             $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
 
             $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
@@ -1672,7 +1672,7 @@ class Sheet implements InterfaceSheetWriter
     public function setDefaultStyle(array $style): Sheet
     {
         $this->clearSummary();
-        $this->defaultStyle = Style::normalize($style);
+        $this->defaultStyle = StyleManager::normalize($style);
 
         return $this;
     }
@@ -1697,7 +1697,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setDefaultFont($font): Sheet
     {
-        $normStyle = Style::normalizeFont($font);
+        $normStyle = StyleManager::normalizeFont($font);
         if (isset($normStyle['font'])) {
             if (isset($this->defaultStyle['font'])) {
                 $this->defaultStyle['font'] = array_replace($this->defaultStyle['font'], $normStyle['font']);
@@ -2213,7 +2213,7 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($rowStyle) {
-            $rowStyle = Style::normalize($rowStyle);
+            $rowStyle = StyleManager::normalize($rowStyle);
             $this->rowStyles[$this->currentRowIdx] = $rowStyle;
             if (isset($rowStyle['options']['height'])) {
                 $this->setRowHeight($this->currentRowIdx + 1, $rowStyle['options']['height']);
@@ -2471,9 +2471,25 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _fullRangeAddress($range): string
     {
-        $dim = isset($range['range']) ? $range : $this->_rangeDimension($range);
+        $absAddress = '';
+        if (is_array($range) && isset($range['absAddress'])) {
+            $absAddress = $range['absAddress'];
+        }
+        if (is_string($range)) {
+            if (substr_count($range, '$') === 4) {
+                $absAddress = $range;
+            }
+            else {
+                $range = $this->_rangeDimension($range);
+                $absAddress = $range['absAddress'];
+            }
+        }
 
-        return "'" . $this->sanitizedSheetName . "'!" . $dim['range'];
+        if ($absAddress) {
+            return "'" . $this->sanitizedSheetName . "'!" . $absAddress;
+        }
+
+        return '';
     }
 
     /**
@@ -2550,7 +2566,7 @@ class Sheet implements InterfaceSheetWriter
             }
         }
         if ($styles) {
-            $this->cells['styles'][$rowIdx][$colIdx] = Style::normalize($styles);
+            $this->cells['styles'][$rowIdx][$colIdx] = StyleManager::normalize($styles);
         }
 
         return $dimension;
@@ -2646,7 +2662,7 @@ class Sheet implements InterfaceSheetWriter
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater than written rows');
         }
-        $style = Style::normalize($style);
+        $style = StyleManager::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
             for ($col = $dimension['colNum1'] - 1; $col < $dimension['colNum2']; $col++) {
                 if ($mergeStyles && isset($this->cells['styles'][$row][$col])) {
@@ -2723,7 +2739,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setOuterBorder(string $range, $style): Sheet
     {
-        $borderStyle = Style::borderOptions($style);
+        $borderStyle = StyleManager::borderOptions($style);
         $this->withRange($range)->applyOuterBorder($borderStyle['border-left-style'], $borderStyle['border-left-color']);
 
 
@@ -3138,6 +3154,10 @@ class Sheet implements InterfaceSheetWriter
                 'rowNum2' => $this->lastTouch['area']['row_idx2'] + 1,
                 'colNum2' => $this->lastTouch['area']['col_idx2'] + 1,
             ];
+
+            $dimension['range'] = Excel::cellAddress($dimension['rowNum1'], $dimension['colNum1'])
+                . ':' . Excel::cellAddress($dimension['rowNum1'], $dimension['colNum1']);
+
         }
         if (isset($dimension['absAddress'])) {
             if (!preg_match('/^\w+$/u', $name)) {
@@ -3212,10 +3232,10 @@ class Sheet implements InterfaceSheetWriter
                 $marginTop = number_format(self::NOTE_TOP_OFFSET + self::NOTE_TOP_INC * $rowIdx, 2, '.', '') . 'pt';
             }
             if (!empty($noteStyle['fill_color'])) {
-                $noteStyle['fill_color'] = '#' . substr(Style::normalizeColor($noteStyle['fill_color']), 2);
+                $noteStyle['fill_color'] = '#' . substr(StyleManager::normalizeColor($noteStyle['fill_color']), 2);
             }
             elseif (!empty($noteStyle['bg_color'])) {
-                $noteStyle['fill_color'] = '#' . substr(Style::normalizeColor($noteStyle['bg_color']), 2);
+                $noteStyle['fill_color'] = '#' . substr(StyleManager::normalizeColor($noteStyle['bg_color']), 2);
             }
             if (!empty($noteStyle['width']) && (is_int($noteStyle['width']) || is_float($noteStyle['width']))) {
                 $noteStyle['width'] = number_format($noteStyle['width'], 2, '.', '') . 'pt';
@@ -4139,7 +4159,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function applyStyle(array $style): Sheet
     {
-        $style = Style::normalize($style);
+        $style = StyleManager::normalize($style);
         foreach ($style as $key => $options) {
             $this->_setStyleOptions([], $key, $options, true);
         }
@@ -4714,6 +4734,60 @@ class Sheet implements InterfaceSheetWriter
         return $this;
     }
 
+    /**
+     * @param DataValidation $validation
+     *
+     * @return $this
+     */
+    public function applyDataValidation(DataValidation $validation): Sheet
+    {
+        $dataValidation = clone $validation;
+        $address = Helper::cellAddress($this->lastTouch['cell']['row_idx'] + 1, $this->lastTouch['cell']['col_idx'] + 1);
+        $this->addDataValidation($address, $dataValidation);
+
+        return $this;
+    }
+
+    /**
+     * @param bool|null $absolute
+     *
+     * @return string
+     */
+    public function getLastRange(?bool $absolute = false): string
+    {
+        $rowIdx = $this->lastTouch['cell']['row_idx'];
+        $colIdx = $this->lastTouch['cell']['col_idx'];
+        $ref = $this->lastTouch['ref'];
+
+        if ($ref === 'cell') {
+            $addr = Excel::cellAddress($rowIdx + 1, $colIdx + 1, $absolute);
+
+            return $addr . ':' . $addr;
+        }
+        if ($ref === 'area') {
+            $addr1 = Excel::cellAddress($this->lastTouch['area']['row_idx1'] + 1, $this->lastTouch['area']['col_idx1'] + 1, $absolute);
+            $addr2 = Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, $absolute);
+
+            return $addr1 . ':' . $addr2;
+        }
+        // row
+        if ($absolute) {
+            return '$' . ($this->lastTouch['row']['row_idx'] + 1) . ':$' . ($this->lastTouch['row']['row_idx'] + 1);
+        }
+
+        return '' . ($this->lastTouch['row']['row_idx'] + 1) . ':' . ($this->lastTouch['row']['row_idx'] + 1);
+    }
+
+    /**
+     * @param bool|null $absolute
+     *
+     * @return string
+     */
+    public function getLastCell(?bool $absolute = false): string
+    {
+
+        return Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, $absolute);
+    }
 }
 
 // EOF

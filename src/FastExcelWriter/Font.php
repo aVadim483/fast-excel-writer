@@ -4,10 +4,11 @@ namespace avadim\FastExcelWriter;
 
 class Font
 {
+    public const DEFAULT_FONT_NAME = 'Calibri';
+    public const DEFAULT_FONT_SIZE = 11;
+
     // constants for auo width
     protected const WIDTH_PADDING = 0.81;
-    protected const DEFAULT_FONT_SIZE = 11;
-    protected const DEFAULT_FONT_NAME = 'Calibri';
     protected const DEFAULT_FONT_RANGE = 'default';
     protected const DEFAULT_FONT_WIDTH = 1.2;
 

@@ -98,6 +98,12 @@ Jump To:
   * [Workbook protection](/docs/06-protection.md#workbook-protection)
   * [Sheet protection](/docs/06-protection.md#sheet-protection)
   * [Cells locking/unlocking](/docs/06-protection.md#cells-lockingunlocking)
+* [Data validation](/docs/07-validation.md)
+  * [Simple usage](/docs/07-validation.md#simple-usage)
+  * [Define filters](/docs/07-validation.md#define-filters)
+  * [Check type of value](/docs/07-validation.md#check-type-of-value)
+  * [Custom filters](/docs/07-validation.md#custom-filters)
+  * [All Data Validation settings](/docs/07-validation.md#all-data-validation-settings)
 * [FastExcelWriter vs PhpSpreadsheet](#fastexcelwriter-vs-phpspreadsheet)
 * [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 

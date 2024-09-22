@@ -1209,7 +1209,7 @@ class Writer
         if ($validations = $sheet->getDataValidations()) {
             $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
             foreach ($validations as $validation) {
-                $sheet->fileWriter->write($validation->toXml());
+                $sheet->fileWriter->write($validation->toXml([$this->excel->formulaConverter , 'normalize']));
             }
             $sheet->fileWriter->write('</dataValidations>');
         }
@@ -1266,62 +1266,7 @@ class Writer
      */
     protected function _convertFormula($formula, $baseAddress): string
     {
-        static $functionNames = [];
-
-        //$formula = substr($formula, 1);
-
-        $mark = md5(microtime());
-        $replace = [];
-        // temporary replace strings
-        if (strpos($formula, '"') !== false) {
-            $replace = [[], []];
-            $formula = preg_replace_callback('/"[^"]+"/', static function ($matches) use ($mark, &$replace) {
-                $key = '<<' . $mark . '-' . md5($matches[0]) . '>>';
-                $replace[0][] = $key;
-                $replace[1][] = $matches[0];
-                return $key;
-            }, $formula);
-        }
-        // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
-        $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
-            $cell = Excel::cellAddress($baseAddress[0], $baseAddress[1]);
-            if ($cell && ($address = Helper::RCtoA1($matches[2], $cell))) {
-                return $matches[1] . $address;
-            }
-
-            return $matches[0];
-        }, $formula);
-
-        if (!empty($this->excel->getStyleLocaleSettings()['functions']) && strpos($formula, '(')) {
-            // replace national function names
-            if (empty($functionNames)) {
-                $functionNames = [[], []];
-                foreach ($this->excel->getStyleLocaleSettings()['functions'] as $name => $nameEn) {
-                    $functionNames[0][] = '/' . $name . '\s*\(/ui';
-                    $functionNames[1][] = $nameEn . '(';
-                    if ($nameEn === 'FALSE' || $nameEn === 'TRUE') {
-                        $functionNames[0][] = '/([\(;,])\s*' . $name . '\s*([\);,])/ui';
-                        $functionNames[1][] = '$1' . $nameEn . '$2';
-                    }
-                }
-            }
-            //$formula = str_replace($functionNames[0], $functionNames[1], $formula);
-            $formula = preg_replace($functionNames[0], $functionNames[1], $formula);
-        }
-
-        if ($replace && !empty($replace[0])) {
-            // restore strings
-            $formula = str_replace($replace[0], $replace[1], $formula);
-        }
-
-        if ($formula) {
-            $formula = (string) preg_replace(self::XLFNREGEXP, '_xlfn.$1(', $formula);
-        }
-        if ($formula) {
-            $formula = (string) preg_replace(self::XLWSREGEXP, '_xlws.$1(', $formula);
-        }
-
-        return ($formula[0] === '=') ? mb_substr($formula, 1) : $formula;
+        return call_user_func([$this->excel->formulaConverter , 'normalize'], $formula, $baseAddress);
     }
 
     /**

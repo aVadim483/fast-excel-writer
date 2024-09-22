@@ -120,10 +120,12 @@ class Excel implements InterfaceBookWriter
     /** @var Writer */
     public $writer;
 
-    /** @var Style */
+    /** @var StyleManager */
     public $style;
 
     public bool $saved = false;
+
+    public FormulaConverter $formulaConverter;
 
     /** @var int  */
     protected int $maxSheetIndex = 0;
@@ -190,13 +192,15 @@ class Excel implements InterfaceBookWriter
             $this->style = $this->getObject($options['style_class']);
         }
         else {
-            $this->style = new Style($options);
+            $this->style = new StyleManager($options);
         }
 
         $this->setDefaultLocale();
         if (!empty($options['locale'])) {
             $this->setLocale($options['locale']);
         }
+        $settings = $this->style->getLocaleSettings();
+        $this->formulaConverter = new FormulaConverter($settings['functions'] ?? []);
 
         $this->bookViews = [
             [

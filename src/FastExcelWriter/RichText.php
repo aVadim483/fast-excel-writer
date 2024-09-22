@@ -95,7 +95,7 @@ class RichText
                             case '<c':
                                 if (strpos($token, '=')) {
                                     [$name, $arg] = explode('=', $token, 2);
-                                    $this->prop['c'] = Style::normalizeColor(trim($arg, '"\'>'));
+                                    $this->prop['c'] = StyleManager::normalizeColor(trim($arg, '"\'>'));
                                 }
                         }
                     }
@@ -187,7 +187,7 @@ class RichText
      */
     public function setColor(string $color): RichText
     {
-        $this->prop['c'] = Style::normalizeColor($color);
+        $this->prop['c'] = StyleManager::normalizeColor($color);
 
         return $this;
     }

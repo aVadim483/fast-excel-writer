@@ -17,6 +17,7 @@ class DataValidation
     const TYPE_TEXTLENGTH = 'textLength';
     const TYPE_TIME = 'time'; // Data validation which checks for time values satisfying the given condition
     const TYPE_WHOLE = 'whole'; // Data validation which checks for whole number values satisfying the given condition
+    const TYPE_INTEGER = self::TYPE_WHOLE;
 
 
     /* Data validation error styles */
@@ -67,6 +68,7 @@ class DataValidation
         '>=' => self::OPERATOR_GREATER_THAN_OR_EQUAL,
         '<' => self::OPERATOR_LESS_THAN,
         '<=' => self::OPERATOR_LESS_THAN_OR_EQUAL,
+        '!between' => self::OPERATOR_NOT_BETWEEN,
     ];
 
     protected array $availableOperators = [
@@ -86,6 +88,7 @@ class DataValidation
         self::STYLE_INFORMATION,
     ];
 
+
     public function __construct($type)
     {
         $this->type = $type;
@@ -103,75 +106,124 @@ class DataValidation
 
     /**
      * @param string $operator
-     * @param string|int|array $values
+     * @param string|int|array $formulas
      *
      * @return DataValidation
      */
-    public static function integer(string $operator, $values): DataValidation
+    public static function integer(string $operator, $formulas): DataValidation
     {
         $validation = new self(self::TYPE_WHOLE);
-        if (is_array($values)) {
-            $values = array_values($values);
-            $validation->setOperator($operator, $values[0] ?? null, $values[0] ?? null);
-        }
-        else {
-            $validation->setOperator($operator, $values);
-        }
+        $validation->setOperator($operator, $formulas);
 
         return $validation;
     }
 
     /**
      * @param string $operator
-     * @param string|int|array $values
+     * @param string|int|array $formulas
      *
      * @return DataValidation
      */
-    public static function decimal(string $operator, $values): DataValidation
+    public static function whole(string $operator, $formulas): DataValidation
+    {
+
+        return self::integer($operator, $formulas);
+    }
+
+    /**
+     * @param string $operator
+     * @param string|int|array $formulas
+     *
+     * @return DataValidation
+     */
+    public static function decimal(string $operator, $formulas): DataValidation
     {
         $validation = new self(self::TYPE_DECIMAL);
-        if (is_array($values)) {
-            $values = array_values($values);
-            $validation->setOperator($operator, $values[0] ?? null, $values[0] ?? null);
-        }
-        else {
-            $validation->setOperator($operator, $values);
-        }
+        $validation->setOperator($operator, $formulas);
 
         return $validation;
     }
 
     /**
      * @param string $operator
-     * @param string|int|array $values
+     * @param string|int|array $formulas
      *
      * @return DataValidation
      */
-    public static function date(string $operator, $values): DataValidation
+    public static function date(string $operator, $formulas): DataValidation
     {
         $validation = new self(self::TYPE_DATE);
-        if (is_array($values)) {
-            $values = array_values($values);
-            $validation->setOperator($operator, $values[0] ?? null, $values[0] ?? null);
-        }
-        else {
-            $validation->setOperator($operator, $values);
-        }
+        $validation->setOperator($operator, $formulas);
 
         return $validation;
     }
 
     /**
-     * @param array $values
+     * @param array|string $formulas
      *
      * @return DataValidation
      */
-    public static function dropDown(array $values): DataValidation
+    public static function dropDown($formulas): DataValidation
     {
         $validation = new self(self::TYPE_LIST);
-        $validation->setFormula1($values);
+        $validation->setFormula1($formulas);
 
         return $validation;
+    }
+
+    /**
+     * @param array|string $formulas
+     * *
+     * @return DataValidation
+     */
+    public static function list($formulas): DataValidation
+    {
+
+        return self::dropDown($formulas);
+    }
+
+    /**
+     * @param array|string $formulas
+     *
+     * @return DataValidation
+     */
+    public static function textLength(string $operator, $formulas): DataValidation
+    {
+        $validation = new self(self::TYPE_TEXT_LENGTH);
+        $validation->setOperator($operator, $formulas);
+
+        return $validation;
+    }
+
+    /**
+     * @param string $formula
+     *
+     * @return DataValidation
+     */
+    public static function custom(string $formula): DataValidation
+    {
+        $validation = new self(self::TYPE_CUSTOM);
+        $validation->setFormula1($formula);
+
+        return $validation;
+    }
+
+    /**
+     * @return DataValidation
+     */
+    public static function isNumber(): DataValidation
+    {
+
+        return self::custom('=ISNUMBER(RC)');
+    }
+
+    /**
+     * @return DataValidation
+     */
+    public static function isText(): DataValidation
+    {
+
+        return self::custom('=ISTEXT(RC)');
     }
 
     /**
@@ -181,15 +233,14 @@ class DataValidation
      */
     protected function checkFormula($formula): string
     {
-        if (is_string($formula) && $formula && $formula[0] === '=') {
-            $dimension = Excel::rangeDimension(substr($formula, 1));
-            $result = $dimension['absAddress'];
-        }
-        elseif (is_array($formula)) {
+        if (is_array($formula)) {
             $result = '"' . implode(',', $formula) . '"';
         }
         elseif (is_float($formula)) {
             $result = str_replace(',' , '.', (string)$formula);
+        }
+        elseif (is_bool($formula)) {
+            $result = (int)$formula;
         }
         else {
             $result = (string)$formula;
@@ -206,6 +257,9 @@ class DataValidation
     public function setFormula1($formula): DataValidation
     {
         $this->formula1 = ($formula !== null) ? $this->checkFormula($formula) : null;
+        if ($this->formula1 !== null && $this->type !== self::TYPE_NONE && $this->showErrorMessage === null) {
+            $this->showErrorMessage();
+        }
 
         return $this;
     }
@@ -216,6 +270,19 @@ class DataValidation
         $this->formula2 = ($formula !== null) ? $this->checkFormula($formula) : null;
 
         return $this;
+    }
+
+    /**
+     * Alias of setFormula1()
+     *
+     * @param int|float|string|array|null $formula
+     *
+     * @return $this
+     */
+    public function setFormula($formula): DataValidation
+    {
+
+        return $this->setFormula1($formula);
     }
 
     /**
@@ -233,9 +300,22 @@ class DataValidation
         if (!in_array($operator, $this->availableOperators)) {
             ExceptionDataValidation::throwNew('Invalid operator for data validation "' . $operator . '"');
         }
+        if (is_array($formula1) && $formula2 === null) {
+            if ($operator === self::OPERATOR_BETWEEN || $operator === self::OPERATOR_NOT_BETWEEN) {
+                $formulas = array_values($formula1);
+                $formula1 = $formulas[0] ?? null;
+                $formula2 = $formulas[1] ?? null;
+            }
+            else {
+                ExceptionDataValidation::throwNew('Formula 1 is array, scalar value expected');
+            }
+        }
         $this->operator = $operator;
         $this->setFormula1($formula1);
         $this->setFormula2($formula2);
+        if ($this->type !== self::TYPE_NONE && $this->showErrorMessage === null) {
+            $this->showErrorMessage();
+        }
 
         return $this;
     }
@@ -328,95 +408,11 @@ class DataValidation
      *
      * @return $this
      */
-    public function showErrorMessage(bool $showErrorMessage): DataValidation
+    public function showErrorMessage(?bool $showErrorMessage = true): DataValidation
     {
         $this->showErrorMessage = (int)$showErrorMessage;
 
         return $this;
-    }
-
-    /**
-     * @param $formula1
-     * @param $formula2
-     *
-     * @return DataValidation
-     */
-    public function setOperatorBetween($formula1, $formula2): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_BETWEEN)
-            ->setFormula1($formula1)
-            ->setFormula2($formula2);
-    }
-
-    /**
-     * @param $formula1
-     * @param $formula2
-     *
-     * @return DataValidation
-     */
-    public function setOperatorNotBetween($formula1, $formula2): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_NOT_BETWEEN)->setFormula1($formula1)->setFormula2($formula2);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorEqual($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_EQUAL)->setFormula1($formula)->setFormula2(null);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorNotEqual($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_NOT_EQUAL)->setFormula1($formula)->setFormula2(null);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorGreaterThan($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_GREATER_THAN)->setFormula1($formula)->setFormula2(null);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorGreaterThanOrEqual($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_GREATER_THAN_OR_EQUAL)->setFormula1($formula)->setFormula2(null);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorLessThan($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_LESS_THAN)->setFormula1($formula)->setFormula2(null);
-    }
-
-    /**
-     * @param $formula
-     *
-     * @return DataValidation
-     */
-    public function setOperatorLessThanOeEqual($formula): DataValidation
-    {
-        return $this->setOperator(self::OPERATOR_LESS_THAN_OR_EQUAL)->setFormula1($formula)->setFormula2(null);
     }
 
     /**
@@ -487,20 +483,34 @@ class DataValidation
     }
 
     /**
+     * @param $formulaConverter
+     *
      * @return string
      */
-    public function toXml(): string
+    public function toXml($formulaConverter = null): string
     {
         $xml = '<dataValidation';
         foreach ($this->getAttributes() as $attribute => $value) {
             $xml .= ' ' . $attribute . '="' . $value . '"';
         }
         $xml .= '>';
-        if ($this->formula1 !== null) {
-            $xml .= '<formula1>' . $this->formula1 . '</formula1>';
+        if ($this->formula1 !== null && $this->formula1 !== '') {
+            if ($this->formula1[0] === '=') {
+                $formula = ($formulaConverter ? $formulaConverter($this->formula1, $this->sqref) : substr($this->formula1, 1));
+            }
+            else {
+                $formula = $this->formula1;
+            }
+            $xml .= '<formula1>' . $formula . '</formula1>';
         }
-        if ($this->formula2 !== null) {
-            $xml .= '<formula2>' . $this->formula2 . '</formula2>';
+        if ($this->formula2 !== null && $this->formula2 !== '') {
+            if ($this->formula2[0] === '=') {
+                $formula = ($formulaConverter ? $formulaConverter($this->formula2, $this->sqref) : substr($this->formula2, 1));
+            }
+            else {
+                $formula = $this->formula2;
+            }
+            $xml .= '<formula2>' . $formula . '</formula2>';
         }
         $xml .= '</dataValidation>';
 

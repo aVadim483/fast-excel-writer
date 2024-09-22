@@ -297,8 +297,9 @@ Simple cell formats map to more advanced cell formats
 ### Basic Cell Styles
 
 Font settings
+
 ```php
-use \avadim\FastExcelWriter\Style;
+use \avadim\FastExcelWriter\StyleManager;
 
 $style = [
     Style::FONT => [
@@ -316,8 +317,9 @@ $style = [
 | style         | bold, italic, underline, strikethrough or multiple ie: 'bold,italic' |
 
 Border settings
+
 ```php
-use \avadim\FastExcelWriter\Style;
+use \avadim\FastExcelWriter\StyleManager;
 
 // simple border style
 $style1 = [

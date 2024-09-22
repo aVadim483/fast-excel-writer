@@ -372,9 +372,11 @@ class Excel implements InterfaceBookWriter
     public function setDefaultLocale()
     {
         $this->setLocale('en');
-        $locale = \Locale::getDefault();
-        if ($locale) {
-            $this->setLocale($locale);
+        if (extension_loaded('intl')) {
+            $locale = \Locale::getDefault();
+            if ($locale) {
+                $this->setLocale($locale);
+            }
         }
     }
 

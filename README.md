@@ -116,11 +116,9 @@ Use `composer` to install **FastExcelWriter** into your project:
 composer require avadim/fast-excel-writer
 ```
 
-## Changes In Version 4
+## Changes In Version 6
 
-* Now the library works even faster
-* Added a fluent interface for applying styles.
-* New methods and code refactoring
+* Data Validation support
 
 ## Changes In Version 5
 
@@ -149,6 +147,11 @@ $sheet = $excel->sheet();
 $sheet->writeCell('12345'); // String '12345' will be automatically converted to a number
 
 ```
+## Changes In Version 4
+
+* Now the library works even faster
+* Added a fluent interface for applying styles.
+* New methods and code refactoring
 
 
 ## Usage

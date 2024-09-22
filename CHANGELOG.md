@@ -2,6 +2,7 @@
 
 * Data validation (see [Data validation](/docs/07-validation.md))
 * All methods of Style were extracted into class StyleManager (constants remained in the class Style)
+* PHP extension 'intl' is desirable but not required
 * Other refactoring
 
 ## v.5.8

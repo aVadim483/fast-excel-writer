@@ -17,7 +17,7 @@
 <img height="120px" src="logo/06-feature-styling.jpg" alt="styling and image insertion">
 </p>
 
-<h1 align="center"><b>FastExcelWriter</b></h1>
+<h1 align="center"><b>FastExcelWriter v.6</b></h1>
 </td>
 </tr>
 </table>
@@ -44,6 +44,7 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 * Supports workbook and sheet protection with/without passwords 
 * Supports page settings - page margins, page size
 * Inserting multiple charts
+* Supports data validations
 
 Jump To:
 * [Changes in version 4](#changes-in-version-4)

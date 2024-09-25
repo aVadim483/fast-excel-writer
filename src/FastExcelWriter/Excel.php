@@ -23,6 +23,8 @@ class Excel implements InterfaceBookWriter
 
     public const EMU_PER_PIXEL = 9525;
 
+    public const DEFAULT_COL_WIDTH = '8.83984375';
+
     public const PAPERSIZE_LETTER = 1; // Letter paper (8.5 in. by 11 in.)
     public const PAPERSIZE_LETTER_SMALL = 2; // Letter small paper (8.5 in. by 11 in.)
     public const PAPERSIZE_TABLOID = 3; // Tabloid paper (11 in. by 17 in.)

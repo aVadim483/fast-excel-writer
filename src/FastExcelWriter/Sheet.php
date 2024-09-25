@@ -987,9 +987,6 @@ class Sheet implements InterfaceSheetWriter
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
                 $attr = ['outlineLevel' => $outlineLevel];
-                if (!isset($this->colAttributes[$colIdx]['width'])) {
-                    $attr['width'] = '8.83984375';
-                }
                 $this->_setColAttributes($colIdx, $attr);
             }
         }
@@ -1004,10 +1001,15 @@ class Sheet implements InterfaceSheetWriter
     public function getColAttributes(): array
     {
         $result = [];
+        foreach ($this->colStyles as $colIdx => $style) {
+            if (!empty($style)) {
+                $this->colAttributes[$colIdx]['style'] = $this->excel->addStyle($style, $resultStyle);
+            }
+        }
         if ($this->colAttributes) {
             foreach ($this->colAttributes as $colIdx => $attributes) {
                 if ($attributes) {
-                    if (isset($this->colAttributes[$colIdx]['min'], $this->colAttributes[$colIdx]['min']) && count($this->colAttributes[$colIdx]) === 2) {
+                    if (isset($this->colAttributes[$colIdx]['min'], $this->colAttributes[$colIdx]['max']) && count($this->colAttributes[$colIdx]) === 2) {
                         // only 'min' & 'max'
                         continue;
                     }
@@ -1023,6 +1025,9 @@ class Sheet implements InterfaceSheetWriter
                     }
                     if (!empty($attributes['hidden'])) {
                         $result[$colIdx]['hidden'] = '1';
+                    }
+                    if (!isset($result[$colIdx]['hidden']) && !isset($result[$colIdx]['width'])) {
+                        $result[$colIdx]['width'] = Excel::DEFAULT_COL_WIDTH;
                     }
                 }
             }
@@ -1215,6 +1220,10 @@ class Sheet implements InterfaceSheetWriter
         if ($key === 'height') {
             $this->rowAttributes[$rowIdx]['customHeight'] = 1;
             $this->rowAttributes[$rowIdx]['ht'] = $val;
+        }
+        elseif ($key === 'style') {
+            $this->rowAttributes[$rowIdx]['customFormat'] = 1;
+            $this->rowAttributes[$rowIdx]['s'] = $val;
         }
         elseif ($key === 'hidden' || $key === 'outlineLevel' || $key === 'collapsed') {
             $this->rowAttributes[$rowIdx][$key] = $val;
@@ -1418,6 +1427,12 @@ class Sheet implements InterfaceSheetWriter
                     $this->setRowHeight($rowNum, $rowOptions['height']);
                     unset($rowOptions['height']);
                 }
+                if ($rowOptions) {
+                    $styleIdx = $this->excel->addStyle($rowOptions, $resultStyle);
+                    if ($styleIdx > 0) {
+                        $this->_setRowSettings($rowNum, 'style', $this->excel->addStyle($rowOptions, $resultStyle));
+                    }
+                }
                 if (isset($this->rowStyles[$rowIdx])) {
                     $this->rowStyles[$rowIdx] = array_replace_recursive($this->rowStyles[$rowIdx], $rowOptions);
                 }
@@ -1430,6 +1445,10 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * setRowStyles(3, ['height' = 20]) - options for row number 3
+     * setRowStyles([3 => ['height' = 20], 4 => ['font-color' = '#f00']]) - options for several rows
+     * setRowStyles('2:5', ['font-color' = '#f00']) - options for range of rows
+     *
      * @param $arg1
      * @param array|null $arg2
      *
@@ -1438,6 +1457,42 @@ class Sheet implements InterfaceSheetWriter
     public function setRowStyles($arg1, array $arg2 = null): Sheet
     {
         return $this->setRowOptions($arg1, $arg2);
+    }
+
+    /**
+     * setRowStyle(3, [Style::FILL_COLOR => '#FFFF00']) - styles for row number 3
+     *
+     * @param int $rowNum
+     * @param array|null $style
+     *
+     * @return $this
+     */
+    public function setRowStyle(int $rowNum, array $style = null): Sheet
+    {
+        return $this->setRowOptions($rowNum, $style);
+    }
+
+    /**
+     * @param int $rowIdx
+     * @param array|null $rowOptions
+     *
+     * @return array
+     */
+    protected function getRowAttributes(int $rowIdx, ?array $rowOptions = []): array
+    {
+        $rowAttributes = $this->rowAttributes[$rowIdx] ?? [];
+        if (!empty($rowOptions['height'])) {
+            $rowAttributes['customHeight'] = 1;
+            $rowAttributes['ht'] = Writer::floatStr($rowOptions['height']);
+        }
+        if (!empty($rowOptions['hidden'])) {
+            $rowAttributes['hidden'] = 1;
+        }
+        if (!empty($rowOptions['collapsed'])) {
+            $rowAttributes['collapsed'] = 1;
+        }
+
+        return $rowAttributes;
     }
 
     /**
@@ -1473,17 +1528,7 @@ class Sheet implements InterfaceSheetWriter
             $rowOptions = array_replace($this->rowSettings[$rowIdx], $rowOptions);
         }
 
-        $rowAttributes = $this->rowAttributes[$rowIdx] ?? [];
-        if (!empty($rowOptions['height'])) {
-            $rowAttributes['customHeight'] = 1;
-            $rowAttributes['ht'] = Writer::floatStr($rowOptions['height']);
-        }
-        if (!empty($rowOptions['hidden'])) {
-            $rowAttributes['hidden'] = 1;
-        }
-        if (!empty($rowOptions['collapsed'])) {
-            $rowAttributes['collapsed'] = 1;
-        }
+        $rowAttributes = $this->getRowAttributes($rowIdx, $rowOptions);
         $rowAttrStr = Writer::tagAttributes($rowAttributes);
 
         // add auto formulas of columns

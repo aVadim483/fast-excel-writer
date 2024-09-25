@@ -1,3 +1,8 @@
+## V.6.1
+
+* Sheet::setRowStyle($rowNum, $style) - set style for row 
+* Sheet::setColStyle($colLetter, $style) - set style for column
+
 ## V.6.0
 
 * Data validation (see [Data validation](/docs/07-validation.md))

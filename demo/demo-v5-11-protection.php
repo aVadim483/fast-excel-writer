@@ -6,7 +6,7 @@ require_once __DIR__ . '/../src/autoload.php';
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
 use \avadim\FastExcelWriter\Excel;
-use avadim\FastExcelWriter\StyleManager;
+use avadim\FastExcelWriter\Style;
 
 $timer = microtime(true);
 

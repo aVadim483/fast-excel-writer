@@ -882,7 +882,7 @@ class Sheet implements InterfaceSheetWriter
         $colIndexes = Excel::colIndexRange($col);
         foreach($colIndexes as $colIdx) {
             if ($colIdx >= 0) {
-                if (strtolower($width) === 'auto') {
+                if (is_string($width) && strtolower($width) === 'auto') {
                     $this->colStyles[$colIdx]['options']['width-auto'] = true;
                 }
                 elseif ($width !== null) {

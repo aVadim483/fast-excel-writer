@@ -745,6 +745,7 @@ class Sheet implements InterfaceSheetWriter
 
     /**
      * Set options of columns (widths, styles, formats, etc)
+     * Styles are applied only to those cells in the row where data is entered
      *
      * Call examples:
      *  setColOptions('B', ['width' = 20]) - options for column 'B'
@@ -810,7 +811,7 @@ class Sheet implements InterfaceSheetWriter
                     }
                 }
                 if ($style) {
-                    $this->setColStyle($col, $style);
+                    $this->_setColStyle($col, $style, false);
                 }
             }
         }
@@ -1001,11 +1002,6 @@ class Sheet implements InterfaceSheetWriter
     public function getColAttributes(): array
     {
         $result = [];
-        foreach ($this->colStyles as $colIdx => $style) {
-            if (!empty($style)) {
-                $this->colAttributes[$colIdx]['style'] = $this->excel->addStyle($style, $resultStyle);
-            }
-        }
         if ($this->colAttributes) {
             foreach ($this->colAttributes as $colIdx => $attributes) {
                 if ($attributes) {
@@ -1069,8 +1065,30 @@ class Sheet implements InterfaceSheetWriter
         }
     }
 
+    protected function _setColStyle($col, array $style, bool $whole): Sheet
+    {
+        $colIndexes = Excel::colIndexRange($col);
+        foreach($colIndexes as $colIdx) {
+            if ($colIdx >= 0) {
+                $style = StyleManager::normalize($style);
+                if (!empty($this->colStyles[$colIdx])) {
+                    $this->colStyles[$colIdx] = array_replace_recursive($this->colStyles[$colIdx], $style);
+                }
+                else {
+                    $this->colStyles[$colIdx] = $style;
+                }
+                if ($whole) {
+                    $this->colAttributes[$colIdx]['style'] = $this->excel->addStyle($style, $resultStyle);
+                }
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * Set style of single or multiple column(s)
+     * Styles are applied to the entire sheet column(s) (even if it is empty)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param mixed $style
@@ -1082,19 +1100,7 @@ class Sheet implements InterfaceSheetWriter
         if ($this->currentColIdx) {
             $this->_writeCurrentRow();
         }
-
-        $colIndexes = Excel::colIndexRange($col);
-        foreach($colIndexes as $colIdx) {
-            if ($colIdx >= 0) {
-                $style = StyleManager::normalize($style);
-                if (!empty($this->colStyles[$colIdx])) {
-                    $this->colStyles[$colIdx] = array_replace_recursive($this->colStyles[$colIdx], $style);
-                }
-                else {
-                    $this->colStyles[$colIdx] = $style;
-                }
-            }
-        }
+        $this->_setColStyle($col, $style, true);
         $this->clearSummary();
 
         return $this;
@@ -1391,16 +1397,12 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * setRowOptions(3, ['height' = 20]) - options for row number 3
-     * setRowOptions([3 => ['height' = 20], 4 => ['font-color' = '#f00']]) - options for several rows
-     * setRowOptions('2:5', ['font-color' = '#f00']) - options for range of rows
-     *
-     * @param mixed $arg1
+     * @param $arg1
      * @param array|null $arg2
      *
-     * @return $this
+     * @return array
      */
-    public function setRowOptions($arg1, array $arg2 = null): Sheet
+    protected function _parseRowOptions($arg1, array $arg2 = null): array
     {
         if ($arg2 === null) {
             $options = $arg1;
@@ -1419,19 +1421,30 @@ class Sheet implements InterfaceSheetWriter
                 $options = [];
             }
         }
-        foreach ($options as $rowNum => $rowOptions) {
-            $rowIdx = (int)$rowNum - 1;
+
+        return $options;
+    }
+
+    /**
+     * @param int $rowNum
+     * @param array $rowOptions
+     * @param bool $whole
+     *
+     * @return void
+     */
+    protected function _setRowOptions(int $rowNum, array $rowOptions, bool $whole)
+    {
+        $rowIdx = (int)$rowNum - 1;
+        if ($rowOptions) {
+            $rowOptions = StyleManager::normalize($rowOptions);
+            if (isset($rowOptions['height'])) {
+                $this->setRowHeight($rowNum, $rowOptions['height']);
+                unset($rowOptions['height']);
+            }
             if ($rowOptions) {
-                $rowOptions = StyleManager::normalize($rowOptions);
-                if (isset($rowOptions['height'])) {
-                    $this->setRowHeight($rowNum, $rowOptions['height']);
-                    unset($rowOptions['height']);
-                }
-                if ($rowOptions) {
-                    $styleIdx = $this->excel->addStyle($rowOptions, $resultStyle);
-                    if ($styleIdx > 0) {
-                        $this->_setRowSettings($rowNum, 'style', $this->excel->addStyle($rowOptions, $resultStyle));
-                    }
+                $styleIdx = $this->excel->addStyle($rowOptions, $resultStyle);
+                if ($whole && $styleIdx > 0) {
+                    $this->_setRowSettings($rowNum, 'style', $this->excel->addStyle($rowOptions, $resultStyle));
                 }
                 if (isset($this->rowStyles[$rowIdx])) {
                     $this->rowStyles[$rowIdx] = array_replace_recursive($this->rowStyles[$rowIdx], $rowOptions);
@@ -1441,10 +1454,33 @@ class Sheet implements InterfaceSheetWriter
                 }
             }
         }
+    }
+
+    /**
+     * Styles are applied only to those cells in the row where data is entered
+     *
+     * setRowOptions(3, ['height' = 20]) - options for row number 3
+     * setRowOptions([3 => ['height' = 20], 4 => ['font-color' = '#f00']]) - options for several rows
+     * setRowOptions('2:5', ['font-color' = '#f00']) - options for range of rows
+     *
+     * @param mixed $arg1
+     * @param array|null $arg2
+     *
+     * @return $this
+     */
+    public function setRowOptions($arg1, array $arg2 = null): Sheet
+    {
+        $options = $this->_parseRowOptions($arg1, $arg2);
+        foreach ($options as $rowNum => $rowOptions) {
+            $this->_setRowOptions($rowNum, $rowOptions, false);
+        }
+
         return $this;
     }
 
     /**
+     * Styles are applied to the entire sheet row (even if it is empty)
+     *
      * setRowStyles(3, ['height' = 20]) - options for row number 3
      * setRowStyles([3 => ['height' = 20], 4 => ['font-color' = '#f00']]) - options for several rows
      * setRowStyles('2:5', ['font-color' = '#f00']) - options for range of rows
@@ -1456,7 +1492,12 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setRowStyles($arg1, array $arg2 = null): Sheet
     {
-        return $this->setRowOptions($arg1, $arg2);
+        $options = $this->_parseRowOptions($arg1, $arg2);
+        foreach ($options as $rowNum => $rowOptions) {
+            $this->_setRowOptions($rowNum, $rowOptions, true);
+        }
+
+        return $this;
     }
 
     /**
@@ -1469,7 +1510,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setRowStyle(int $rowNum, array $style = null): Sheet
     {
-        return $this->setRowOptions($rowNum, $style);
+        return $this->setRowStyles($rowNum, $style);
     }
 
     /**

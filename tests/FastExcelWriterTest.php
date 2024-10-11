@@ -365,7 +365,7 @@ final class FastExcelWriterTest extends TestCase
         $sheet->setColFormats([null, '@', '@', '@date', '0', '0.00', '@money', '@money']);
 
         // Set style and width for specified column
-        $sheet->setColOptions('K', ['text-wrap' => true, 'width' => 32]);
+        $sheet->setColDataStyle('K', ['text-wrap' => true, 'width' => 32]);
 
         // Set options for specified columns in the row
         $cellStyles = ['I' => ['format' => '@percent'], 'j' => ['format' => '@money']];

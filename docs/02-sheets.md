@@ -82,12 +82,12 @@ Note that in this case these styles will only be applied to those cells in the r
 
 ```php
 // Write row data and set height
-$rowOptions = [
+$rowStyle = [
     'fill-color' => '#fffeee',
     'border' => 'thin',
     'height' => 28,
 ];
-$sheet->writeRow(['aaa', 'bbb', 'ccc'], $rowOptions);
+$sheet->writeRow(['aaa', 'bbb', 'ccc'], $rowStyle);
 ```
 Other way with the same result
 
@@ -137,6 +137,19 @@ $sheet->setRowHeight(1, 33);
 
 ```
 
+You can set the style for the entire sheet row or only for those cells in the row where data is written.
+```php
+// Style are applied to the entire sheet row
+$sheet->setRowStyle(3, ['height' = 20]);
+$sheet->setRowStyle('2:5', ['font-color' = '#f00']);
+$sheet->setRowStyleArray([3 => $style1, 5 => $style2]);
+
+// Set the style only for non-empty cells in a row
+$sheet->setRowDataStyle(3, ['height' = 20]);
+$sheet->setRowDataStyle('2:5', ['font-color' = '#f00']);
+$sheet->setRowDataStyleArray([3 => $style1, 5 => $style2]);
+```
+
 ### Column's settings
 
 Column widths can be set in several ways
@@ -144,24 +157,24 @@ Column widths can be set in several ways
 ```php
 // Set width of column D to 24
 $sheet->setColWidth('D', 24);
-$sheet->setColOptions('D', ['width' => 24]);
+$sheet->setColDataStyle('D', ['width' => 24]);
 // Set auto width
 $sheet->setColWidth('D', 'auto');
 $sheet->setColWidthAuto('D');
-$sheet->setColOptions('D', ['width' => 'auto']);
+$sheet->setColDataStyle('D', ['width' => 'auto']);
 
 // Set width of specific columns
 $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 // Set width of columns from 'A'
 $sheet->setColWidths([10, 20, 30, 40], 24);
 
-$colOptions = [
+$colStyle = [
     'B' => ['width' => 10], 
     'C' => ['width' => 'auto'], 
     'E' => ['width' => 30], 
     'F' => ['width' => 40],
 ];
-$sheet->setColOptions($colOptions);
+$sheet->setColDataStyleArray($colStyle);
 
 ```
 You can define a minimal width of columns. Note that the minimum value has higher priority
@@ -190,6 +203,24 @@ $sheet->setColVisible(['B', 'E', 'H'], false);
 // Show column E
 $sheet->setColVisible('E', true);
 ```
+
+You can set the style for the entire sheet column or only for those cells in the column where data is written.
+```php
+// Style are applied to the entire sheet column
+$sheet->setColStyle('B', $style); // style for cells of column 'B'
+$sheet->setColStyle(2, $style); // column 'B' has a number 2
+$sheet->setColStyle('C:F', $style); // style for range of columns
+$sheet->setColStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
+$sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
+
+// Set the style only for non-empty cells in a column
+$sheet->setColDataStyle('B', ['width' = 20]);
+$sheet->setColDataStyle(2, ['width' = 20]);
+$sheet->setColDataStyle('B:D', ['width' = 'auto']);
+$sheet->setColDataStyle(['A', 'B', 'C'], $style);
+$sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]);
+```
+
 ### Group/outline rows and columns
 
 Set group level for the specified rows

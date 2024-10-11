@@ -121,7 +121,7 @@ $sheet1->setColFormat('K', '@date');
 
 ```php
 // Set style and width for specified column
-$sheet1->setColOptions('K', ['text-wrap' => true, 'width' => 32]);
+$sheet1->setColDataStyle('K', ['text-wrap' => true, 'width' => 32]);
 
 // Set widths of columns from the first (A)
 $sheet1->setColWidths([5, 16, 16, 'auto']);

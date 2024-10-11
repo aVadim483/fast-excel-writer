@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelHelper\Helper;
 use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
@@ -160,7 +161,7 @@ class Excel implements InterfaceBookWriter
     /**
      * Excel constructor
      *
-     * @param array|null $options
+     * @param array|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
      */
     public function __construct(?array $options = [])
     {
@@ -190,8 +191,8 @@ class Excel implements InterfaceBookWriter
             $this->writer = new Writer($writerOptions);
         }
 
-        if (isset($options['style_class'])) {
-            $this->style = $this->getObject($options['style_class']);
+        if (isset($options['style_manager'])) {
+            $this->style = $this->getObject($options['style_manager']);
         }
         else {
             $this->style = new StyleManager($options);
@@ -288,8 +289,10 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * @param array|string|null $sheets
-     * @param array|null $options
+     * Create new workbook
+     *
+     * @param array|string|null $sheets Name of sheet or array of names
+     * @param array|null $options Options
      *
      * @return Excel
      */
@@ -333,14 +336,27 @@ class Excel implements InterfaceBookWriter
         self::$tempDir = $tempDir;
     }
 
+    /**
+     * Generate UUID v4
+     *
+     * @return string
+     */
     public static function generateUuid(): string
     {
         // xxxxxxxx-xxxx-4xxx-[8-B]xxx-xxxxxxxxxxxx
         $hash = md5(microtime());
-        $uuid = substr($hash, 0, 8) . '-' . substr($hash, 8, 4)
-            . '-4' . dechex(random_int(256, 4095))
-            . '-' . dechex(random_int(8, 11)) . dechex(random_int(256, 4095))
-            . '-' . substr($hash, 12, 12);
+        try {
+            $uuid = substr($hash, 0, 8) . '-' . substr($hash, 8, 4)
+                . '-4' . dechex(random_int(256, 4095))
+                . '-' . dechex(random_int(8, 11)) . dechex(random_int(256, 4095))
+                . '-' . substr($hash, 12, 12);
+        }
+        catch (\Throwable $e) {
+            $uuid = substr($hash, 0, 8) . '-' . substr($hash, 8, 4)
+                . '-4' . dechex(mt_rand(256, 4095))
+                . '-' . dechex(mt_rand(8, 11)) . dechex(mt_rand(256, 4095))
+                . '-' . substr($hash, 12, 12);
+        }
 
         return strtoupper($uuid);
     }
@@ -354,9 +370,11 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * @param $value
+     * Convert value (int or string) to Excel timestamp
      *
-     * @return bool|float|int
+     * @param int|string $value
+     *
+     * @return float|bool
      */
     public static function toTimestamp($value)
     {
@@ -410,6 +428,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set locale information
+     *
      * @param string $locale
      * @param string|null $dir
      *
@@ -529,62 +549,104 @@ class Excel implements InterfaceBookWriter
         return $this;
     }
 
+    public function setTitle(?string $title = ''): Excel
+    {
+        return $this->setMetaTitle($title);
+    }
+
+    public function setSubject(?string $subject = ''): Excel
+    {
+        return $this->setMetaSubject($subject);
+    }
+
+    public function setAuthor(?string $author = ''): Excel
+    {
+        return $this->setMetaAuthor($author);
+    }
+
+    public function setCompany(?string $company = ''): Excel
+    {
+        return $this->setMetaCompany($company);
+    }
+
+    public function setDescription(?string $description = ''): Excel
+    {
+        return $this->setMetaDescription($description);
+    }
+
+    public function setKeywords($keywords): Excel
+    {
+        return $this->setMetaKeywords($keywords);
+    }
+
     /**
+     * Set metadata 'title'
+     *
      * @param string|null $title
      *
      * @return $this
      */
-    public function setTitle(?string $title = ''): Excel
+    public function setMetaTitle(?string $title = ''): Excel
     {
         return $this->setMetadata('title', $title);
     }
 
     /**
+     * Set metadata 'subject'
+     *
      * @param string|null $subject
      *
      * @return $this
      */
-    public function setSubject(?string $subject = ''): Excel
+    public function setMetaSubject(?string $subject = ''): Excel
     {
         return $this->setMetadata('subject', $subject);
     }
 
     /**
+     * Set metadata 'author'
+     *
      * @param string|null $author
      *
      * @return $this
      */
-    public function setAuthor(?string $author = ''): Excel
+    public function setMetaAuthor(?string $author = ''): Excel
     {
         return $this->setMetadata('author', $author);
     }
 
     /**
+     * Set metadata 'company'
+     *
      * @param string|null $company
      *
      * @return $this
      */
-    public function setCompany(?string $company = ''): Excel
+    public function setMetaCompany(?string $company = ''): Excel
     {
         return $this->setMetadata('company', $company);
     }
 
     /**
+     * Set metadata 'description'
+     *
      * @param string|null $description
      *
      * @return $this
      */
-    public function setDescription(?string $description = ''): Excel
+    public function setMetaDescription(?string $description = ''): Excel
     {
         return $this->setMetadata('description', $description);
     }
 
     /**
+     * Set metadata 'keywords'
+     *
      * @param mixed $keywords
      *
      * @return $this
      */
-    public function setKeywords($keywords): Excel
+    public function setMetaKeywords($keywords): Excel
     {
         if (!$keywords) {
             $newKeywords = [];
@@ -597,6 +659,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set metadata
+     *
      * @param $key
      * @param $value
      *
@@ -610,6 +674,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get metadata
+     *
      * @param null $key
      *
      * @return mixed
@@ -639,21 +705,35 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Set default
+     * Set default font options
      *
-     * @param $font
+     * @param array $fontOptions
      *
      * @return $this
      */
-    public function setDefaultFont($font): Excel
+    public function setDefaultFont(array $fontOptions): Excel
     {
-        $this->style->setDefaultFont($font);
+        $this->style->setDefaultFont($fontOptions);
 
         return $this;
     }
 
     /**
-     * Set default
+     * Set default font name
+     *
+     * @param string $fontName
+     *
+     * @return $this
+     */
+    public function setDefaultFontName(string $fontName): Excel
+    {
+        $this->style->setDefaultFont(['font-name' => $fontName]);
+
+        return $this;
+    }
+
+    /**
+     * Set default style
      *
      * @param array $style
      *
@@ -690,6 +770,53 @@ class Excel implements InterfaceBookWriter
             $tabIndex++;
         }
         return $this;
+    }
+
+    /**
+     * @param int|string|array $rowRange
+     *
+     * @return int[]
+     */
+    public static function rowNumberRange($rowRange): array
+    {
+        if (is_array($rowRange)) {
+            $result = [];
+            foreach ($rowRange as $row) {
+                $result[] = self::rowNumberRange($row);
+            }
+            $result = array_unique(array_filter(array_merge(...$result)));
+            sort($result);
+        }
+        elseif (is_string($rowRange) && preg_match('/^(\d+):(\d+)$/', $rowRange, $m)) {
+            $result = [];
+            for ($rowNum = $m[1]; $rowNum <= $m[2]; $rowNum++) {
+                $result[] = (int)$rowNum;
+            }
+        }
+        elseif (is_numeric($rowRange)) {
+            $result = [(int)$rowRange];
+        }
+        else {
+            ExceptionAddress::throwNew('Row number (or row range) is incorrect');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int|string|array $rowRange
+     *
+     * @return int[]
+     */
+    public static function rowIndexRange($rowRange): array
+    {
+        $result = self::rowNumberRange($rowRange);
+
+        foreach ($result as $key => $num) {
+            $result[$key] = ($num > 0) ? $num - 1 : -1;
+        }
+
+        return $result;
     }
 
     /**
@@ -731,7 +858,7 @@ class Excel implements InterfaceBookWriter
     /**
      * Convert letter range to array of numbers (ONE based)
      *
-     * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
+     * @param string|int|array $colLetter e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
      *
      * @return array
      */
@@ -760,7 +887,7 @@ class Excel implements InterfaceBookWriter
     /**
      * Convert letter range to array of numbers (ZERO based)
      *
-     * @param string|int|array $colLetter Examples: 'B', 2, 'C:F', ['A', 'B', 'C']
+     * @param string|int|array $colLetter e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
      *
      * @return array
      */
@@ -777,16 +904,19 @@ class Excel implements InterfaceBookWriter
 
     /**
      * Convert values to letters array
-     *  Array [0, 1, 2] => ['A', 'B', 'C']
-     *  String 'B, E, F' => ['B', 'E', 'F']
-     *  String 'B-E, F' => ['B', 'C', 'D', 'E', 'F']
-     *  String 'B1-E8' => ['B', 'C', 'D', 'E']
-     *  String 'B1:E8' => ['B:E']
      *
      * @param array|string $colKeys
      * @param int|null $baseNum 0 or 1
      *
      * @return array
+     *
+     * @example
+     * $res = colLetterRange([0, 1, 2]);    // returns ['A', 'B', 'C']
+     * $res = colLetterRange([1, 2, 3], 1); // returns ['A', 'B', 'C']
+     * $res = colLetterRange('B, E, F');    // returns ['B', 'E', 'F']
+     * $res = colLetterRange('B-E, F');     // returns ['B', 'C', 'D', 'E', 'F']
+     * $res = colLetterRange('B1-E8');      // returns ['B', 'C', 'D', 'E']
+     * $res = colLetterRange('B1:E8');      // returns ['B:E']
      */
     public static function colLetterRange($colKeys, ?int $baseNum = 0): array
     {
@@ -888,10 +1018,15 @@ class Excel implements InterfaceBookWriter
      * @param bool|null $absoluteRow
      *
      * @return string Cell label/coordinates, ex: A1, C3, AA42 (or if $absolute==true: $A$1, $C$3, $AA$42)
+     *
+     * @example
+     * cellAddress(3, 3) => 'C3'
+     * cellAddress(43, 27) => 'AA43'
+     * cellAddress(43, 27, true) => '$AA$43'
+     * cellAddress(43, 27, false, true) => 'AA$43'
      */
     public static function cellAddress(int $rowNumber, int $colNumber, ?bool $absolute = false, bool $absoluteRow = null): string
     {
-
         return Helper::cellAddress($rowNumber, $colNumber, $absolute, $absoluteRow);
     }
 
@@ -1257,7 +1392,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Alias of getSheet()
+     * Alias of sheet()
      *
      * @param int|string|null $index - number or name of sheet
      *
@@ -1661,7 +1796,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return void
      */
-    public function output(string $name = null)
+    public function output(?string $name = null)
     {
         $this->download($name);
     }

@@ -1206,24 +1206,19 @@ class Writer
 
         $sheet->writeDataEnd();
 
-        if ($validations = $sheet->getDataValidations()) {
-            $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
-            foreach ($validations as $validation) {
-                $sheet->fileWriter->write($validation->toXml([$this->excel->formulaConverter , 'normalize']));
-            }
-            $sheet->fileWriter->write('</dataValidations>');
-        }
-
+        // <sheetProtection>
         if (($options = $sheet->getProtection()) && !empty($options['sheet'])) {
             $sheet->fileWriter->write('<sheetProtection' . self::tagAttributes($options) . '/>');
         }
 
+        // <autoFilter>
         if ($sheet->autoFilter) {
             $minCell = $sheet->autoFilter;
             $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
             $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
         }
 
+        // <mergeCells>
         $mergedCells = $sheet->getMergedCells();
         if ($mergedCells) {
             $sheet->fileWriter->write('<mergeCells>');
@@ -1233,6 +1228,16 @@ class Writer
             $sheet->fileWriter->write('</mergeCells>');
         }
 
+        // <dataValidations>
+        if ($validations = $sheet->getDataValidations()) {
+            $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
+            foreach ($validations as $validation) {
+                $sheet->fileWriter->write($validation->toXml([$this->excel->formulaConverter , 'normalize']));
+            }
+            $sheet->fileWriter->write('</dataValidations>');
+        }
+
+        // <hyperlinks>
         $links = $sheet->getExternalLinks();
         if ($links) {
             $sheet->fileWriter->write('<hyperlinks>');
@@ -1835,7 +1840,7 @@ class Writer
      *
      * @param mixed $dateInput
      *
-     * @return int|float|bool
+     * @return float|bool
      */
     public static function convertDateTime($dateInput)
     {

@@ -1,7 +1,14 @@
 ## V.6.1
 
-* Sheet::setRowStyle($rowNum, $style) - set style for row 
-* Sheet::setColStyle($colLetter, $style) - set style for column
+* Sheet::setRowOptions(), Sheet::setColOptions(), Sheet::setRowStyles() and Sheet::setColStyles() are deprecated
+* Sheet::setRowStyle($rowNum, $style) - set style for row (or row range)
+* Sheet::setRowStyleArray($rowStyle) - set styles for rows (or row range)
+* Sheet::setRowDataStyle($rowNum, $style)
+* Sheet::setRowDataStyleArray($rowStyle)
+* Sheet::setColStyle($colLetter, $style) - set style for column (or column range)
+* Sheet::setColStyleArray($colStyles) - set style for column (or column range)
+* Sheet::setColDataStyle($colLetter, $style)
+* Sheet::setColDataStyleArray($colStyles)
 
 ## V.6.0
 

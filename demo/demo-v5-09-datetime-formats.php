@@ -29,13 +29,14 @@ $excel = Excel::create();
 $sheet = $excel->getSheet();
 
 $columns = [];
+$colNum = 1;
 foreach ($formats as $format) {
-    $columns[] = [
+    $columns[$colNum++] = [
         'format' => $format,
         'width' => 24,
     ];
 }
-$sheet->setColOptions($columns);
+$sheet->setColDataStyleArray($columns);
 $sheet->writeHeader($formats, ['font' => 'bold', 'text-align' => 'center', 'border' => 'thin']);
 
 foreach ($data as $value) {

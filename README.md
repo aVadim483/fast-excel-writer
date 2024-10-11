@@ -47,9 +47,9 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 * Supports data validations
 
 Jump To:
-* [Changes in version 4](#changes-in-version-4)
+* [Changes in version 6](#changes-in-version-6)
 * [Changes in version 5](#changes-in-version-5)
-* [Important changes in version 5.8](#important-changes-in-version-58)
+  * [Important changes in version 5.8](#important-changes-in-version-58)
 * [Simple Example](#simple-example)
 * [Advanced Example](#advanced-example)
 * [Adding Notes](#adding-notes)
@@ -121,11 +121,17 @@ composer require avadim/fast-excel-writer
 
 * Data Validation support
 
+### Important changes in version 6.1
+* ```Sheet::setRowOptions()```, ```Sheet::setColOptions()```, ```Sheet::setRowStyles()``` and ```Sheet::setColStyles()``` 
+are deprecated, instead of them you should use other functions: ```setRowStyle()```, ```setRowStyleArray()```, 
+```setRowDataStyle()```, ```setRowDataStyleArray()```, ```setColStyle()```, ```setColStyleArray()```, ```setColDataStyle()```, ```setColDataStyleArray()```
+* The behavior of the ```Sheet::setRowStyle()``` and ```Sheet::setColStyle()``` has changed, they now set styles for the entire row or column (even if they are empty)
+
 ## Changes In Version 5
 
 * The general news is Chart support
 
-## Important changes in version 5.8
+### Important changes in version 5.8
 
 Before v.5.8
 ```php
@@ -191,6 +197,7 @@ $excel->download('download.xlsx');
 ```
 
 ### Advanced Example
+
 ```php
 use \avadim\FastExcelWriter\Excel;
 
@@ -231,16 +238,16 @@ $sheet
 // The seconds way to set columns options
 $sheet
     // column and options
-    ->setColOptions('A', ['format' => '@date', 'width' => 12])
+    ->setColDataStyle('A', ['format' => '@date', 'width' => 12])
     // column letter in lower case
-    ->setColOptions('b', ['format' => '@text', 'width' => 24])
+    ->setColDataStyle('b', ['format' => '@text', 'width' => 24])
     // column can be specified by number
-    ->setColOptions(3, ['format' => '0.00', 'width' => 15, 'color' => '#090'])
+    ->setColDataStyle(3, ['format' => '0.00', 'width' => 15, 'color' => '#090'])
 ;
 
 // The third way - all options in multilevel array (first level keys point to columns)
 $sheet
-    ->setColOptions([
+    ->setColDataStyle([
         'A' => ['format' => '@date', 'width' => 12],
         'B' => ['format' => '@text', 'width' => 24],
         'C' => ['format' => '0.00', 'width' => 15, 'color' => '#090'],

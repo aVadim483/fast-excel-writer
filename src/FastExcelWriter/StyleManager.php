@@ -176,13 +176,13 @@ class StyleManager
     }
 
     /**
-     * @param array $font
+     * @param array $fontOptions
      *
      * @return $this
      */
-    public function setDefaultFont(array $font): StyleManager
+    public function setDefaultFont(array $fontOptions): StyleManager
     {
-        $this->defaultFont = self::normalizeFont($font);
+        $this->defaultFont = self::normalizeFont($fontOptions);
         $this->addElement('fonts', $this->defaultFont, null, 0);
 
         return $this;

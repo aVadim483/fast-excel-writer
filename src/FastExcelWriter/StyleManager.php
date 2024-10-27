@@ -593,13 +593,11 @@ class StyleManager
         }
 
         $size = $font['font-size'] ?? ($font['size'] ?? null);
-        if ($size) {
-            $size = (int)$size;
-            if ($size > 0) {
-                $result['val']['size'] = $size;
-                $result['tag']['size'] = '<sz val="' . $size . '"/>';
-                $result['font']['font-size'] = $size;
-            }
+        if ($size && (float)$size > 0) {
+            $size = str_replace(',', '.', (string)$size);
+            $result['val']['size'] = $size;
+            $result['tag']['size'] = '<sz val="' . $size . '"/>';
+            $result['font']['font-size'] = $size;
         }
 
         $color = $font['font-color'] ?? ($font['color'] ?? null);

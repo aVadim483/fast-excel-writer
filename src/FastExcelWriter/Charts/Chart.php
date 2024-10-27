@@ -214,9 +214,23 @@ class Chart
 
 
     /**
-     * Create a new Chart
+     * Chart constructor
+     *
+     * @param Title|string $title
+     * @param PlotArea|array $plotArea
+     * @param Legend|null $legend
+     * @param bool|null $plotVisibleOnly
+     * @param string|null $displayBlanksAs
+     * @param Title|string|null $xAxisLabel
+     * @param Title|string|null $yAxisLabel
+     * @param Axis|null $xAxis
+     * @param Axis|null $yAxis
+     * @param GridLines|null $majorGridlines
+     * @param GridLines|null $minorGridlines
      */
-    public function __construct($title, $plotArea, Legend $legend = null, $plotVisibleOnly = true, $displayBlanksAs = '0', $xAxisLabel = null, $yAxisLabel = null, Axis $xAxis = null, Axis $yAxis = null, GridLines $majorGridlines = null, GridLines $minorGridlines = null)
+    public function __construct($title, $plotArea, Legend $legend = null, ?bool $plotVisibleOnly = true, ?string $displayBlanksAs = '0',
+                                $xAxisLabel = null, $yAxisLabel = null, Axis $xAxis = null, Axis $yAxis = null, GridLines $majorGridlines = null,
+                                GridLines $minorGridlines = null)
     {
         $this->setTitle($title);
         $this->legend = $legend;
@@ -237,13 +251,13 @@ class Chart
     }
 
     /**
-     * @param $chartType
-     * @param $title
-     * @param $dataSource
+     * @param string $chartType
+     * @param Title|string $title
+     * @param DataSeries|array $dataSource
      *
      * @return $this
      */
-    public static function make($chartType, $title = null, $dataSource = null): Chart
+    public static function make(string $chartType, $title = null, $dataSource = null): Chart
     {
         if (!in_array($chartType, self::$charTypes)) {
             ExceptionChart::throwNew('Invalid chart type "' . $chartType . '"');

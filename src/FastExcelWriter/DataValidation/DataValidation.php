@@ -14,7 +14,7 @@ class DataValidation
     const TYPE_LIST = 'list'; // Data validation which checks for a value matching one of list of values
     const TYPE_NONE = 'none'; // No data validation. Why do we need this type?
     const TYPE_TEXT_LENGTH = 'textLength'; // Data validation which checks for text values, whose length satisfies the given condition
-    const TYPE_TEXTLENGTH = 'textLength';
+    const TYPE_TEXTLENGTH = self::TYPE_TEXT_LENGTH;
     const TYPE_TIME = 'time'; // Data validation which checks for time values satisfying the given condition
     const TYPE_WHOLE = 'whole'; // Data validation which checks for whole number values satisfying the given condition
     const TYPE_INTEGER = self::TYPE_WHOLE;
@@ -71,6 +71,17 @@ class DataValidation
         '!between' => self::OPERATOR_NOT_BETWEEN,
     ];
 
+    protected array $availableTypes = [
+        self::TYPE_CUSTOM,
+        self::TYPE_DATE,
+        self::TYPE_DECIMAL,
+        self::TYPE_LIST,
+        self::TYPE_NONE,
+        self::TYPE_TEXT_LENGTH,
+        self::TYPE_TIME,
+        self::TYPE_WHOLE,
+    ];
+
     protected array $availableOperators = [
         self::OPERATOR_BETWEEN,
         self::OPERATOR_EQUAL,
@@ -88,13 +99,23 @@ class DataValidation
         self::STYLE_INFORMATION,
     ];
 
-
+    /**
+     * DataValidation constructor
+     *
+     * @param $type
+     */
     public function __construct($type)
     {
+        if (!in_array($type, $this->availableTypes)) {
+            ExceptionDataValidation::throwNew('Invalid type for data validation "' . $type . '"');
+        }
+
         $this->type = $type;
     }
 
     /**
+     * Make a DataValidation instance
+     *
      * @param $type
      *
      * @return DataValidation
@@ -105,6 +126,8 @@ class DataValidation
     }
 
     /**
+     * Make data validation as an integer value
+     *
      * @param string $operator
      * @param string|int|array $formulas
      *
@@ -119,6 +142,8 @@ class DataValidation
     }
 
     /**
+     * Alias of integer()
+     *
      * @param string $operator
      * @param string|int|array $formulas
      *
@@ -131,6 +156,8 @@ class DataValidation
     }
 
     /**
+     * Make data validation as a decimal value
+     *
      * @param string $operator
      * @param string|int|array $formulas
      *
@@ -145,6 +172,8 @@ class DataValidation
     }
 
     /**
+     * Make data validation as a date value
+     *
      * @param string $operator
      * @param string|int|array $formulas
      *
@@ -159,6 +188,8 @@ class DataValidation
     }
 
     /**
+     * Make data validation as a dropdown list
+     *
      * @param array|string $formulas
      *
      * @return DataValidation
@@ -172,6 +203,8 @@ class DataValidation
     }
 
     /**
+     * Alias of dropDown()
+     *
      * @param array|string $formulas
      * *
      * @return DataValidation
@@ -183,6 +216,9 @@ class DataValidation
     }
 
     /**
+     * Make data validation as a text length
+     *
+     * @param string $operator
      * @param array|string $formulas
      *
      * @return DataValidation
@@ -196,6 +232,8 @@ class DataValidation
     }
 
     /**
+     * Make data validation as a custom rule
+     *
      * @param string $formula
      *
      * @return DataValidation
@@ -209,6 +247,8 @@ class DataValidation
     }
 
     /**
+     * Checking if a cell value is a number
+     *
      * @return DataValidation
      */
     public static function isNumber(): DataValidation
@@ -218,6 +258,8 @@ class DataValidation
     }
 
     /**
+     * Checking if a cell value is a text
+     *
      * @return DataValidation
      */
     public static function isText(): DataValidation
@@ -250,6 +292,8 @@ class DataValidation
     }
 
     /**
+     * Set formula 1 for data validation
+     *
      * @param int|float|string|array|null $formula
      *
      * @return $this
@@ -264,7 +308,13 @@ class DataValidation
         return $this;
     }
 
-
+    /**
+     * Set formula 2 for data validation
+     *
+     * @param int|float|string|array|null $formula
+     *
+     * @return $this
+     */
     public function setFormula2($formula): DataValidation
     {
         $this->formula2 = ($formula !== null) ? $this->checkFormula($formula) : null;
@@ -333,6 +383,8 @@ class DataValidation
     }
 
     /**
+     * Allow blank value
+     *
      * @param bool $allowBlank
      *
      * @return $this
@@ -345,6 +397,8 @@ class DataValidation
     }
 
     /**
+     * Show dropdown list
+     *
      * @param bool $showDropDown
      *
      * @return $this
@@ -356,7 +410,13 @@ class DataValidation
         return $this;
     }
 
-
+    /**
+     * Show input message
+     *
+     * @param bool|null $showInputMessage
+     *
+     * @return $this
+     */
     public function showInputMessage(?bool $showInputMessage = true): DataValidation
     {
         $this->showInputMessage = (int)$showInputMessage;
@@ -365,6 +425,8 @@ class DataValidation
     }
 
     /**
+     * Error style (action in case of error)
+     *
      * @param string $errorStyle
      *
      * @return $this
@@ -380,6 +442,8 @@ class DataValidation
     }
 
     /**
+     * Error message title
+     *
      * @param string $errorTitle
      *
      * @return $this
@@ -392,6 +456,8 @@ class DataValidation
     }
 
     /**
+     * Error message body
+     *
      * @param string $error
      *
      * @return $this
@@ -404,6 +470,8 @@ class DataValidation
     }
 
     /**
+     * Allow (or disallow) error message
+     *
      * @param bool $showErrorMessage
      *
      * @return $this
@@ -416,6 +484,8 @@ class DataValidation
     }
 
     /**
+     * Set prompt
+     *
      * @param string $promptMessage
      * @param string|null $promptTitle
      *
@@ -433,6 +503,8 @@ class DataValidation
     }
 
     /**
+     * Set error message (title and body)
+     *
      * @param string $errorMessage
      * @param string|null $errorTitle
      *

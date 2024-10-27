@@ -111,7 +111,7 @@ class PlotArea
             //$this->plotDataSeries = [new DataSeries($chartType)];
         }
         $axisNum = $options['axis_num'] ?? 1;
-/* */
+
         $key = $chartType . '-' . $axisNum;
         if (isset($this->plotDataSeries[$key])) {
             $dataSeries = $this->plotDataSeries[$key];
@@ -121,19 +121,7 @@ class PlotArea
             $dataSeries->setAxisNum($axisNum);
             $this->plotDataSeries[$key] = $dataSeries;
         }
-/* */
-/* * /
-        // select DataSeries by chart type
-        foreach ($this->plotDataSeries as $dataSeries) {
-            if ($dataSeries->getChartType() === $chartType) {
-                break;
-            }
-        }
-        if (empty($dataSeries) || $dataSeries->getChartType() !== $chartType) {
-            $dataSeries = new DataSeries($chartType);
-            $this->plotDataSeries[] = $dataSeries;
-        }
-/* */
+
         if (!isset($options['color']) && ($color = $this->selectDefaultColor())) {
             $options['color'] = $color;
         }

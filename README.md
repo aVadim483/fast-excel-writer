@@ -48,6 +48,7 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 
 Jump To:
 * [Changes in version 6](#changes-in-version-6)
+  * [Important changes in version 6.1](#important-changes-in-version-61)
 * [Changes in version 5](#changes-in-version-5)
   * [Important changes in version 5.8](#important-changes-in-version-58)
 * [Simple Example](#simple-example)
@@ -105,6 +106,7 @@ Jump To:
   * [Check type of value](/docs/07-validation.md#check-type-of-value)
   * [Custom filters](/docs/07-validation.md#custom-filters)
   * [All Data Validation settings](/docs/07-validation.md#all-data-validation-settings)
+* [API Reference](/docs/90-api-reference.md)
 * [FastExcelWriter vs PhpSpreadsheet](#fastexcelwriter-vs-phpspreadsheet)
 * [Do you want to support FastExcelWriter?](#do-you-want-to-support-fastexcelwriter)
 

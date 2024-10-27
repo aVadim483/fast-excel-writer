@@ -129,3 +129,30 @@ $validation
 $sheet->addDataValidation('E32', $validation);
 ```
 
+Other methods
+
+```php
+// Allow blank value 
+$validation->allowBlank();
+
+// Disallow blank value 
+$validation->allowBlank(false);
+
+// Show dropdown list
+$validation->showDropDown();
+
+// Disallow dropdown list 
+$validation->showDropDown(false);
+
+// Show input message
+$validation->showInputMessage();
+
+// Disallow input message 
+$validation->showInputMessage(false);
+
+// Show error message
+$validation->showErrorMessage();
+
+// Disallow error message
+$validation->showErrorMessage(false);
+```

@@ -185,7 +185,7 @@ class Area
      *
      * @return bool
      */
-    protected function _validateAddressRange(&$cellAddress, array &$index = null, array &$offset = null): bool
+    protected function _validateAddressRange(&$cellAddress, ?array &$index = null, ?array &$offset = null): bool
     {
         if ($cellAddress) {
             if (is_string($cellAddress)) {
@@ -305,7 +305,7 @@ class Area
      *
      * @return $this
      */
-    public function setFormula($cellAddress, $value, array $style = null): Area
+    public function setFormula($cellAddress, $value, ?array $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setFormula($cellAddress, $value, $style);

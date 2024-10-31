@@ -271,6 +271,7 @@ class FileWriter
         fclose($fd2);
         $this->fd = $fdTarget;
         $this->fileName = $newFileName;
+        $this->close = false;
 
         return $n1 + $n2;
     }

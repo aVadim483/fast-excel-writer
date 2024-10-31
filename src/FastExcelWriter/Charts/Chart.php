@@ -228,9 +228,9 @@ class Chart
      * @param GridLines|null $majorGridlines
      * @param GridLines|null $minorGridlines
      */
-    public function __construct($title, $plotArea, Legend $legend = null, ?bool $plotVisibleOnly = true, ?string $displayBlanksAs = '0',
-                                $xAxisLabel = null, $yAxisLabel = null, Axis $xAxis = null, Axis $yAxis = null, GridLines $majorGridlines = null,
-                                GridLines $minorGridlines = null)
+    public function __construct($title, $plotArea, ?Legend $legend = null, ?bool $plotVisibleOnly = true, ?string $displayBlanksAs = '0',
+                                $xAxisLabel = null, $yAxisLabel = null, ?Axis $xAxis = null, ?Axis $yAxis = null, ?GridLines $majorGridlines = null,
+                                ?GridLines $minorGridlines = null)
     {
         $this->setTitle($title);
         $this->legend = $legend;
@@ -872,7 +872,7 @@ class Chart
      *
      * @return $this
      */
-    public function setTopLeftPosition(string $cell, int $xOffset = null, int $yOffset = null): Chart
+    public function setTopLeftPosition(string $cell, ?int $xOffset = null, ?int $yOffset = null): Chart
     {
         $this->topLeftCellRef = $cell;
         if (!is_null($xOffset)) {

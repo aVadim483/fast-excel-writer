@@ -435,7 +435,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return $this
      */
-    public function setLocale(string $locale, string $dir = null): Excel
+    public function setLocale(string $locale, ?string $dir = null): Excel
     {
         $localeSettings = [];
         // default settings
@@ -1025,7 +1025,7 @@ class Excel implements InterfaceBookWriter
      * cellAddress(43, 27, true) => '$AA$43'
      * cellAddress(43, 27, false, true) => 'AA$43'
      */
-    public static function cellAddress(int $rowNumber, int $colNumber, ?bool $absolute = false, bool $absoluteRow = null): string
+    public static function cellAddress(int $rowNumber, int $colNumber, ?bool $absolute = false, ?bool $absoluteRow = null): string
     {
         return Helper::cellAddress($rowNumber, $colNumber, $absolute, $absoluteRow);
     }
@@ -1336,7 +1336,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Sheet
      */
-    public function makeSheet(string $sheetName = null): Sheet
+    public function makeSheet(?string $sheetName = null): Sheet
     {
         if ($sheetName === null) {
             $sheetName = $this->getDefaultSheetName();
@@ -1767,7 +1767,7 @@ class Excel implements InterfaceBookWriter
      *
      * @param string|null $name
      */
-    public function download(string $name = null)
+    public function download(?string $name = null)
     {
         $tmpFile = $this->writer->makeTempFileName(uniqid('xlsx_writer_'));
         $this->save($tmpFile);

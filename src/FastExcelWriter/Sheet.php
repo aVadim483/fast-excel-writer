@@ -903,14 +903,14 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @deprecated since v.6.1
-     *
      * @param $arg1
      * @param array|null $arg2
      *
      * @return $this
+     *@deprecated since v.6.1
+     *
      */
-    public function setColStyles($arg1, array $arg2 = null): Sheet
+    public function setColStyles($arg1, ?array $arg2 = null): Sheet
     {
         return $this->setColStyle($arg1, $arg2);
     }
@@ -919,7 +919,7 @@ class Sheet implements InterfaceSheetWriter
      * Use 'setColDataStyle()' or 'setColDataStyleArray()' instead
      * @deprecated since v.6.1
      */
-    public function setColOptions($arg1, array $arg2 = null): Sheet
+    public function setColOptions($arg1, ?array $arg2 = null): Sheet
     {
         if ($arg2 === null) {
             return $this->setColDataStyleArray($arg1);
@@ -1478,7 +1478,7 @@ class Sheet implements InterfaceSheetWriter
      * Use 'setRowDataStyle()' or 'setRowDataStyleArray()' instead
      * @deprecated since v.6.1
      */
-    public function setRowOptions($arg1, array $arg2 = null): Sheet
+    public function setRowOptions($arg1, ?array $arg2 = null): Sheet
     {
         if ($arg2 === null) {
             return $this->setRowDataStyleArray($arg1);
@@ -1488,14 +1488,14 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @deprecated since v.6.1
-     *
      * @param $arg1
      * @param array|null $arg2
      *
      * @return $this
+     *@deprecated since v.6.1
+     *
      */
-    public function setRowStyles($arg1, array $arg2 = null): Sheet
+    public function setRowStyles($arg1, ?array $arg2 = null): Sheet
     {
         return $this->setRowOptions($arg1, $arg2);
     }
@@ -1976,7 +1976,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function writeCell($value, array $styles = null): Sheet
+    public function writeCell($value, ?array $styles = null): Sheet
     {
         $this->_checkOutput();
 
@@ -2010,18 +2010,18 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @example
-     * $sheet->writeHeader(['title1', 'title2', 'title3']); // texts for cells of header
-     * $sheet->writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]); // texts and formats of columns
-     * $sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of columns and options of row
-     *
      * @param array $header
      * @param array|null $rowStyle
      * @param array|null $colStyles
      *
      * @return $this
+     *@example
+     * $sheet->writeHeader(['title1', 'title2', 'title3']); // texts for cells of header
+     * $sheet->writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]); // texts and formats of columns
+     * $sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of columns and options of row
+     *
      */
-    public function writeHeader(array $header, array $rowStyle = null, ?array $colStyles = []): Sheet
+    public function writeHeader(array $header, ?array $rowStyle = null, ?array $colStyles = []): Sheet
     {
         $rowValues = [];
         $colNum = 0;
@@ -2356,7 +2356,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
+    public function writeRow(array $rowValues = [], ?array $rowStyle = null, ?array $cellStyles = null): Sheet
     {
         $this->_checkOutput();
 
@@ -2418,7 +2418,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function writeArray(array $rowArray = [], array $rowStyle = null): Sheet
+    public function writeArray(array $rowArray = [], ?array $rowStyle = null): Sheet
     {
         foreach ($rowArray as $rowValues) {
             $this->writeRow($rowValues, $rowStyle);
@@ -2511,7 +2511,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return Area
      */
-    public function beginArea(string $cellAddress = null): Area
+    public function beginArea(?string $cellAddress = null): Area
     {
         if (null === $cellAddress) {
             $cellAddress = 'A' . ($this->rowCountWritten + 1);
@@ -2767,7 +2767,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function setFormula($cellAddress, $value, array $styles = null): Sheet
+    public function setFormula($cellAddress, $value, ?array $styles = null): Sheet
     {
         if (empty($value)) {
             $value = null;

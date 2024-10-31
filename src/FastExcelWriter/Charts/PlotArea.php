@@ -35,7 +35,7 @@ class PlotArea
     /**
      * Create a new PlotArea
      */
-    public function __construct($dataSeries = null, Layout $layout = null)
+    public function __construct($dataSeries = null, ?Layout $layout = null)
     {
         $this->defaultColors = ['5b9bd5', 'ed7d31', 'a5a5a5', 'ffc000', '4472c4', '70ad47'];
         $this->layout = $layout;

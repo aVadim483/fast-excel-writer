@@ -945,7 +945,7 @@ class StyleManager
      *
      * @return int
      */
-    protected function addElement(string $sectionName, $value, array $fullStyle = null, ?int $replaceIndex = null): int
+    protected function addElement(string $sectionName, $value, ?array $fullStyle = null, ?int $replaceIndex = null): int
     {
         if (is_string($value)) {
             $key = $value;
@@ -1369,7 +1369,7 @@ class StyleManager
      *
      * @return string
      */
-    private static function determineNumberFormatType(string $numFormat, string $format = null): string
+    private static function determineNumberFormatType(string $numFormat, ?string $format = null): string
     {
         if ($format === '@URL') {
             return 'n_shared_string';

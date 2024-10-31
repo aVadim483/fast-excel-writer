@@ -305,7 +305,7 @@ class DataSeries
      *
      * @return DataSeries
      */
-    public function setPlotGrouping(string $groupingType = null): DataSeries
+    public function setPlotGrouping(?string $groupingType = null): DataSeries
     {
         $this->plotGrouping = $groupingType;
 
@@ -339,7 +339,7 @@ class DataSeries
      *
      * @return DataSeries
      */
-    public function setPlotChartDirection(string $plotChartDirection = null): DataSeries
+    public function setPlotChartDirection(?string $plotChartDirection = null): DataSeries
     {
         $this->plotChartDirection = $plotChartDirection;
 

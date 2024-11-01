@@ -67,6 +67,16 @@ $sheet1->pagePaperSize(Excel::PAPERSIZE_A3);
 $sheet1->pagePaperHeight('297mm');
 $sheet1->pagePaperWidth('21cm');
 ```
+By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
+
+But you can also specify these values in centimeters or millimeters.
+
+```php
+$sheet1->pageMarginLeft(0.5); // set left margin 0.5 inch
+$sheet1->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
+$sheet1->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
+```
+
 
 ### Freeze Panes and Autofilter
 
@@ -376,6 +386,19 @@ To show/hide gridlines when printing, use the following code:
 
 ```php
 $sheet->setPrintGridlines(true);
+```
+
+You can center print area on a page
+
+```php
+// horizontal centered (default param is true)
+$sheet->setPrintHorizontalCentered();
+
+// vertical centered
+$sheet->setPrintVerticalCentered();
+
+// centered both direction
+$sheet->setPrintCentered();
 ```
 
 Returns to [README.md](/README.md)

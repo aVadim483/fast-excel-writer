@@ -2084,17 +2084,18 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Write value to the specified cell and move pointer to the next cell in the row
      *
-     * $cellAddress formats:
-     *      'B5'
-     *      'B5:C7'
-     *      ['col' => 2, 'row' => 5]
-     *      [2, 5]
-     *
      * @param string|array $cellAddress
      * @param mixed $value
      * @param array|null $styles
      *
      * @return $this
+     *
+     * @example
+     * $sheet->writeTo('B5', $value); // write to single cell
+     * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
+     * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as array
+     * $sheet->writeTo([2, 5], $value); // address as array
+     *
      */
     public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
     {
@@ -2158,10 +2159,10 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->mergeCells(['A1:B2', 'C1:D2']);
      *
      * @param array|string|int $rangeSet
-     * @param int|null $actionMode Action in case of intersection
-     *      0 - exception
-     *      1 - replace
-     *      2 - keep
+     * @param int|null $actionMode Action in case of intersection:
+     *      0 - exception;
+     *      1 - replace;
+     *      2 - keep;
      *      -1 - skip intersection check
      *
      * @return $this
@@ -2730,17 +2731,17 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Set a value to the single cell or to the cell range
      *
-     * $cellAddress formats:
-     *      'B5'
-     *      'B5:C7'
-     *      ['col' => 2, 'row' => 5]
-     *      [2, 5]
-     *
      * @param string|array $cellAddress
      * @param mixed $value
      * @param array|null $styles
      *
      * @return $this
+     *
+     * @example
+     * $sheet->setValue('B5', $value);
+     * $sheet->setValue('B5:C7', $value, $styles);
+     * $sheet->setValue(['col' => 2, 'row' => 5], $value, $styles);
+     * $sheet->setValue([2, 5], $value);
      */
     public function setValue($cellAddress, $value, ?array $styles = null): Sheet
     {
@@ -2755,17 +2756,17 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Set a formula to the single cell or to the cell range
      *
-     * $cellAddress formats:
-     *      'B5'
-     *      'B5:C7'
-     *      ['col' => 2, 'row' => 5]
-     *      [2, 5]
-     *
      * @param string|array $cellAddress
      * @param mixed $value
      * @param array|null $styles
      *
      * @return $this
+     *
+     * @example
+     *  $sheet->setFormula('B5', '=F23');
+     *  $sheet->setFormula('B5:C7', $formula, $styles);
+     *  $sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
+     *  $sheet->setFormula([2, 5], '=SUM(A4:A18)');
      */
     public function setFormula($cellAddress, $value, ?array $styles = null): Sheet
     {
@@ -2784,15 +2785,15 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Select a single cell or cell range in the current row
      *
-     * $cellAddress formats:
-     *      'B5'
-     *      'B5:C7'
-     *      ['col' => 2, 'row' => 5]
-     *      [2, 5]
-     *
      * @param string|array $cellAddress
      *
      * @return $this
+     *
+     * @example
+     * $sheet->cell('B5')->writeCell($value);
+     * $sheet->cell('B5:C7')->applyBorder('thin');
+     * $sheet->cell(['col' => 2, 'row' => 5])->applyUnlock();
+     * $sheet->cell([2, 5])->applyColor($color);
      */
     public function cell($cellAddress): Sheet
     {
@@ -4128,13 +4129,58 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @param bool $bool
+     * Show grid line in the print area
+     *
+     * @param bool|null $bool
      *
      * @return $this
      */
-    public function setPrintGridlines(bool $bool): Sheet
+    public function setPrintGridlines(?bool $bool = true): Sheet
     {
         $this->setBottomNodeOption('printOptions', 'gridLines', $bool ? '1' : '0');
+
+        return $this;
+    }
+
+    /**
+     * Center the print area horizontally
+     *
+     * @param bool|null $value
+     *
+     * @return $this
+     */
+    public function setPrintHorizontalCentered(?bool $value = true): Sheet
+    {
+        $this->setBottomNodeOption('printOptions', 'horizontalCentered', $value ? '1' : '0');
+
+        return $this;
+    }
+
+    /**
+     * Center the print area vertically
+     *
+     * @param bool|null $value
+     *
+     * @return $this
+     */
+    public function setPrintVerticalCentered(?bool $value = true): Sheet
+    {
+        $this->setBottomNodeOption('printOptions', 'verticalCentered', $value ? '1' : '0');
+
+        return $this;
+    }
+
+    /**
+     * Center the print area horizontally and vertically
+     *
+     * @param bool|null $value
+     *
+     * @return $this
+     */
+    public function setPrintCentered(?bool $value = true): Sheet
+    {
+        $this->setPrintHorizontalCentered($value)
+            ->setPrintVerticalCentered($value);
 
         return $this;
     }

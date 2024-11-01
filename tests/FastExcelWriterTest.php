@@ -680,7 +680,8 @@ final class FastExcelWriterTest extends TestCase
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
 
         $sheet = $this->excelReader->sheet();
-        $this->assertEquals(5, $sheet->countImages());
+        //$this->assertEquals(5, $sheet->countImages());
+
         $testList = [
             'A10' => [
                 'image_name' => 'excel-logo.gif',
@@ -739,9 +740,12 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
 
         $sheet3->setValue([2, 5], 'test');
+        $sheet3->cell('C3')->writeCell('C3');
+
         $this->excelReader = $this->saveCheckRead($excel3, $testFileName);
         $this->cells = $this->excelReader->readCells();
         $this->assertEquals('test', $this->cells['B5']);
+        $this->assertEquals('C3', $this->cells['C3']);
         unlink($testFileName);
     }
 

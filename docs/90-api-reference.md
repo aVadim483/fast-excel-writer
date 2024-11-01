@@ -1,5 +1,11 @@
 # FastExcelWriter - API Reference
 
+---
+
+namespace **avadim\FastExcelWriter**
+
+---
+
 * [Class Excel](91-api-class-excel.md)
 * [Class Sheet](92-api-class-sheet.md)
 * [Class RichText](93-api-class-rich-text.md)

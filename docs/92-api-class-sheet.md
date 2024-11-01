@@ -152,10 +152,13 @@
 * [getPageSetup()](#getpagesetup)
 * [setPageSetup()](#setpagesetup)
 * [setPrintArea()](#setprintarea)
-* [setPrintGridlines()](#setprintgridlines)
+* [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
+* [setPrintGridlines()](#setprintgridlines) -- Show grid line in the print area
+* [setPrintHorizontalCentered()](#setprinthorizontalcentered) -- Center the print area horizontally
 * [setPrintLeftColumns()](#setprintleftcolumns)
 * [setPrintTitles()](#setprinttitles)
 * [setPrintTopRows()](#setprinttoprows)
+* [setPrintVerticalCentered()](#setprintverticalcentered) -- Center the print area vertically
 * [protect()](#protect) -- Protect sheet
 * [isRightToLeft()](#isrighttoleft)
 * [setRowDataStyle()](#setrowdatastyle) -- Style are applied only to non-empty cells in a row (or row range)
@@ -229,7 +232,6 @@ public function addCellStyle(string $cellAddr, array $style): Sheet
 ### Parameters
 
 * `string $cellAddr`
-
 * `array $style`
 
 ---
@@ -247,7 +249,6 @@ _Add chart object to the specified range of cells_
 ### Parameters
 
 * `string $range` -- Set the position where the chart should appear in the worksheet
-
 * `Chart $chart` -- Chart object
 
 ---
@@ -265,7 +266,6 @@ _Add data validation object to the specified range of cells_
 ### Parameters
 
 * `string $range`
-
 * `DataValidation $validation`
 
 ---
@@ -283,10 +283,18 @@ _Add image to the sheet_
 ### Parameters
 
 * `string $cell`
-
 * `string $imageFile`
-
 * `array|null $imageStyle`
+
+---
+
+### Examples
+
+```php
+$sheet->addImage('A1', 'path/to/file');
+$sheet->addImage('A1', 'path/to/file', ['width => 100]);
+```
+
 
 ---
 
@@ -302,8 +310,16 @@ _Define named range_
 ### Parameters
 
 * `string $range`
-
 * `string $name`
+
+---
+
+### Examples
+
+```php
+$sheet->addNamedRange('B3:C5', 'Demo');
+```
+
 
 ---
 
@@ -319,10 +335,18 @@ _Add note to the sheet_
 ### Parameters
 
 * `string|mixed $cell`
-
 * `string|array|null $comment`
-
 * `array $noteStyle`
+
+---
+
+### Examples
+
+```php
+$sheet->addNote('A1', $noteText, $noteStyle);
+$sheet->writeCell($cellValue)->addNote($noteText, $noteStyle);
+```
+
 
 ---
 
@@ -338,7 +362,6 @@ _Alias for 'addCellStyle()'_
 ### Parameters
 
 * `string $cellAddr`
-
 * `array $style`
 
 ---
@@ -348,7 +371,7 @@ _Alias for 'addCellStyle()'_
 ---
 
 ```php
-public function allowAutoFilter(?bool $allow): Sheet
+public function allowAutoFilter(?bool $allow = true): Sheet
 ```
 _AutoFilters should be allowed to operate when the sheet is protected_
 
@@ -363,7 +386,7 @@ _AutoFilters should be allowed to operate when the sheet is protected_
 ---
 
 ```php
-public function allowDeleteColumns(?bool $allow): Sheet
+public function allowDeleteColumns(?bool $allow = true): Sheet
 ```
 _Deleting columns should be allowed when the sheet is protected_
 
@@ -378,7 +401,7 @@ _Deleting columns should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowDeleteRows(?bool $allow): Sheet
+public function allowDeleteRows(?bool $allow = true): Sheet
 ```
 _Deleting rows should be allowed when the sheet is protected_
 
@@ -393,7 +416,7 @@ _Deleting rows should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowEditObjects(?bool $allow): Sheet
+public function allowEditObjects(?bool $allow = true): Sheet
 ```
 _Objects are allowed to be edited when the sheet is protected_
 
@@ -408,7 +431,7 @@ _Objects are allowed to be edited when the sheet is protected_
 ---
 
 ```php
-public function allowEditScenarios(?bool $allow): Sheet
+public function allowEditScenarios(?bool $allow = true): Sheet
 ```
 _Scenarios are allowed to be edited when the sheet is protected_
 
@@ -423,7 +446,7 @@ _Scenarios are allowed to be edited when the sheet is protected_
 ---
 
 ```php
-public function allowFormatCells(?bool $allow): Sheet
+public function allowFormatCells(?bool $allow = true): Sheet
 ```
 _Formatting cells should be allowed when the sheet is protected_
 
@@ -438,7 +461,7 @@ _Formatting cells should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowFormatColumns(?bool $allow): Sheet
+public function allowFormatColumns(?bool $allow = true): Sheet
 ```
 _Formatting columns should be allowed when the sheet is protected_
 
@@ -453,7 +476,7 @@ _Formatting columns should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowFormatRows(?bool $allow): Sheet
+public function allowFormatRows(?bool $allow = true): Sheet
 ```
 _Formatting rows should be allowed when the sheet is protected_
 
@@ -468,7 +491,7 @@ _Formatting rows should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowInsertColumns(?bool $allow): Sheet
+public function allowInsertColumns(?bool $allow = true): Sheet
 ```
 _Inserting columns should be allowed when the sheet is protected_
 
@@ -483,7 +506,7 @@ _Inserting columns should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowInsertHyperlinks(?bool $allow): Sheet
+public function allowInsertHyperlinks(?bool $allow = true): Sheet
 ```
 _Inserting hyperlinks should be allowed when the sheet is protected_
 
@@ -498,7 +521,7 @@ _Inserting hyperlinks should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowInsertRows(?bool $allow): Sheet
+public function allowInsertRows(?bool $allow = true): Sheet
 ```
 _Inserting rows should be allowed when the sheet is protected_
 
@@ -513,7 +536,7 @@ _Inserting rows should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowPivotTables(?bool $allow): Sheet
+public function allowPivotTables(?bool $allow = true): Sheet
 ```
 _PivotTables should be allowed to operate when the sheet is protected_
 
@@ -528,7 +551,7 @@ _PivotTables should be allowed to operate when the sheet is protected_
 ---
 
 ```php
-public function allowSelectCells(?bool $allow): Sheet
+public function allowSelectCells(?bool $allow = true): Sheet
 ```
 _Selection of any cells should be allowed when the sheet is protected_
 
@@ -543,7 +566,7 @@ _Selection of any cells should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowSelectLockedCells(?bool $allow): Sheet
+public function allowSelectLockedCells(?bool $allow = true): Sheet
 ```
 _Selection of locked cells should be allowed when the sheet is protected_
 
@@ -558,7 +581,7 @@ _Selection of locked cells should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowSelectUnlockedCells(?bool $allow): Sheet
+public function allowSelectUnlockedCells(?bool $allow = true): Sheet
 ```
 _Selection of unlocked cells should be allowed when the sheet is protected_
 
@@ -573,7 +596,7 @@ _Selection of unlocked cells should be allowed when the sheet is protected_
 ---
 
 ```php
-public function allowSort(?bool $allow): Sheet
+public function allowSort(?bool $allow = true): Sheet
 ```
 _Sorting should be allowed when the sheet is protected_
 
@@ -603,14 +626,13 @@ public function applyBgColor(string $color): Sheet
 ---
 
 ```php
-public function applyBorder(string $style, ?string $color): Sheet
+public function applyBorder(string $style, ?string $color = '#000000'): Sheet
 ```
 _Sets all borders style_
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -620,14 +642,14 @@ _Sets all borders style_
 ---
 
 ```php
-public function applyBorderBottom(string $style, ?string $color): Sheet
+public function applyBorderBottom(string $style, 
+                                  ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -637,14 +659,14 @@ public function applyBorderBottom(string $style, ?string $color): Sheet
 ---
 
 ```php
-public function applyBorderLeft(string $style, ?string $color): Sheet
+public function applyBorderLeft(string $style, 
+                                ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -654,14 +676,14 @@ public function applyBorderLeft(string $style, ?string $color): Sheet
 ---
 
 ```php
-public function applyBorderRight(string $style, ?string $color): Sheet
+public function applyBorderRight(string $style, 
+                                 ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -671,14 +693,14 @@ public function applyBorderRight(string $style, ?string $color): Sheet
 ---
 
 ```php
-public function applyBorderTop(string $style, ?string $color): Sheet
+public function applyBorderTop(string $style, 
+                               ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -733,19 +755,17 @@ _Alias of 'backgroundColor()'_
 ---
 
 ```php
-public function applyFont(string $fontName, ?int $fontSize, ?string $fontStyle, 
-                          ?string $fontColor): Sheet
+public function applyFont(string $fontName, ?int $fontSize = null, 
+                          ?string $fontStyle = null, 
+                          ?string $fontColor = null): Sheet
 ```
 
 
 ### Parameters
 
 * `string $fontName`
-
 * `int|null $fontSize`
-
 * `string|null $fontStyle`
-
 * `string|null $fontColor`
 
 ---
@@ -860,7 +880,7 @@ _None_
 ---
 
 ```php
-public function applyFontStyleUnderline(?bool $double): Sheet
+public function applyFontStyleUnderline(?bool $double = false): Sheet
 ```
 
 
@@ -890,7 +910,7 @@ public function applyFormat($format): Sheet
 ---
 
 ```php
-public function applyHide(?bool $hide): Sheet
+public function applyHide(?bool $hide = true): Sheet
 ```
 
 
@@ -905,14 +925,14 @@ public function applyHide(?bool $hide): Sheet
 ---
 
 ```php
-public function applyInnerBorder(string $style, ?string $color): Sheet
+public function applyInnerBorder(string $style, 
+                                 ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -937,14 +957,14 @@ public function applyNamedRange(string $name): Sheet
 ---
 
 ```php
-public function applyOuterBorder(string $style, ?string $color): Sheet
+public function applyOuterBorder(string $style, 
+                                 ?string $color = '#000000'): Sheet
 ```
 
 
 ### Parameters
 
 * `string $style`
-
 * `string|null $color`
 
 ---
@@ -1000,14 +1020,13 @@ public function applyStyle(array $style): Sheet
 
 ```php
 public function applyTextAlign(string $textAlign, 
-                               ?string $verticalAlign): Sheet
+                               ?string $verticalAlign = null): Sheet
 ```
 
 
 ### Parameters
 
 * `string $textAlign`
-
 * `string|null $verticalAlign`
 
 ---
@@ -1062,7 +1081,7 @@ public function applyTextRotation(int $degrees): Sheet
 ---
 
 ```php
-public function applyTextWrap(?bool $textWrap): Sheet
+public function applyTextWrap(?bool $textWrap = true): Sheet
 ```
 
 
@@ -1077,7 +1096,7 @@ public function applyTextWrap(?bool $textWrap): Sheet
 ---
 
 ```php
-public function applyUnlock(?bool $unlock): Sheet
+public function applyUnlock(?bool $unlock = true): Sheet
 ```
 
 
@@ -1107,14 +1126,13 @@ public function applyVerticalAlign(string $verticalAlign): Sheet
 ---
 
 ```php
-public function setAutofilter(?int $row, ?int $col): Sheet
+public function setAutofilter(?int $row = 1, ?int $col = 1): Sheet
 ```
 _Set auto filter_
 
 ### Parameters
 
 * `int|null $row`
-
 * `int|null $col`
 
 ---
@@ -1124,7 +1142,7 @@ _Set auto filter_
 ---
 
 ```php
-public function beginArea(?string $cellAddress): Area
+public function beginArea(?string $cellAddress = null): Area
 ```
 _Begin a new area_
 
@@ -1139,7 +1157,7 @@ _Begin a new area_
 ---
 
 ```php
-public function beginOutlineLevel(?bool $collapsed): Sheet
+public function beginOutlineLevel(?bool $collapsed = false): Sheet
 ```
 
 
@@ -1161,7 +1179,6 @@ public function setBgColor(string $cellAddr, string $color): Sheet
 ### Parameters
 
 * `string $cellAddr`
-
 * `string $color`
 
 ---
@@ -1193,7 +1210,6 @@ public function setBottomNodesOptions(string $node, array $options): Sheet
 ### Parameters
 
 * `string $node`
-
 * `array $options`
 
 ---
@@ -1207,11 +1223,21 @@ public function cell($cellAddress): Sheet
 ```
 _Select a single cell or cell range in the current row_
 
-_$cellAddress formats:'B5''B5:C7'['col' => 2, 'row' => 5][2, 5]_
-
 ### Parameters
 
 * `string|array $cellAddress`
+
+---
+
+### Examples
+
+```php
+$sheet->cell('B5')->writeCell($value);
+$sheet->cell('B5:C7')->applyBorder('thin');
+$sheet->cell(['col' => 2, 'row' => 5])->applyUnlock();
+$sheet->cell([2, 5])->applyColor($color);
+```
+
 
 ---
 
@@ -1221,16 +1247,14 @@ _$cellAddress formats:'B5''B5:C7'['col' => 2, 'row' => 5][2, 5]_
 
 ```php
 public function setCellStyle(string $cellAddress, $style, 
-                             ?bool $mergeStyles): Sheet
+                             ?bool $mergeStyles = false): Sheet
 ```
 _Set style for the specific cell_
 
 ### Parameters
 
 * `string $cellAddress` -- Cell address
-
 * `mixed $style` -- Style array or object
-
 * `bool|null $mergeStyles` -- True - merge style with previous style for this cell (if exists)
 
 ---
@@ -1309,8 +1333,19 @@ _Styles are applied only to non-empty cells in a column and only take effect sta
 ### Parameters
 
 * `int|string|array $colRange`
-
 * `array $colStyle`
+
+---
+
+### Examples
+
+```php
+$sheet->setColDataStyle('B', ['width' = 20]); // style for cells of column 'B'
+$sheet->setColDataStyle(2, ['width' = 20]); // 'B' is number 2 column
+$sheet->setColDataStyle('B:D', ['width' = 'auto']); // options for range of columns
+$sheet->setColDataStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
+```
+
 
 ---
 
@@ -1331,6 +1366,15 @@ _Styles are applied only to non-empty cells in a column and only take effect sta
 
 ---
 
+### Examples
+
+```php
+$sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]); // options for columns 'B' and 'C'
+```
+
+
+---
+
 ## setColFormat()
 
 ---
@@ -1343,7 +1387,6 @@ _Set format of single or multiple column(s)_
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `mixed $format`
 
 ---
@@ -1375,7 +1418,6 @@ _Set formula for single or multiple column(s)_
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `string $formula`
 
 ---
@@ -1407,7 +1449,6 @@ _Setting a minimal column's width_
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `int|float|string $width`
 
 ---
@@ -1427,19 +1468,27 @@ _Setting a multiple column's minimal width_
 
 ---
 
+### Examples
+
+```php
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+```
+
+
+---
+
 ## setColOptions()
 
 ---
 
 ```php
-public function setColOptions($arg1, ?array $arg2): Sheet
+public function setColOptions($arg1, ?array $arg2 = null): Sheet
 ```
 _Use 'setColDataStyle()' or 'setColDataStyleArray()' instead_
 
 ### Parameters
 
 * `$arg1`
-
 * `$arg2`
 
 ---
@@ -1456,7 +1505,6 @@ public function setColOutlineLevel($col, int $outlineLevel): Sheet
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `int $outlineLevel`
 
 ---
@@ -1475,8 +1523,19 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 ### Parameters
 
 * `int|string|array $colRange` -- Column number or column letter (or array of these)
-
 * `mixed $style`
+
+---
+
+### Examples
+
+```php
+$sheet->setColStyle('B', $style);
+$sheet->setColStyle(2, $style); // 'B' is number 2 column
+$sheet->setColStyle('C:F', $style);
+$sheet->setColStyle(['A', 'B', 'C'], $style);
+```
+
 
 ---
 
@@ -1497,19 +1556,27 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 
 ---
 
+### Examples
+
+```php
+$sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
+```
+
+
+---
+
 ## setColStyles()
 
 ---
 
 ```php
-public function setColStyles($arg1, ?array $arg2): Sheet
+public function setColStyles($arg1, ?array $arg2 = null): Sheet
 ```
 
 
 ### Parameters
 
 * `$arg1`
-
 * `array|null $arg2`
 
 ---
@@ -1526,7 +1593,6 @@ _Show/hide a column_
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `bool $val`
 
 ---
@@ -1536,16 +1602,14 @@ _Show/hide a column_
 ---
 
 ```php
-public function setColWidth($col, $width, ?bool $min): Sheet
+public function setColWidth($col, $width, ?bool $min = false): Sheet
 ```
 _Set width of single or multiple column(s)_
 
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
-
 * `int|float|string $width`
-
 * `bool|null $min`
 
 ---
@@ -1570,15 +1634,23 @@ _Set width of single or multiple column(s)_
 ---
 
 ```php
-public function setColWidths(array $widths, ?bool $min): Sheet
+public function setColWidths(array $widths, ?bool $min = false): Sheet
 ```
 _Setting a multiple column's width_
 
 ### Parameters
 
 * `array $widths`
-
 * `bool|null $min`
+
+---
+
+### Examples
+
+```php
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+```
+
 
 ---
 
@@ -1752,7 +1824,7 @@ _None_
 ---
 
 ```php
-public function setDefaultFontStyleUnderline(?bool $double): Sheet
+public function setDefaultFontStyleUnderline(?bool $double = false): Sheet
 ```
 
 
@@ -1834,7 +1906,6 @@ public function setFormat(string $cellAddr, string $format): Sheet
 ### Parameters
 
 * `string $cellAddr`
-
 * `string $format`
 
 ---
@@ -1844,19 +1915,27 @@ public function setFormat(string $cellAddr, string $format): Sheet
 ---
 
 ```php
-public function setFormula($cellAddress, $value, ?array $styles): Sheet
+public function setFormula($cellAddress, $value, ?array $styles = null): Sheet
 ```
 _Set a formula to the single cell or to the cell range_
-
-_$cellAddress formats:'B5''B5:C7'['col' => 2, 'row' => 5][2, 5]_
 
 ### Parameters
 
 * `string|array $cellAddress`
-
 * `mixed $value`
-
 * `array|null $styles`
+
+---
+
+### Examples
+
+```php
+$sheet->setFormula('B5', '=F23');
+$sheet->setFormula('B5:C7', $formula, $styles);
+$sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
+$sheet->setFormula([2, 5], '=SUM(A4:A18)');
+```
+
 
 ---
 
@@ -1872,8 +1951,17 @@ _Freeze rows/columns_
 ### Parameters
 
 * `mixed $freezeRows`
-
 * `mixed $freezeColumns`
+
+---
+
+### Examples
+
+```php
+$sheet->setFreeze(3, 3); // number rows and columns to freeze
+$sheet->setFreeze('C3'); // left top cell of free area
+```
+
 
 ---
 
@@ -1927,7 +2015,7 @@ _None_
 ---
 
 ```php
-public function getLastCell(?bool $absolute): string
+public function getLastCell(?bool $absolute = false): string
 ```
 
 
@@ -1942,7 +2030,7 @@ public function getLastCell(?bool $absolute): string
 ---
 
 ```php
-public function getLastRange(?bool $absolute): string
+public function getLastRange(?bool $absolute = false): string
 ```
 
 
@@ -1972,15 +2060,24 @@ _Make area for writing_
 ---
 
 ```php
-public function mergeCells($rangeSet, ?int $actionMode): Sheet
+public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
 ```
 _Merge cells_
 
 ### Parameters
 
 * `array|string|int $rangeSet`
+* `int|null $actionMode` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
 
-* `int|null $actionMode` -- Action in case of intersection 0 - exception 1 - replace 2 - keep -1 - skip intersection check
+---
+
+### Examples
+
+```php
+$sheet->mergeCells('A1:C3');
+$sheet->mergeCells(['A1:B2', 'C1:D2']);
+```
+
 
 ---
 
@@ -2011,6 +2108,17 @@ _Merge relative cells_
 ### Parameters
 
 * `array|string|int $rangeSet`
+
+---
+
+### Examples
+
+```php
+$sheet->mergeCells('C3:E8');
+$sheet->mergeCells(3); // 3 columns of current row, equivalent of mergeCells('A5:C5') if current row is 5
+$sheet->mergeCells(['RC3:RC5', 'RC6:RC7']); // equivalent of mergeCells(['C7:E7', 'F7:G7']) if current row is 7
+```
+
 
 ---
 
@@ -2131,7 +2239,6 @@ public function setOuterBorder(string $range, $style): Sheet
 ### Parameters
 
 * `string $range`
-
 * `string|array $style`
 
 ---
@@ -2388,7 +2495,6 @@ public function setPageOptions(string $option, $value): Sheet
 ### Parameters
 
 * `string $option`
-
 * `mixed $value`
 
 ---
@@ -2543,18 +2649,48 @@ public function setPrintArea(string $range): Sheet
 
 ---
 
+## setPrintCentered()
+
+---
+
+```php
+public function setPrintCentered(?bool $value = true): Sheet
+```
+_Center the print area horizontally and vertically_
+
+### Parameters
+
+* `bool|null $value`
+
+---
+
 ## setPrintGridlines()
 
 ---
 
 ```php
-public function setPrintGridlines(bool $bool): Sheet
+public function setPrintGridlines(?bool $bool = true): Sheet
 ```
-
+_Show grid line in the print area_
 
 ### Parameters
 
-* `bool $bool`
+* `bool|null $bool`
+
+---
+
+## setPrintHorizontalCentered()
+
+---
+
+```php
+public function setPrintHorizontalCentered(?bool $value = true): Sheet
+```
+_Center the print area horizontally_
+
+### Parameters
+
+* `bool|null $value`
 
 ---
 
@@ -2578,14 +2714,14 @@ public function setPrintLeftColumns(string $range): Sheet
 ---
 
 ```php
-public function setPrintTitles(?string $rowsAtTop, ?string $colsAtLeft): Sheet
+public function setPrintTitles(?string $rowsAtTop, 
+                               ?string $colsAtLeft = null): Sheet
 ```
 
 
 ### Parameters
 
 * `string|null $rowsAtTop`
-
 * `string|null $colsAtLeft`
 
 ---
@@ -2605,12 +2741,27 @@ public function setPrintTopRows(string $range): Sheet
 
 ---
 
+## setPrintVerticalCentered()
+
+---
+
+```php
+public function setPrintVerticalCentered(?bool $value = true): Sheet
+```
+_Center the print area vertically_
+
+### Parameters
+
+* `bool|null $value`
+
+---
+
 ## protect()
 
 ---
 
 ```php
-public function protect(?string $password): Sheet
+public function protect(?string $password = null): Sheet
 ```
 _Protect sheet_
 
@@ -2647,8 +2798,17 @@ _Style are applied only to non-empty cells in a row (or row range)_
 ### Parameters
 
 * `int|string|array $rowRange`
-
 * `array $style`
+
+---
+
+### Examples
+
+```php
+$sheet->setRowDataStyle(3, ['height' = 20]); // options for row number 3
+$sheet->setRowDataStyle('2:5', ['font-color' = '#f00']); // options for range of rows
+```
+
 
 ---
 
@@ -2667,6 +2827,15 @@ _Styles are applied only to non-empty cells in a rows_
 
 ---
 
+### Examples
+
+```php
+$sheet->setRowDataStyleArray([3 => $style1, 5 => $style2]); // styles for rows 3 and 5
+```
+
+
+---
+
 ## setRowHeight()
 
 ---
@@ -2679,7 +2848,6 @@ _Height of a specific row_
 ### Parameters
 
 * `$rowNum`
-
 * `$height`
 
 ---
@@ -2720,17 +2888,26 @@ _Hide a specific row_
 
 ```php
 public function setRowOutlineLevel($rowNum, int $outlineLevel, 
-                                   ?bool $collapsed): Sheet
+                                   ?bool $collapsed = null): Sheet
 ```
 
 
 ### Parameters
 
 * `int|array|string $rowNum`
-
 * `int $outlineLevel`
-
 * `bool|null $collapsed`
+
+---
+
+### Examples
+
+```php
+setRowOutlineLevel(5, 1)
+setRowOutlineLevel([5, 6, 7], 1)
+setRowOutlineLevel('5:7', 1)
+```
+
 
 ---
 
@@ -2746,8 +2923,17 @@ _Style are applied to the entire sheet row (even if it is empty)_
 ### Parameters
 
 * `int|string|array $rowRange`
-
 * `array $style`
+
+---
+
+### Examples
+
+```php
+$sheet->setRowStyle(3, ['height' = 20]); // options for row number 3
+$sheet->setRowStyle('2:5', ['font-color' = '#f00']); // options for range of rows
+```
+
 
 ---
 
@@ -2766,19 +2952,27 @@ _Styles are applied to the entire sheet row (even if it is empty)_
 
 ---
 
+### Examples
+
+```php
+$sheet->setRowStyleArray([3 => $style1, 5 => $style2]); // styles for rows 3 and 5
+```
+
+
+---
+
 ## setRowStyles()
 
 ---
 
 ```php
-public function setRowStyles($arg1, ?array $arg2): Sheet
+public function setRowStyles($arg1, ?array $arg2 = null): Sheet
 ```
 
 
 ### Parameters
 
 * `$arg1`
-
 * `array|null $arg2`
 
 ---
@@ -2795,7 +2989,6 @@ _Hide/show a specific row_
 ### Parameters
 
 * `int|array $rowNum`
-
 * `bool $visible`
 
 ---
@@ -2805,7 +2998,7 @@ _Hide/show a specific row_
 ---
 
 ```php
-public function skipRow(?int $rowCount): Sheet
+public function skipRow(?int $rowCount = 1): Sheet
 ```
 _Skip rows_
 
@@ -2821,16 +3014,14 @@ _Skip rows_
 
 ```php
 public function setStyle(string $cellAddress, $style, 
-                         ?bool $mergeStyles): Sheet
+                         ?bool $mergeStyles = false): Sheet
 ```
 _Alias for 'setCellStyle()'_
 
 ### Parameters
 
 * `string $cellAddress`
-
 * `mixed $style`
-
 * `bool|null $mergeStyles`
 
 ---
@@ -2865,6 +3056,18 @@ _Set top left cell for writing_
 
 ---
 
+### Examples
+
+```php
+$sheet->setTopLeftCell('C3');
+$sheet->writeRow([11, 22, 33]); // Will be written in cells C3, D3, E3
+$sheet->setTopLeftCell('G7');
+$sheet->writeRow([44, 55]); // Will be written in cells G7, H7
+```
+
+
+---
+
 ## unprotect()
 
 ---
@@ -2885,19 +3088,27 @@ _None_
 ---
 
 ```php
-public function setValue($cellAddress, $value, ?array $styles): Sheet
+public function setValue($cellAddress, $value, ?array $styles = null): Sheet
 ```
 _Set a value to the single cell or to the cell range_
-
-_$cellAddress formats:'B5''B5:C7'['col' => 2, 'row' => 5][2, 5]_
 
 ### Parameters
 
 * `string|array $cellAddress`
-
 * `mixed $value`
-
 * `array|null $styles`
+
+---
+
+### Examples
+
+```php
+$sheet->setValue('B5', $value);
+$sheet->setValue('B5:C7', $value, $styles);
+$sheet->setValue(['col' => 2, 'row' => 5], $value, $styles);
+$sheet->setValue([2, 5], $value);
+```
+
 
 ---
 
@@ -2966,14 +3177,14 @@ _None_
 ---
 
 ```php
-public function writeArray(array $rowArray = [], ?array $rowStyle): Sheet
+public function writeArray(array $rowArray = [], 
+                           ?array $rowStyle = null): Sheet
 ```
 _Write values from two-dimensional array_
 
 ### Parameters
 
 * `array $rowArray` -- Array of rows
-
 * `array|null $rowStyle` -- Style applied to each row
 
 ---
@@ -2990,7 +3201,6 @@ _Write 2d array form the specified cell_
 ### Parameters
 
 * `$topLeftCell`
-
 * `array $data`
 
 ---
@@ -3000,14 +3210,13 @@ _Write 2d array form the specified cell_
 ---
 
 ```php
-public function writeCell($value, ?array $styles): Sheet
+public function writeCell($value, ?array $styles = null): Sheet
 ```
 _Write value to the current cell and move pointer to the next cell in the row_
 
 ### Parameters
 
 * `mixed $value`
-
 * `array|null $styles`
 
 ---
@@ -3017,7 +3226,7 @@ _Write value to the current cell and move pointer to the next cell in the row_
 ---
 
 ```php
-public function writeHeader(array $header, ?array $rowStyle, 
+public function writeHeader(array $header, ?array $rowStyle = null, 
                             ?array $colStyles = []): Sheet
 ```
 
@@ -3025,10 +3234,19 @@ public function writeHeader(array $header, ?array $rowStyle,
 ### Parameters
 
 * `array $header`
-
 * `array|null $rowStyle`
-
 * `array|null $colStyles`
+
+---
+
+### Examples
+
+```php
+$sheet->writeHeader(['title1', 'title2', 'title3']); // texts for cells of header
+$sheet->writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]); // texts and formats of columns
+$sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of columns and options of row
+```
+
 
 ---
 
@@ -3037,17 +3255,15 @@ public function writeHeader(array $header, ?array $rowStyle,
 ---
 
 ```php
-public function writeRow(array $rowValues = [], ?array $rowStyle, 
-                         ?array $cellStyles): Sheet
+public function writeRow(array $rowValues = [], ?array $rowStyle = null, 
+                         ?array $cellStyles = null): Sheet
 ```
 _Write values to the current row_
 
 ### Parameters
 
 * `array $rowValues` -- Values of cells
-
 * `array|null $rowStyle` -- Style applied to the entire row
-
 * `array|null $cellStyles` -- Styles of specified cells in the row
 
 ---
@@ -3061,15 +3277,23 @@ public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
 ```
 _Write value to the specified cell and move pointer to the next cell in the row_
 
-_$cellAddress formats:'B5''B5:C7'['col' => 2, 'row' => 5][2, 5]_
-
 ### Parameters
 
 * `string|array $cellAddress`
-
 * `mixed $value`
-
 * `array|null $styles`
+
+---
+
+### Examples
+
+```php
+$sheet->writeTo('B5', $value); // write to single cell
+$sheet->writeTo('B5:C7', $value); // write a value to merged cells
+$sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as array
+$sheet->writeTo([2, 5], $value); // address as array
+```
+
 
 ---
 

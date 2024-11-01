@@ -75,7 +75,6 @@ _Make data validation as a date value_
 ### Parameters
 
 * `string $operator`
-
 * `string|int|array $formulas`
 
 ---
@@ -92,7 +91,6 @@ _Make data validation as a decimal value_
 ### Parameters
 
 * `string $operator`
-
 * `string|int|array $formulas`
 
 ---
@@ -124,7 +122,6 @@ _Make data validation as an integer value_
 ### Parameters
 
 * `string $operator`
-
 * `string|int|array $formulas`
 
 ---
@@ -201,7 +198,6 @@ _Make data validation as a text length_
 ### Parameters
 
 * `string $operator`
-
 * `array|string $formulas`
 
 ---
@@ -218,7 +214,6 @@ _Alias of integer()_
 ### Parameters
 
 * `string $operator`
-
 * `string|int|array $formulas`
 
 ---
@@ -228,7 +223,7 @@ _Alias of integer()_
 ---
 
 ```php
-public function allowBlank(?bool $allowBlank): DataValidation
+public function allowBlank(?bool $allowBlank = true): DataValidation
 ```
 _Allow blank value_
 
@@ -259,14 +254,13 @@ _None_
 
 ```php
 public function setError(string $errorMessage, 
-                         ?string $errorTitle): DataValidation
+                         ?string $errorTitle = null): DataValidation
 ```
 _Set error message (title and body)_
 
 ### Parameters
 
 * `string $errorMessage`
-
 * `string|null $errorTitle`
 
 ---
@@ -374,9 +368,7 @@ public function setOperator(string $operator, $formula1,
 ### Parameters
 
 * `string $operator`
-
 * `$formula1`
-
 * `$formula2`
 
 ---
@@ -387,14 +379,13 @@ public function setOperator(string $operator, $formula1,
 
 ```php
 public function setPrompt(string $promptMessage, 
-                          ?string $promptTitle): DataValidation
+                          ?string $promptTitle = null): DataValidation
 ```
 _Set prompt_
 
 ### Parameters
 
 * `string $promptMessage`
-
 * `string|null $promptTitle`
 
 ---
@@ -404,7 +395,7 @@ _Set prompt_
 ---
 
 ```php
-public function showDropDown(?bool $showDropDown): DataValidation
+public function showDropDown(?bool $showDropDown = true): DataValidation
 ```
 _Show dropdown list_
 
@@ -419,7 +410,7 @@ _Show dropdown list_
 ---
 
 ```php
-public function showErrorMessage(?bool $showErrorMessage): DataValidation
+public function showErrorMessage(?bool $showErrorMessage = true): DataValidation
 ```
 _Allow (or disallow) error message_
 
@@ -434,7 +425,7 @@ _Allow (or disallow) error message_
 ---
 
 ```php
-public function showInputMessage(?bool $showInputMessage): DataValidation
+public function showInputMessage(?bool $showInputMessage = true): DataValidation
 ```
 _Show input message_
 

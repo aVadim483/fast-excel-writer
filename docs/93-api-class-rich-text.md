@@ -19,7 +19,7 @@
 ---
 
 ```php
-public function __construct(?string $text)
+public function __construct(?string $text = '')
 ```
 
 

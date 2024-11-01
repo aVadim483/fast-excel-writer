@@ -28,6 +28,8 @@
 * [addNamedRange()](#addnamedrange)
 * [addSharedString()](#addsharedstring)
 * [addStyle()](#addstyle)
+* [setAuthor()](#setauthor)
+* [setCompany()](#setcompany)
 * [setDefaultFont()](#setdefaultfont) -- Set default font options
 * [setDefaultFontName()](#setdefaultfontname) -- Set default font name
 * [getDefaultFormatStyles()](#getdefaultformatstyles)
@@ -36,11 +38,13 @@
 * [getDefaultStyle()](#getdefaultstyle)
 * [setDefaultStyle()](#setdefaultstyle) -- Set default style
 * [getDefinedNames()](#getdefinednames)
+* [setDescription()](#setdescription)
 * [download()](#download) -- Download generated file to client (send to browser)
 * [getFileName()](#getfilename) -- Returns default filename
 * [setFileName()](#setfilename) -- Sets default filename for saving
 * [getHyperlinkStyle()](#gethyperlinkstyle)
 * [getImageFiles()](#getimagefiles)
+* [setKeywords()](#setkeywords)
 * [loadImageFile()](#loadimagefile)
 * [setLocale()](#setlocale) -- Set locale information
 * [makeSheet()](#makesheet)
@@ -62,6 +66,8 @@
 * [sheet()](#sheet) -- Returns sheet by number or name of sheet.
 * [getSheet()](#getsheet) -- Alias of sheet()
 * [getSheets()](#getsheets) -- Returns all sheets
+* [setSubject()](#setsubject)
+* [setTitle()](#settitle)
 * [unprotect()](#unprotect) -- Unprotect workbook
 * [getWriter()](#getwriter)
 
@@ -78,7 +84,7 @@ _Excel constructor_
 
 ### Parameters
 
-* `array|null $options` -- Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
+* `array|null $options` -- Optional parameters: \['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
 
 ---
 
@@ -88,20 +94,29 @@ _Excel constructor_
 
 ```php
 public static function cellAddress(int $rowNumber, int $colNumber, 
-                                   ?bool $absolute, 
-                                   ?bool $absoluteRow): string
+                                   ?bool $absolute = false, 
+                                   ?bool $absoluteRow = null): string
 ```
 _Create cell address by row and col numbers_
 
 ### Parameters
 
 * `int $rowNumber` -- ONE based
-
 * `int $colNumber` -- ONE based
-
 * `bool|null $absolute`
-
 * `bool|null $absoluteRow`
+
+---
+
+### Examples
+
+```php
+cellAddress(3, 3) => 'C3'
+cellAddress(43, 27) => 'AA43'
+cellAddress(43, 27, true) => '$AA$43'
+cellAddress(43, 27, false, true) => 'AA$43'
+```
+
 
 ---
 
@@ -131,7 +146,7 @@ _Convert letter range to array of numbers (ZERO based)_
 
 ### Parameters
 
-* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
+* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
 
 ---
 
@@ -200,15 +215,28 @@ _Convert column number to letter_
 ---
 
 ```php
-public static function colLetterRange($colKeys, ?int $baseNum): array
+public static function colLetterRange($colKeys, ?int $baseNum = 0): array
 ```
 _Convert values to letters array_
 
 ### Parameters
 
 * `array|string $colKeys`
-
 * `int|null $baseNum` -- 0 or 1
+
+---
+
+### Examples
+
+```php
+$res = colLetterRange([0, 1, 2]);    // returns ['A', 'B', 'C']
+$res = colLetterRange([1, 2, 3], 1); // returns ['A', 'B', 'C']
+$res = colLetterRange('B, E, F');    // returns ['B', 'E', 'F']
+$res = colLetterRange('B-E, F');     // returns ['B', 'C', 'D', 'E', 'F']
+$res = colLetterRange('B1-E8');      // returns ['B', 'C', 'D', 'E']
+$res = colLetterRange('B1:E8');      // returns ['B:E']
+```
+
 
 ---
 
@@ -238,7 +266,7 @@ _Convert letter range to array of numbers (ONE based)_
 
 ### Parameters
 
-* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
+* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
 
 ---
 
@@ -254,7 +282,6 @@ _Create new workbook_
 ### Parameters
 
 * `array|string|null $sheets` -- Name of sheet or array of names
-
 * `array|null $options` -- Options
 
 ---
@@ -280,16 +307,14 @@ public static function createSheet(string $sheetName): Sheet
 
 ```php
 public static function fullAddress(string $sheetName, string $address, 
-                                   ?bool $force): string
+                                   ?bool $force = false): string
 ```
 
 
 ### Parameters
 
 * `string $sheetName`
-
 * `string $address`
-
 * `bool|null $force`
 
 ---
@@ -427,9 +452,7 @@ public function addDefinedName(string $name, string $range,
 ### Parameters
 
 * `string $name`
-
 * `string $range`
-
 * `array|null $attributes`
 
 ---
@@ -446,7 +469,6 @@ public function addNamedRange(string $range, string $name): Excel
 ### Parameters
 
 * `string $range`
-
 * `string $name`
 
 ---
@@ -456,14 +478,13 @@ public function addNamedRange(string $range, string $name): Excel
 ---
 
 ```php
-public function addSharedString(string $string, ?bool $richText): int
+public function addSharedString(string $string, ?bool $richText = false): int
 ```
 
 
 ### Parameters
 
 * `string $string`
-
 * `bool|null $richText`
 
 ---
@@ -480,8 +501,37 @@ public function addStyle($cellStyle, &$resultStyle): int
 ### Parameters
 
 * `$cellStyle`
-
 * `$resultStyle`
+
+---
+
+## setAuthor()
+
+---
+
+```php
+public function setAuthor(?string $author = ''): Excel
+```
+
+
+### Parameters
+
+* `$author`
+
+---
+
+## setCompany()
+
+---
+
+```php
+public function setCompany(?string $company = ''): Excel
+```
+
+
+### Parameters
+
+* `$company`
 
 ---
 
@@ -605,12 +655,27 @@ _None_
 
 ---
 
+## setDescription()
+
+---
+
+```php
+public function setDescription(?string $description = ''): Excel
+```
+
+
+### Parameters
+
+* `$description`
+
+---
+
 ## download()
 
 ---
 
 ```php
-public function download(?string $name)
+public function download(?string $name = null)
 ```
 _Download generated file to client (send to browser)_
 
@@ -680,6 +745,21 @@ _None_
 
 ---
 
+## setKeywords()
+
+---
+
+```php
+public function setKeywords($keywords): Excel
+```
+
+
+### Parameters
+
+* `$keywords`
+
+---
+
 ## loadImageFile()
 
 ---
@@ -700,14 +780,13 @@ public function loadImageFile(string $imageFile): ?array
 ---
 
 ```php
-public function setLocale(string $locale, ?string $dir): Excel
+public function setLocale(string $locale, ?string $dir = null): Excel
 ```
 _Set locale information_
 
 ### Parameters
 
 * `string $locale`
-
 * `string|null $dir`
 
 ---
@@ -717,7 +796,7 @@ _Set locale information_
 ---
 
 ```php
-public function makeSheet(?string $sheetName): Sheet
+public function makeSheet(?string $sheetName = null): Sheet
 ```
 
 
@@ -732,7 +811,7 @@ public function makeSheet(?string $sheetName): Sheet
 ---
 
 ```php
-public function setMetaAuthor(?string $author): Excel
+public function setMetaAuthor(?string $author = ''): Excel
 ```
 _Set metadata 'author'_
 
@@ -747,7 +826,7 @@ _Set metadata 'author'_
 ---
 
 ```php
-public function setMetaCompany(?string $company): Excel
+public function setMetaCompany(?string $company = ''): Excel
 ```
 _Set metadata 'company'_
 
@@ -784,7 +863,6 @@ _Set metadata_
 ### Parameters
 
 * `$key`
-
 * `$value`
 
 ---
@@ -794,7 +872,7 @@ _Set metadata_
 ---
 
 ```php
-public function setMetaDescription(?string $description): Excel
+public function setMetaDescription(?string $description = ''): Excel
 ```
 _Set metadata 'description'_
 
@@ -824,7 +902,7 @@ _Set metadata 'keywords'_
 ---
 
 ```php
-public function setMetaSubject(?string $subject): Excel
+public function setMetaSubject(?string $subject = ''): Excel
 ```
 _Set metadata 'subject'_
 
@@ -839,7 +917,7 @@ _Set metadata 'subject'_
 ---
 
 ```php
-public function setMetaTitle(?string $title): Excel
+public function setMetaTitle(?string $title = ''): Excel
 ```
 _Set metadata 'title'_
 
@@ -854,7 +932,7 @@ _Set metadata 'title'_
 ---
 
 ```php
-public function output(?string $name): void
+public function output(?string $name = null): void
 ```
 _Alias of download()_
 
@@ -869,7 +947,7 @@ _Alias of download()_
 ---
 
 ```php
-public function protect(?string $password): Excel
+public function protect(?string $password = null): Excel
 ```
 _Protect workbook_
 
@@ -929,14 +1007,13 @@ public function setRightToLeft(bool $isRightToLeft)
 ---
 
 ```php
-public function save(?string $fileName, ?bool $overWrite): bool
+public function save(?string $fileName = null, ?bool $overWrite = true): bool
 ```
 _Save generated XLSX-file_
 
 ### Parameters
 
 * `string|null $fileName`
-
 * `bool|null $overWrite`
 
 ---
@@ -998,6 +1075,36 @@ _Returns all sheets_
 ### Parameters
 
 _None_
+
+---
+
+## setSubject()
+
+---
+
+```php
+public function setSubject(?string $subject = ''): Excel
+```
+
+
+### Parameters
+
+* `$subject`
+
+---
+
+## setTitle()
+
+---
+
+```php
+public function setTitle(?string $title = ''): Excel
+```
+
+
+### Parameters
+
+* `$title`
 
 ---
 

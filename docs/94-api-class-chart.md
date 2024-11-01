@@ -75,36 +75,28 @@
 ---
 
 ```php
-public function __construct($title, $plotArea, ?Legend $legend, 
-                            ?bool $plotVisibleOnly, ?string $displayBlanksAs, 
-                            $xAxisLabel, $yAxisLabel, ?Axis $xAxis, 
-                            ?Axis $yAxis, ?GridLines $majorGridlines, 
-                            ?GridLines $minorGridlines)
+public function __construct($title, $plotArea, ?Legend $legend = null, 
+                            ?bool $plotVisibleOnly = true, 
+                            ?string $displayBlanksAs = '0', $xAxisLabel, 
+                            $yAxisLabel, ?Axis $xAxis = null, 
+                            ?Axis $yAxis = null, 
+                            ?GridLines $majorGridlines = null, 
+                            ?GridLines $minorGridlines = null)
 ```
 _Chart constructor_
 
 ### Parameters
 
 * `Title|string $title`
-
 * `PlotArea|array $plotArea`
-
 * `Legend|null $legend`
-
 * `bool|null $plotVisibleOnly`
-
 * `string|null $displayBlanksAs`
-
 * `Title|string|null $xAxisLabel`
-
 * `Title|string|null $yAxisLabel`
-
 * `Axis|null $xAxis`
-
 * `Axis|null $yAxis`
-
 * `GridLines|null $majorGridlines`
-
 * `GridLines|null $minorGridlines`
 
 ---
@@ -121,9 +113,7 @@ public static function make(string $chartType, $title, $dataSource): Chart
 ### Parameters
 
 * `string $chartType`
-
 * `Title|string $title`
-
 * `DataSeries|array $dataSource`
 
 ---
@@ -149,7 +139,7 @@ public function addDataSeriesSet(array $dataSources): Chart
 
 ```php
 public function addDataSeriesType(string $chartType, $dataSource, 
-                                  ?string $dataLabel, 
+                                  ?string $dataLabel = null, 
                                   ?array $options = []): Chart
 ```
 
@@ -157,11 +147,8 @@ public function addDataSeriesType(string $chartType, $dataSource,
 ### Parameters
 
 * `string $chartType`
-
 * `DataSeriesValues|string $dataSource`
-
 * `string|null $dataLabel`
-
 * `array|null $options`
 
 ---
@@ -172,7 +159,7 @@ public function addDataSeriesType(string $chartType, $dataSource,
 
 ```php
 public function addDataSeriesType2(string $chartType, $dataSource, 
-                                   ?string $dataLabel, 
+                                   ?string $dataLabel = null, 
                                    ?array $options = []): Chart
 ```
 
@@ -180,11 +167,8 @@ public function addDataSeriesType2(string $chartType, $dataSource,
 ### Parameters
 
 * `string $chartType`
-
 * `DataSeriesValues|string $dataSource`
-
 * `string|null $dataLabel`
-
 * `array|null $options`
 
 ---
@@ -194,7 +178,7 @@ public function addDataSeriesType2(string $chartType, $dataSource,
 ---
 
 ```php
-public function addDataSeriesValues($dataSource, ?string $dataLabel, 
+public function addDataSeriesValues($dataSource, ?string $dataLabel = null, 
                                     ?array $options = []): Chart
 ```
 
@@ -202,9 +186,7 @@ public function addDataSeriesValues($dataSource, ?string $dataLabel,
 ### Parameters
 
 * `$dataSource`
-
 * `string|null $dataLabel`
-
 * `array|null $options`
 
 ---
@@ -259,14 +241,14 @@ _None_
 ---
 
 ```php
-public function setBottomRightOffset(?int $xOffset, ?int $yOffset): Chart
+public function setBottomRightOffset(?int $xOffset = null, 
+                                     ?int $yOffset = null): Chart
 ```
 _Set the offset position within the Bottom Right cell for the chart_
 
 ### Parameters
 
 * `int|null $xOffset`
-
 * `int|null $yOffset`
 
 ---
@@ -358,7 +340,6 @@ public function setCategoryAxis($labels, $title): Chart
 ### Parameters
 
 * `$labels`
-
 * `$title`
 
 ---
@@ -533,7 +514,7 @@ _None_
 ---
 
 ```php
-public function setDisplayBlanksAs(string $displayBlanksAs)
+public function setDisplayBlanksAs(string $displayBlanksAs = '0')
 ```
 _Set Display Blanks as_
 
@@ -818,7 +799,7 @@ _None_
 ---
 
 ```php
-public function setPlotVisibleOnly(bool $plotVisibleOnly): Chart
+public function setPlotVisibleOnly(bool $plotVisibleOnly = true): Chart
 ```
 _Set Plot Visible Only_
 
@@ -833,16 +814,15 @@ _Set Plot Visible Only_
 ---
 
 ```php
-public function setPosition(string $cell, ?int $xOffset, ?int $yOffset): Chart
+public function setPosition(string $cell, ?int $xOffset = null, 
+                            ?int $yOffset = null): Chart
 ```
 _Set the Bottom Right position of the chart_
 
 ### Parameters
 
 * `string $cell`
-
 * `int|null $xOffset`
-
 * `int|null $yOffset`
 
 ---
@@ -942,14 +922,14 @@ _None_
 ---
 
 ```php
-public function setTopLeftOffset(?int $xOffset, ?int $yOffset): Chart
+public function setTopLeftOffset(?int $xOffset = null, 
+                                 ?int $yOffset = null): Chart
 ```
 _Set the offset position within the Top Left cell for the chart_
 
 ### Parameters
 
 * `integer|null $xOffset`
-
 * `integer|null $yOffset`
 
 ---
@@ -974,17 +954,15 @@ _None_
 ---
 
 ```php
-public function setTopLeftPosition(string $cell, ?int $xOffset, 
-                                   ?int $yOffset): Chart
+public function setTopLeftPosition(string $cell, ?int $xOffset = null, 
+                                   ?int $yOffset = null): Chart
 ```
 _Set the Top Left position for the chart_
 
 ### Parameters
 
 * `string $cell`
-
 * `integer|null $xOffset`
-
 * `integer|null $yOffset`
 
 ---

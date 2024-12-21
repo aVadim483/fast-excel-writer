@@ -583,16 +583,21 @@ final class FastExcelWriterTest extends TestCase
             unlink($testFileName);
         }
 
-        $excel = Excel::create(['Demo']);
+        $excel = Excel::create(['Demo1', 'Demo2']);
+        $excel->setDefaultFont([Style::FONT_NAME => 'Century']);
+
         $excel->setLocale('en');
         $sheet = $excel->sheet();
         $sheet->setTopLeftCell('c3');
 
-        $sheet->writeRow([1, 11, 111]);
+        $sheet->writeRow([1, 11, 111])->applyFontStyleBold();
         $sheet->writeRow([2, 22, 222]);
         $sheet->writeCell(3);
         $sheet->writeCell(33);
         $sheet->writeCell(333);
+
+        $sheet = $excel->sheet('Demo2');
+        $sheet->writeHeader(['AAA', 'BBB', 'CCC'])->applyFontStyleBold();
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
 
@@ -601,6 +606,9 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals([1, 11, 111], $this->getValues(['c3', 'd3', 'e3']));
         $this->assertEquals([2, 22, 222], $this->getValues(['c4', 'd4', 'e4']));
         $this->assertEquals([3, 33, 333], $this->getValues(['c5', 'd5', 'e5']));
+
+        $cells = $this->excelReader->sheet('Demo2')->readCellsWithStyles();
+        $this->assertEquals('Century', $cells['A1']['s']['font']['font-name']);
 
         unlink($testFileName);
     }

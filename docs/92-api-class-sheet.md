@@ -7,7 +7,7 @@
 * [addCellStyle()](#addcellstyle)
 * [addChart()](#addchart) -- Add chart object to the specified range of cells
 * [addDataValidation()](#adddatavalidation) -- Add data validation object to the specified range of cells
-* [addImage()](#addimage) -- Add image to the sheet
+* [addImage()](#addimage) -- Add image to the sheet from local file, URL or image string in base64
 * [addNamedRange()](#addnamedrange) -- Define named range
 * [addNote()](#addnote) -- Add note to the sheet
 * [addStyle()](#addstyle) -- Alias for 'addCellStyle()'
@@ -278,13 +278,13 @@ _Add data validation object to the specified range of cells_
 public function addImage(string $cell, string $imageFile, 
                          ?array $imageStyle = []): Sheet
 ```
-_Add image to the sheet_
+_Add image to the sheet from local file, URL or image string in base64_
 
 ### Parameters
 
-* `string $cell`
-* `string $imageFile`
-* `array|null $imageStyle`
+* `string $cell` -- Cell address
+* `string $imageFile` -- URL, local path or image string in base64
+* `array|null $imageStyle` -- \['width' => ..., 'height' => ..., 'hyperlink' => ...]
 
 ---
 

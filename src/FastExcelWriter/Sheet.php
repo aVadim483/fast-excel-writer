@@ -3439,15 +3439,15 @@ class Sheet implements InterfaceSheetWriter
     // === IMAGES === //
 
     /**
-     * Add image to the sheet
+     * Add image to the sheet from local file, URL or image string in base64
      *
      * @example
      * $sheet->addImage('A1', 'path/to/file');
      * $sheet->addImage('A1', 'path/to/file', ['width => 100]);
      *
-     * @param string $cell
-     * @param string $imageFile
-     * @param array|null $imageStyle
+     * @param string $cell Cell address
+     * @param string $imageFile URL, local path or image string in base64
+     * @param array|null $imageStyle ['width' => ..., 'height' => ..., 'hyperlink' => ...]
      *
      * @return $this
      */

@@ -328,9 +328,17 @@ For more information on using rich text, see here: [Using Rich Text](/docs/03-wr
 
 ###  Adding Images
 
+You can insert image to sheet from local file, URL or image string in base64
+
 ```php
-// Insert an image to the cell A1
+// Insert an image to the cell A1 from local path
 $sheet1->addImage('A1', 'path/to/file');
+
+// Insert an image to the cell A1 from URL
+$sheet1->addImage('A1', 'https://site.com/image.jpg');
+
+// Insert an image to the cell A1 from base64 string
+$sheet1->addImage('A1', 'data:image/jpeg;base64,/9j/4AAQ...');
 
 // Insert an image to the cell B2 and set with to 150 pixels (height will change proportionally)
 $sheet1->addImage('B2', 'path/to/file', ['width' => 150]);

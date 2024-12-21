@@ -771,7 +771,7 @@ public function loadImageFile(string $imageFile): ?array
 
 ### Parameters
 
-* `string $imageFile`
+* `string $imageFile` -- URL, local path or image string in base64
 
 ---
 

@@ -1581,14 +1581,20 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * @param string $imageFile
+     * @param string $imageFile URL, local path or image string in base64
      *
      * @return array|null
      */
     public function loadImageFile(string $imageFile): ?array
     {
-        if (preg_match('#^https?://.+#i', $imageFile)) {
-            $imageBlob = false;
+        $imageBlob = false;
+        if (preg_match('/^data:image\/(\w+);base64,/', $imageFile, $matches)) {
+            // $imageType = $matches[1];
+            $base64Image = substr($imageFile, strpos($imageFile, ',') + 1);
+            $imageBlob = base64_decode($base64Image);
+
+        }
+        elseif (preg_match('#^https?://.+#i', $imageFile)) {
             $response = file_get_contents(
                 $imageFile,
                 false,

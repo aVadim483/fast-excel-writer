@@ -33,10 +33,7 @@
         "ext-fileinfo": "*",
         "avadim/fast-excel-reader": "^2.19"
     },
-    "funding": [
-        {
-            "type": "other",
-            "url": "https://www.paypal.me/VShemarov"
-        }
-    ]
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    }
 }

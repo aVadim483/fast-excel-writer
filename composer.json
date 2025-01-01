@@ -34,6 +34,6 @@
         "avadim/fast-excel-reader": "^2.19"
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit tests"
     }
 }

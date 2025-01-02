@@ -2,6 +2,7 @@
 
 * New methods Sheet::getCurrentRow(), Sheet::getCurrentCol(), Sheet::getCurrentCell()
 * New methods Sheet::applyIndentLeft(), Sheet::applyIndentRight(), Sheet::applyIndentDistributed()
+* New method Sheet::applyFillGradient()
 * Method Sheet::addImage() has been updated -- Add an image from a local file, URL, or base64 image string
 * Data can be passed to a cell as a function
 * Fixed page margins

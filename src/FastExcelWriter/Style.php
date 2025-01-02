@@ -30,6 +30,28 @@ class Style
 
     public const FILL_COLOR         = 'fill-color';
 
+    const FILL_SOLID                        = 'solid';
+    const FILL_GRADIENT                     = 'linear';
+    const FILL_GRADIENT_LINEAR              = 'linear';
+
+    public const FILL_PATTERN_DARKDOWN             = 'darkDown';
+    public const FILL_PATTERN_DARKGRAY             = 'darkGray';
+    public const FILL_PATTERN_DARKGRID             = 'darkGrid';
+    public const FILL_PATTERN_DARKHORIZONTAL       = 'darkHorizontal';
+    public const FILL_PATTERN_DARKTRELLIS          = 'darkTrellis';
+    public const FILL_PATTERN_DARKUP               = 'darkUp';
+    public const FILL_PATTERN_DARKVERTICAL         = 'darkVertical';
+    public const FILL_PATTERN_GRAY0625             = 'gray0625';
+    public const FILL_PATTERN_GRAY125              = 'gray125';
+    public const FILL_PATTERN_LIGHTDOWN            = 'lightDown';
+    public const FILL_PATTERN_LIGHTGRAY            = 'lightGray';
+    public const FILL_PATTERN_LIGHTGRID            = 'lightGrid';
+    public const FILL_PATTERN_LIGHTHORIZONTAL      = 'lightHorizontal';
+    public const FILL_PATTERN_LIGHTTRELLIS         = 'lightTrellis';
+    public const FILL_PATTERN_LIGHTUP              = 'lightUp';
+    public const FILL_PATTERN_LIGHTVERTICAL        = 'lightVertical';
+    public const FILL_PATTERN_MEDIUMGRAY           = 'mediumGray';
+
     public const BORDER             = 'border';
 
     public const BORDER_SIDE        = 1;

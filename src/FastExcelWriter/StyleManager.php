@@ -452,8 +452,8 @@ class StyleManager
     {
         $result = [];
 
+        $fillColor = null;
         if (!empty($fill) && $fill !== 'none') {
-            $fillColor = null;
             if (!empty($fill['fill-color'])) {
                 $fillColor = self::normalizeColor($fill['fill-color']);
             }
@@ -471,22 +471,37 @@ class StyleManager
             }
 
         }
-        if (!empty($fillColor)) {
-            if (!empty($fill['fill-pattern'])) {
-                $fillPattern = $fill['fill-pattern'];
-            }
-            elseif (!empty($fill['pattern']) ) {
-                $fillPattern = $fill['pattern'];
+
+        if (!empty($fill['fill-pattern'])) {
+            $fillPattern = $fill['fill-pattern'];
+        }
+        elseif (!empty($fill['pattern']) ) {
+            $fillPattern = $fill['pattern'];
+        }
+        else {
+            $fillPattern = !empty($fillColor) ? 'solid' : 'none';
+        }
+
+        if ($fillPattern !== 'none') {
+            if ($fillPattern === Style::FILL_GRADIENT_LINEAR) {
+                $degree = $fill['fill-gradient-degree'] ?: 0;
+                $color1 = self::normalizeColor($fill['fill-gradient-start']);
+                $color2 = self::normalizeColor($fill['fill-gradient-end']);
+                $result['val']['color'] = $color1 . ',' . $color2;
+                $result['val']['pattern'] = $fillPattern;
+                $result['tag'][] = '<gradientFill degree="' . $degree . '">';
+                $result['tag'][] = '<stop position="0"><color rgb="' . $color1 . '"/></stop>';
+                $result['tag'][] = '<stop position="1"><color rgb="' . $color2 . '"/></stop>';
+                $result['tag'][] = '</gradientFill>';
             }
             else {
-                $fillPattern = 'solid';
+                $result['val']['color'] = $fillColor;
+                $result['val']['pattern'] = $fillPattern;
+                $result['tag'][] = '<patternFill patternType="' . $fillPattern . '">';
+                $result['tag'][] = '<fgColor rgb="' . $fillColor . '"/>';
+                $result['tag'][] = '<bgColor indexed="64"/>';
+                $result['tag'][] = '</patternFill>';
             }
-            $result['val']['color'] = $fillColor;
-            $result['val']['pattern'] = $fillPattern;
-            $result['tag'][] = '<patternFill patternType="' . $fillPattern . '">';
-            $result['tag'][] = '<fgColor rgb="' . $fillColor . '"/>';
-            $result['tag'][] = '<bgColor indexed="64"/>';
-            $result['tag'][] = '</patternFill>';
         }
         else {
             $result['tag'][] = '<patternFill patternType="none"/>';

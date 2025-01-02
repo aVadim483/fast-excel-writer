@@ -4,7 +4,7 @@
 
 * [__construct()](#__construct) -- Sheet constructor
 * [setActiveCell()](#setactivecell) -- Set active cell
-* [addCellStyle()](#addcellstyle)
+* [addCellStyle()](#addcellstyle) -- Add additional styles to a cell
 * [addChart()](#addchart) -- Add chart object to the specified range of cells
 * [addDataValidation()](#adddatavalidation) -- Add data validation object to the specified range of cells
 * [addImage()](#addimage) -- Add image to the sheet from local file, URL or image string in base64
@@ -27,7 +27,9 @@
 * [allowSelectLockedCells()](#allowselectlockedcells) -- Selection of locked cells should be allowed when the sheet is protected
 * [allowSelectUnlockedCells()](#allowselectunlockedcells) -- Selection of unlocked cells should be allowed when the sheet is protected
 * [allowSort()](#allowsort) -- Sorting should be allowed when the sheet is protected
-* [applyBgColor()](#applybgcolor)
+* [applyAlignLeft()](#applyalignleft) -- Apply left alignment to content
+* [applyAlignRight()](#applyalignright) -- Apply right alignment to content
+* [applyBgColor()](#applybgcolor) -- Alias of 'applyFillColor()'
 * [applyBorder()](#applyborder) -- Sets all borders style
 * [applyBorderBottom()](#applyborderbottom)
 * [applyBorderLeft()](#applyborderleft)
@@ -35,7 +37,8 @@
 * [applyBorderTop()](#applybordertop)
 * [applyColor()](#applycolor) -- Alias of 'setFontColor()'
 * [applyDataValidation()](#applydatavalidation)
-* [applyFillColor()](#applyfillcolor) -- Alias of 'backgroundColor()'
+* [applyFillColor()](#applyfillcolor) -- Fill background color
+* [applyFillGradient()](#applyfillgradient) -- Fill background by gradient
 * [applyFont()](#applyfont)
 * [applyFontColor()](#applyfontcolor)
 * [applyFontName()](#applyfontname)
@@ -47,6 +50,9 @@
 * [applyFontStyleUnderline()](#applyfontstyleunderline)
 * [applyFormat()](#applyformat)
 * [applyHide()](#applyhide)
+* [applyIndentDistributed()](#applyindentdistributed)
+* [applyIndentLeft()](#applyindentleft)
+* [applyIndentRight()](#applyindentright)
 * [applyInnerBorder()](#applyinnerborder)
 * [applyNamedRange()](#applynamedrange)
 * [applyOuterBorder()](#applyouterborder)
@@ -89,7 +95,10 @@
 * [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
 * [setColWidthAuto()](#setcolwidthauto) -- Set width of single or multiple column(s)
 * [setColWidths()](#setcolwidths) -- Setting a multiple column's width
+* [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
+* [getCurrentCol()](#getcurrentcol) -- Returns current column letter
 * [getCurrentColId()](#getcurrentcolid)
+* [getCurrentRow()](#getcurrentrow) -- Returns current row number
 * [getCurrentRowId()](#getcurrentrowid)
 * [getDataValidations()](#getdatavalidations)
 * [setDefaultFont()](#setdefaultfont)
@@ -227,7 +236,7 @@ _Set active cell_
 ```php
 public function addCellStyle(string $cellAddr, array $style): Sheet
 ```
-
+_Add additional styles to a cell_
 
 ### Parameters
 
@@ -606,18 +615,49 @@ _Sorting should be allowed when the sheet is protected_
 
 ---
 
+## applyAlignLeft()
+
+---
+
+```php
+public function applyAlignLeft(): Sheet
+```
+_Apply left alignment to content_
+
+### Parameters
+
+_None_
+
+---
+
+## applyAlignRight()
+
+---
+
+```php
+public function applyAlignRight(): Sheet
+```
+_Apply right alignment to content_
+
+### Parameters
+
+_None_
+
+---
+
 ## applyBgColor()
 
 ---
 
 ```php
-public function applyBgColor(string $color): Sheet
+public function applyBgColor(string $color, ?string $pattern = null): Sheet
 ```
-
+_Alias of 'applyFillColor()'_
 
 ### Parameters
 
 * `string $color`
+* `string|null $pattern`
 
 ---
 
@@ -740,13 +780,32 @@ public function applyDataValidation(avadim\FastExcelWriter\DataValidation\DataVa
 ---
 
 ```php
-public function applyFillColor(string $color): Sheet
+public function applyFillColor(string $color, ?string $pattern = null): Sheet
 ```
-_Alias of 'backgroundColor()'_
+_Fill background color_
 
 ### Parameters
 
 * `string $color`
+* `string|null $pattern`
+
+---
+
+## applyFillGradient()
+
+---
+
+```php
+public function applyFillGradient(string $color1, string $color2, 
+                                  ?int $degree = null): Sheet
+```
+_Fill background by gradient_
+
+### Parameters
+
+* `string $color1`
+* `string $color2`
+* `int|null $degree`
 
 ---
 
@@ -917,6 +976,51 @@ public function applyHide(?bool $hide = true): Sheet
 ### Parameters
 
 * `$hide`
+
+---
+
+## applyIndentDistributed()
+
+---
+
+```php
+public function applyIndentDistributed(int $indent): Sheet
+```
+
+
+### Parameters
+
+* `int $indent`
+
+---
+
+## applyIndentLeft()
+
+---
+
+```php
+public function applyIndentLeft(int $indent): Sheet
+```
+
+
+### Parameters
+
+* `int $indent`
+
+---
+
+## applyIndentRight()
+
+---
+
+```php
+public function applyIndentRight(int $indent): Sheet
+```
+
+
+### Parameters
+
+* `int $indent`
 
 ---
 
@@ -1654,6 +1758,36 @@ $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 
 ---
 
+## getCurrentCell()
+
+---
+
+```php
+public function getCurrentCell(): string
+```
+_Returns address of the current cell_
+
+### Parameters
+
+_None_
+
+---
+
+## getCurrentCol()
+
+---
+
+```php
+public function getCurrentCol(): string
+```
+_Returns current column letter_
+
+### Parameters
+
+_None_
+
+---
+
 ## getCurrentColId()
 
 ---
@@ -1662,6 +1796,21 @@ $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 public function getCurrentColId(): int
 ```
 
+
+### Parameters
+
+_None_
+
+---
+
+## getCurrentRow()
+
+---
+
+```php
+public function getCurrentRow(): int
+```
+_Returns current row number_
 
 ### Parameters
 

@@ -2885,6 +2885,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Add additional styles to a cell
+     *
      * @param string $cellAddr
      * @param array $style
      *
@@ -4830,27 +4832,51 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Alias of 'backgroundColor()'
+     * Fill background color
      *
      * @param string $color
+     * @param string|null $pattern
      *
      * @return $this
      */
-    public function applyFillColor(string $color): Sheet
+    public function applyFillColor(string $color, ?string $pattern = null): Sheet
     {
-        $this->_setStyleOptions([], 'fill', ['fill-color' => $color]);
+        $this->_setStyleOptions([], 'fill', ['fill-color' => $color, 'fill-pattern' => $pattern ?: 'solid']);
 
         return $this;
     }
 
     /**
+     * Alias of 'applyFillColor()'
+     *
      * @param string $color
+     * @param string|null $pattern
      *
      * @return $this
      */
-    public function applyBgColor(string $color): Sheet
+    public function applyBgColor(string $color, ?string $pattern = null): Sheet
     {
-        return $this->applyFillColor($color);
+        return $this->applyFillColor($color, $pattern);
+    }
+
+    /**
+     * Fill background by gradient
+     *
+     * @param string $color1
+     * @param string $color2
+     * @param int|null $degree
+     * @return $this
+     */
+    public function applyFillGradient(string $color1, string $color2, ?int $degree = null): Sheet
+    {
+        $this->_setStyleOptions([], 'fill', [
+            'fill-pattern' => Style::FILL_GRADIENT_LINEAR,
+            'fill-gradient-start' => $color1,
+            'fill-gradient-end' => $color2,
+            'fill-gradient-degree' => $degree ?: 0,
+        ]);
+
+        return $this;
     }
 
     /**
@@ -4893,6 +4919,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply left alignment to content
+     *
      * @return $this
      */
     public function applyAlignLeft(): Sheet
@@ -4901,6 +4929,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply right alignment to content
+     *
      * @return $this
      */
     public function applyAlignRight(): Sheet

@@ -122,6 +122,7 @@ final class FastExcelWriterTest extends TestCase
         $excel = Excel::create();
         $sheet = $excel->sheet();
 
+        // write row 1, go to row 2
         $sheet
             ->writeCell('A1')
             ->writeCell('B1')
@@ -132,8 +133,10 @@ final class FastExcelWriterTest extends TestCase
             ->writeCell('G1')
             ->writeTo('F1', 'F1');
         ;
+        // write row 2 go to row 3
         $sheet->writeRow(['A2', 'B2', null, 'D2']);
-        $sheet->nextRow();
+
+        $sheet->nextRow(); // go to next row - 4
         $sheet->writeTo('F3', 'F3');
         $sheet->nextRow(); // 4
         $sheet->nextRow(); // 5
@@ -203,14 +206,16 @@ final class FastExcelWriterTest extends TestCase
         ];
 
         $data = [
-            ['text1 text1 text1 text1', time(), 100.0],
-            ['text2 text2 text2 text2', time(), 200.0],
-            ['text3 text3 text3 text3', time(), 300.0],
+            1 => ['text1 text1 text1 text1', time(), 100.0],
+            2 => ['text2 text2 text2 text2', time(), 200.0],
+            3 => ['text3 text3 text3 text3', time(), 300.0],
         ];
-        // rows 1-3
-        foreach ($data as $row) {
-            $sheet->writeRow($row, $style);
-        }
+        // row 1 with default styles
+        $sheet->writeRow($data[1]);
+        // rows 2-3 with specified styles
+        $sheet->writeRow($data[2], $style);
+        $sheet->writeRow($data[3], $style);
+
         // rows 4-6
         foreach ($data as $row) {
             $sheet->writeRow($row)
@@ -221,7 +226,8 @@ final class FastExcelWriterTest extends TestCase
             ;
         }
         // row 7
-        $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0]);
+        $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0])
+            ->applyFont('Times New Roman', 18, 'italic', '#f00');
 
         // write to C8 and move pointer to D9;
         $sheet->writeTo('C8', 'C8');
@@ -244,7 +250,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('replace C9', $this->cells['9']['C']['v']);
         $this->assertFalse(isset($this->cells['9']['D']['v']));
 
-        $style = $this->getStyle('A1');
+        $style = $this->getStyle('A2');
         $this->assertEquals(1, $style['font']['font-style-bold']);
 
         $this->assertEquals('center', $style['format']['format-align-horizontal']);
@@ -262,7 +268,14 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('thin', $style['border']['border-left-style']);
         $this->assertEquals('#000000', $style['border']['border-left-color']);
 
-        $this->checkDefaultStyle($this->getStyle('a7', true));
+        $this->checkDefaultStyle($this->getStyle('a1', true));
+
+        $style = $this->getStyle('a7', true);
+
+        $this->assertEquals('Times New Roman', $style['font-name']);
+        $this->assertEquals('18', $style['font-size']);
+        $this->assertEquals('#FF0000', $style['font-color']);
+        $this->assertEquals(1, $style['font-style-italic']);
 
         unlink($testFileName);
 

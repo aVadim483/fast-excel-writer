@@ -69,7 +69,7 @@ This method is more flexible, but requires more memory and is not recommended fo
 
 ```php
 $excel = Excel::create();
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Make write area from A1 to max column and max row
 $area = $sheet->beginArea();
@@ -137,7 +137,7 @@ use \avadim\FastExcelWriter\Excel;
 $excel = Excel::create();
 
 // Get the sheet on which we will write data
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Write data to cell by cell (the first cell is A1)
 // Write number to A1 and the pointer moves to the next cell (B1)
@@ -247,12 +247,26 @@ $sheet1->mergeCells('D3:F3', -1);
 
 ### Cell Formats
 
-You can use simple and advanced formats
+You can use simple and advanced formats. Example of setting the format for each cell:
 
 ```php
 $excel = Excel::create(['Formats']);
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
+$sheet->writeCell(123456); // value 123456 as integer by default
+$sheet->writeCell('123456'); // value '123456' as string by default
+$sheet->writeCell(12.34); // float number 12.34
+$sheet->writeCell(12.34, ['format' => '@money']); // money format
+$sheet->writeCell(date('Y-m-d'), ['format' => '@date']); // date format
+$sheet->writeCell(time(), ['format' => '@date']); // date format
+```
+
+You can also set the format for all column values.
+
+```php
+$sheet = $excel->sheet();
+
+// define column names and format
 $header = [
     'created' => '@date',
     'product_id' => '@integer',

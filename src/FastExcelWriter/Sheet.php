@@ -324,7 +324,37 @@ class Sheet implements InterfaceSheetWriter
     {
         return $this->currentColIdx;
     }
-    
+
+    /**
+     * Returns current row number
+     *
+     * @return int
+     */
+    public function getCurrentRow(): int
+    {
+        return $this->currentRowIdx + 1;
+    }
+
+    /**
+     * Returns current column letter
+     * *
+     * @return string
+     */
+    public function getCurrentCol(): string
+    {
+        return Helper::colLetter($this->currentColIdx + 1);
+    }
+
+    /**
+     * Returns address of the current cell
+     *
+     * @return string
+     */
+    public function getCurrentCell(): string
+    {
+        return $this->getCurrentCol() . $this->getCurrentRow();
+    }
+
     /**
      * @return array
      */
@@ -1492,7 +1522,7 @@ class Sheet implements InterfaceSheetWriter
      * @param array|null $arg2
      *
      * @return $this
-     *@deprecated since v.6.1
+     * @deprecated since v.6.1
      *
      */
     public function setRowStyles($arg1, ?array $arg2 = null): Sheet
@@ -2290,6 +2320,9 @@ class Sheet implements InterfaceSheetWriter
             }
             $maxRowIdx = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : -1,
                 $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : -1);
+            if ($this->rowAttributes) {
+                $maxRowIdx = max($maxRowIdx, max(array_keys($this->rowAttributes)));
+            }
             if ($maxRowIdx >= 0) {
                 // has values or styles
                 if ($maxRowIdx < $this->currentRowIdx) {
@@ -2321,7 +2354,7 @@ class Sheet implements InterfaceSheetWriter
                         ksort($styles);
                         $this->_writeRow($writer, $values, $rowSettings, $styles);
                     }
-                    elseif ($rowSettings) {
+                    elseif ($rowSettings || !empty($this->rowAttributes[$rowIdx])) {
                         $this->_writeRow($writer, [null], $rowSettings, []);
                     }
                     else {
@@ -2439,14 +2472,20 @@ class Sheet implements InterfaceSheetWriter
     {
         $this->_checkOutput();
 
-        if (!empty($style)) {
-            $this->rowStyles[$this->currentRowIdx] = $style;
-        }
+        $ref = $this->lastTouch['ref'];
         $writtenRows = $this->_writeCurrentRow();
-        if (!$writtenRows) {
-            $this->currentRowIdx++;
+        if ($writtenRows) {
+            if ($ref === 'row') {
+                $this->currentRowIdx++;
+            }
             $this->currentColIdx = $this->offsetCol;
             $this->_touch($this->currentRowIdx, $this->currentColIdx, $this->currentRowIdx, $this->currentColIdx, 'cell');
+        }
+        else {
+            $this->currentRowIdx++;
+        }
+        if (!empty($style)) {
+            $this->_setRowOptions($this->currentRowIdx + 1, $style, true);
         }
 
         return $this;
@@ -2705,6 +2744,9 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($value !== null) {
+            if (is_callable($value)) {
+                $value = $value($this);
+            }
             if (is_scalar($value)
                 || ($value instanceof RichText)
                 // it's a formula & value ['=A1+B2', 123]
@@ -4726,18 +4768,6 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * @param int $degrees
-     *
-     * @return $this
-     */
-	public function applyTextRotation(int $degrees): Sheet
-	{
-		$this->_setStyleOptions([], 'format', [ 'format-text-rotation' => $degrees ] );
-
-		return $this;
-	}
-
-    /**
      * @return $this
      */
     public function applyFontStyleBold(): Sheet
@@ -4780,7 +4810,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function applyFontColor(string $fontColor): Sheet
     {
-        $this->_setStyleOptions([], 'font', ['font-color' => $fontColor]);
+        $this->_setStyleOptions([], 'font', [Style::FONT_COLOR => $fontColor]);
 
         return $this;
     }
@@ -4861,6 +4891,22 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @return $this
+     */
+    public function applyAlignLeft(): Sheet
+    {
+        return $this->applyTextAlign('left');
+    }
+
+    /**
+     * @return $this
+     */
+    public function applyAlignRight(): Sheet
+    {
+        return $this->applyTextAlign('right');
+    }
+
+    /**
      * @param bool|null $textWrap
      *
      * @return $this
@@ -4880,6 +4926,57 @@ class Sheet implements InterfaceSheetWriter
     public function applyTextColor(string $color): Sheet
     {
         $this->_setStyleOptions([], 'font', ['font-color' => $color]);
+
+        return $this;
+    }
+
+    /**
+     * @param int $degrees
+     *
+     * @return $this
+     */
+    public function applyTextRotation(int $degrees): Sheet
+    {
+        $this->_setStyleOptions([], 'format', [ 'format-text-rotation' => $degrees ] );
+
+        return $this;
+    }
+
+    /**
+     * @param int $indent
+     *
+     * @return $this
+     */
+    public function applyIndentLeft(int $indent): Sheet
+    {
+        $options = ['format-align-horizontal' => 'left', 'format-align-indent' => $indent];
+        $this->_setStyleOptions([], 'format', $options);
+
+        return $this;
+    }
+
+    /**
+     * @param int $indent
+     *
+     * @return $this
+     */
+    public function applyIndentRight(int $indent): Sheet
+    {
+        $options = ['format-align-horizontal' => 'right', 'format-align-indent' => $indent];
+        $this->_setStyleOptions([], 'format', $options);
+
+        return $this;
+    }
+
+    /**
+     * @param int $indent
+     *
+     * @return $this
+     */
+    public function applyIndentDistributed(int $indent): Sheet
+    {
+        $options = ['format-align-horizontal' => 'distributed', 'format-align-indent' => $indent];
+        $this->_setStyleOptions([], 'format', $options);
 
         return $this;
     }

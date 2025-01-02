@@ -168,10 +168,6 @@ Column widths can be set in several ways
 // Set width of column D to 24
 $sheet->setColWidth('D', 24);
 $sheet->setColDataStyle('D', ['width' => 24]);
-// Set auto width
-$sheet->setColWidth('D', 'auto');
-$sheet->setColWidthAuto('D');
-$sheet->setColDataStyle('D', ['width' => 'auto']);
 
 // Set width of specific columns
 $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
@@ -230,6 +226,39 @@ $sheet->setColDataStyle('B:D', ['width' = 'auto']);
 $sheet->setColDataStyle(['A', 'B', 'C'], $style);
 $sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]);
 ```
+
+### Automatic column widths
+
+```php
+// Set auto width
+$sheet->setColWidth('D', 'auto');
+$sheet->setColWidthAuto('D');
+$sheet->setColDataStyle('D', ['width' => 'auto']);
+
+// Set width of specific columns
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+
+$colStyle = [
+    'B' => ['width' => 10], 
+    'C' => ['width' => 'auto'], 
+    'E' => ['width' => 30], 
+    'F' => ['width' => 40],
+];
+$sheet->setColDataStyleArray($colStyle);
+```
+
+**IMPORTANT!** Automatic calculation of column width is a very complex task. When using this option, keep in mind the following:
+
+1. The calculation is performed for each cell in the column as the sheet is filled. 
+Therefore, automatic adjustment of the column width must be performed before you start writing data in the cells. 
+If this adjustment is performed at the end of document creation, it has no effect.
+
+2. The calculation is performed very approximately, based on the cell font settings and the number of characters in the cell value. 
+But the width of different characters may differ, so the column width may be larger than the width of the text in the cell,
+or it may be smaller.
+
+3. If a formula is written in a cell, the width calculation will be performed based on the formula text, 
+not its result, since the library cannot calculate formulas.
 
 ### Group/outline rows and columns
 

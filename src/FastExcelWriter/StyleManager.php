@@ -182,20 +182,40 @@ class StyleManager
      */
     public function setDefaultFont(array $fontOptions): StyleManager
     {
-        $this->defaultFont = self::normalizeFont($fontOptions);
+        if ($this->defaultFont) {
+            $this->defaultFont = array_replace_recursive($this->defaultFont, self::normalizeFont($fontOptions));
+        }
+        else {
+            $this->defaultFont = self::normalizeFont($fontOptions);
+        }
         $this->addElement('fonts', $this->defaultFont, null, 0);
+        if (!empty($this->defaultStyle['font'])) {
+            $this->defaultStyle['font'] = array_replace_recursive($this->defaultStyle['font'], $this->defaultFont);
+        }
+        else {
+            $this->defaultStyle['font'] = $this->defaultFont;
+        }
 
         return $this;
     }
 
     /**
      * @param array $style
+     * @param bool|null $replaceAll
      *
      * @return $this
      */
-    public function setDefaultStyle(array $style): StyleManager
+    public function setDefaultStyle(array $style, ?bool $replaceAll = true): StyleManager
     {
-        $this->defaultStyle = $style;
+        if (!$replaceAll && $this->defaultStyle) {
+            $this->defaultStyle = array_replace_recursive($this->defaultStyle, $style);
+        }
+        else {
+            $this->defaultStyle = $style;
+        }
+        if (isset($style[Style::FONT])) {
+            $this->setDefaultFont($style[Style::FONT]);
+        }
 
         return $this;
     }

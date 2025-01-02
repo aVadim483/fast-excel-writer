@@ -1532,6 +1532,9 @@ class Writer
                 if (!empty($cellXf['format']['format-text-wrap'])) {
                     $alignmentAttr .= ' wrapText="true"';
                 }
+                if (!empty($cellXf['format']['format-align-indent'])) {
+                    $alignmentAttr .= ' indent="' . $cellXf['format']['format-align-indent'] . '"';
+                }
 
                 $xfId = $cellXf['_xf_id'] ?? 0;
                 $xfAttr = [

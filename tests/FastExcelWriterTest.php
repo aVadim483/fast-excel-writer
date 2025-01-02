@@ -23,6 +23,7 @@ final class FastExcelWriterTest extends TestCase
         return $this->cells[$m[2]][$m[1]]['v'] ?? null;
     }
 
+
     protected function getValues($cells): array
     {
         $result = [];
@@ -32,6 +33,7 @@ final class FastExcelWriterTest extends TestCase
 
         return $result;
     }
+
 
     protected function getStyle($cell, $flat = false): array
     {
@@ -54,6 +56,7 @@ final class FastExcelWriterTest extends TestCase
 
         return [];
     }
+
 
     protected function defaultStyle(): array
     {
@@ -127,10 +130,12 @@ final class FastExcelWriterTest extends TestCase
             ->writeCell('A1')
             ->writeCell('B1')
             ->nextCell() // C1
-            ->writeCell('D1')
+            ->writeCell(fn($sheet) => $sheet->getCurrentCell()) // D1
             ->nextCell() // E1
             ->nextCell() // F1
-            ->writeCell('G1')
+            ->writeCell(function($sheet) {
+                return $sheet->getCurrentCol() . $sheet->getCurrentRow();
+            }) // G1
             ->writeTo('F1', 'F1');
         ;
         // write row 2 go to row 3
@@ -283,7 +288,8 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
-    protected function makeTestFile2($testFileName)
+
+    protected function makeTestFile2($testFileName): ExcelReader
     {
         // PREPARE DEMO DATA
         $lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua';
@@ -397,6 +403,7 @@ final class FastExcelWriterTest extends TestCase
 
         return $this->saveCheckRead($excel, $testFileName);
     }
+
 
     public function testExcelWriter2()
     {
@@ -541,6 +548,7 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+
     public function testExcelWriter4()
     {
         $testFileName = __DIR__ . '/test4.xlsx';
@@ -589,6 +597,7 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+
     public function testExcelWriter5()
     {
         $testFileName = __DIR__ . '/test5.xlsx';
@@ -606,8 +615,8 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeRow([1, 11, 111])->applyFontStyleBold();
         $sheet->writeRow([2, 22, 222]);
         $sheet->writeCell(3);
-        $sheet->writeCell(33);
-        $sheet->writeCell(333);
+        $sheet->writeCell('33');
+        $sheet->writeCell(333.3);
 
         $sheet = $excel->sheet('Demo2');
         $sheet->writeHeader(['AAA', 'BBB', 'CCC'])->applyFontStyleBold();
@@ -618,13 +627,17 @@ final class FastExcelWriterTest extends TestCase
 
         $this->assertEquals([1, 11, 111], $this->getValues(['c3', 'd3', 'e3']));
         $this->assertEquals([2, 22, 222], $this->getValues(['c4', 'd4', 'e4']));
-        $this->assertEquals([3, 33, 333], $this->getValues(['c5', 'd5', 'e5']));
+
+        $this->assertTrue(3 === $this->getValue('c5'));
+        $this->assertTrue('33' === $this->getValue('d5'));
+        $this->assertTrue(333.3 === $this->getValue('e5'));
 
         $cells = $this->excelReader->sheet('Demo2')->readCellsWithStyles();
         $this->assertEquals('Century', $cells['A1']['s']['font']['font-name']);
 
         unlink($testFileName);
     }
+
 
     public function testExcelWriterMergedCells()
     {
@@ -668,6 +681,7 @@ final class FastExcelWriterTest extends TestCase
 
         unlink($testFileName);
     }
+
 
     public function testExcelWriterNotesAndImages()
     {
@@ -730,6 +744,7 @@ final class FastExcelWriterTest extends TestCase
         unlink($testFileName);
     }
 
+
     public function testExcelWriterSingleValue()
     {
         $testFileName = __DIR__ . '/test_single.xlsx';
@@ -769,6 +784,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('C3', $this->cells['C3']);
         unlink($testFileName);
     }
+
 
     public function testCharts()
     {

@@ -270,7 +270,6 @@ $excel->save('simple.xlsx');
 ```
 
 
-
 ###  Adding Notes
 
 There are currently two types of comments in Excel - **comments** and **notes** 
@@ -280,17 +279,17 @@ You can add notes to any cells using method ```addNote()```
 
 ```php
 
-$sheet1->writeCell('Text to A1');
-$sheet1->addNote('A1', 'This is a note for cell A1');
+$sheet->writeCell('Text to A1');
+$sheet->addNote('A1', 'This is a note for cell A1');
 
-$sheet1->writeCell('Text to B1')->addNote('This is a note for B1');
-$sheet1->writeTo('C4', 'Text to C4')->addNote('Note for C1');
+$sheet->writeCell('Text to B1')->addNote('This is a note for B1');
+$sheet->writeTo('C4', 'Text to C4')->addNote('Note for C1');
 
 // If you specify a range of cells, then the note will be added to the left top cell
-$sheet1->addNote('E4:F8', "This note\nwill added to E4");
+$sheet->addNote('E4:F8', "This note\nwill added to E4");
 
 // You can split text into multiple lines
-$sheet1->addNote('D7', "Line 1\nLine 2");
+$sheet->addNote('D7', "Line 1\nLine 2");
 
 ```
 
@@ -302,7 +301,7 @@ You can change some note options. Allowed options of a note are:
 
 ```php
 
-$sheet1->addNote('A1', 'This is a note for cell A1', ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
+$sheet->addNote('A1', 'This is a note for cell A1', ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
 
 // Parameters "width" and "height" can be numeric, by default these values are in points
 // The "fill_color" parameter can be shortened
@@ -311,17 +310,17 @@ $noteStyle = [
     'height' => 100, // equivalent to '100pt'
     'fill_color' => 'fcc', // equivalent to '#ffcccc'
 ];
-$sheet1->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
+$sheet->writeCell('Text to B1')->addNote('This is a note for B1', $noteStyle);
 
 // This note is visible when the Excel workbook is displayed
-$sheet1->addNote('C8', 'This note is always visible', ['show' => true]);
+$sheet->addNote('C8', 'This note is always visible', ['show' => true]);
 ```
 
 Also, you can use rich text in notes
 
 ```php
 $richText = new \avadim\FastExcelWriter\RichText('here is <c=f00>red</c> and <c=00f>blue</c> text');
-$sheet1->addNote('C8', $richText);
+$sheet->addNote('C8', $richText);
 ```
 
 For more information on using rich text, see here: [Using Rich Text](/docs/03-writing.md#using-rich-text)
@@ -331,28 +330,39 @@ For more information on using rich text, see here: [Using Rich Text](/docs/03-wr
 You can insert image to sheet from local file, URL or image string in base64
 
 ```php
+$sheet->addImage($cell, $imageFile, $imageStyle);
+
 // Insert an image to the cell A1 from local path
-$sheet1->addImage('A1', 'path/to/file');
+$sheet->addImage('A1', 'path/to/file');
 
 // Insert an image to the cell A1 from URL
-$sheet1->addImage('A1', 'https://site.com/image.jpg');
+$sheet->addImage('A1', 'https://site.com/image.jpg');
 
 // Insert an image to the cell A1 from base64 string
-$sheet1->addImage('A1', 'data:image/jpeg;base64,/9j/4AAQ...');
+$sheet->addImage('A1', 'data:image/jpeg;base64,/9j/4AAQ...');
 
 // Insert an image to the cell B2 and set with to 150 pixels (height will change proportionally)
-$sheet1->addImage('B2', 'path/to/file', ['width' => 150]);
+$sheet->addImage('B2', 'path/to/file', ['width' => 150]);
 
 // Set height to 150 pixels (with will change proportionally)
-$sheet1->addImage('C3', 'path/to/file', ['height' => 150]);
+$sheet->addImage('C3', 'path/to/file', ['height' => 150]);
 
 // Set size in pixels
-$sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
+$sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150]);
 
 // Add hyperlink to the image
-$sheet1->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150, 'hyperlink' => 'https://www.google.com/']);
-
+$sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150, 'hyperlink' => 'https://www.google.com/']);
 ```
+
+Available keys of image style:
+* 'width' -- width of image
+* 'height' -- height of image
+* 'hyperlink' -- URL of hyperlink
+* 'x' -- offset in pixels relative to the left border of the cell 
+* 'y' -- offset in pixels relative to the top border of the cell
+
+**IMPORTANT:** in MS Excel, value 'x' cannot be greater than the column width of the parent cell, 
+and value 'y' cannot be greater than the row height 
 
 ## Shared Strings
 

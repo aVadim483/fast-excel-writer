@@ -898,6 +898,8 @@ class Writer
             $objectId = $image['id'];
             $rId = $image['r_id'];
             $baseName = $image['original'];
+            $x = Excel::pixelsToEMU($image['x']);
+            $y = Excel::pixelsToEMU($image['y']);
             $width = Excel::pixelsToEMU($image['width']);
             $height = Excel::pixelsToEMU($image['height']);
 
@@ -905,9 +907,9 @@ class Writer
 
             $fileWriter->startElement('xdr:from');
             $fileWriter->writeElement("<xdr:col>{$image['col_index']}</xdr:col>");
-            $fileWriter->writeElement('<xdr:colOff>0</xdr:colOff>');
+            $fileWriter->writeElement("<xdr:colOff>{$x}</xdr:colOff>");
             $fileWriter->writeElement("<xdr:row>{$image['row_index']}</xdr:row>");
-            $fileWriter->writeElement('<xdr:rowOff>0</xdr:rowOff>');
+            $fileWriter->writeElement("<xdr:rowOff>{$y}</xdr:rowOff>");
             $fileWriter->endElement();
 
             $fileWriter->writeElement("<xdr:ext cx=\"{$width}\" cy=\"{$height}\"/>");
@@ -940,7 +942,14 @@ class Writer
 
             $fileWriter->startElement('xdr:spPr');
             $fileWriter->writeElement("<a:xfrm rot=\"0\"/><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>");
-            $fileWriter->endElement();
+            /* !!
+            $fileWriter->startElement('a:xfrm');
+            $fileWriter->writeElement("<a:off x=\"{$x}\" y=\"{$y}\"/>");
+            $fileWriter->writeElement("<a:ext cx=\"{$width}\" cy=\"{$height}\"/>");
+            $fileWriter->endElement(); // </a:xfrm>
+            $fileWriter->writeElement("<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>");
+            */
+            $fileWriter->endElement(); // </xdr:spPr>
 
             $fileWriter->endElement();
 

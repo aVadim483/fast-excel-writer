@@ -2744,9 +2744,6 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($value !== null) {
-            if (is_callable($value)) {
-                $value = $value($this);
-            }
             if (is_scalar($value)
                 || ($value instanceof RichText)
                 // it's a formula & value ['=A1+B2', 123]
@@ -2754,9 +2751,12 @@ class Sheet implements InterfaceSheetWriter
             ) {
                 $this->cells['values'][$rowIdx][$colIdx] = $value;
             }
+            elseif (is_callable($value)) {
+                $this->cells['values'][$rowIdx][$colIdx] = $value($this);
+            }
             else {
                 $addr = Excel::cellAddress($colIdx + 1, $rowIdx + 1);
-                Exception::throwNew('Value for cell %s must be scalar', $addr);
+                Exception::throwNew('Value for cell %s must be scalar or callable', $addr);
             }
             if ($changeCurrent) {
                 $this->currentRowIdx = $rowIdx;
@@ -3516,6 +3516,8 @@ class Sheet implements InterfaceSheetWriter
                 $imageData['cell'] = $cell;
                 $imageData['row_index'] = $rowIdx;
                 $imageData['col_index'] = $colIdx;
+                $imageData['x'] = $imageStyle['x'] ?? 0;
+                $imageData['y'] = $imageStyle['y'] ?? 0;
                 if (!empty($imageStyle['width']) || !empty($imageStyle['height'])) {
                     if (!empty($imageStyle['width']) && empty($imageStyle['height'])) {
                         $ratio = $imageStyle['width'] / $imageData['width'];

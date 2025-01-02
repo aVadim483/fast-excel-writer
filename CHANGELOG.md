@@ -4,6 +4,7 @@
 * New methods Sheet::applyIndentLeft(), Sheet::applyIndentRight(), Sheet::applyIndentDistributed()
 * Method Sheet::addImage() has been updated -- Add an image from a local file, URL, or base64 image string
 * Data can be passed to a cell as a function
+* Fixed page margins
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/93 (the behavior has been changed)
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/98 (the behavior has been changed)
 

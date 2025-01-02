@@ -3919,7 +3919,7 @@ class Sheet implements InterfaceSheetWriter
         else {
             $value = (float)$value;
         }
-        $this->bottomNodesOptions['pageMargins'][$key] = number_format($value, 1, '.', '');
+        $this->bottomNodesOptions['pageMargins'][$key] = number_format($value, 3, '.', '');
     }
 
     /**

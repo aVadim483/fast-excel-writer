@@ -385,14 +385,23 @@ and with minimal memory usage.
 * uses less memory by 8-10 times
 * supports writing huge 100K+ row spreadsheets
 
-Benchmark of PhpSpreadsheet (P) and FastExcelWriter (F), spreadsheet generation without styles
+Benchmark of PhpSpreadsheet (generation without styles)
 
-| Rows x Cols | Time **P** | Time **F** | Memory **P** | Memory **F** |
-|-------------|------------|------------|--------------|--------------|
-| 1000 x 5    | 0.98 sec   | 0.19 sec   | 2,048 Kb     | 2,048 Kb     |
-| 1000 x 25   | 4.68 sec   | 1.36 sec   | 14,336 Kb    | 2,048 Kb     |
-| 5000 x 25   | 23.19 sec  | 3.61 sec   | 77,824 Kb    | 2,048 Kb     |
-| 10000 x 50  | 105.8 sec  | 13.02 sec  | 256,000 Kb   | 2,048 Kb     |
+| Rows x Cols | Time      | Memory     | 
+|-------------|-----------|------------|
+| 1000 x 5    | 0.98 sec  | 2,048 Kb   | 
+| 1000 x 25   | 4.68 sec  | 14,336 Kb  | 
+| 5000 x 25   | 23.19 sec | 77,824 Kb  | 
+| 10000 x 50  | 105.8 sec | 256,000 Kb | 
+
+Benchmark of FastExcelWriter (generation without styles)
+
+| Rows x Cols | Time      | Memory   |
+|-------------|-----------|----------|
+| 1000 x 5    | 0.19 sec  | 2,048 Kb |
+| 1000 x 25   | 1.36 sec  | 2,048 Kb |
+| 5000 x 25   | 3.61 sec  | 2,048 Kb |
+| 10000 x 50  | 13.02 sec | 2,048 Kb |
 
 ## Do you want to support FastExcelWriter?
 

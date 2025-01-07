@@ -180,7 +180,7 @@ class Sheet implements InterfaceSheetWriter
                 'footer' => '0.5',
             ],
             'pageSetup' => [
-                'paperSize' => '1',
+                //'paperSize' => '1',
                 'useFirstPageNumber' => '1',
                 'horizontalDpi' => '0',
                 'verticalDpi' => '0',
@@ -551,6 +551,18 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param int $scale
+     *
+     * @return $this
+     */
+    public function pageScale(int $scale): Sheet
+    {
+        $this->bottomNodesOptions['pageSetup']['scale'] = $scale;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getPageOrientation(): string
@@ -587,7 +599,6 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getSheetProperties(): array
     {
-        $result = $this->sheetProperties;
         if ($this->getPageFit()) {
             $this->sheetProperties['pageSetUpPr'] = [
                 '_tag' => 'pageSetUpPr',
@@ -595,7 +606,7 @@ class Sheet implements InterfaceSheetWriter
             ];
         }
 
-        return $result;
+        return $this->sheetProperties;
     }
 
     /**
@@ -1791,7 +1802,7 @@ class Sheet implements InterfaceSheetWriter
                         $numberFormat = $resultStyle['number_format'];
                         $numberFormatType = $resultStyle['number_format_type'];
 
-                        if (!empty($cellStyle['options']['width-auto'])) {
+                        if (!empty($cellStyle['options']['width-auto']) && !($cellValue && is_string($cellValue) && $cellValue[0] === '=')) {
                             $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
                         }
 

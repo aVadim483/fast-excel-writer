@@ -1085,7 +1085,7 @@ class Writer
             foreach ($sheetPr as $item) {
                 $fileWriter->write('<' . $item['_tag'] . self::tagAttributes($item['_attr']) . '/>');
             }
-            $fileWriter->write('<pageSetUpPr fitToPage="1"/>');
+            //$fileWriter->write('<pageSetUpPr fitToPage="1"/>');
             $fileWriter->write('</sheetPr>');
         }
 

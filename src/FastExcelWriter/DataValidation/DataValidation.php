@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter\DataValidation;
 
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
+use avadim\FastExcelWriter\Sheet;
 
 class DataValidation
 {
@@ -45,6 +46,7 @@ class DataValidation
 
     protected string $type;
 
+    protected Sheet $sheet;
     protected string $sqref;
 
     protected ?string $errorStyle = null;
@@ -247,6 +249,19 @@ class DataValidation
     }
 
     /**
+     * Make data validation as an expression (alias of self::custom())
+     *
+     * @param string $formula
+     *
+     * @return DataValidation
+     */
+    public static function expression(string $formula): DataValidation
+    {
+
+        return self::custom($formula);
+    }
+
+    /**
      * Checking if a cell value is a number
      *
      * @return DataValidation
@@ -371,12 +386,14 @@ class DataValidation
     }
 
     /**
+     * @param Sheet $sheet
      * @param string $sqref
      *
      * @return $this
      */
-    public function setSqref(string $sqref): DataValidation
+    public function setSqref(Sheet $sheet, string $sqref): DataValidation
     {
+        $this->sheet = $sheet;
         $this->sqref = $sqref;
 
         return $this;

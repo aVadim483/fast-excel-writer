@@ -1237,6 +1237,13 @@ class Writer
             $sheet->fileWriter->write('</mergeCells>');
         }
 
+        // <conditionalFormatting>
+        if ($conditional = $sheet->getConditionalFormatting()) {
+            foreach ($conditional as $idx => $cond) {
+                $sheet->fileWriter->write($cond->toXml($idx + 1, [$this->excel->formulaConverter , 'normalize']));
+            }
+        }
+
         // <dataValidations>
         if ($validations = $sheet->getDataValidations()) {
             $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
@@ -1606,7 +1613,17 @@ class Writer
         $file->write('</cellStyles>');
 
         // <dxfs/>
-        $file->write('<dxfs count="0"/>');
+        $dxfs = $this->excel->getStyleDxfs();
+        if (!$dxfs) {
+            $file->write('<dxfs count="0"/>');
+        }
+        else {
+            $file->write('<dxfs count="' . count($dxfs) . '">');
+            foreach ($dxfs as $dxf) {
+                $file->write($dxf);
+            }
+            $file->write('</dxfs>');
+        }
 
         //// +++++++++++
         // <tableStyles/>

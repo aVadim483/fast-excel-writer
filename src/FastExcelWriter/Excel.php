@@ -1855,9 +1855,19 @@ class Excel implements InterfaceBookWriter
         return $this->style->_getNumberFormats();
     }
 
-    public function addStyle($cellStyle, &$resultStyle): int
+    public function addStyle($cellStyle, &$resultStyle = []): int
     {
         return $this->style->addStyle($cellStyle, $resultStyle);
+    }
+
+    public function addStyleDxfs($style, &$resultStyle = []): int
+    {
+        return $this->style->addDxfs($style, $resultStyle);
+    }
+
+    public function getStyleDxfs(): array
+    {
+        return $this->style->getStyleDxfs();
     }
 
 }

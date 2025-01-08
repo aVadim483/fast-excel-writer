@@ -1339,6 +1339,30 @@ class StyleManager
     }
 
     /**
+     * @param array $style
+     * @param array|null $fullStyle
+     *
+     * @return int
+     */
+    public function addDxfs(array $style, array &$fullStyle = []): int
+    {
+        $fgColor = self::normalizeColor($style['font-color'] ?? '#000000');
+        $bgColor = self::normalizeColor($style['fill-color'] ?? '#ffffff');
+        $pattern = $style['fill-pattern'] ?? 'solid';
+        /* */
+        $dxfStyle = '<dxf><fill><patternFill patternType="' . $pattern . '">'
+            . '<fgColor rgb="' . $fgColor . '"/><bgColor rgb="' . $bgColor . '"/>'
+            . '</patternFill></fill></dxf>';
+        /* */
+        $dxfStyle = '<dxf>'
+            . '<font><color rgb="' . $fgColor . '"/></font>'
+            . '<fill><patternFill><bgColor rgb="' . $bgColor . '"/></patternFill></fill>'
+            . '</dxf>';
+
+        return $this->addElement('dxfs', $dxfStyle, $fullStyle);
+    }
+
+    /**
      * @param int $index
      *
      * @return array
@@ -1396,6 +1420,14 @@ class StyleManager
     public function getStyleCellXfs(): array
     {
         return $this->getElements('cellXfs');
+    }
+
+    /**
+     * @return array
+     */
+    public function getStyleDxfs(): array
+    {
+        return $this->getElements('dxfs');
     }
 
     /**

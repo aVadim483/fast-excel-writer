@@ -4,17 +4,14 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelHelper\Helper;
 use avadim\FastExcelWriter\Charts\Chart;
-use avadim\FastExcelWriter\Charts\DataSeries;
-use avadim\FastExcelWriter\Charts\DataSeriesValues;
-use avadim\FastExcelWriter\Charts\PlotArea;
+use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\DataValidation\DataValidation;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
-use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
-use avadim\FastExcelWriter\Writer\Writer;
 use avadim\FastExcelWriter\Writer\FileWriter;
+use avadim\FastExcelWriter\Writer\Writer;
 
 /**
  * Class Sheet
@@ -140,7 +137,11 @@ class Sheet implements InterfaceSheetWriter
 
     protected int $drawingRelsId = 0;
 
+    // Data validations
     protected array $validations = [];
+
+    // Conditional formatting
+    protected array $conditionals = [];
 
     protected array $protection = [];
 
@@ -3634,10 +3635,10 @@ class Sheet implements InterfaceSheetWriter
     {
         $dimension = Excel::rangeDimension($range, true);
         if ($dimension['cellCount'] === 1) {
-            $validation->setSqref($dimension['cell1']);
+            $validation->setSqref($this, $dimension['cell1']);
         }
         else {
-            $validation->setSqref($dimension['localRange']);
+            $validation->setSqref($this, $dimension['localRange']);
         }
         $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
 
@@ -3652,6 +3653,43 @@ class Sheet implements InterfaceSheetWriter
     public function getDataValidations(): array
     {
         return $this->validations;
+    }
+
+    /**
+     * Add conditional formatting object to the specified range of cells
+     *
+     * @param string $range
+     * @param Conditional|Conditional[] $conditionals
+     *
+     * @return $this
+     */
+    public function addConditionalFormatting(string $range, $conditionals): Sheet
+    {
+        if (!is_array($conditionals)) {
+            $conditionals = [$conditionals];
+        }
+        foreach ($conditionals as $conditional) {
+            $dimension = Excel::rangeDimension($range, true);
+            if ($dimension['cellCount'] === 1) {
+                $conditional->setSqref($this, $dimension['cell1']);
+            }
+            else {
+                $conditional->setSqref($this, $dimension['localRange']);
+            }
+            $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
+
+            $this->conditionals[] = $conditional;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Conditional[]
+     */
+    public function getConditionalFormatting(): array
+    {
+        return $this->conditionals;
     }
 
     // === PROTECTION === //
@@ -5088,6 +5126,27 @@ class Sheet implements InterfaceSheetWriter
         $dataValidation = clone $validation;
         $address = Helper::cellAddress($this->lastTouch['cell']['row_idx'] + 1, $this->lastTouch['cell']['col_idx'] + 1);
         $this->addDataValidation($address, $dataValidation);
+
+        return $this;
+    }
+
+    /**
+     * @param Conditional|Conditional[] $conditionals
+     *
+     * @return $this
+     */
+    public function applyConditionalFormatting($conditionals): Sheet
+    {
+        if (is_array($conditionals)) {
+            foreach ($conditionals as $conditional) {
+                $this->applyConditionalFormatting($conditional);
+            }
+        }
+        else {
+            $conditional = clone $conditionals;
+            $address = Helper::cellAddress($this->lastTouch['cell']['row_idx'] + 1, $this->lastTouch['cell']['col_idx'] + 1);
+            $this->addConditionalFormatting($address, $conditional);
+        }
 
         return $this;
     }

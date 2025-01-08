@@ -6,6 +6,7 @@ namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\Legend;
+use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use PHPUnit\Framework\TestCase;
 use avadim\FastExcelReader\Excel as ExcelReader;
@@ -865,6 +866,59 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
+    public function testConditional()
+    {
+        $testFileName = __DIR__ . '/test_conditional.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $value = 10;
+        $style = [Style::FONT_COLOR => '#900', Style::FILL_COLOR => '#f99'];
+
+        $conditional = [];
+
+        $conditional[] = Conditional::make('=', $value, $style);
+        $conditional[] = Conditional::equals($value, $style); // the same result
+
+        $conditional[] = Conditional::make('!=', $value, $style);
+        $conditional[] = Conditional::make('<>', $value, $style);
+        $conditional[] = Conditional::notEquals($value, $style);
+
+        $conditional[] = Conditional::make('>', $value, $style);
+        $conditional[] = Conditional::greaterThan($value, $style);
+
+        $conditional[] = Conditional::make('>=', $value, $style);
+        $conditional[] = Conditional::greaterThanOrEqual($value, $style);
+
+        $conditional[] = Conditional::make('<', $value, $style);
+        $conditional[] = Conditional::lessThan($value, $style);
+
+        $conditional[] = Conditional::make('<=', $value, $style);
+        $conditional[] = Conditional::lessThanOrEqual($value, $style);
+
+        $conditional[] = Conditional::make('between', [10, 50], $style);
+        $conditional[] = Conditional::between([10, 50], $style);
+
+        $conditional[] = Conditional::make('!between', [10, 50], $style);
+        $conditional[] = Conditional::notBetween([10, 50], $style);
+
+        $conditional[] = Conditional::make('=', 'Hello', $style);
+        $conditional[] = Conditional::contains('Hello', $style);
+        $conditional[] = Conditional::notContains('Hello', $style);
+        $conditional[] = Conditional::beginsWith('Hello', $style);
+        $conditional[] = Conditional::endsWith('Hello', $style);
+
+        $conditional[] = Conditional::make('=', '=B10+SUM(C3:D8)', $style);
+        $sheet->addConditionalFormatting('a1:a' . Excel::MAX_ROW, $conditional);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        unlink($testFileName);
+        $this->cells = [];
+    }
 
     protected function rmdir($tempDir)
     {

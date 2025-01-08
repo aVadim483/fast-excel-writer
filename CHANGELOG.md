@@ -1,5 +1,11 @@
 ## V.6.2
 
+* Conditional Formatting (see [Conditional Formatting](/docs/08-conditional.md))
+* Changed: Ignoring formulas when calculating automatic column width
+* Fixed https://github.com/aVadim483/fast-excel-writer/issues/94
+
+## V.6.2
+
 * New methods Sheet::getCurrentRow(), Sheet::getCurrentCol(), Sheet::getCurrentCell()
 * New methods Sheet::applyIndentLeft(), Sheet::applyIndentRight(), Sheet::applyIndentDistributed()
 * New method Sheet::applyFillGradient()

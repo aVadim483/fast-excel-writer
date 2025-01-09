@@ -42,7 +42,12 @@ class Conditional
 
     protected string $operator;
 
-    protected array $style = ['font-color' => '#000000', 'fill-color' => '#ffffff', 'fill-pattern' => 'solid'];
+    protected array $style = [
+        'font-color' => '#000000',
+        'fill-color' => '#ffffff',
+        'fill-pattern' => 'solid',
+        'color-rgb' => [],
+    ];
 
     protected Sheet $sheet;
     protected int $priority;
@@ -52,11 +57,7 @@ class Conditional
 
     protected ?string $text = null;
 
-    /** @var mixed  */
-    protected $formula1 = null;
-
-    /** @var mixed  */
-    protected $formula2 = null;
+    protected array $formula = [];
 
     protected array $cfvo = [];
 
@@ -65,12 +66,10 @@ class Conditional
         'showValue' => true,
         'directionRtl' => null,
     ];
-    protected bool $gradient = true;
-
-    protected bool $showValue = true;
-    protected ?bool $directionRtl = null;
-    protected int $topRank;
-    protected ?bool $topPercent = false;
+    protected array $topOptions = [
+        'rank' => 0,
+        'percent' => 0,
+    ];
 
     protected static array $operatorTypes = [
         self::OPERATOR_NONE,
@@ -108,58 +107,50 @@ class Conditional
     /**
      * Create a new Conditional
      */
-    public function __construct(string $type, string $operator, $formula, $style = null)
+    public function __construct(string $type, string $operator, $options, $style = null)
     {
-        if (is_array($formula) && count($formula) === 2) {
-            $formula = array_values($formula);
-            $formula2 = $formula[1];
-            $formula1 = $formula[0];
-        }
-        else {
-            $formula2 = null;
-            $formula1 = $formula;
-        }
-
         if (isset($this->aliases[$operator])) {
             $operator = $this->aliases[$operator];
         }
+        if (!in_array($operator, self::$operatorTypes)) {
+            ExceptionConditionalFormatting::throwNew('Invalid operator for conditional formatting "' . $operator . '"');
+        }
+
+        if (isset($options['formula'])) {
+            $this->formula = (array)$options['formula'];
+        }
+        if (isset($options['cfvo'])) {
+            $this->cfvo = $options['cfvo'];
+        }
+        if (isset($options['text'])) {
+            $this->text = $options['text'];
+        }
+
         if ($type === self::CONDITION_EXPRESSION) {
-            if ($formula1 && $formula1[0] !== '=') {
-                $formula1 = '=' . $formula1;
-            }
-            $operator = '';
-        }
-        elseif ($type === self::CONDITION_COLOR_SCALE || $type === self::CONDITION_DATA_BAR) {
-            $this->cfvo = $formula1;
-            $formula1 = null;
-        }
-        elseif ($type === self::CONDITION_TEXT) {
-            $this->text = $formula1;
-        }
-        else {
-            if (!in_array($operator, self::$operatorTypes)) {
-                ExceptionConditionalFormatting::throwNew('Invalid operator for conditional formatting "' . $operator . '"');
+            if ($this->formula && $this->formula[0] !== '=') {
+                $this->formula[0] = '=' . $this->formula[0];
             }
         }
+        elseif ($type === self::CONDITION_TOP10 && isset($options['options'])) {
+            $this->topOptions = ($options['options']);
+        }
+
         if ($style) {
             $this->setStyle($style);
         }
 
         $this->conditionType = $type;
         $this->operator = $operator;
-        if (($operator === self::OPERATOR_EQUAL || $operator === self::OPERATOR_NOT_EQUAL) && is_string($formula1) && $formula1) {
-            if ($formula1[0] === '=') {
-                $this->formula1 = $formula1;
-            }
-            else {
-                $this->text = $formula1;
-                $this->formula1 = '"' . $formula1 . '"';
+        if (($operator === self::OPERATOR_EQUAL || $operator === self::OPERATOR_NOT_EQUAL) && isset($this->formula[0]) && is_string($this->formula[0])) {
+            if ($this->formula[0][0] !== '=') {
+                $this->text = $this->formula[0];
+                $this->formula[0] = '"' . $this->formula[0] . '"';
             }
         }
-        else {
-            $this->formula1 = (string)$formula1;
+
+        foreach ($this->formula as $n => $formula) {
+            $this->formula[$n] = ($formula === null) ? null : (string)$formula;
         }
-        $this->formula2 = ($formula2 === null) ? null : (string)$formula2;
     }
 
     /**
@@ -173,7 +164,7 @@ class Conditional
      */
     public static function make(string $operator, $formula, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_CELL, $operator, $formula, $style);
+        return new self(self::CONDITION_CELL, $operator, ['formula' => $formula], $style);
     }
 
     /**
@@ -290,7 +281,7 @@ class Conditional
      */
     public static function contains(string $text, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_TEXT, self::OPERATOR_CONTAINS, $text, $style);
+        return new self(self::CONDITION_TEXT, self::OPERATOR_CONTAINS, ['text' => $text], $style);
     }
 
     /**
@@ -303,7 +294,7 @@ class Conditional
      */
     public static function notContains(string $text, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_TEXT, self::OPERATOR_NOT_CONTAINS, $text, $style);
+        return new self(self::CONDITION_TEXT, self::OPERATOR_NOT_CONTAINS, ['text' => $text], $style);
     }
 
     /**
@@ -316,7 +307,7 @@ class Conditional
      */
     public static function beginsWith(string $text, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_TEXT, self::OPERATOR_BEGINS_WITH, $text, $style);
+        return new self(self::CONDITION_TEXT, self::OPERATOR_BEGINS_WITH, ['text' => $text], $style);
     }
 
     /**
@@ -329,7 +320,7 @@ class Conditional
      */
     public static function endsWith(string $text, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_TEXT, self::OPERATOR_ENDS_WITH, $text, $style);
+        return new self(self::CONDITION_TEXT, self::OPERATOR_ENDS_WITH, ['text' => $text], $style);
     }
 
     /**
@@ -342,7 +333,7 @@ class Conditional
      */
     public static function expression(string $formula, ?array $style = null): Conditional
     {
-        return new self(self::CONDITION_EXPRESSION, '', $formula, $style);
+        return new self(self::CONDITION_EXPRESSION, '', ['formula' => $formula], $style);
     }
 
     /**
@@ -370,16 +361,16 @@ class Conditional
      */
     public static function colorScale(string $color1, string $color2, ?string $color3 = null): Conditional
     {
-        $formula = [
+        $cfvo = [
             ['type' => 'min'],
             ['type' => 'max'],
         ];
         if ($color3) {
-            $formula[] = ['type' => 'percentile', 'val' => 50];
+            $cfvo[] = ['type' => 'percentile', 'val' => 50];
         }
-        $style = ['color1' => $color1, 'color2' => $color2, 'color3' => $color3];
+        $style = ['color-rgb' => [$color1, $color2, $color3]];
 
-        return new self(self::CONDITION_COLOR_SCALE, '', $formula, $style);
+        return new self(self::CONDITION_COLOR_SCALE, '', ['cfvo' => $cfvo], $style);
     }
 
     /**
@@ -389,13 +380,13 @@ class Conditional
      */
     public static function colorScaleMax(string $color): Conditional
     {
-        $formula = [
+        $cfvo = [
             ['type' => 'min'],
             ['type' => 'max'],
         ];
-        $style = ['color1' => '#ffffff', 'color2' => $color, 'color3' => null];
+        $style = ['color-rgb' => ['#ffffff', $color]];
 
-        return new self(self::CONDITION_COLOR_SCALE, '', $formula, $style);
+        return new self(self::CONDITION_COLOR_SCALE, '', ['cfvo' => $cfvo], $style);
     }
 
     /**
@@ -405,13 +396,13 @@ class Conditional
      */
     public static function colorScaleMin(string $color): Conditional
     {
-        $formula = [
+        $cfvo = [
             ['type' => 'min'],
             ['type' => 'max'],
         ];
-        $style = ['color1' => $color, 'color2' => '#ffffff', 'color3' => null];
+        $style = ['color-rgb' => [$color, '#ffffff']];
 
-        return new self(self::CONDITION_COLOR_SCALE, '', $formula, $style);
+        return new self(self::CONDITION_COLOR_SCALE, '', ['cfvo' => $cfvo], $style);
     }
 
     /**
@@ -424,13 +415,13 @@ class Conditional
      */
     public static function colorScaleNum(array $values, string $color1, string $color2, ?string $color3 = null): Conditional
     {
-        $formula = [];
+        $cfvo = [];
         foreach ($values as $val) {
-            $formula[] = ['type' => 'num', 'val' => $val];
+            $cfvo[] = ['type' => 'num', 'val' => $val];
         }
-        $style = ['color1' => $color1, 'color2' => $color2, 'color3' => $color3];
+        $style = ['color-rgb' => [$color1, $color2, $color3]];
 
-        return new self(self::CONDITION_COLOR_SCALE, '', $formula, $style);
+        return new self(self::CONDITION_COLOR_SCALE, '', ['cfvo' => $cfvo], $style);
     }
 
     /**
@@ -442,13 +433,13 @@ class Conditional
      */
     public static function dataBar(string $color): Conditional
     {
-        $formula = [
+        $cfvo = [
             ['type' => 'min', 'val' => null], // 0
             ['type' => 'max', 'val' => null], // 100
         ];
-        $style = ['color1' => $color];
+        $style = ['color-rgb' => [$color]];
 
-        return new self(self::CONDITION_DATA_BAR, '', $formula, $style);
+        return new self(self::CONDITION_DATA_BAR, '', ['cfvo' => $cfvo], $style);
     }
 
     /**
@@ -500,7 +491,11 @@ class Conditional
 
     public static function belowAverage(array $style): Conditional
     {
-        return new self(self::CONDITION_BELOW_AVERAGE, '', null, $style);
+        $options = [
+            'aboveAverage' => 0,
+        ];
+
+        return new self(self::CONDITION_BELOW_AVERAGE, '', $options, $style);
     }
 
     public static function uniqueValues(array $style): Conditional
@@ -515,19 +510,19 @@ class Conditional
 
     public static function top(int $rank, array $style): Conditional
     {
-        $formula = [
+        $options = [
             'rank' => $rank,
-            'percent' => false,
+            'percent' => 0,
         ];
 
-        return new self(self::CONDITION_TOP10, '', $formula, $style);
+        return new self(self::CONDITION_TOP10, '', ['options' => $options], $style);
     }
 
     public static function topPercent(int $rank, array $style): Conditional
     {
         $formula = [
             'rank' => $rank,
-            'percent' => true,
+            'percent' => 1,
         ];
 
         return new self(self::CONDITION_TOP10, '', $formula, $style);
@@ -581,8 +576,8 @@ class Conditional
         $dxfId = $sheet->excel->addStyleDxfs($this->getStyle());
         $this->setDxfId($dxfId);
         $this->priority = count($sheet->getConditionalFormatting()) + 1;
-        if ($this->directionRtl === null && $sheet->isRightToLeft()) {
-            $this->directionRtl = true;
+        if (isset($this->dataBarOptions['directionRtl']) && $sheet->isRightToLeft()) {
+            $this->dataBarOptions['directionRtl'] = true;
         }
 
         return $this;
@@ -646,48 +641,56 @@ class Conditional
                     $xml .= '<cfvo type="' . $item['type'] . '"/>';
                 }
             }
-            if (isset($this->style['color1'])) {
-                $xml .= '<color rgb="' . StyleManager::normalizeColor($this->style['color1']) . '"/>';
-            }
-            if (isset($this->style['color2'])) {
-                $xml .= '<color rgb="' . StyleManager::normalizeColor($this->style['color2']) . '"/>';
-            }
-            if (isset($this->style['color3'])) {
-                $xml .= '<color rgb="' . StyleManager::normalizeColor($this->style['color3']) . '"/>';
+            foreach ($this->style['color-rgb'] as $color) {
+                if ($color) {
+                    $xml .= '<color rgb="' . StyleManager::normalizeColor($color) . '"/>';
+                }
             }
 
-            $xml .= '<gradient type="' . (!empty($this->dataBarOptions['gradient']) ? 'true' : 'false') . '"/>';
-            $xml .= '<showValue val"' . (!empty($this->dataBarOptions['showValue']) ? 'true' : 'false') . '"/>';
-            if (!empty($this->dataBarOptions['directionRtl'])) {
-                $xml .= '<direction rtl="true"/>';
+            if ($this->conditionType === self::CONDITION_DATA_BAR) {
+                $xml .= '<gradient val="' . (!empty($this->dataBarOptions['gradient']) ? 'true' : 'false') . '"/>';
+                $xml .= '<showValue val="' . (!empty($this->dataBarOptions['showValue']) ? 'true' : 'false') . '"/>';
+                if (!empty($this->dataBarOptions['directionRtl'])) {
+                    $xml .= '<direction rtl="true"/>';
+                }
             }
 
             $xml .= '</' . $this->conditionType . '>';
             $xml .= '</cfRule>';
         }
+        elseif ($this->conditionType === self::CONDITION_TOP10) {
+            $xml .= '<cfRule type="' . $this->conditionType . '" dxfId="' . $this->dxfId . '" priority="' . $priority . '" rank="' . $this->topOptions['rank'] . '" percent="' . ($this->topOptions['percent'] ? 1 : 0) . '"/>';
+        }
         else {
-            $xml .= '<cfRule type="' . $this->conditionType . '" dxfId="' . $this->dxfId . '" priority="' . $priority . '" operator="' . $this->operator . '"';
-            if ($this->text) {
-                $xml .= ' text="' . $this->text . '"';
+            if ($this->conditionType === self::CONDITION_BELOW_AVERAGE) {
+                $type = self::CONDITION_ABOVE_AVERAGE;
+                $aboveAverage = 0;
+            }
+            else {
+                $type = $this->conditionType;
+                $aboveAverage = null;
+            }
+            $attributes = [
+                'type' => $type,
+                'dxfId' => $this->dxfId,
+                'priority' => $priority,
+                'operator' => $this->operator ?: null,
+                'text' => $this->text ?: null,
+                'aboveAverage' => $aboveAverage,
+            ];
+            $xml .= '<cfRule';
+            foreach ($attributes as $attribute => $value) {
+                $xml .= ' ' . $attribute . '="' . $value . '"';
             }
             $xml .= '>';
-            if ($this->formula1 !== null && $this->formula1 !== '') {
-                if ($this->formula1[0] === '=') {
-                    $formula = ($formulaConverter ? $formulaConverter($this->formula1, $this->sqref) : substr($this->formula1, 1));
+
+            foreach ($this->formula as $formula) {
+                if ($formula !== null && $formula !== '') {
+                    if ($formula[0] === '=') {
+                        $formula = ($formulaConverter ? $formulaConverter($formula, $this->sqref) : substr($formula, 1));
+                    }
+                    $xml .= '<formula>' . $formula . '</formula>';
                 }
-                else {
-                    $formula = $this->formula1;
-                }
-                $xml .= '<formula>' . $formula . '</formula>';
-            }
-            if ($this->formula2 !== null && $this->formula2 !== '') {
-                if ($this->formula2[0] === '=') {
-                    $formula = ($formulaConverter ? $formulaConverter($this->formula2, $this->sqref) : substr($this->formula2, 1));
-                }
-                else {
-                    $formula = $this->formula2;
-                }
-                $xml .= '<formula>' . $formula . '</formula>';
             }
             $xml .= '</cfRule>';
         }

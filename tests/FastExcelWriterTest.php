@@ -912,7 +912,29 @@ final class FastExcelWriterTest extends TestCase
         $conditional[] = Conditional::beginsWith('Hello', $style);
         $conditional[] = Conditional::endsWith('Hello', $style);
 
-        $conditional[] = Conditional::make('=', '=B10+SUM(C3:D8)', $style);
+        $conditional[] = Conditional::expression('=B10+SUM(C3:D8)', $style);
+        $conditional[] = Conditional::isEmpty('B10', $style);
+
+        $conditional[] = Conditional::colorScale('f00', '0f0');
+        $conditional[] = Conditional::colorScale('f00', '0f0', '00f');
+        $conditional[] = Conditional::colorScaleMax('f00');
+        $conditional[] = Conditional::colorScaleMin('f00');
+        $conditional[] = Conditional::colorScaleNum([10, 20], 'f00', '0f0', '00f');
+
+        $conditional[] = Conditional::dataBar('f00')
+            ->setGradient(false)
+            ->setShowValue(false)
+            ->setDirectionRtl(true);
+
+        $conditional[] = Conditional::aboveAverage($style);
+        $conditional[] = Conditional::belowAverage($style);
+
+        $conditional[] = Conditional::uniqueValues($style);
+        $conditional[] = Conditional::duplicateValues($style);
+
+        $conditional[] = Conditional::top(5, $style);
+        $conditional[] = Conditional::topPercent(5, $style);
+
         $sheet->addConditionalFormatting('a1:a' . Excel::MAX_ROW, $conditional);
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);

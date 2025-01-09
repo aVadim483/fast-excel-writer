@@ -14,6 +14,11 @@ class Conditional
     const CONDITION_EXPRESSION = 'expression';
     const CONDITION_COLOR_SCALE = 'colorScale';
     const CONDITION_DATA_BAR = 'dataBar';
+    const CONDITION_ABOVE_AVERAGE = 'aboveAverage';
+    const CONDITION_BELOW_AVERAGE = 'belowAverage';
+    const CONDITION_UNIQUE_VALUES = 'uniqueValues';
+    const CONDITION_DUPLICATE_VALUES = 'duplicateValues';
+    const CONDITION_TOP10 = 'top10';
 
     /* Operator types */
     const OPERATOR_NONE = '';
@@ -55,12 +60,20 @@ class Conditional
 
     protected array $cfvo = [];
 
+    protected array $dataBarOptions = [
+        'gradient' => true,
+        'showValue' => true,
+        'directionRtl' => null,
+    ];
     protected bool $gradient = true;
 
     protected bool $showValue = true;
     protected ?bool $directionRtl = null;
+    protected int $topRank;
+    protected ?bool $topPercent = false;
 
     protected static array $operatorTypes = [
+        self::OPERATOR_NONE,
         self::OPERATOR_BEGINS_WITH,
         self::OPERATOR_ENDS_WITH,
         self::OPERATOR_EQUAL,
@@ -160,7 +173,6 @@ class Conditional
      */
     public static function make(string $operator, $formula, ?array $style = null): Conditional
     {
-
         return new self(self::CONDITION_CELL, $operator, $formula, $style);
     }
 
@@ -321,7 +333,7 @@ class Conditional
     }
 
     /**
-     * Applies the style if the expression evaluates to true
+     * Applies the style if the expression evaluates to TRUE
      *
      * @param string $formula
      * @param array|null $style
@@ -446,9 +458,9 @@ class Conditional
      *
      * @return $this
      */
-    public function gradient(bool $value): Conditional
+    public function setGradient(bool $value): Conditional
     {
-        $this->gradient = $value;
+        $this->dataBarOptions['gradient'] = $value;
 
         return $this;
     }
@@ -460,9 +472,9 @@ class Conditional
      *
      * @return $this
      */
-    public function showValue(bool $value): Conditional
+    public function setShowValue(bool $value): Conditional
     {
-        $this->showValue = $value;
+        $this->dataBarOptions['showValue'] = $value;
 
         return $this;
     }
@@ -474,11 +486,51 @@ class Conditional
      *
      * @return $this
      */
-    public function directionRtl(bool $value): Conditional
+    public function setDirectionRtl(bool $value): Conditional
     {
-        $this->directionRtl = $value;
+        $this->dataBarOptions['directionRtl'] = $value;
 
         return $this;
+    }
+
+    public static function aboveAverage(array $style): Conditional
+    {
+        return new self(self::CONDITION_ABOVE_AVERAGE, '', null, $style);
+    }
+
+    public static function belowAverage(array $style): Conditional
+    {
+        return new self(self::CONDITION_BELOW_AVERAGE, '', null, $style);
+    }
+
+    public static function uniqueValues(array $style): Conditional
+    {
+        return new self(self::CONDITION_UNIQUE_VALUES, '', null, $style);
+    }
+
+    public static function duplicateValues(array $style): Conditional
+    {
+        return new self(self::CONDITION_DUPLICATE_VALUES, '', null, $style);
+    }
+
+    public static function top(int $rank, array $style): Conditional
+    {
+        $formula = [
+            'rank' => $rank,
+            'percent' => false,
+        ];
+
+        return new self(self::CONDITION_TOP10, '', $formula, $style);
+    }
+
+    public static function topPercent(int $rank, array $style): Conditional
+    {
+        $formula = [
+            'rank' => $rank,
+            'percent' => true,
+        ];
+
+        return new self(self::CONDITION_TOP10, '', $formula, $style);
     }
 
     /**
@@ -604,9 +656,9 @@ class Conditional
                 $xml .= '<color rgb="' . StyleManager::normalizeColor($this->style['color3']) . '"/>';
             }
 
-            $xml .= '<gradient type="' . ($this->gradient ? 'true' : 'false') . '"/>';
-            $xml .= '<showValue val"' . ($this->showValue ? 'true' : 'false') . '"/>';
-            if (!empty($this->directionRtl)) {
+            $xml .= '<gradient type="' . (!empty($this->dataBarOptions['gradient']) ? 'true' : 'false') . '"/>';
+            $xml .= '<showValue val"' . (!empty($this->dataBarOptions['showValue']) ? 'true' : 'false') . '"/>';
+            if (!empty($this->dataBarOptions['directionRtl'])) {
                 $xml .= '<direction rtl="true"/>';
             }
 

@@ -1,4 +1,4 @@
-## V.6.2
+## V.6.3
 
 * Conditional Formatting (see [Conditional Formatting](/docs/08-conditional.md))
 * Changed: Ignoring formulas when calculating automatic column width

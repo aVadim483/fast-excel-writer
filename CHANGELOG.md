@@ -1,5 +1,6 @@
 ## V.6.3
 
+* Sheet::writeCells($values, $cellStyles) - Write several values into cells of one row
 * Conditional Formatting (see [Conditional Formatting](/docs/08-conditional.md))
 * Changed: Ignoring formulas when calculating automatic column width
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/94

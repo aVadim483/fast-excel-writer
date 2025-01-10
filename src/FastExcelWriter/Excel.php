@@ -1001,9 +1001,20 @@ class Excel implements InterfaceBookWriter
      *
      * @return array
      */
-    public static function colKeysToIndexes(array $data): array
+    public static function colKeysToIndexes(array $data, $offset = 0): array
     {
-        return array_combine(Excel::colIndexRange(array_keys($data)), array_values($data));
+        $row = array_combine(Excel::colIndexRange(array_keys($data)), array_values($data));
+        if ($offset) {
+            $result = [];
+            foreach ($row as $key => $val) {
+                $result[$key + $offset] = $val;
+            }
+        }
+        else {
+            $result = $row;
+        }
+
+        return $result;
     }
 
     /**

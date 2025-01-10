@@ -2042,6 +2042,56 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     *  Write several values into cells of one row
+     *
+     * @param array $values
+     * @param array|null $cellStyles
+     *
+     * @return $this
+     */
+    public function writeCells(array $values, ?array $cellStyles = null): Sheet
+    {
+        $this->_checkOutput();
+
+        if ($this->lastTouch['ref'] === 'row') {
+            $this->_writeCurrentRow();
+        }
+        if ($this->currentRowIdx < $this->rowCountWritten) {
+            $this->currentRowIdx = $this->rowCountWritten;
+        }
+        $startRowIdx = $this->currentRowIdx;
+        $startColIdx = $this->currentColIdx;
+
+        if (is_array($cellStyles)) {
+            $key = array_key_first($cellStyles);
+            if (!is_int($key)) {
+                $cellStyles = Excel::colKeysToIndexes($cellStyles, -$startColIdx);
+            }
+            else {
+                $cellStyles = [];
+            }
+        }
+        else {
+            $cellStyles = [];
+        }
+
+        $cellAddress = [
+            'row' => 1 + $this->currentRowIdx,
+            'col' => 1 + $this->currentColIdx,
+        ];
+        foreach ($values as $pos => $value) {
+            $styles = !empty($cellStyles[$pos]) ? $cellStyles[$pos] : null;
+            $this->_setCellData($cellAddress, $value, $styles, false);
+            $cellAddress['col']++;
+            ++$this->currentColIdx;
+        }
+        $this->_touchStart($startRowIdx, $startColIdx, 'area');
+        $this->_touchEnd($startRowIdx, $this->currentColIdx, 'area');
+
+        return $this;
+    }
+
+    /**
      * @return $this
      */
     public function nextCell(): Sheet
@@ -4610,6 +4660,7 @@ class Sheet implements InterfaceSheetWriter
             $colMin = $this->lastTouch['area']['col_idx1'];
             $colMax = $this->lastTouch['area']['col_idx2'];
 
+            // top-left border
             $options = [
                 'border-left-style' => $style,
                 'border-left-color' => $color,
@@ -4622,6 +4673,7 @@ class Sheet implements InterfaceSheetWriter
             ];
             $this->_setStyleOptions($addr, Style::BORDER, $options);
 
+            // top-right border
             $options = [
                 'border-top-style' => $style,
                 'border-top-color' => $color,
@@ -4634,6 +4686,7 @@ class Sheet implements InterfaceSheetWriter
             ];
             $this->_setStyleOptions($addr, Style::BORDER, $options);
 
+            // bottom-right border
             $options = [
                 'border-right-style' => $style,
                 'border-right-color' => $color,
@@ -4646,6 +4699,7 @@ class Sheet implements InterfaceSheetWriter
             ];
             $this->_setStyleOptions($addr, Style::BORDER, $options);
 
+            // bottom-left border
             $options = [
                 'border-bottom-style' => $style,
                 'border-bottom-color' => $color,

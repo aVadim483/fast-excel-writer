@@ -257,8 +257,7 @@ If this adjustment is performed at the end of document creation, it has no effec
 But the width of different characters may differ, so the column width may be larger than the width of the text in the cell,
 or it may be smaller.
 
-3. If a formula is written in a cell, the width calculation will be performed based on the formula text, 
-not its result, since the library cannot calculate formulas.
+3. The library cannot calculate formulas, so if a cell contains a formula, it will be ignored when calculating the automatic cell width.
 
 ### Group/outline rows and columns
 

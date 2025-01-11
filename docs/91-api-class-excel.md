@@ -28,6 +28,7 @@
 * [addNamedRange()](#addnamedrange)
 * [addSharedString()](#addsharedstring)
 * [addStyle()](#addstyle)
+* [addStyleDxfs()](#addstyledxfs)
 * [setAuthor()](#setauthor)
 * [setCompany()](#setcompany)
 * [setDefaultFont()](#setdefaultfont) -- Set default font options
@@ -66,6 +67,7 @@
 * [sheet()](#sheet) -- Returns sheet by number or name of sheet.
 * [getSheet()](#getsheet) -- Alias of sheet()
 * [getSheets()](#getsheets) -- Returns all sheets
+* [getStyleDxfs()](#getstyledxfs)
 * [setSubject()](#setsubject)
 * [setTitle()](#settitle)
 * [unprotect()](#unprotect) -- Unprotect workbook
@@ -155,13 +157,14 @@ _Convert letter range to array of numbers (ZERO based)_
 ---
 
 ```php
-public static function colKeysToIndexes(array $data): array
+public static function colKeysToIndexes(array $data, $offset): array
 ```
 
 
 ### Parameters
 
 * `array $data`
+* `$offset`
 
 ---
 
@@ -501,6 +504,22 @@ public function addStyle($cellStyle, &$resultStyle): int
 ### Parameters
 
 * `$cellStyle`
+* `$resultStyle`
+
+---
+
+## addStyleDxfs()
+
+---
+
+```php
+public function addStyleDxfs($style, &$resultStyle): int
+```
+
+
+### Parameters
+
+* `$style`
 * `$resultStyle`
 
 ---
@@ -1071,6 +1090,21 @@ _Alias of sheet()_
 public function getSheets(): array
 ```
 _Returns all sheets_
+
+### Parameters
+
+_None_
+
+---
+
+## getStyleDxfs()
+
+---
+
+```php
+public function getStyleDxfs(): array
+```
+
 
 ### Parameters
 

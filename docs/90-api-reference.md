@@ -11,6 +11,7 @@ namespace **avadim\FastExcelWriter**
 * [Class RichText](93-api-class-rich-text.md)
 * [Class Charts\Chart](94-api-class-chart.md)
 * [Class DataValidation\DataValidation](95-api-class-data-validation.md)
+* [Class Conditional\Conditional](96-api-class-conditional.md)
 
 ---
 

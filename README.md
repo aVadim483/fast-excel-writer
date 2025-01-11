@@ -44,7 +44,7 @@ This library is designed to be lightweight, super-fast and requires minimal memo
 * Supports workbook and sheet protection with/without passwords 
 * Supports page settings - page margins, page size
 * Inserting multiple charts
-* Supports data validations
+* Supports data validations and conditional formatting
 
 Jump To:
 * [Changes in version 6](#changes-in-version-6)
@@ -393,12 +393,12 @@ and with minimal memory usage.
 
 Benchmark of PhpSpreadsheet (generation without styles)
 
-| Rows x Cols | Time      | Memory     | 
+| Rows x Cols | Time      | Memory     |
 |-------------|-----------|------------|
-| 1000 x 5    | 0.98 sec  | 2,048 Kb   | 
-| 1000 x 25   | 4.68 sec  | 14,336 Kb  | 
-| 5000 x 25   | 23.19 sec | 77,824 Kb  | 
-| 10000 x 50  | 105.8 sec | 256,000 Kb | 
+| 1000 x 5    | 0.98 sec  | 2,048 Kb   |
+| 1000 x 25   | 4.68 sec  | 14,336 Kb  |
+| 5000 x 25   | 23.19 sec | 77,824 Kb  |
+| 10000 x 50  | 105.8 sec | 256,000 Kb |
 
 Benchmark of FastExcelWriter (generation without styles)
 

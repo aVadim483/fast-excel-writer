@@ -7,6 +7,7 @@
 * [date()](#date) -- Make data validation as a date value
 * [decimal()](#decimal) -- Make data validation as a decimal value
 * [dropDown()](#dropdown) -- Make data validation as a dropdown list
+* [expression()](#expression) -- Make data validation as an expression (alias of self::custom())
 * [integer()](#integer) -- Make data validation as an integer value
 * [list()](#list) -- Alias of dropDown()
 * [make()](#make) -- Make a DataValidation instance
@@ -107,6 +108,21 @@ _Make data validation as a dropdown list_
 ### Parameters
 
 * `array|string $formulas`
+
+---
+
+## expression()
+
+---
+
+```php
+public static function expression(string $formula): DataValidation
+```
+_Make data validation as an expression (alias of self::custom())_
+
+### Parameters
+
+* `string $formula`
 
 ---
 
@@ -440,12 +456,14 @@ _Show input message_
 ---
 
 ```php
-public function setSqref(string $sqref): DataValidation
+public function setSqref(avadim\FastExcelWriter\Sheet $sheet, 
+                         string $sqref): DataValidation
 ```
 
 
 ### Parameters
 
+* `Sheet $sheet`
 * `string $sqref`
 
 ---

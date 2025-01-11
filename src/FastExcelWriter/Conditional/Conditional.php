@@ -484,11 +484,21 @@ class Conditional
         return $this;
     }
 
+    /**
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function aboveAverage(array $style): Conditional
     {
         return new self(self::CONDITION_ABOVE_AVERAGE, '', null, $style);
     }
 
+    /**
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function belowAverage(array $style): Conditional
     {
         $options = [
@@ -498,16 +508,32 @@ class Conditional
         return new self(self::CONDITION_BELOW_AVERAGE, '', $options, $style);
     }
 
+    /**
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function uniqueValues(array $style): Conditional
     {
         return new self(self::CONDITION_UNIQUE_VALUES, '', null, $style);
     }
 
+    /**
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function duplicateValues(array $style): Conditional
     {
         return new self(self::CONDITION_DUPLICATE_VALUES, '', null, $style);
     }
 
+    /**
+     * @param int $rank
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function top(int $rank, array $style): Conditional
     {
         $options = [
@@ -518,14 +544,54 @@ class Conditional
         return new self(self::CONDITION_TOP10, '', ['options' => $options], $style);
     }
 
+    /**
+     * @param int $rank
+     * @param array $style
+     *
+     * @return Conditional
+     */
     public static function topPercent(int $rank, array $style): Conditional
     {
-        $formula = [
+        $options = [
             'rank' => $rank,
             'percent' => 1,
         ];
 
-        return new self(self::CONDITION_TOP10, '', $formula, $style);
+        return new self(self::CONDITION_TOP10, '', ['options' => $options], $style);
+    }
+
+    /**
+     * @param int $rank
+     * @param array $style
+     *
+     * @return Conditional
+     */
+    public static function low(int $rank, array $style): Conditional
+    {
+        $options = [
+            'rank' => $rank,
+            'percent' => 0,
+            'bottom' => 1,
+        ];
+
+        return new self(self::CONDITION_TOP10, '', ['options' => $options], $style);
+    }
+
+    /**
+     * @param int $rank
+     * @param array $style
+     *
+     * @return Conditional
+     */
+    public static function lowPercent(int $rank, array $style): Conditional
+    {
+        $options = [
+            'rank' => $rank,
+            'percent' => 1,
+            'bottom' => 1,
+        ];
+
+        return new self(self::CONDITION_TOP10, '', ['options' => $options], $style);
     }
 
     /**
@@ -604,6 +670,23 @@ class Conditional
     }
 
     /**
+     * @param array $attributes
+     *
+     * @return string
+     */
+    protected function _attr(array $attributes): string
+    {
+        $result = '';
+        foreach ($attributes as $attribute => $value) {
+            if ($value !== null) {
+                $result .= ' ' . $attribute . '="' . $value . '"';
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * @param int $priority
      * @param $formulaConverter
      *
@@ -612,19 +695,19 @@ class Conditional
     public function toXml(int $priority, $formulaConverter = null): string
     {
         $xml = '<conditionalFormatting sqref="' . $this->sqref . '">';
+        $firstCell = strpos($this->sqref, ':') ? strstr($this->sqref, ':', true) : $this->sqref;
         if ($this->conditionType === self::CONDITION_TEXT) {
-            $cell = strpos($this->sqref, ':') ? strstr($this->sqref, ':', true) : $this->sqref;
             if ($this->operator === self::OPERATOR_NOT_CONTAINS) {
-                $formula = 'ISERROR(SEARCH("' . $this->text . '",' . $cell . '))';
+                $formula = 'ISERROR(SEARCH("' . $this->text . '",' . $firstCell . '))';
             }
             elseif ($this->operator === self::OPERATOR_BEGINS_WITH) {
-                $formula = 'LEFT(' . $cell . ',' . mb_strlen($this->text) . ')="' . $this->text . '"';
+                $formula = 'LEFT(' . $firstCell . ',' . mb_strlen($this->text) . ')="' . $this->text . '"';
             }
             elseif ($this->operator === self::OPERATOR_ENDS_WITH) {
-                $formula = 'RIGHT(' . $cell . ',' . mb_strlen($this->text) . ')="' . $this->text . '"';
+                $formula = 'RIGHT(' . $firstCell . ',' . mb_strlen($this->text) . ')="' . $this->text . '"';
             }
             else {
-                $formula = 'NOT(ISERROR(SEARCH("' . $this->text . '",' . $cell . ')))';
+                $formula = 'NOT(ISERROR(SEARCH("' . $this->text . '",' . $firstCell . ')))';
             }
             $xml .= '<cfRule type="' . $this->conditionType . '" dxfId="' . $this->dxfId . '" priority="' . $priority . '" operator="' . $this->operator . '" text="' . $this->text . '">';
             $xml .= '<formula>' . $formula . '</formula>';
@@ -659,7 +742,17 @@ class Conditional
             $xml .= '</cfRule>';
         }
         elseif ($this->conditionType === self::CONDITION_TOP10) {
-            $xml .= '<cfRule type="' . $this->conditionType . '" dxfId="' . $this->dxfId . '" priority="' . $priority . '" rank="' . $this->topOptions['rank'] . '" percent="' . ($this->topOptions['percent'] ? 1 : 0) . '"/>';
+            $attributes = [
+                'type' => $this->conditionType,
+                'dxfId' => $this->dxfId,
+                'priority' => $priority,
+                'rank' => $this->topOptions['rank'],
+                'percent' => ($this->topOptions['percent'] ? 1 : 0),
+            ];
+            if (!empty($this->topOptions['bottom'])) {
+                $attributes['bottom'] = $this->topOptions['bottom'];
+            }
+            $xml .= '<cfRule' . $this->_attr($attributes) . '/>';
         }
         else {
             if ($this->conditionType === self::CONDITION_BELOW_AVERAGE) {
@@ -678,16 +771,12 @@ class Conditional
                 'text' => $this->text ?: null,
                 'aboveAverage' => $aboveAverage,
             ];
-            $xml .= '<cfRule';
-            foreach ($attributes as $attribute => $value) {
-                $xml .= ' ' . $attribute . '="' . $value . '"';
-            }
-            $xml .= '>';
+            $xml .= '<cfRule' . $this->_attr($attributes) . '>';
 
             foreach ($this->formula as $formula) {
                 if ($formula !== null && $formula !== '') {
                     if ($formula[0] === '=') {
-                        $formula = ($formulaConverter ? $formulaConverter($formula, $this->sqref) : substr($formula, 1));
+                        $formula = ($formulaConverter ? $formulaConverter($formula, $firstCell) : substr($formula, 1));
                     }
                     $xml .= '<formula>' . $formula . '</formula>';
                 }

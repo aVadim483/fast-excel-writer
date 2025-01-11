@@ -2086,7 +2086,7 @@ class Sheet implements InterfaceSheetWriter
             ++$this->currentColIdx;
         }
         $this->_touchStart($startRowIdx, $startColIdx, 'area');
-        $this->_touchEnd($startRowIdx, $this->currentColIdx, 'area');
+        $this->_touchEnd($startRowIdx, $this->currentColIdx - 1, 'area');
 
         return $this;
     }
@@ -5198,7 +5198,8 @@ class Sheet implements InterfaceSheetWriter
         }
         else {
             $conditional = clone $conditionals;
-            $address = Helper::cellAddress($this->lastTouch['cell']['row_idx'] + 1, $this->lastTouch['cell']['col_idx'] + 1);
+            $address = Helper::cellAddress($this->lastTouch['area']['row_idx1'] + 1, $this->lastTouch['area']['col_idx1'] + 1)
+                . ':' . Helper::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1);
             $this->addConditionalFormatting($address, $conditional);
         }
 

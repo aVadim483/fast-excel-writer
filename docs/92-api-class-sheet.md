@@ -6,6 +6,7 @@
 * [setActiveCell()](#setactivecell) -- Set active cell
 * [addCellStyle()](#addcellstyle) -- Add additional styles to a cell
 * [addChart()](#addchart) -- Add chart object to the specified range of cells
+* [addConditionalFormatting()](#addconditionalformatting) -- Add conditional formatting object to the specified range of cells
 * [addDataValidation()](#adddatavalidation) -- Add data validation object to the specified range of cells
 * [addImage()](#addimage) -- Add image to the sheet from local file, URL or image string in base64
 * [addNamedRange()](#addnamedrange) -- Define named range
@@ -36,6 +37,7 @@
 * [applyBorderRight()](#applyborderright)
 * [applyBorderTop()](#applybordertop)
 * [applyColor()](#applycolor) -- Alias of 'setFontColor()'
+* [applyConditionalFormatting()](#applyconditionalformatting)
 * [applyDataValidation()](#applydatavalidation)
 * [applyFillColor()](#applyfillcolor) -- Fill background color
 * [applyFillGradient()](#applyfillgradient) -- Fill background by gradient
@@ -95,6 +97,7 @@
 * [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
 * [setColWidthAuto()](#setcolwidthauto) -- Set width of single or multiple column(s)
 * [setColWidths()](#setcolwidths) -- Setting a multiple column's width
+* [getConditionalFormatting()](#getconditionalformatting)
 * [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
 * [getCurrentCol()](#getcurrentcol) -- Returns current column letter
 * [getCurrentColId()](#getcurrentcolid)
@@ -158,6 +161,7 @@
 * [pagePaperSize()](#pagepapersize) -- Set Paper size (when paperHeight and paperWidth are specified, paperSize should be ignored)
 * [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
 * [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
+* [pageScale()](#pagescale)
 * [getPageSetup()](#getpagesetup)
 * [setPageSetup()](#setpagesetup)
 * [setPrintArea()](#setprintarea)
@@ -193,6 +197,7 @@
 * [writeArray()](#writearray) -- Write values from two-dimensional array
 * [writeArrayTo()](#writearrayto) -- Write 2d array form the specified cell
 * [writeCell()](#writecell) -- Write value to the current cell and move pointer to the next cell in the row
+* [writeCells()](#writecells) -- Write several values into cells of one row
 * [writeHeader()](#writeheader)
 * [writeRow()](#writerow) -- Write values to the current row
 * [writeTo()](#writeto) -- Write value to the specified cell and move pointer to the next cell in the row
@@ -259,6 +264,22 @@ _Add chart object to the specified range of cells_
 
 * `string $range` -- Set the position where the chart should appear in the worksheet
 * `Chart $chart` -- Chart object
+
+---
+
+## addConditionalFormatting()
+
+---
+
+```php
+public function addConditionalFormatting(string $range, $conditionals): Sheet
+```
+_Add conditional formatting object to the specified range of cells_
+
+### Parameters
+
+* `string $range`
+* `Conditional|Conditional[] $conditionals`
 
 ---
 
@@ -757,6 +778,21 @@ _Alias of 'setFontColor()'_
 ### Parameters
 
 * `string $color`
+
+---
+
+## applyConditionalFormatting()
+
+---
+
+```php
+public function applyConditionalFormatting($conditionals): Sheet
+```
+
+
+### Parameters
+
+* `Conditional|Conditional[] $conditionals`
 
 ---
 
@@ -1758,6 +1794,21 @@ $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 
 ---
 
+## getConditionalFormatting()
+
+---
+
+```php
+public function getConditionalFormatting(): array
+```
+
+
+### Parameters
+
+_None_
+
+---
+
 ## getCurrentCell()
 
 ---
@@ -2753,6 +2804,21 @@ _None_
 
 ---
 
+## pageScale()
+
+---
+
+```php
+public function pageScale(int $scale): Sheet
+```
+
+
+### Parameters
+
+* `int $scale`
+
+---
+
 ## getPageSetup()
 
 ---
@@ -3367,6 +3433,22 @@ _Write value to the current cell and move pointer to the next cell in the row_
 
 * `mixed $value`
 * `array|null $styles`
+
+---
+
+## writeCells()
+
+---
+
+```php
+public function writeCells(array $values, ?array $cellStyles = null): Sheet
+```
+_Write several values into cells of one row_
+
+### Parameters
+
+* `array $values`
+* `array|null $cellStyles`
 
 ---
 

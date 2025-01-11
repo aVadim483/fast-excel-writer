@@ -762,6 +762,7 @@ class StyleManager
                         }
                     }
                     elseif (is_array($styleVal)) {
+                        $s = self::normalizeFont($styleVal);
                         $result['font'] = $styleVal;
                     }
                     break;

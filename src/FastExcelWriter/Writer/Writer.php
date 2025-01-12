@@ -1318,6 +1318,9 @@ class Writer
             $file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
             $file->write('</c>');
         }
+        elseif (is_bool($value)) {
+            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="b"><v>' . (int)$value . '</v></c>');
+        }
         elseif ($value instanceof RichText) {
             $sharedStrIndex = $this->excel->addSharedString($value->outXml(), true);
             $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');

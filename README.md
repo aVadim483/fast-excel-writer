@@ -202,6 +202,15 @@ $excel->save('simple.xlsx');
 ```
 Also, you can download generated file to client (send to browser)
 ```php
+$excel = Excel::create();
+$sheet = $excel->sheet();
+
+$sheet->writeCell(12345); // write integer
+$sheet->writeCell(123.45); // write float
+$sheet->writeCell('12345'); // write string
+$sheet->writeCell(true); // write boolean value
+$sheet->writeCell(fn() => $sheet->getCurrentCell()); // write result of function
+
 $excel->download('download.xlsx');
 ```
 
@@ -308,7 +317,8 @@ You can change some note options. Allowed options of a note are:
 
 ```php
 
-$sheet->addNote('A1', 'This is a note for cell A1', ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
+$sheet->addNote('A1', 'This is a note for cell A1', 
+    ['width' => '200pt', 'height' => '100pt', 'fill_color' => '#ffcccc']);
 
 // Parameters "width" and "height" can be numeric, by default these values are in points
 // The "fill_color" parameter can be shortened

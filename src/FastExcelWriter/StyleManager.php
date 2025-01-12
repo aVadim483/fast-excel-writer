@@ -1481,7 +1481,7 @@ class StyleManager
     /**
      * @see https://support.microsoft.com/en-au/office/number-format-codes-5026bbd6-04bc-48cd-bf33-80f18b4eae68#ID0EDN
      *
-     * #,###.00_);[Red](#,###.00);0.00;"gross receipts for "@
+     * #,###.00;[Red](#,###.00);0.00;"gross receipts for "@
      * 1 - for positive numbers
      * 2 - for negative numbers
      * 3 - for zeros
@@ -1621,6 +1621,15 @@ class StyleManager
     {
         return $this->indexedColors;
     }
+
+    public static function isDateFormat($format)
+    {
+        if (preg_match('/^[DMYHS\s\.\-:]+$/u', $format)) {
+            return str_replace(['D', 'M', 'Y', 'H', 'S'], '9', $format);
+        }
+        return null;
+    }
+
 }
 
 // EOF

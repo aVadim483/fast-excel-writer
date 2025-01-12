@@ -2813,6 +2813,15 @@ class Sheet implements InterfaceSheetWriter
             ) {
                 $this->cells['values'][$rowIdx][$colIdx] = $value;
             }
+            elseif ($value instanceof \DateTimeInterface) {
+                $this->cells['values'][$rowIdx][$colIdx] = $value->getTimestamp();
+                if (is_array($styles) && empty($styles['format'])) {
+                    $styles['format'] = '@datetime';
+                }
+                else {
+                    $styles = ['format' => '@datetime'];
+                }
+            }
             elseif (is_callable($value)) {
                 $this->cells['values'][$rowIdx][$colIdx] = $value($this);
             }

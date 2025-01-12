@@ -234,6 +234,9 @@ class Excel implements InterfaceBookWriter
     public static function _formatValue($value, string $format): string
     {
         if (is_numeric($value)) {
+            if ($format && ($format = StyleManager::isDateFormat($format))) {
+                return $format;
+            }
             if (strpos($format, ';')) {
                 $formats = explode(';', $format);
                 if ($value > 0 && !empty($formats[0])) {

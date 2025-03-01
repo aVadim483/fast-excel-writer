@@ -11,14 +11,14 @@ $style = [
     'font-color' => '#ff0000',
     'text-align' => 'center',
 ];
-$sheet1->writeCell(0.9, $style);
-$sheet1->writeTo('B4', $value, $style);
+$sheet->writeCell(0.9, $style);
+$sheet->writeTo('B4', $value, $style);
 
 // Sets style to specified cell
-$sheet1->setStyle('C8', $style);
+$sheet->setStyle('C8', $style);
 
 // Begin an area for direct write
-$area = $sheet1->beginArea();
+$area = $sheet->beginArea();
 $area
     ->setValue('C10', 1234, $otherStyle)
     ->setValue('E12:K12', 'This is string', $alterStyle);
@@ -38,10 +38,10 @@ $rowStyle = [
     ]
 ];
 // Write row data and set row styles
-$sheet1->writeRow($rowData, $rowStyle);
+$sheet->writeRow($rowData, $rowStyle);
 
 // Set options for several rows 
-$sheet1->setRowStyles('3', $style);
+$sheet->setRowStyles('3', $style);
 
 $rowStyles = [
     3 => ['fill-color' = '#cff'], // options for row 3 
@@ -49,10 +49,10 @@ $rowStyles = [
 ];
 
 // Set styles to the specified row 
-$sheet1->setRowStyles($rowStyles);
+$sheet->setRowStyles($rowStyles);
 
 // Set options for range of rows 
-$sheet1->setRowStyles('2:5', ['fill-color' = '#f00']);
+$sheet->setRowStyles('2:5', ['fill-color' = '#f00']);
 
 ```
 
@@ -87,7 +87,7 @@ $cellStyles = [
     [], // 3rd cell
 ];
 
-$sheet1->writeRow($rowValues, $rowStyle, $cellStyles);
+$sheet->writeRow($rowValues, $rowStyle, $cellStyles);
 
 ```
 
@@ -97,7 +97,7 @@ Also, you can set styles for the specified cells
 $cellStyles = [
     'B' => ['hyperlink' => true],
 ];
-$sheet1->writeRow($rowValues, [], $cellStyles);
+$sheet->writeRow($rowValues, [], $cellStyles);
 ```
 
 ### Column Styles
@@ -119,15 +119,15 @@ $headStyles = [
     'font-style' => 'bold',
     'border-style' => 'thin',
 ];
-$sheet1->writeHeader($headValues, $headStyles);
+$sheet->writeHeader($headValues, $headStyles);
 
 ```
 You can set styles for specified columns
 
 ```php
-$sheet1->setColStyle('C', $colStyle);
-$sheet1->setColWidth('E', 32);
-$sheet1->setColFormat('K', '@date');
+$sheet->setColStyle('C', $colStyle);
+$sheet->setColWidth('E', 32);
+$sheet->setColFormat('K', '@date');
 
 ```
 
@@ -152,16 +152,16 @@ $sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]);
 
 ```php
 // Set style and width for specified column
-$sheet1->setColDataStyle('K', ['text-wrap' => true, 'width' => 32]);
+$sheet->setColDataStyle('K', ['text-wrap' => true, 'width' => 32]);
 
 // Set widths of columns from the first (A)
-$sheet1->setColWidths([5, 16, 16, 'auto']);
+$sheet->setColWidths([5, 16, 16, 'auto']);
 
 // Set width of the column
-$sheet1->setColWidth(['G', 'H', 'J'], 14);
+$sheet->setColWidth(['G', 'H', 'J'], 14);
 
 // Set formats of columns from the first (A); null - default format
-$sheet1->setColFormats([null, '@', '@', '@date', '0', '0.00', '@money', '@money']);
+$sheet->setColFormats([null, '@', '@', '@date', '0', '0.00', '@money', '@money']);
 
 ```
 

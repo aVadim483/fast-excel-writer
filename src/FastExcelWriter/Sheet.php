@@ -2562,7 +2562,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function skipRow(?int $rowCount = 1): Sheet
     {
-        for ($i = 0; $i <= $rowCount; $i++) {
+        for ($i = 1; $i <= $rowCount; $i++) {
             $this->nextRow();
         }
 

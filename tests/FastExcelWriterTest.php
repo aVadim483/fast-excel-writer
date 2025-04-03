@@ -149,8 +149,9 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeTo('F3', 'F3');
         $sheet->nextRow(); // 4
         $sheet->nextRow(); // 5
-        $sheet->writeCell('A5');
-        $sheet->skipRow(3);
+        $sheet->writeCell('A5'); // 5
+        $sheet->skipRow(3); // skip rows 5, 6 and 7 - go to 8
+        $sheet->skipRow(); // skip row 8 - go to 9
         $sheet->writeCell('A9');
         $sheet->writeTo('F9', 'F9');
         $sheet->writeTo('D9', 'D9');

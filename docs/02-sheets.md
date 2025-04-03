@@ -27,28 +27,28 @@ $excel->removeSheet('Total');
 ### Sheet Settings
 
 ```php
-$sheet1->setDefaultFont($font);
-$sheet1->setDefaultFontName($fontName);
-$sheet1->setDefaultFontSize($fontSize);
-$sheet1->setDefaultFontStyle($fontStyle);
-$sheet1->setDefaultFontStyleBold();
-$sheet1->setDefaultFontStyleItalic();
-$sheet1->setDefaultFontStyleUnderline(true);
-$sheet1->setDefaultFontStyleStrikethrough();
-$sheet1->setDefaultFontColor($font);
+$sheet->setDefaultFont($font);
+$sheet->setDefaultFontName($fontName);
+$sheet->setDefaultFontSize($fontSize);
+$sheet->setDefaultFontStyle($fontStyle);
+$sheet->setDefaultFontStyleBold();
+$sheet->setDefaultFontStyleItalic();
+$sheet->setDefaultFontStyleUnderline(true);
+$sheet->setDefaultFontStyleStrikethrough();
+$sheet->setDefaultFontColor($font);
 
-$sheet1->setTabColor('#ff0099');
+$sheet->setTabColor('#ff0099');
 ```
 
 ### Page Settings
 
 ```php
-$sheet1->pagePortrait();
-$sheet1->pageLandscape();
-$sheet1->pageFitToWidth(1); // fit width to 1 page
-$sheet1->pageFitToHeight(1);// fit height to 1 page
+$sheet->pagePortrait();
+$sheet->pageLandscape();
+$sheet->pageFitToWidth(1); // fit width to 1 page
+$sheet->pageFitToHeight(1);// fit height to 1 page
 
-$sheet1->pageMargins([
+$sheet->pageMargins([
         'left' => '0.5',
         'right' => '0.5',
         'top' => '1.0',
@@ -56,33 +56,35 @@ $sheet1->pageMargins([
         'header' => '0.5',
         'footer' => '0.5',
     ]);
-$sheet1->pageMarginLeft(0.5);
-$sheet1->pageMarginRight(0.5);
-$sheet1->pageMarginTop(1.0);
-$sheet1->pageMarginBottom(1.0);
-$sheet1->pageMarginHeader(0.5);
-$sheet1->pageMarginFooter(0.5);
+// the same action    
+$sheet
+    ->pageMarginLeft(0.5)
+    ->pageMarginRight(0.5)
+    ->pageMarginTop(1.0)
+    ->pageMarginBottom(1.0)
+    ->pageMarginHeader(0.5)
+    ->pageMarginFooter(0.5);
 
-$sheet1->pagePaperSize(Excel::PAPERSIZE_A3);
-$sheet1->pagePaperHeight('297mm');
-$sheet1->pagePaperWidth('21cm');
+$sheet->pagePaperSize(Excel::PAPERSIZE_A3);
+$sheet->pagePaperHeight('297mm');
+$sheet->pagePaperWidth('21cm');
 ```
 By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
 
 But you can also specify these values in centimeters or millimeters.
 
 ```php
-$sheet1->pageMarginLeft(0.5); // set left margin 0.5 inch
-$sheet1->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
-$sheet1->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
+$sheet->pageMarginLeft(0.5); // set left margin 0.5 inch
+$sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
+$sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
 ```
 
 
 ### Freeze Panes and Autofilter
 
 ```php
-$sheet1->setFreeze('B2');
-$sheet1->setAutofilter(1);
+$sheet->setFreeze('B2');
+$sheet->setAutofilter(1);
 ```
 
 ### Row's settings
@@ -384,10 +386,10 @@ To select active cell on specified sheet use the following code:
 
 ```php
 // Selecting one active cell
-$sheet1->setActiveCell('B2');
+$sheet->setActiveCell('B2');
 
 // Selecting a range of cells
-$sheet1->setActiveCell('B2:C3');
+$sheet->setActiveCell('B2:C3');
 ```
 
 ### Print settings

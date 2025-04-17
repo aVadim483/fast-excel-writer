@@ -416,6 +416,15 @@ $cellStyles = [
 ];
 ```
 
+Internal hyperlinks to other sheets
+```php
+// if the name of the sheet does not contain spaces
+$sheet->writeCell('Internal link', ['hyperlink' => "#Sheet1!C7"]);
+
+// If the name of the sheet is with spaces, then you need to use quotes
+$sheet->writeCell('Internal link', ['hyperlink' => "#'Sheet 1'!C7"]);
+```
+
 ### Using Rich Text
 
 Writing rich text to a cell can be done using RichText instances. Here's an example, which creates the following rich text string:

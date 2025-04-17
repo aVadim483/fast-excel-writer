@@ -191,7 +191,7 @@ class Area
             if (is_string($cellAddress)) {
                 $offset = null;
                 $cellAddress = strtoupper($cellAddress);
-                if (strpos($cellAddress, 'R') === 0 && strpos($cellAddress, 'C')) {
+                if ($this->sheet->excel->isR1C1() && strpos($cellAddress, 'R') === 0 && strpos($cellAddress, 'C')) {
                     $offset = Excel::rangeRelOffsets($cellAddress);
                 }
                 if ($offset && isset($offset[0], $offset[1], $offset[2], $offset[3])) {

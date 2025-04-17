@@ -30,8 +30,8 @@ class Sheet implements InterfaceSheetWriter
     protected const NOTE_DEFAULT_HEIGHT = '55.5pt';
     protected const NOTE_DEFAULT_COLOR = '#FFFFE1';
 
-    /** @var Excel */
-    public Excel $excel;
+    /** @var null|Excel */
+    public ?Excel $excel = null;
 
     /** @var int Index of the sheet */
     public int $index;
@@ -2638,6 +2638,15 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @return bool
+     */
+    protected function _isR1C1(): bool
+    {
+        // default is true
+        return !$this->excel || $this->excel->isR1C1();
+    }
+
+    /**
      * @param $cellAddress
      * @param bool|null $colOnly
      * @param bool|null $rowOnly
@@ -2685,7 +2694,7 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _rangeDimension(string $cellAddress, ?int $colOffset = 1, ?int $rowOffset = 1): ?array
     {
-        if (preg_match('/^R\[?(-?\d+)?]?C/', $cellAddress)) {
+        if ($this->_isR1C1() && preg_match('/^R\[?(-?\d+)?]?C/', $cellAddress)) {
             // relative address
             $relAddress = $cellAddress;
             $cellAddress = Excel::colLetter($colOffset) . ($this->rowCountWritten + $rowOffset);

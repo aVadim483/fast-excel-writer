@@ -156,6 +156,7 @@ class Excel implements InterfaceBookWriter
 
     protected array $protection = [];
 
+    protected bool $enableR1C1 = true;
 
 
     /**
@@ -204,6 +205,7 @@ class Excel implements InterfaceBookWriter
         }
         $settings = $this->style->getLocaleSettings();
         $this->formulaConverter = new FormulaConverter($settings['functions'] ?? []);
+        $this->formulaConverter->excel = $this;
 
         $this->bookViews = [
             [
@@ -770,6 +772,26 @@ class Excel implements InterfaceBookWriter
             $tabIndex++;
         }
         return $this;
+    }
+
+    /**
+     * @param bool $option
+     *
+     * @return $this
+     */
+    public function setR1C1(bool $option = true): Excel
+    {
+        $this->enableR1C1 = $option;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isR1C1(): bool
+    {
+        return $this->enableR1C1;
     }
 
     /**

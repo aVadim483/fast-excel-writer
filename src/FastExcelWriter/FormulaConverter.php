@@ -162,6 +162,9 @@ class FormulaConverter
     . '|sort'
     . ')\s*\(/mui';
 
+    /** @var null|Excel */
+    public ?Excel $excel = null;
+
     protected static array $functionNames = [];
     protected array $localFunctions = [];
 
@@ -195,20 +198,23 @@ class FormulaConverter
                 return $key;
             }, $formula);
         }
-        // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
-        $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
-            if (is_array($baseAddress)) {
-                $cell = Excel::cellAddress($baseAddress[0], $baseAddress[1]);
-            }
-            else {
-                $cell = $baseAddress;
-            }
-            if ($cell && ($address = Helper::RCtoA1($matches[2], $cell))) {
-                return $matches[1] . $address;
-            }
 
-            return $matches[0];
-        }, $formula);
+        if ($this->excel->isR1C1()) {
+            // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
+            $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
+                if (is_array($baseAddress)) {
+                    $cell = Excel::cellAddress($baseAddress[0], $baseAddress[1]);
+                }
+                else {
+                    $cell = $baseAddress;
+                }
+                if ($cell && ($address = Helper::RCtoA1($matches[2], $cell))) {
+                    return $matches[1] . $address;
+                }
+
+                return $matches[0];
+            }, $formula);
+        }
 
         if ($this->localFunctions && strpos($formula, '(')) {
             // replace national function names

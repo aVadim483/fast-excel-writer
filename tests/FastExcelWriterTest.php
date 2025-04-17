@@ -791,6 +791,28 @@ final class FastExcelWriterTest extends TestCase
     }
 
 
+    public function testCellAddresses()
+    {
+        $testFileName = __DIR__ . '/test_addresses.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->writeTo('RC1', 'test1');
+        $excel->setR1C1(false);
+        $sheet->writeTo('RC1', 'test2');
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('test1', $this->cells['B1']);
+        $this->assertEquals('test2', $this->cells['RC1']);
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+
     public function testCharts()
     {
         $testFileName = __DIR__ . '/test_charts.xlsx';

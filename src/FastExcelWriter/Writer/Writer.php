@@ -296,6 +296,16 @@ class Writer
     }
 
     /**
+     * @param bool $option
+     *
+     * @return void
+     */
+    public function setSharedString(bool $option = true)
+    {
+        $this->sharedString = $option;
+    }
+
+    /**
      * @param string $name
      *
      * @return false|string
@@ -1378,7 +1388,7 @@ class Writer
                         $value = substr($value, 1);
                     }
                     if ($this->sharedString) {
-                        $sharedStrIndex = $this->excel->addSharedString($value);
+                        $sharedStrIndex = $this->excel->addSharedString(self::xmlSpecialChars($value));
                         $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
                     }
                     else {

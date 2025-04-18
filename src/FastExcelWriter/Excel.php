@@ -433,6 +433,18 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * @param bool $option
+     *
+     * @return $this
+     */
+    public function setSharedString(bool $option = true): Excel
+    {
+        $this->writer->setSharedString($option);
+
+        return $this;
+    }
+
+    /**
      * Set locale information
      *
      * @param string $locale

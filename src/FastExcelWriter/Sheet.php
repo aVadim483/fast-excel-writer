@@ -2135,8 +2135,11 @@ class Sheet implements InterfaceSheetWriter
         }
         $this->writeRow($rowValues, $rowStyle);
         if ($colStyles) {
-            // column styles for next rows
-            $this->colStyles[-1] = $colStyles;
+            foreach ($colStyles as $colIdx => $colStyle) {
+                if ($colStyle) {
+                    $this->setColDataStyle($colIdx + 1, $colStyle);
+                }
+            }
         }
 
         return $this;

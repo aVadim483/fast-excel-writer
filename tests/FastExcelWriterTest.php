@@ -791,6 +791,66 @@ final class FastExcelWriterTest extends TestCase
     }
 
 
+    public function testCellAddresses()
+    {
+        $testFileName = __DIR__ . '/test_addresses.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->writeTo('RC1', 'test1');
+        $excel->setR1C1(false);
+        $sheet->writeTo('RC1', 'test2');
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('test1', $this->cells['B1']);
+        $this->assertEquals('test2', $this->cells['RC1']);
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+
+    public function testOverStyles()
+    {
+        $testFileName = __DIR__ . '/test_styles.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $sheet->setColDataStyle('C', ['format' => '#,##0']);
+        $sheet->writeCell(123.456);
+        $sheet->writeCell(123.456, ['format' => '#,##0.00']);
+        $sheet->writeCell(123.456);
+        $sheet->writeRow([1, 2, 3], ['format' => '#,##0.0'], [null, ['format' => '#,##0.000']]);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readRows(false, null, true);
+
+        $style = $this->getStyle('A1', true);
+        $this->assertEquals('General', $style['format-pattern']);
+        $style = $this->getStyle('B1', true);
+        $this->assertEquals('#,##0.00', $style['format-pattern']);
+        $style = $this->getStyle('C1', true);
+        $this->assertEquals('#,##0', $style['format-pattern']);
+
+        $style = $this->getStyle('A2', true);
+        $this->assertEquals('#,##0.0', $style['format-pattern']);
+        $style = $this->getStyle('B2', true);
+        $this->assertEquals('#,##0.000', $style['format-pattern']);
+        $style = $this->getStyle('C2', true);
+        $this->assertEquals('#,##0.0', $style['format-pattern']);
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+
     public function testCharts()
     {
         $testFileName = __DIR__ . '/test_charts.xlsx';

@@ -25,6 +25,9 @@ $excel = Excel::create([], ['auto_convert_number' => true]);
 
 // Saving strings to the shared string xml
 $excel = Excel::create([], ['shared_string' => true]);
+// or other way
+$excel = Excel::create();
+$excel->setSharedString();
 
 // Sets locale
 // In most cases, the locale is automatically set correctly,

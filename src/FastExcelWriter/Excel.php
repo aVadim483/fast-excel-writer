@@ -332,6 +332,16 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Create new instance of Style class
+     *
+     * @return Style
+     */
+    public static function newStyle (): Style
+    {
+        return new Style();
+    }
+
+    /**
      * Set dir for temporary files
      *
      * @param $tempDir

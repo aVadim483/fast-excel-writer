@@ -1206,6 +1206,13 @@ class Sheet implements InterfaceSheetWriter
         }
     }
 
+    /**
+     * @param $col
+     * @param array $style
+     * @param bool $whole
+     *
+     * @return $this
+     */
     protected function _setColCellStyle($col, array $style, bool $whole): Sheet
     {
         $colIndexes = Excel::colIndexRange($col);

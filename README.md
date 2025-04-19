@@ -82,6 +82,8 @@ Jump To:
   * [Hyperlinks](/docs/03-writing.md#hyperlinks)
   * [Using Rich Text](/docs/03-writing.md#using-rich-text)
 * [Styles](/docs/04-styles.md)
+  * [Style Properties As Array](/docs/04-styles.md#style-properties-as-array)
+  * [Class Style for Defining Style Properties](/docs/04-styles.md#class-style-for-defining-style-properties)
   * [Cell Styles](/docs/04-styles.md#cell-styles)
   * [Row Styles](/docs/04-styles.md#row-styles)
   * [Column Styles](/docs/04-styles.md#column-styles)

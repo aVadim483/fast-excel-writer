@@ -105,7 +105,9 @@ class Style
     
     protected function _setStyleOptions(string $primaryKey, array $options)
     {
-        $this->styles[$primaryKey] = $options;
+        foreach ($options as $key => $val) {
+            $this->styles[$primaryKey][$key] = $val;
+        }
     }
     
     

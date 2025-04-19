@@ -38,7 +38,7 @@ final class FastExcelWriterTest extends TestCase
 
     protected function getStyle($cell, $flat = false): array
     {
-        preg_match('/^(\w+)(\d+)$/', strtoupper($cell), $m);
+        preg_match('/^([A-Z]+)(\d+)$/', strtoupper($cell), $m);
         $styleIdx = $this->cells[$m[2]][$m[1]]['s'] ?? 0;
         if ($styleIdx !== null) {
             $style = $this->excelReader->getCompleteStyleByIdx($styleIdx);
@@ -815,7 +815,7 @@ final class FastExcelWriterTest extends TestCase
 
     public function testOverStyles()
     {
-        $testFileName = __DIR__ . '/test_styles.xlsx';
+        $testFileName = __DIR__ . '/test_styles1.xlsx';
         if (file_exists($testFileName)) {
             unlink($testFileName);
         }
@@ -850,6 +850,382 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
+
+    public function testStyleClass()
+    {
+        $testFileName = __DIR__ . '/test_styles2.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $styles = [
+            'A1' => [
+                'set' => (new Style())->setBorder(Style::BORDER_THIN),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => "thin",
+                    'border-right-style' => "thin",
+                    'border-top-style' => "thin",
+                    'border-bottom-style' => "thin",
+                    'border-diagonal-style' => NULL,
+                    'border-left-color' => "#000000",
+                    'border-right-color' => "#000000",
+                    'border-top-color' => "#000000",
+                    'border-bottom-color' => "#000000",
+                ],
+            ],
+            'A2' => [
+                'set' => (new Style())->setBorderLeft(Style::BORDER_THICK, '#f00'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => "thick",
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                    'border-left-color' => "#FF0000",
+                ],],
+            'A3' => [
+                'set' => (new Style())->setBorderRight(Style::BORDER_THICK),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => "thick",
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                    'border-right-color' => "#000000",
+                ],],
+            'A4' => [
+                'set' => (new Style())->setBorderTop(Style::BORDER_THICK, '#0f0'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => "thick",
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                    'border-top-color' => "#00FF00",
+                ],],
+            'A5' => [
+                'set' => (new Style())->setBorderBottom(Style::BORDER_THICK, '#009'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => "thick",
+                    'border-diagonal-style' => NULL,
+                    'border-bottom-color' => "#000099",
+                ],],
+            'A6' => [
+                'set' => (new Style())->setFont('Times New Roman', 16, Style::FONT_STYLE_ITALIC, '#900'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => "Times New Roman",
+                    'font-charset' => '1',
+                    'font-family' => '1',
+                    'font-size' => "16",
+                    'font-color' => "#990000",
+                    'font-style-italic' =>    1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A7' => [
+                'set' => (new Style())->setFontName('Times New Roman'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => "Times New Roman",
+                    'font-charset' => '1',
+                    'font-family' => '1',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A8' => [
+                'set' => (new Style())->setFontStyle(Style::FONT_STYLE_BOLD),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-style-bold' =>    1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A9' => [
+                'set' => (new Style())->setFontStyleBold(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-style-bold' =>    1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A10' => [
+                'set' => (new Style())->setFontStyleItalic(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => "GENERAL",
+                    'format-category' => "",
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-style-italic' => 1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A11' => [
+                'set' => (new Style())->setFontStyleUnderline(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-style-underline' => 1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A12' => [
+                'set' => (new Style())->setFontStyleStrikethrough(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-style-strike' => 1,
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A13' => [
+                'set' => (new Style())->setFontColor('#099'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'font-color' => '#009999',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A14' => [
+                'set' => (new Style())->setFillColor('#fff000'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'solid',
+                    'fill-color' => '#FFF000',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A15' => [
+                'set' => (new Style())->setFillGradient('#fff000', '#fff'),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A16' => [
+                'set' => (new Style())->setTextAlign(Style::TEXT_ALIGN_CENTER),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'format-align-horizontal' => 'center',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A17' => [
+                'set' => (new Style())->setTextCenter(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'format-align-horizontal' => 'center',
+                    'format-align-vertical' => 'center',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A18' => [
+                'set' => (new Style())->setAlignLeft(),
+                'get' => [
+                    'format-num-id' => 164,
+                    'format-pattern' => 'GENERAL',
+                    'format-category' => '',
+                    'format-align-horizontal' => 'left',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+            'A19' => [
+                'set' => (new Style())->setFormat('@'),
+                'get' => [
+                    'format-num-id' => 165,
+                    'format-pattern' => "@",
+                    'format-category' => '',
+                    'font-name' => 'Calibri',
+                    'font-charset' => '1',
+                    'font-family' => '0',
+                    'font-size' => '11',
+                    'fill-pattern' => 'none',
+                    'border-left-style' => NULL,
+                    'border-right-style' => NULL,
+                    'border-top-style' => NULL,
+                    'border-bottom-style' => NULL,
+                    'border-diagonal-style' => NULL,
+                ],],
+        ];
+
+        foreach ($styles as $cell => $style) {
+            $sheet
+                ->writeTo($cell, 12345, $style['set']->toArray())
+                ->nextRow();
+        }
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readRows(false, null, true);
+
+        foreach ($styles as $cell => $style) {
+            $getStyles = $this->getStyle($cell, true);
+            $this->assertEquals($getStyles, $style['get']);
+        }
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
 
     public function testCharts()
     {

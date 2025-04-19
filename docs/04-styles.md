@@ -3,6 +3,30 @@
 You can set styles for the entire workbook, for sheets, for individual cells, as well as for rows and columns.
 The style of each cell can be determined by the combination of all these styles.
 
+### Style Properties As Array
+
+```php
+$style = [
+    'format' => '#,##0.00',
+    'font-color' => '#ff0000',
+    'text-align' => 'center',
+];
+$sheet->writeCell(0.9, $style);
+```
+
+### Class Style for Defining Style Properties
+
+```php
+$style = Excel::newStyle()
+    ->setFillGradient('#fff000', '#fff')
+    ->setFormat('#,##0.00')
+    ->setFontColor('#ff0000')
+    ->setTextAlign(Style::TEXT_ALIGN_CENTER)
+;
+ 
+$sheet->writeCell(0.9, $style->toArray());
+```
+
 ### Cell Styles
 
 ```php

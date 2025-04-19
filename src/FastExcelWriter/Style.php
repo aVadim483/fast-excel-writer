@@ -140,6 +140,8 @@ class Style
     }
 
     /**
+     * Styles and color for left border
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -158,6 +160,8 @@ class Style
     }
 
     /**
+     * Styles and color for right border
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -176,6 +180,8 @@ class Style
     }
 
     /**
+     * Styles and color for top border
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -194,6 +200,8 @@ class Style
     }
 
     /**
+     * Styles and color for bottom border
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -212,6 +220,8 @@ class Style
     }
 
     /**
+     * Font name, size, style and color
+     *
      * @param string $fontName
      * @param int|null $fontSize
      * @param string|null $fontStyle
@@ -239,6 +249,8 @@ class Style
 
 
     /**
+     * Font name
+     *
      * @param string $fontName
      *
      * @return $this
@@ -251,6 +263,8 @@ class Style
     }
 
     /**
+     * Font size
+     *
      * @param float $fontSize
      *
      * @return $this
@@ -263,6 +277,8 @@ class Style
     }
 
     /**
+     * Font style
+     *
      * @param string $fontStyle
      *
      * @return $this
@@ -276,6 +292,8 @@ class Style
     }
 
     /**
+     * Bold font
+     *
      * @return $this
      */
     public function setFontStyleBold(): Style
@@ -284,6 +302,8 @@ class Style
     }
 
     /**
+     * Italic font
+     *
      * @return $this
      */
     public function setFontStyleItalic(): Style
@@ -292,6 +312,8 @@ class Style
     }
 
     /**
+     * Sets underline
+     *
      * @param bool|null $double
      *
      * @return $this
@@ -304,6 +326,8 @@ class Style
     }
 
     /**
+     * Sets strikethrough
+     *
      * @return $this
      */
     public function setFontStyleStrikethrough(): Style
@@ -312,13 +336,15 @@ class Style
     }
 
     /**
-     * @param string $fontColor
+     * Font color
+     *
+     * @param string $color
      *
      * @return $this
      */
-    public function setFontColor(string $fontColor): Style
+    public function setFontColor(string $color): Style
     {
-        $this->_setStyleOptions('font', [Style::FONT_COLOR => $fontColor]);
+        $this->_setStyleOptions('font', [Style::FONT_COLOR => $color]);
 
         return $this;
     }
@@ -331,6 +357,18 @@ class Style
      * @return $this
      */
     public function setColor(string $color): Style
+    {
+        return $this->setFontColor($color);
+    }
+
+    /**
+     * Another alias of 'setFontColor()'
+     *
+     * @param string $color
+     *
+     * @return $this
+     */
+    public function setTextColor(string $color): Style
     {
         return $this->setFontColor($color);
     }
@@ -385,6 +423,8 @@ class Style
     }
 
     /**
+     * Horizontal and vertical content align
+     *
      * @param string $textAlign
      * @param string|null $verticalAlign
      *
@@ -402,6 +442,8 @@ class Style
     }
 
     /**
+     * Vertical content align
+     *
      * @param string $verticalAlign
      *
      * @return $this
@@ -414,6 +456,8 @@ class Style
     }
 
     /**
+     * Center content by horizontal and vertical
+     *
      * @return $this
      */
     public function setTextCenter(): Style
@@ -444,6 +488,8 @@ class Style
     }
 
     /**
+     * Text wrap option
+     *
      * @param bool|null $textWrap
      *
      * @return $this
@@ -456,18 +502,8 @@ class Style
     }
 
     /**
-     * @param string $color
+     * Text rotation
      *
-     * @return $this
-     */
-    public function setTextColor(string $color): Style
-    {
-        $this->_setStyleOptions('font', [Style::FONT_COLOR => $color]);
-
-        return $this;
-    }
-
-    /**
      * @param int $degrees
      *
      * @return $this
@@ -480,6 +516,8 @@ class Style
     }
 
     /**
+     * Indent left
+     *
      * @param int $indent
      *
      * @return $this
@@ -493,6 +531,8 @@ class Style
     }
 
     /**
+     * Indent right
+     *
      * @param int $indent
      *
      * @return $this
@@ -506,6 +546,8 @@ class Style
     }
 
     /**
+     * Indent distributed
+     *
      * @param int $indent
      *
      * @return $this
@@ -519,6 +561,8 @@ class Style
     }
 
     /**
+     * Sets format
+     *
      * @param string|array $format
      *
      * @return $this
@@ -538,7 +582,11 @@ class Style
         return $this;
     }
 
-
+    /**
+     * Return style properties as array
+     *
+     * @return array
+     */
     public function toArray(): array
     {
         return $this->styles;

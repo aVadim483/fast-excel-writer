@@ -17,6 +17,7 @@
 * [createSheet()](#createsheet)
 * [fullAddress()](#fulladdress)
 * [generateUuid()](#generateuuid) -- Generate UUID v4
+* [newStyle()](#newstyle) -- Create new instance of Style class
 * [pixelsToEMU()](#pixelstoemu)
 * [rangeRelOffsets()](#rangereloffsets) -- Return offsets by relative address (zero based)
 * [rowIndexRange()](#rowindexrange)
@@ -59,10 +60,13 @@
 * [setMetaTitle()](#setmetatitle) -- Set metadata 'title'
 * [output()](#output) -- Alias of download()
 * [protect()](#protect) -- Protect workbook
+* [isR1C1()](#isr1c1)
+* [setR1C1()](#setr1c1)
 * [removeSheet()](#removesheet) -- Removes sheet by index or name of sheet.
 * [isRightToLeft()](#isrighttoleft)
 * [setRightToLeft()](#setrighttoleft)
 * [save()](#save) -- Save generated XLSX-file
+* [setSharedString()](#setsharedstring)
 * [getSharedStrings()](#getsharedstrings)
 * [sheet()](#sheet) -- Returns sheet by number or name of sheet.
 * [getSheet()](#getsheet) -- Alias of sheet()
@@ -330,6 +334,21 @@ public static function fullAddress(string $sheetName, string $address,
 public static function generateUuid(): string
 ```
 _Generate UUID v4_
+
+### Parameters
+
+_None_
+
+---
+
+## newStyle()
+
+---
+
+```php
+public static function newStyle(): Style
+```
+_Create new instance of Style class_
 
 ### Parameters
 
@@ -976,6 +995,36 @@ _Protect workbook_
 
 ---
 
+## isR1C1()
+
+---
+
+```php
+public function isR1C1(): bool
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## setR1C1()
+
+---
+
+```php
+public function setR1C1(bool $option = true): Excel
+```
+
+
+### Parameters
+
+* `bool $option`
+
+---
+
 ## removeSheet()
 
 ---
@@ -1034,6 +1083,21 @@ _Save generated XLSX-file_
 
 * `string|null $fileName`
 * `bool|null $overWrite`
+
+---
+
+## setSharedString()
+
+---
+
+```php
+public function setSharedString(bool $option = true): Excel
+```
+
+
+### Parameters
+
+* `bool $option`
 
 ---
 

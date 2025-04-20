@@ -121,6 +121,8 @@ class Sheet implements InterfaceSheetWriter
 
     protected array $relationships = [];
 
+    protected array $hyperlinks = [];
+
     protected array $lastTouch = [];
     protected int $minRow = 0;
     protected int $minCol = 0;
@@ -357,6 +359,18 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Returns added hyperlinks
+     *
+     * @return array
+     */
+    public function getHyperlinks(): array
+    {
+        return $this->hyperlinks;
+    }
+
+    /**
+     * @deprecated
+     *
      * @return array
      */
     public function getExternalLinks(): array
@@ -1068,11 +1082,17 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set width of single or multiple column(s)
+     * Set auto width of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      *
      * @return $this
+     *
+     * @example
+     *  $sheet->setColWidthAuto(2);
+     *  $sheet->setColWidthAuto('B');
+     *  $sheet->setColWidthAuto(['B', 'C']);
+     *  $sheet->setColWidthAuto(['B:D']);
      */
     public function setColWidthAuto($col): Sheet
     {
@@ -1080,6 +1100,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Alias of setColWidthAuto($col)
+     *
      * @param int|string|array $col Column number or column letter (or array of these)
      *
      * @return $this
@@ -1665,13 +1687,53 @@ class Sheet implements InterfaceSheetWriter
      * @param string $address
      * @param string $link
      */
-    protected function _addExternalLink(string $address, string $link)
+    protected function _addHyperlink(string $address, string $link)
     {
-        $this->relationships['links'][++$this->relationshipId] = [
-            'cell' => $address,
-            'link' => $link,
-            'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
-            'extra' => 'TargetMode="External"',
+        if (strpos($link, 'sheet://') === 0) {
+            // internal link start with 'sheet://'
+            $ref = $address;
+            $location = substr($link, 8);
+            $external = false;
+        }
+        elseif (strpos($link, '#') === 0) {
+            // internal link start with '#'
+            $ref = $address;
+            $location = substr($link, 1);
+            $external = false;
+        }
+        elseif (preg_match('/^\'\[([^\'\]]+)#?([^\']+\'\![A-Z]+\d+)$/', $link, $m)) {
+            // external link to other workbook '[path_to_file.xlsx]Sheet!A1'
+            $link = trim($m[1]);
+            $ref = $address;
+            $location = '\'' . trim($m[2], ']#');
+            $external = true;
+        }
+        elseif (preg_match('/^\'([^\']+)\'![A-Z]+\d+$/', $link, $m) || preg_match('/^([^#\s]+)![A-Z]+\d+$/', $link, $m)) {
+            // internal link to Sheet2!A3 or 'Sheet 2'!A3
+            $ref = $address;
+            $location = trim($link);
+            $external = false;
+        }
+        else {
+            // external link
+            $ref = $address;
+            $location = null;
+            $external = true;
+        }
+
+        if ($external) {
+            $this->relationships['links'][++$this->relationshipId] = [
+                'cell' => $address,
+                'link' => $link,
+                'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
+                'extra' => 'TargetMode="External"',
+            ];
+        }
+        $this->hyperlinks[] = [
+            'ref' => $ref,
+            'location' => $location,
+            'id' => $this->relationshipId,
+            'external' => $external,
         ];
     }
 
@@ -1789,7 +1851,7 @@ class Sheet implements InterfaceSheetWriter
                                     'shared_value' => $cellValue,
                                     'shared_index' => $this->excel->addSharedString($cellValue),
                                 ];
-                                $this->_addExternalLink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
+                                $this->_addHyperlink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
                                 if (!empty($this->excel->getHyperlinkStyle())) {
                                     $cellStyle = StyleManager::mergeStyles([$this->excel->getHyperlinkStyle(), $cellStyle]);
                                 }

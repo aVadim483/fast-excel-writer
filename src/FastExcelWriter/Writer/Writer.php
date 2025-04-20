@@ -1264,11 +1264,21 @@ class Writer
         }
 
         // <hyperlinks>
-        $links = $sheet->getExternalLinks();
+        $links = $sheet->getHyperlinks();
         if ($links) {
             $sheet->fileWriter->write('<hyperlinks>');
-            foreach ($links as $id => $data) {
-                $sheet->fileWriter->write('<hyperlink ref="' . $data['cell'] . '" r:id="rId' . $id . '" />');
+            foreach ($links as $data) {
+                if ($data['external']) {
+                    $tag = '<hyperlink ref="' . $data['ref'] . '" r:id="rId' . $data['id'] . '" ';
+                    if (!empty($data['location'])) {
+                        $tag .= 'location="' . $data['location'] . '"';
+                    }
+                    $tag .= '/>';
+                }
+                else {
+                    $tag = '<hyperlink ref="' . $data['ref'] . '" location="' . $data['location'] . '" />';
+                }
+                $sheet->fileWriter->write($tag);
             }
             $sheet->fileWriter->write('</hyperlinks>');
         }

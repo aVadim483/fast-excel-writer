@@ -434,11 +434,25 @@ $cellStyles = [
 
 Internal hyperlinks to other sheets
 ```php
+$sheet->writeCell('Internal link', ['hyperlink' => "'Sheet 1'!C7"]);
+
+// If the sheet name does not contain spaces, it can be written without quotes.
+$sheet->writeCell('Internal link', ['hyperlink' => "Sheet1!C7"]);
+```
+
+External hyperlinks to other workbook
+```php
+// You must use quotes even if the file and sheet names do not contain spaces.
+$sheet->writeCell('Workbook link', ['hyperlink' => "'[other_file.xlsx]Sheet1'!C7"]);
+```
+
+For compatibility with phpSpreadsheet you can use this syntax
+```php
 // if the name of the sheet does not contain spaces
-$sheet->writeCell('Internal link', ['hyperlink' => "#Sheet1!C7"]);
+$sheet->writeCell('Internal link', ['hyperlink' => "sheet://Sheet1!C7"]);
 
 // If the name of the sheet is with spaces, then you need to use quotes
-$sheet->writeCell('Internal link', ['hyperlink' => "#'Sheet 1'!C7"]);
+$sheet->writeCell('Internal link', ['hyperlink' => "sheet://'Sheet 1'!C7"]);
 ```
 
 ### Using Rich Text

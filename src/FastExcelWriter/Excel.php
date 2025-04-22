@@ -184,7 +184,7 @@ class Excel implements InterfaceBookWriter
         if (isset($options['writer_class'])) {
             $this->writer = $this->getObject($options['writer_class'], $writerOptions);
             $this->writer->setExcel($this);
-            if (self::$tempDir) {
+            if (!empty(self::$tempDir)) {
                 $this->writer->setTempDir(self::$tempDir);
             }
         }

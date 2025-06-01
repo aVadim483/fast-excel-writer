@@ -2094,15 +2094,20 @@ class Sheet implements InterfaceSheetWriter
         if ($this->lastTouch['ref'] === 'row') {
             $this->_writeCurrentRow();
         }
-        ///-- $styles = $styles ? Style::normalize($styles) : [];
         if ($this->currentRowIdx < $this->rowCountWritten) {
             $this->currentRowIdx = $this->rowCountWritten;
         }
-        //$this->withLastCell();
         $cellAddress = [
             'row' => 1 + $this->currentRowIdx,
             'col' => 1 + $this->currentColIdx,
         ];
+        if ($cellAddress['row'] >= Excel::MAX_ROW) {
+            ExceptionAddress::throwNew('Row number is more then ' . Excel::MAX_ROW);
+        }
+        if ($cellAddress['col'] >= Excel::MAX_COL) {
+            ExceptionAddress::throwNew('Column is more then "' . Helper::colLetter(Excel::MAX_COL) . '"');
+        }
+
         $this->_setCellData($cellAddress, $value, $styles, false);
         $this->_touchEnd($this->currentRowIdx, $this->currentColIdx, 'cell');
         ++$this->currentColIdx;
@@ -2176,7 +2181,8 @@ class Sheet implements InterfaceSheetWriter
      * @param array|null $colStyles
      *
      * @return $this
-     *@example
+     *
+     * @example
      * $sheet->writeHeader(['title1', 'title2', 'title3']); // texts for cells of header
      * $sheet->writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]); // texts and formats of columns
      * $sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of columns and options of row

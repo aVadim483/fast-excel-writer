@@ -1397,12 +1397,13 @@ class Writer
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
+                    $valueStr = self::xmlSpecialChars(Helper::escapeString($value));
                     if ($this->sharedString) {
-                        $sharedStrIndex = $this->excel->addSharedString(self::xmlSpecialChars($value));
+                        $sharedStrIndex = $this->excel->addSharedString($valueStr);
                         $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
                     }
                     else {
-                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . $valueStr . '</t></is></c>');
                     }
                 }
             }

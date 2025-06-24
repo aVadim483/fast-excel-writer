@@ -38,6 +38,8 @@ $sheet->setDefaultFontStyleStrikethrough();
 $sheet->setDefaultFontColor($font);
 
 $sheet->setTabColor('#ff0099');
+
+$sheet->setSheetState('hidden'); // or 'visible', 'veryHidden'
 ```
 
 ### Page Settings

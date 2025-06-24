@@ -1760,7 +1760,7 @@ class Writer
 
         $xmlText .= '<sheets>';
         foreach ($sheets as $sheet) {
-            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
+            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="' . $sheet->state . '" r:id="' . $sheet->relId . '"/>';
         }
         $xmlText .= '</sheets>';
 

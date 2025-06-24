@@ -47,6 +47,8 @@ class Sheet implements InterfaceSheetWriter
 
     public bool $active = false;
 
+    public string $state = 'visible';
+
     /** @var string Temporary file */
     public string $fileTempName = '';
 
@@ -640,6 +642,16 @@ class Sheet implements InterfaceSheetWriter
     public function setPageSetup(array $options): Sheet
     {
         $this->bottomNodesOptions['pageSetup'] = $options;
+
+        return $this;
+    }
+
+    public function setSheetState(string $state): Sheet {
+        if (!in_array($state, ['visible', 'hidden', 'veryHidden'], true)) {
+            Exception::throwNew('The "state" parameter can only be within "visible", "hidden" or "veryHidden"');
+        }
+
+        $this->state = $state;
 
         return $this;
     }

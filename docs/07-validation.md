@@ -144,15 +144,30 @@ $validation->showDropDown();
 // Disallow dropdown list 
 $validation->showDropDown(false);
 
-// Show input message
+// Show an input message
 $validation->showInputMessage();
 
 // Disallow input message 
 $validation->showInputMessage(false);
 
-// Show error message
+// Show an error message
 $validation->showErrorMessage();
 
 // Disallow error message
 $validation->showErrorMessage(false);
 ```
+
+### More than 64K validation rules
+
+IMPORTANT! You cannot set more than 64K validation rules, this may cause an error when opening the file in Excel.
+
+If you need to set data validation for a specific area, you can use the following code:
+```php
+$sheet = $excel->sheet();
+foreach ($someDataArray as $rowData) {
+    // write data to the sheet here
+}
+$validation = DataValidation::dropDown(['item1', 'item2', 'item3']);
+$sheet->addDataValidation('B10:E32', $validation);
+```
+That is, first fill the sheet with data and then call this method.

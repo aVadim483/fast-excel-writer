@@ -8,6 +8,7 @@ use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\DataValidation\DataValidation;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
+use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 use avadim\FastExcelWriter\Writer\FileWriter;
@@ -29,6 +30,11 @@ class Sheet implements InterfaceSheetWriter
     protected const NOTE_DEFAULT_WIDTH = '96pt';
     protected const NOTE_DEFAULT_HEIGHT = '55.5pt';
     protected const NOTE_DEFAULT_COLOR = '#FFFFE1';
+
+    public const STATE_VISIBLE = 'visible';
+    public const STATE_HIDDEN = 'hidden';
+    public const STATE_VERY_HIDDEN = 'veryHidden';
+
 
     /** @var null|Excel */
     public ?Excel $excel = null;
@@ -646,14 +652,44 @@ class Sheet implements InterfaceSheetWriter
         return $this;
     }
 
-    public function setSheetState(string $state): Sheet {
-        if (!in_array($state, ['visible', 'hidden', 'veryHidden'], true)) {
+    /**
+     * @param string $state
+     *
+     * @return $this
+     */
+    public function setSheetState(string $state): Sheet
+    {
+        if (!in_array($state, [self::STATE_VISIBLE, self::STATE_HIDDEN, self::STATE_VERY_HIDDEN], true)) {
             Exception::throwNew('The "state" parameter can only be within "visible", "hidden" or "veryHidden"');
         }
 
         $this->state = $state;
 
         return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setStateVisible(): Sheet
+    {
+        return $this->setSheetState(self::STATE_VISIBLE);
+    }
+
+    /**
+     * @return $this
+     */
+    public function  setStateHidden(): Sheet
+    {
+        return $this->setSheetState(self::STATE_HIDDEN);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setStateVeryHidden(): Sheet
+    {
+        return $this->setSheetState(self::STATE_VISIBLE);
     }
 
     /**
@@ -3800,6 +3836,9 @@ class Sheet implements InterfaceSheetWriter
         }
         $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
 
+        if (sizeof($this->validations) >= 65536) {
+            ExceptionDataValidation::throwNew('Maximum number 64K of data validations reached');
+        }
         $this->validations[$dimension['localRange']] = $validation;
 
         return $this;

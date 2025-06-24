@@ -39,6 +39,10 @@ $sheet->setDefaultFontColor($font);
 
 $sheet->setTabColor('#ff0099');
 
+$sheet->setStateHidden();
+$sheet->setStateVeryHidden();
+$sheet->setStateVisible();
+// OR
 $sheet->setSheetState('hidden'); // or 'visible', 'veryHidden'
 ```
 

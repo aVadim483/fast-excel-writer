@@ -1,2 +1,2 @@
-tests/win_check_open_xlsx.vbs
+tests/*.vbs
 _libs/

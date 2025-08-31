@@ -236,8 +236,8 @@ class Excel implements InterfaceBookWriter
     public static function _formatValue($value, string $format): string
     {
         if (is_numeric($value)) {
-            if ($format && ($format = StyleManager::isDateFormat($format))) {
-                return $format;
+            if ($format && ($dateFormat = StyleManager::isDateFormat($format))) {
+                return $dateFormat;
             }
             if (strpos($format, ';')) {
                 $formats = explode(';', $format);
@@ -263,8 +263,11 @@ class Excel implements InterfaceBookWriter
                 if ($cnt) {
                     $value .= str_repeat('-', $cnt);
                 }
-                if (preg_match('/\[\$.+]/U', $format, $m)) {
-                    $value .= str_replace(['[$', ']'], '', $m[0]);
+                if (preg_match('/(\s*)\[\$(.+)]$/U', $format, $m)) {
+                    $value .= $m[1] . $m[2];
+                }
+                if (preg_match('/^\[\$(.+)](\s*)/U', $format, $m)) {
+                    $value = $m[1] . $m[2] . $value;
                 }
 
                 return $value;

@@ -2930,7 +2930,7 @@ class Sheet implements InterfaceSheetWriter
                 $rowIdx = $row - 1;
                 $colIdx = $col - 1;
 
-                $rowCnt = isset($dimension['rowNum1'], $dimension['rowNum2']) ? $dimension['rowNum2'] - $dimension['colNum1'] : 0;
+                $rowCnt = isset($dimension['rowNum1'], $dimension['rowNum2']) ? $dimension['rowNum2'] - $dimension['rowNum1'] : 0;
                 $colCnt = isset($dimension['colNum1'], $dimension['colNum2']) ? $dimension['colNum2'] - $dimension['colNum1'] : 0;
 
                 $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];

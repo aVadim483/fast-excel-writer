@@ -1287,6 +1287,18 @@ class Writer
             $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
+        $headerFooterOptions = $sheet->getHeaderFooterOptions();
+        if ($headerFooterOptions !== []) {
+            $sheet->fileWriter->write(sprintf(
+                '<headerFooter differentFirst="%s" differentOddEven="%s">', 
+                $headerFooterOptions['differentFirst'] ? 'true' : 'false',
+                $headerFooterOptions['differentOddEven'] ? 'true' : 'false',
+            ));
+            $sheet->fileWriter->write(sprintf('<oddHeader>&amp;C%s</oddHeader>', $headerFooterOptions['oddHeader']));
+            $sheet->fileWriter->write(sprintf('<oddFooter>&amp;C%s</oddFooter>', $headerFooterOptions['oddFooter']));
+            $sheet->fileWriter->write('</headerFooter>');
+        }
+
         $sheet->fileWriter->write('</worksheet>');
         $sheet->fileWriter->flush(true);
 

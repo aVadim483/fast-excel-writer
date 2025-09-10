@@ -250,6 +250,7 @@ final class FastExcelWriterTest extends TestCase
         $sheet->setAutofilter();
         $sheet->addNamedRange('b2:c3', 'b2c3');
         $sheet->setPrintArea('a2:f2,a4:f4')->setPrintTitles('1', 'a:b');
+        $sheet->pageHeaderFooter('Header', 'Footer');
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);

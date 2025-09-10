@@ -86,6 +86,13 @@ $sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
 ```
 
 
+### Print Header and Footer
+
+```php
+// Set the same Header and Footer for all Pages
+$sheet->pageHeaderFooter('Print Header', 'Print Footer');
+```
+
 ### Freeze Panes and Autofilter
 
 ```php

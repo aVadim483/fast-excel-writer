@@ -166,6 +166,8 @@ class Sheet implements InterfaceSheetWriter
 
     // bottom sheet nodes
     protected array $bottomNodesOptions = [];
+    
+    protected array $headerFooter = [];
 
     protected array $printAreas = [];
     protected string $printTopRows = '';
@@ -197,22 +199,6 @@ class Sheet implements InterfaceSheetWriter
                 'verticalDpi' => '0',
                 'orientation' => 'portrait',
             ],
-            /*
-            'headerFooter' => [
-                'differentFirst' => false,
-                'differentOddEven' => false,
-                '__kids' => [
-                    [
-                        '__name' => 'oddHeader',
-                        '__attr' => [],
-                    ],
-                    [
-                        '__name' => 'oddFooter',
-                        '__attr' => [],
-                    ],
-                ],
-            ],
-            */
         ];
 
         $this->sheetViews = [
@@ -5392,6 +5378,24 @@ class Sheet implements InterfaceSheetWriter
     {
 
         return Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, $absolute);
+    }
+    
+    public function pageHeaderFooter(?string $header, ?string $footer): void
+    {
+        $this->headerFooter = [
+            'differentFirst' => false,
+            'differentOddEven' => false,
+            'oddHeader' => $header,
+            'oddFooter' => $footer
+        ];
+    }
+
+    /**
+     * @return array{differentFirst: bool, differentOddEven: bool, oddHeader: string, oddFooter: string}
+     */
+    public function getHeaderFooterOptions(): array
+    {
+        return $this->headerFooter;
     }
 }
 

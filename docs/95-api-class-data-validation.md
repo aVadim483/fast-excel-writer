@@ -16,7 +16,6 @@
 * [textLength()](#textlength) -- Make data validation as a text length
 * [whole()](#whole) -- Alias of integer()
 * [allowBlank()](#allowblank) -- Allow blank value
-* [getAttributes()](#getattributes)
 * [setError()](#seterror) -- Set error message (title and body)
 * [setErrorMessage()](#seterrormessage) -- Error message body
 * [setErrorStyle()](#seterrorstyle) -- Error style (action in case of error)
@@ -29,8 +28,6 @@
 * [showDropDown()](#showdropdown) -- Show dropdown list
 * [showErrorMessage()](#showerrormessage) -- Allow (or disallow) error message
 * [showInputMessage()](#showinputmessage) -- Show input message
-* [setSqref()](#setsqref)
-* [toXml()](#toxml)
 
 ---
 
@@ -249,21 +246,6 @@ _Allow blank value_
 
 ---
 
-## getAttributes()
-
----
-
-```php
-public function getAttributes(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
 ## setError()
 
 ---
@@ -448,38 +430,6 @@ _Show input message_
 ### Parameters
 
 * `bool|null $showInputMessage`
-
----
-
-## setSqref()
-
----
-
-```php
-public function setSqref(avadim\FastExcelWriter\Sheet $sheet, 
-                         string $sqref): DataValidation
-```
-
-
-### Parameters
-
-* `Sheet $sheet`
-* `string $sqref`
-
----
-
-## toXml()
-
----
-
-```php
-public function toXml($formulaConverter): string
-```
-
-
-### Parameters
-
-* `$formulaConverter`
 
 ---
 

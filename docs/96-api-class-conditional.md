@@ -37,10 +37,8 @@
 * [setFontColor()](#setfontcolor)
 * [setGradient()](#setgradient) -- Enables or disables the gradient style of the bars
 * [setShowValue()](#setshowvalue) -- Controls the display of the value in a cell
-* [setSqref()](#setsqref)
 * [getStyle()](#getstyle)
 * [setStyle()](#setstyle)
-* [toXml()](#toxml)
 
 ---
 
@@ -611,23 +609,6 @@ _Controls the display of the value in a cell_
 
 ---
 
-## setSqref()
-
----
-
-```php
-public function setSqref(avadim\FastExcelWriter\Sheet $sheet, 
-                         string $sqref): Conditional
-```
-
-
-### Parameters
-
-* `Sheet $sheet`
-* `string $sqref`
-
----
-
 ## getStyle()
 
 ---
@@ -655,22 +636,6 @@ public function setStyle($style): Conditional
 ### Parameters
 
 * `string|array $style`
-
----
-
-## toXml()
-
----
-
-```php
-public function toXml(int $priority, $formulaConverter): string
-```
-
-
-### Parameters
-
-* `int $priority`
-* `$formulaConverter`
 
 ---
 

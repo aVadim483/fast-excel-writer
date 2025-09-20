@@ -79,7 +79,7 @@
 * [getCharts()](#getcharts)
 * [clearAreas()](#clearareas)
 * [getColAttributes()](#getcolattributes)
-* [setColAutoWidth()](#setcolautowidth)
+* [setColAutoWidth()](#setcolautowidth) -- Alias of setColWidthAuto($col)
 * [setColDataStyle()](#setcoldatastyle) -- Set style of column cells (colors, formats, etc.)
 * [setColDataStyleArray()](#setcoldatastylearray) -- Set style of column cells (colors, formats, etc.)
 * [setColFormat()](#setcolformat) -- Set format of single or multiple column(s)
@@ -95,7 +95,7 @@
 * [setColStyles()](#setcolstyles)
 * [setColVisible()](#setcolvisible) -- Show/hide a column
 * [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
-* [setColWidthAuto()](#setcolwidthauto) -- Set width of single or multiple column(s)
+* [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
 * [setColWidths()](#setcolwidths) -- Setting a multiple column's width
 * [getConditionalFormatting()](#getconditionalformatting)
 * [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
@@ -122,6 +122,8 @@
 * [setFreeze()](#setfreeze) -- Freeze rows/columns
 * [setFreezeColumns()](#setfreezecolumns) -- Freeze columns
 * [setFreezeRows()](#setfreezerows) -- Freeze rows
+* [getHeaderFooterOptions()](#getheaderfooteroptions)
+* [getHyperlinks()](#gethyperlinks) -- Returns added hyperlinks
 * [getImages()](#getimages)
 * [getLastCell()](#getlastcell)
 * [getLastRange()](#getlastrange)
@@ -143,6 +145,7 @@
 * [getPageFitToHeight()](#getpagefittoheight)
 * [pageFitToWidth()](#pagefittowidth)
 * [getPageFitToWidth()](#getpagefittowidth)
+* [pageHeaderFooter()](#pageheaderfooter)
 * [pageLandscape()](#pagelandscape) -- Set page orientation as Landscape
 * [pageMarginBottom()](#pagemarginbottom) -- Bottom Page Margin in mm|cm|in
 * [pageMarginFooter()](#pagemarginfooter) -- Footer Page Margin in mm|cm|in
@@ -185,6 +188,9 @@
 * [setRowStyles()](#setrowstyles)
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
 * [skipRow()](#skiprow) -- Skip rows
+* [setStateHidden()](#setstatehidden)
+* [setStateVeryHidden()](#setstateveryhidden)
+* [setStateVisible()](#setstatevisible)
 * [setStyle()](#setstyle) -- Alias for 'setCellStyle()'
 * [setTabColor()](#settabcolor) -- Set color for the sheet tab
 * [setTopLeftCell()](#settopleftcell) -- Set top left cell for writing
@@ -193,7 +199,6 @@
 * [withLastCell()](#withlastcell) -- Select last written cell for applying
 * [withLastRow()](#withlastrow) -- Select last written row for applying
 * [withRange()](#withrange) -- Select custom range for applying
-* [writeAreas()](#writeareas)
 * [writeArray()](#writearray) -- Write values from two-dimensional array
 * [writeArrayTo()](#writearrayto) -- Write 2d array form the specified cell
 * [writeCell()](#writecell) -- Write value to the current cell and move pointer to the next cell in the row
@@ -1451,7 +1456,7 @@ _None_
 ```php
 public function setColAutoWidth($col): Sheet
 ```
-
+_Alias of setColWidthAuto($col)_
 
 ### Parameters
 
@@ -1761,11 +1766,23 @@ _Set width of single or multiple column(s)_
 ```php
 public function setColWidthAuto($col): Sheet
 ```
-_Set width of single or multiple column(s)_
+_Set auto width of single or multiple column(s)_
 
 ### Parameters
 
 * `int|string|array $col` -- Column number or column letter (or array of these)
+
+---
+
+### Examples
+
+```php
+$sheet->setColWidthAuto(2);
+$sheet->setColWidthAuto('B');
+$sheet->setColWidthAuto(['B', 'C']);
+$sheet->setColWidthAuto(['B:D']);
+```
+
 
 ---
 
@@ -2195,6 +2212,36 @@ _Freeze rows_
 
 ---
 
+## getHeaderFooterOptions()
+
+---
+
+```php
+public function getHeaderFooterOptions(): array
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## getHyperlinks()
+
+---
+
+```php
+public function getHyperlinks(): array
+```
+_Returns added hyperlinks_
+
+### Parameters
+
+_None_
+
+---
+
 ## getImages()
 
 ---
@@ -2530,6 +2577,22 @@ public function getPageFitToWidth(): int
 ### Parameters
 
 _None_
+
+---
+
+## pageHeaderFooter()
+
+---
+
+```php
+public function pageHeaderFooter(?string $header, ?string $footer): void
+```
+
+
+### Parameters
+
+* `$header`
+* `$footer`
 
 ---
 
@@ -3223,6 +3286,51 @@ _Skip rows_
 
 ---
 
+## setStateHidden()
+
+---
+
+```php
+public function setStateHidden(): Sheet
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## setStateVeryHidden()
+
+---
+
+```php
+public function setStateVeryHidden(): Sheet
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## setStateVisible()
+
+---
+
+```php
+public function setStateVisible(): Sheet
+```
+
+
+### Parameters
+
+_None_
+
+---
+
 ## setStyle()
 
 ---
@@ -3369,21 +3477,6 @@ _Select custom range for applying_
 ### Parameters
 
 * `array|string $range`
-
----
-
-## writeAreas()
-
----
-
-```php
-public function writeAreas(): Sheet
-```
-
-
-### Parameters
-
-_None_
 
 ---
 

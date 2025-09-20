@@ -6,9 +6,6 @@
 * [cellAddress()](#celladdress) -- Create cell address by row and col numbers
 * [colIndex()](#colindex) -- Convert letter to index (ZERO based)
 * [colIndexRange()](#colindexrange) -- Convert letter range to array of numbers (ZERO based)
-* [colKeysToIndexes()](#colkeystoindexes)
-* [colKeysToLetters()](#colkeystoletters)
-* [colKeysToNumbers()](#colkeystonumbers)
 * [colLetter()](#colletter) -- Convert column number to letter
 * [colLetterRange()](#colletterrange) -- Convert values to letters array
 * [colNumber()](#colnumber) -- Convert letter to number (ONE based)
@@ -20,16 +17,12 @@
 * [newStyle()](#newstyle) -- Create new instance of Style class
 * [pixelsToEMU()](#pixelstoemu)
 * [rangeRelOffsets()](#rangereloffsets) -- Return offsets by relative address (zero based)
-* [rowIndexRange()](#rowindexrange)
-* [rowNumberRange()](#rownumberrange)
 * [setTempDir()](#settempdir) -- Set dir for temporary files
 * [toTimestamp()](#totimestamp) -- Convert value (int or string) to Excel timestamp
 * [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
 * [addDefinedName()](#adddefinedname)
 * [addNamedRange()](#addnamedrange)
 * [addSharedString()](#addsharedstring)
-* [addStyle()](#addstyle)
-* [addStyleDxfs()](#addstyledxfs)
 * [setAuthor()](#setauthor)
 * [setCompany()](#setcompany)
 * [setDefaultFont()](#setdefaultfont) -- Set default font options
@@ -44,7 +37,6 @@
 * [download()](#download) -- Download generated file to client (send to browser)
 * [getFileName()](#getfilename) -- Returns default filename
 * [setFileName()](#setfilename) -- Sets default filename for saving
-* [getHyperlinkStyle()](#gethyperlinkstyle)
 * [getImageFiles()](#getimagefiles)
 * [setKeywords()](#setkeywords)
 * [loadImageFile()](#loadimagefile)
@@ -71,7 +63,6 @@
 * [sheet()](#sheet) -- Returns sheet by number or name of sheet.
 * [getSheet()](#getsheet) -- Alias of sheet()
 * [getSheets()](#getsheets) -- Returns all sheets
-* [getStyleDxfs()](#getstyledxfs)
 * [setSubject()](#setsubject)
 * [setTitle()](#settitle)
 * [unprotect()](#unprotect) -- Unprotect workbook
@@ -153,52 +144,6 @@ _Convert letter range to array of numbers (ZERO based)_
 ### Parameters
 
 * `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
-
----
-
-## colKeysToIndexes()
-
----
-
-```php
-public static function colKeysToIndexes(array $data, $offset): array
-```
-
-
-### Parameters
-
-* `array $data`
-* `$offset`
-
----
-
-## colKeysToLetters()
-
----
-
-```php
-public static function colKeysToLetters(array $data): array
-```
-
-
-### Parameters
-
-* `array $data`
-
----
-
-## colKeysToNumbers()
-
----
-
-```php
-public static function colKeysToNumbers(array $data): array
-```
-
-
-### Parameters
-
-* `array $data`
 
 ---
 
@@ -386,36 +331,6 @@ _Return offsets by relative address (zero based)_
 
 ---
 
-## rowIndexRange()
-
----
-
-```php
-public static function rowIndexRange($rowRange): array
-```
-
-
-### Parameters
-
-* `int|string|array $rowRange`
-
----
-
-## rowNumberRange()
-
----
-
-```php
-public static function rowNumberRange($rowRange): array
-```
-
-
-### Parameters
-
-* `int|string|array $rowRange`
-
----
-
 ## setTempDir()
 
 ---
@@ -508,38 +423,6 @@ public function addSharedString(string $string, ?bool $richText = false): int
 
 * `string $string`
 * `bool|null $richText`
-
----
-
-## addStyle()
-
----
-
-```php
-public function addStyle($cellStyle, &$resultStyle): int
-```
-
-
-### Parameters
-
-* `$cellStyle`
-* `$resultStyle`
-
----
-
-## addStyleDxfs()
-
----
-
-```php
-public function addStyleDxfs($style, &$resultStyle): int
-```
-
-
-### Parameters
-
-* `$style`
-* `$resultStyle`
 
 ---
 
@@ -750,21 +633,6 @@ _Sets default filename for saving_
 ### Parameters
 
 * `string $fileName`
-
----
-
-## getHyperlinkStyle()
-
----
-
-```php
-public function getHyperlinkStyle(): array
-```
-
-
-### Parameters
-
-_None_
 
 ---
 
@@ -1154,21 +1022,6 @@ _Alias of sheet()_
 public function getSheets(): array
 ```
 _Returns all sheets_
-
-### Parameters
-
-_None_
-
----
-
-## getStyleDxfs()
-
----
-
-```php
-public function getStyleDxfs(): array
-```
-
 
 ### Parameters
 

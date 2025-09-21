@@ -206,6 +206,7 @@ class Sheet implements InterfaceSheetWriter
                 'workbookViewId' => '0',
                 'view' => 'normal',
                 'topLeftCell' => 'A1',
+                'showGridLines' => 1,
             ]
         ];
 
@@ -655,6 +656,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Make the sheet visible
+     *
      * @return $this
      */
     public function setStateVisible(): Sheet
@@ -663,6 +666,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Make the sheet hidden
+     *
      * @return $this
      */
     public function  setStateHidden(): Sheet
@@ -671,6 +676,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Make the sheet very hidden
+     *
      * @return $this
      */
     public function setStateVeryHidden(): Sheet
@@ -679,11 +686,23 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Turn on/off grid lines
+     *
+     * @param bool $flag
+     *
+     * @return void
+     */
+    public function setShowGridLines(bool $flag)
+    {
+        $this->sheetViews[0]['showGridLines'] = $flag ? 1 : 0;
+    }
+
+    /**
      * Freeze rows/columns
      *
      * @example
      * $sheet->setFreeze(3, 3); // number rows and columns to freeze
-     * $sheet->setFreeze('C3'); // left top cell of free area
+     * $sheet->setFreeze('C3'); // left top cell of the free area
      *
      * @param mixed $freezeRows
      * @param mixed $freezeColumns

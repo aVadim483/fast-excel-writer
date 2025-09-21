@@ -142,7 +142,6 @@
 * [getOutlineLevel()](#getoutlinelevel)
 * [pageFitToHeight()](#pagefittoheight)
 * [pageFitToWidth()](#pagefittowidth)
-* [getPageFitToWidth()](#getpagefittowidth)
 * [pageFooter()](#pagefooter) -- Set the footer for all pages
 * [pageFooterEven()](#pagefootereven) -- Set footer for even pages
 * [pageFooterFirst()](#pagefooterfirst) -- Set the footer for the first page
@@ -187,10 +186,11 @@
 * [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
 * [setRowStyles()](#setrowstyles)
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
+* [setShowGridLines()](#setshowgridlines) -- Turn on/off grid lines
 * [skipRow()](#skiprow) -- Skip rows
-* [setStateHidden()](#setstatehidden)
-* [setStateVeryHidden()](#setstateveryhidden)
-* [setStateVisible()](#setstatevisible)
+* [setStateHidden()](#setstatehidden) -- Make the sheet hidden
+* [setStateVeryHidden()](#setstateveryhidden) -- Make the sheet very hidden
+* [setStateVisible()](#setstatevisible) -- Make the sheet visible
 * [setStyle()](#setstyle) -- Alias for 'setCellStyle()'
 * [setTabColor()](#settabcolor) -- Set color for the sheet tab
 * [setTopLeftCell()](#settopleftcell) -- Set the top left cell for writing
@@ -2176,7 +2176,7 @@ _Freeze rows/columns_
 
 ```php
 $sheet->setFreeze(3, 3); // number rows and columns to freeze
-$sheet->setFreeze('C3'); // left top cell of free area
+$sheet->setFreeze('C3'); // left top cell of the free area
 ```
 
 
@@ -2532,21 +2532,6 @@ public function pageFitToWidth($numPage): Sheet
 ### Parameters
 
 * `int|string|null $numPage`
-
----
-
-## getPageFitToWidth()
-
----
-
-```php
-public function getPageFitToWidth(): int
-```
-
-
-### Parameters
-
-_None_
 
 ---
 
@@ -3270,6 +3255,21 @@ _Hide/show a specific row_
 
 ---
 
+## setShowGridLines()
+
+---
+
+```php
+public function setShowGridLines(bool $flag): void
+```
+_Turn on/off grid lines_
+
+### Parameters
+
+* `bool $flag`
+
+---
+
 ## skipRow()
 
 ---
@@ -3292,7 +3292,7 @@ _Skip rows_
 ```php
 public function setStateHidden(): Sheet
 ```
-
+_Make the sheet hidden_
 
 ### Parameters
 
@@ -3307,7 +3307,7 @@ _None_
 ```php
 public function setStateVeryHidden(): Sheet
 ```
-
+_Make the sheet very hidden_
 
 ### Parameters
 
@@ -3322,7 +3322,7 @@ _None_
 ```php
 public function setStateVisible(): Sheet
 ```
-
+_Make the sheet visible_
 
 ### Parameters
 

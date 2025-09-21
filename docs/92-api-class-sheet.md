@@ -5,12 +5,12 @@
 * [__construct()](#__construct) -- Sheet constructor
 * [setActiveCell()](#setactivecell) -- Set active cell
 * [addCellStyle()](#addcellstyle) -- Add additional styles to a cell
-* [addChart()](#addchart) -- Add chart object to the specified range of cells
-* [addConditionalFormatting()](#addconditionalformatting) -- Add conditional formatting object to the specified range of cells
-* [addDataValidation()](#adddatavalidation) -- Add data validation object to the specified range of cells
-* [addImage()](#addimage) -- Add image to the sheet from local file, URL or image string in base64
+* [addChart()](#addchart) -- Add a chart object to the specified range of cells
+* [addConditionalFormatting()](#addconditionalformatting) -- Add a conditional formatting object to the specified range of cells
+* [addDataValidation()](#adddatavalidation) -- Add a data validation object to the specified range of cells
+* [addImage()](#addimage) -- Add an image to the sheet from a local file, URL or image string in base64
 * [addNamedRange()](#addnamedrange) -- Define named range
-* [addNote()](#addnote) -- Add note to the sheet
+* [addNote()](#addnote) -- Add a note to the sheet
 * [addStyle()](#addstyle) -- Alias for 'addCellStyle()'
 * [allowAutoFilter()](#allowautofilter) -- AutoFilters should be allowed to operate when the sheet is protected
 * [allowDeleteColumns()](#allowdeletecolumns) -- Deleting columns should be allowed when the sheet is protected
@@ -60,7 +60,7 @@
 * [applyOuterBorder()](#applyouterborder)
 * [applyRowHeight()](#applyrowheight) -- Sets height to the current row
 * [applyRowOutlineLevel()](#applyrowoutlinelevel)
-* [applyStyle()](#applystyle)
+* [applyStyle()](#applystyle) -- Apply the style
 * [applyTextAlign()](#applytextalign)
 * [applyTextCenter()](#applytextcenter)
 * [applyTextColor()](#applytextcolor)
@@ -140,12 +140,18 @@
 * [getNotes()](#getnotes)
 * [setOuterBorder()](#setouterborder)
 * [getOutlineLevel()](#getoutlinelevel)
-* [getPageFit()](#getpagefit)
 * [pageFitToHeight()](#pagefittoheight)
-* [getPageFitToHeight()](#getpagefittoheight)
 * [pageFitToWidth()](#pagefittowidth)
 * [getPageFitToWidth()](#getpagefittowidth)
-* [pageHeaderFooter()](#pageheaderfooter)
+* [pageFooter()](#pagefooter) -- Set the footer for all pages
+* [pageFooterEven()](#pagefootereven) -- Set footer for even pages
+* [pageFooterFirst()](#pagefooterfirst) -- Set the footer for the first page
+* [pageFooterOdd()](#pagefooterodd) -- Set footer for odd pages
+* [pageHeader()](#pageheader) -- Set page header for all pages
+* [pageHeaderEven()](#pageheadereven) -- Set header for even pages
+* [pageHeaderFirst()](#pageheaderfirst) -- Set the header for the first page
+* [pageHeaderFooter()](#pageheaderfooter) -- Set page header and footer for all pages
+* [pageHeaderOdd()](#pageheaderodd) -- Set header for odd pages
 * [pageLandscape()](#pagelandscape) -- Set page orientation as Landscape
 * [pageMarginBottom()](#pagemarginbottom) -- Bottom Page Margin in mm|cm|in
 * [pageMarginFooter()](#pagemarginfooter) -- Footer Page Margin in mm|cm|in
@@ -153,11 +159,7 @@
 * [pageMarginLeft()](#pagemarginleft) -- Left Page Margin in mm|cm|in
 * [pageMarginRight()](#pagemarginright) -- Right page margin in mm|cm|in
 * [pageMargins()](#pagemargins) -- Page margins for a sheet or a custom sheet view in mm|cm|in
-* [getPageMargins()](#getpagemargins)
-* [setPageMargins()](#setpagemargins)
 * [pageMarginTop()](#pagemargintop) -- Top Page Margin in mm|cm|in
-* [setPageOptions()](#setpageoptions)
-* [getPageOrientation()](#getpageorientation)
 * [pageOrientationLandscape()](#pageorientationlandscape) -- Set page orientation as Landscape, alias of pageLandscape()
 * [pageOrientationPortrait()](#pageorientationportrait) -- Set page orientation as Portrait, alias of pagePortrait()
 * [pagePaperHeight()](#pagepaperheight) -- Height of custom paper as a number followed by a unit identifier mm|cm|in (ex: 297mm, 11in)
@@ -165,8 +167,6 @@
 * [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
 * [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
 * [pageScale()](#pagescale)
-* [getPageSetup()](#getpagesetup)
-* [setPageSetup()](#setpagesetup)
 * [setPrintArea()](#setprintarea)
 * [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
 * [setPrintGridlines()](#setprintgridlines) -- Show grid line in the print area
@@ -183,7 +183,7 @@
 * [setRowHeights()](#setrowheights) -- Multiple rows height
 * [setRowHidden()](#setrowhidden) -- Hide a specific row
 * [setRowOutlineLevel()](#setrowoutlinelevel)
-* [setRowStyle()](#setrowstyle) -- Style are applied to the entire sheet row (even if it is empty)
+* [setRowStyle()](#setrowstyle) -- The style is applied to the entire sheet row (even if it is empty)
 * [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
 * [setRowStyles()](#setrowstyles)
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
@@ -193,19 +193,19 @@
 * [setStateVisible()](#setstatevisible)
 * [setStyle()](#setstyle) -- Alias for 'setCellStyle()'
 * [setTabColor()](#settabcolor) -- Set color for the sheet tab
-* [setTopLeftCell()](#settopleftcell) -- Set top left cell for writing
+* [setTopLeftCell()](#settopleftcell) -- Set the top left cell for writing
 * [unprotect()](#unprotect) -- Unprotect sheet
 * [setValue()](#setvalue) -- Set a value to the single cell or to the cell range
-* [withLastCell()](#withlastcell) -- Select last written cell for applying
-* [withLastRow()](#withlastrow) -- Select last written row for applying
-* [withRange()](#withrange) -- Select custom range for applying
-* [writeArray()](#writearray) -- Write values from two-dimensional array
-* [writeArrayTo()](#writearrayto) -- Write 2d array form the specified cell
-* [writeCell()](#writecell) -- Write value to the current cell and move pointer to the next cell in the row
+* [withLastCell()](#withlastcell) -- Select the last written cell for applying
+* [withLastRow()](#withlastrow) -- Select the last written row for applying
+* [withRange()](#withrange) -- Select a custom range for applying
+* [writeArray()](#writearray) -- Write values from a two-dimensional array
+* [writeArrayTo()](#writearrayto) -- Write 2d array from the specified cell
+* [writeCell()](#writecell) -- Write value to the current cell and move a pointer to the next cell in the row
 * [writeCells()](#writecells) -- Write several values into cells of one row
-* [writeHeader()](#writeheader)
+* [writeHeader()](#writeheader) -- Write a header row with optional styles and formats for columns
 * [writeRow()](#writerow) -- Write values to the current row
-* [writeTo()](#writeto) -- Write value to the specified cell and move pointer to the next cell in the row
+* [writeTo()](#writeto) -- Write value to the specified cell and move a pointer to the next cell in the row
 
 ---
 
@@ -263,7 +263,7 @@ _Add additional styles to a cell_
 public function addChart(string $range, 
                          avadim\FastExcelWriter\Charts\Chart $chart): Sheet
 ```
-_Add chart object to the specified range of cells_
+_Add a chart object to the specified range of cells_
 
 ### Parameters
 
@@ -279,7 +279,7 @@ _Add chart object to the specified range of cells_
 ```php
 public function addConditionalFormatting(string $range, $conditionals): Sheet
 ```
-_Add conditional formatting object to the specified range of cells_
+_Add a conditional formatting object to the specified range of cells_
 
 ### Parameters
 
@@ -296,7 +296,7 @@ _Add conditional formatting object to the specified range of cells_
 public function addDataValidation(string $range, 
                                   avadim\FastExcelWriter\DataValidation\DataValidation $validation): Sheet
 ```
-_Add data validation object to the specified range of cells_
+_Add a data validation object to the specified range of cells_
 
 ### Parameters
 
@@ -313,7 +313,7 @@ _Add data validation object to the specified range of cells_
 public function addImage(string $cell, string $imageFile, 
                          ?array $imageStyle = []): Sheet
 ```
-_Add image to the sheet from local file, URL or image string in base64_
+_Add an image to the sheet from a local file, URL or image string in base64_
 
 ### Parameters
 
@@ -365,7 +365,7 @@ $sheet->addNamedRange('B3:C5', 'Demo');
 ```php
 public function addNote($cell, $comment, array $noteStyle = []): Sheet
 ```
-_Add note to the sheet_
+_Add a note to the sheet_
 
 ### Parameters
 
@@ -1151,7 +1151,7 @@ public function applyRowOutlineLevel(int $outlineLevel): Sheet
 ```php
 public function applyStyle(array $style): Sheet
 ```
-
+_Apply the style_
 
 ### Parameters
 
@@ -2505,21 +2505,6 @@ _None_
 
 ---
 
-## getPageFit()
-
----
-
-```php
-public function getPageFit(): bool
-```
-
-
-### Parameters
-
-_None_
-
----
-
 ## pageFitToHeight()
 
 ---
@@ -2532,21 +2517,6 @@ public function pageFitToHeight($numPage): Sheet
 ### Parameters
 
 * `int|string|null $numPage`
-
----
-
-## getPageFitToHeight()
-
----
-
-```php
-public function getPageFitToHeight(): int
-```
-
-
-### Parameters
-
-_None_
 
 ---
 
@@ -2580,19 +2550,139 @@ _None_
 
 ---
 
+## pageFooter()
+
+---
+
+```php
+public function pageFooter($footer): Sheet
+```
+_Set the footer for all pages_
+
+### Parameters
+
+* `string|array $footer`
+
+---
+
+## pageFooterEven()
+
+---
+
+```php
+public function pageFooterEven($footer): Sheet
+```
+_Set footer for even pages_
+
+### Parameters
+
+* `string|array $footer`
+
+---
+
+## pageFooterFirst()
+
+---
+
+```php
+public function pageFooterFirst($footer): Sheet
+```
+_Set the footer for the first page_
+
+### Parameters
+
+* `string|array $footer`
+
+---
+
+## pageFooterOdd()
+
+---
+
+```php
+public function pageFooterOdd(string $footer): Sheet
+```
+_Set footer for odd pages_
+
+### Parameters
+
+* `string $footer`
+
+---
+
+## pageHeader()
+
+---
+
+```php
+public function pageHeader($header): Sheet
+```
+_Set page header for all pages_
+
+### Parameters
+
+* `string|array $header`
+
+---
+
+## pageHeaderEven()
+
+---
+
+```php
+public function pageHeaderEven($header): Sheet
+```
+_Set header for even pages_
+
+### Parameters
+
+* `string|array $header`
+
+---
+
+## pageHeaderFirst()
+
+---
+
+```php
+public function pageHeaderFirst($header): Sheet
+```
+_Set the header for the first page_
+
+### Parameters
+
+* `string|array $header`
+
+---
+
 ## pageHeaderFooter()
 
 ---
 
 ```php
-public function pageHeaderFooter(?string $header, ?string $footer): void
+public function pageHeaderFooter(?string $header, ?string $footer): Sheet
 ```
-
+_Set page header and footer for all pages_
 
 ### Parameters
 
-* `$header`
-* `$footer`
+* `string|null $header`
+* `string|null $footer`
+
+---
+
+## pageHeaderOdd()
+
+---
+
+```php
+public function pageHeaderOdd($header): Sheet
+```
+_Set header for odd pages_
+
+### Parameters
+
+* `string|array $header`
 
 ---
 
@@ -2701,36 +2791,6 @@ _Page margins for a sheet or a custom sheet view in mm|cm|in_
 
 ---
 
-## getPageMargins()
-
----
-
-```php
-public function getPageMargins(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## setPageMargins()
-
----
-
-```php
-public function setPageMargins(array $margins): Sheet
-```
-
-
-### Parameters
-
-* `array $margins`
-
----
-
 ## pageMarginTop()
 
 ---
@@ -2743,37 +2803,6 @@ _Top Page Margin in mm|cm|in_
 ### Parameters
 
 * `string|float $value`
-
----
-
-## setPageOptions()
-
----
-
-```php
-public function setPageOptions(string $option, $value): Sheet
-```
-
-
-### Parameters
-
-* `string $option`
-* `mixed $value`
-
----
-
-## getPageOrientation()
-
----
-
-```php
-public function getPageOrientation(): string
-```
-
-
-### Parameters
-
-_None_
 
 ---
 
@@ -2879,36 +2908,6 @@ public function pageScale(int $scale): Sheet
 ### Parameters
 
 * `int $scale`
-
----
-
-## getPageSetup()
-
----
-
-```php
-public function getPageSetup(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## setPageSetup()
-
----
-
-```php
-public function setPageSetup(array $options): Sheet
-```
-
-
-### Parameters
-
-* `array $options`
 
 ---
 
@@ -3196,7 +3195,7 @@ setRowOutlineLevel('5:7', 1)
 ```php
 public function setRowStyle($rowRange, array $style): Sheet
 ```
-_Style are applied to the entire sheet row (even if it is empty)_
+_The style is applied to the entire sheet row (even if it is empty)_
 
 ### Parameters
 
@@ -3371,7 +3370,7 @@ _Set color for the sheet tab_
 ```php
 public function setTopLeftCell($cellAddress): Sheet
 ```
-_Set top left cell for writing_
+_Set the top left cell for writing_
 
 ### Parameters
 
@@ -3442,7 +3441,7 @@ $sheet->setValue([2, 5], $value);
 ```php
 public function withLastCell(): Sheet
 ```
-_Select last written cell for applying_
+_Select the last written cell for applying_
 
 ### Parameters
 
@@ -3457,7 +3456,7 @@ _None_
 ```php
 public function withLastRow(): Sheet
 ```
-_Select last written row for applying_
+_Select the last written row for applying_
 
 ### Parameters
 
@@ -3472,7 +3471,7 @@ _None_
 ```php
 public function withRange($range): Sheet
 ```
-_Select custom range for applying_
+_Select a custom range for applying_
 
 ### Parameters
 
@@ -3488,7 +3487,7 @@ _Select custom range for applying_
 public function writeArray(array $rowArray = [], 
                            ?array $rowStyle = null): Sheet
 ```
-_Write values from two-dimensional array_
+_Write values from a two-dimensional array_
 
 ### Parameters
 
@@ -3504,7 +3503,7 @@ _Write values from two-dimensional array_
 ```php
 public function writeArrayTo($topLeftCell, array $data): Sheet
 ```
-_Write 2d array form the specified cell_
+_Write 2d array from the specified cell_
 
 ### Parameters
 
@@ -3520,7 +3519,7 @@ _Write 2d array form the specified cell_
 ```php
 public function writeCell($value, ?array $styles = null): Sheet
 ```
-_Write value to the current cell and move pointer to the next cell in the row_
+_Write value to the current cell and move a pointer to the next cell in the row_
 
 ### Parameters
 
@@ -3553,7 +3552,7 @@ _Write several values into cells of one row_
 public function writeHeader(array $header, ?array $rowStyle = null, 
                             ?array $colStyles = []): Sheet
 ```
-
+_Write a header row with optional styles and formats for columns_
 
 ### Parameters
 
@@ -3599,7 +3598,7 @@ _Write values to the current row_
 ```php
 public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
 ```
-_Write value to the specified cell and move pointer to the next cell in the row_
+_Write value to the specified cell and move a pointer to the next cell in the row_
 
 ### Parameters
 

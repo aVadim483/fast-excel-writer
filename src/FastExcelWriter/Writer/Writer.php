@@ -1291,11 +1291,14 @@ class Writer
         if ($headerFooterOptions !== []) {
             $sheet->fileWriter->write(sprintf(
                 '<headerFooter differentFirst="%s" differentOddEven="%s">', 
-                $headerFooterOptions['differentFirst'] ? 'true' : 'false',
-                $headerFooterOptions['differentOddEven'] ? 'true' : 'false',
+                empty($headerFooterOptions['differentFirst']) ? 'false' : 'true',
+                empty($headerFooterOptions['differentOddEven']) ? 'false' : 'true',
             ));
-            $sheet->fileWriter->write(sprintf('<oddHeader>&amp;C%s</oddHeader>', $headerFooterOptions['oddHeader']));
-            $sheet->fileWriter->write(sprintf('<oddFooter>&amp;C%s</oddFooter>', $headerFooterOptions['oddFooter']));
+            foreach ($headerFooterOptions as $nodeName => $nodeValue) {
+                if (in_array($nodeName, ['oddHeader', 'evenHeader', 'firstHeader', 'oddFooter', 'evenFooter', 'firstFooter']) && !empty($nodeValue)) {
+                    $sheet->fileWriter->write("<$nodeName>" . self::xmlSpecialChars($nodeValue) . "</$nodeName>");
+                }
+            }
             $sheet->fileWriter->write('</headerFooter>');
         }
 

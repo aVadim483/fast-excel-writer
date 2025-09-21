@@ -784,7 +784,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set top left cell for writing
+     * Set the top left cell for writing
      *
      * @param string|array $cellAddress
      *
@@ -1606,7 +1606,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Style are applied to the entire sheet row (even if it is empty)
+     * The style is applied to the entire sheet row (even if it is empty)
      *
      * @param int|string|array $rowRange
      * @param array $style
@@ -2114,7 +2114,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write value to the current cell and move pointer to the next cell in the row
+     * Write value to the current cell and move a pointer to the next cell in the row
      *
      * @param mixed $value
      * @param array|null $styles
@@ -2210,6 +2210,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Write a header row with optional styles and formats for columns
+     *
      * @param array $header
      * @param array|null $rowStyle
      * @param array|null $colStyles
@@ -2286,7 +2288,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write value to the specified cell and move pointer to the next cell in the row
+     * Write value to the specified cell and move a pointer to the next cell in the row
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -2331,7 +2333,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write 2d array form the specified cell
+     * Write 2d array from the specified cell
      *
      * @param $topLeftCell
      * @param array $data
@@ -2619,7 +2621,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write values from two-dimensional array
+     * Write values from a two-dimensional array
      *
      * @param array $rowArray Array of rows
      * @param array|null $rowStyle Style applied to each row
@@ -3448,7 +3450,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select last written cell for applying
+     * Select the last written cell for applying
      *
      * @return $this
      */
@@ -3460,7 +3462,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select last written row for applying
+     * Select the last written row for applying
      *
      * @return $this
      */
@@ -3472,7 +3474,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select custom range for applying
+     * Select a custom range for applying
      *
      * @param array|string $range
      *
@@ -3570,7 +3572,7 @@ class Sheet implements InterfaceSheetWriter
     // === NOTES === //
 
     /**
-     * Add note to the sheet
+     * Add a note to the sheet
      *
      * @example
      * $sheet->addNote('A1', $noteText, $noteStyle);
@@ -3675,7 +3677,7 @@ class Sheet implements InterfaceSheetWriter
     // === IMAGES === //
 
     /**
-     * Add image to the sheet from local file, URL or image string in base64
+     * Add an image to the sheet from a local file, URL or image string in base64
      *
      * @example
      * $sheet->addImage('A1', 'path/to/file');
@@ -3761,7 +3763,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add chart object to the specified range of cells
+     * Add a chart object to the specified range of cells
      *
      * @param string $range Set the position where the chart should appear in the worksheet
      * @param Chart $chart Chart object
@@ -3804,7 +3806,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add data validation object to the specified range of cells
+     * Add a data validation object to the specified range of cells
      *
      * @param string $range
      * @param DataValidation $validation
@@ -3839,7 +3841,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add conditional formatting object to the specified range of cells
+     * Add a conditional formatting object to the specified range of cells
      *
      * @param string $range
      * @param Conditional|Conditional[] $conditionals
@@ -4627,6 +4629,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply the style
+     *
      * @param array $style
      *
      * @return $this
@@ -5379,15 +5383,159 @@ class Sheet implements InterfaceSheetWriter
 
         return Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, $absolute);
     }
-    
-    public function pageHeaderFooter(?string $header, ?string $footer): void
+
+    /**
+     * @param $options
+     *
+     * @return void
+     */
+    protected function setHeaderFooterOptions($options)
     {
-        $this->headerFooter = [
-            'differentFirst' => false,
-            'differentOddEven' => false,
-            'oddHeader' => $header,
-            'oddFooter' => $footer
-        ];
+        $this->headerFooter = array_merge($this->headerFooter, $options);
+    }
+
+    /**
+     * @param array|string $value
+     *
+     * @return string
+     */
+    protected function _headerFooterNorm($value): string
+    {
+        if (is_string($value) && $value[0] !== '&') {
+            $value = ['', $value, ''];
+        }
+        if (is_array($value)) {
+            return ($value[0] ?? '&L' . $value[0]) . ($value[1] ?? '&C' . $value[1]) . ($value[2] ?? '&R' . $value[2]);
+        }
+        return (string)$value;
+    }
+
+    /**
+     * Set page header and footer for all pages
+     *
+     * @param string|null $header
+     * @param string|null $footer
+     *
+     * @return Sheet
+     */
+    public function pageHeaderFooter(?string $header, ?string $footer): Sheet
+    {
+        $this->pageHeader(['', $header, '']);
+        $this->pageFooter(['', $footer, '']);
+
+        return $this;
+    }
+
+    /**
+     * Set page header for all pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeader($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'oddHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the header for the first page
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderFirst($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentFirst' => true, 'firstHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set header for odd pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderOdd($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => true, 'oddHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set header for even pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderEven($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'evenHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the footer for all pages
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooter($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'oddFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the footer for the first page
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooterFirst($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentFirst' => true, 'firstFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set footer for odd pages
+     *
+     * @param string $footer
+     *
+     * @return $this
+     */
+    public function pageFooterOdd(string $footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => true, 'oddFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set footer for even pages
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooterEven($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'evenFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
     }
 
     /**
@@ -5395,7 +5543,11 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getHeaderFooterOptions(): array
     {
-        return $this->headerFooter;
+        $default = [
+            'differentOddEven' => false,
+            'differentFirst' => false,
+        ];
+        return array_merge($default, $this->headerFooter);
     }
 }
 

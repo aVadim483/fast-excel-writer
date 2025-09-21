@@ -5406,11 +5406,27 @@ class Sheet implements InterfaceSheetWriter
     /**
      * @param $options
      *
-     * @return void
+     * @return Sheet
      */
-    protected function setHeaderFooterOptions($options)
+    public function setHeaderFooterOptions($options): Sheet
     {
-        $this->headerFooter = array_merge($this->headerFooter, $options);
+        static $keys = ['differentOddEven',
+            'differentFirst',
+            'scaleWithDoc',
+            'alignWithMargins',
+            'oddHeader',
+            'oddFooter',
+            'evenHeader',
+            'evenFooter',
+            'firstHeader',
+            'firstFooter',];
+        foreach ($options as $name => $value) {
+            if (in_array($name, $keys)) {
+                $this->headerFooter[$name] = $value;
+            }
+        }
+
+        return $this;
     }
 
     /**

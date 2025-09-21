@@ -1283,7 +1283,7 @@ class Writer
             $sheet->fileWriter->write('</hyperlinks>');
         }
 
-        foreach ($sheet->getBottomNodesOptions() as $nodeName => $nodeOptions) {
+        foreach ($sheet->getPageOptions() as $nodeName => $nodeOptions) {
             $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
@@ -1300,6 +1300,11 @@ class Writer
                 }
             }
             $sheet->fileWriter->write('</headerFooter>');
+        }
+
+        // must be last tags
+        foreach ($sheet->getDrawingOptions() as $nodeName => $nodeOptions) {
+            $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
         $sheet->fileWriter->write('</worksheet>');

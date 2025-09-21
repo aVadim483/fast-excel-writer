@@ -4619,6 +4619,21 @@ class Sheet implements InterfaceSheetWriter
         return $result;
     }
 
+    public function getPageOptions(): array
+    {
+        return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
+            return in_array($nodeName, ['printOptions', 'pageMargins', 'pageSetup']);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public function getDrawingOptions(): array
+    {
+        return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
+            return in_array($nodeName, ['drawing', 'legacyDrawing']);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+
     // === DESIGN STYLES === //
 
     /**

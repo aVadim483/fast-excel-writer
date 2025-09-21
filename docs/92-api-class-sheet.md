@@ -72,7 +72,6 @@
 * [beginArea()](#beginarea) -- Begin a new area
 * [beginOutlineLevel()](#beginoutlinelevel)
 * [setBgColor()](#setbgcolor)
-* [getBottomNodesOptions()](#getbottomnodesoptions)
 * [setBottomNodesOptions()](#setbottomnodesoptions)
 * [cell()](#cell) -- Select a single cell or cell range in the current row
 * [setCellStyle()](#setcellstyle) -- Set style for the specific cell
@@ -1325,21 +1324,6 @@ public function setBgColor(string $cellAddr, string $color): Sheet
 
 * `string $cellAddr`
 * `string $color`
-
----
-
-## getBottomNodesOptions()
-
----
-
-```php
-public function getBottomNodesOptions(): array
-```
-
-
-### Parameters
-
-_None_
 
 ---
 

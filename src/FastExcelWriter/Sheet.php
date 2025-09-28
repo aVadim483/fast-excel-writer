@@ -8,6 +8,7 @@ use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\DataValidation\DataValidation;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
+use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 use avadim\FastExcelWriter\Writer\FileWriter;
@@ -30,6 +31,11 @@ class Sheet implements InterfaceSheetWriter
     protected const NOTE_DEFAULT_HEIGHT = '55.5pt';
     protected const NOTE_DEFAULT_COLOR = '#FFFFE1';
 
+    public const STATE_VISIBLE = 'visible';
+    public const STATE_HIDDEN = 'hidden';
+    public const STATE_VERY_HIDDEN = 'veryHidden';
+
+
     /** @var null|Excel */
     public ?Excel $excel = null;
 
@@ -46,6 +52,8 @@ class Sheet implements InterfaceSheetWriter
     public string $relId;
 
     public bool $active = false;
+
+    public string $state = 'visible';
 
     /** @var string Temporary file */
     public string $fileTempName = '';
@@ -158,6 +166,8 @@ class Sheet implements InterfaceSheetWriter
 
     // bottom sheet nodes
     protected array $bottomNodesOptions = [];
+    
+    protected array $headerFooter = [];
 
     protected array $printAreas = [];
     protected string $printTopRows = '';
@@ -189,22 +199,6 @@ class Sheet implements InterfaceSheetWriter
                 'verticalDpi' => '0',
                 'orientation' => 'portrait',
             ],
-            /*
-            'headerFooter' => [
-                'differentFirst' => false,
-                'differentOddEven' => false,
-                '__kids' => [
-                    [
-                        '__name' => 'oddHeader',
-                        '__attr' => [],
-                    ],
-                    [
-                        '__name' => 'oddFooter',
-                        '__attr' => [],
-                    ],
-                ],
-            ],
-            */
         ];
 
         $this->sheetViews = [
@@ -212,6 +206,7 @@ class Sheet implements InterfaceSheetWriter
                 'workbookViewId' => '0',
                 'view' => 'normal',
                 'topLeftCell' => 'A1',
+                'showGridLines' => 1,
             ]
         ];
 
@@ -645,11 +640,69 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param string $state
+     *
+     * @return $this
+     */
+    public function setSheetState(string $state): Sheet
+    {
+        if (!in_array($state, [self::STATE_VISIBLE, self::STATE_HIDDEN, self::STATE_VERY_HIDDEN], true)) {
+            Exception::throwNew('The "state" parameter can only be within "visible", "hidden" or "veryHidden"');
+        }
+
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * Make the sheet visible
+     *
+     * @return $this
+     */
+    public function setStateVisible(): Sheet
+    {
+        return $this->setSheetState(self::STATE_VISIBLE);
+    }
+
+    /**
+     * Make the sheet hidden
+     *
+     * @return $this
+     */
+    public function  setStateHidden(): Sheet
+    {
+        return $this->setSheetState(self::STATE_HIDDEN);
+    }
+
+    /**
+     * Make the sheet very hidden
+     *
+     * @return $this
+     */
+    public function setStateVeryHidden(): Sheet
+    {
+        return $this->setSheetState(self::STATE_VISIBLE);
+    }
+
+    /**
+     * Turn on/off grid lines
+     *
+     * @param bool $flag
+     *
+     * @return void
+     */
+    public function setShowGridLines(bool $flag)
+    {
+        $this->sheetViews[0]['showGridLines'] = $flag ? 1 : 0;
+    }
+
+    /**
      * Freeze rows/columns
      *
      * @example
      * $sheet->setFreeze(3, 3); // number rows and columns to freeze
-     * $sheet->setFreeze('C3'); // left top cell of free area
+     * $sheet->setFreeze('C3'); // left top cell of the free area
      *
      * @param mixed $freezeRows
      * @param mixed $freezeColumns
@@ -750,7 +803,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set top left cell for writing
+     * Set the top left cell for writing
      *
      * @param string|array $cellAddress
      *
@@ -1572,7 +1625,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Style are applied to the entire sheet row (even if it is empty)
+     * The style is applied to the entire sheet row (even if it is empty)
      *
      * @param int|string|array $rowRange
      * @param array $style
@@ -2080,7 +2133,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write value to the current cell and move pointer to the next cell in the row
+     * Write value to the current cell and move a pointer to the next cell in the row
      *
      * @param mixed $value
      * @param array|null $styles
@@ -2094,15 +2147,20 @@ class Sheet implements InterfaceSheetWriter
         if ($this->lastTouch['ref'] === 'row') {
             $this->_writeCurrentRow();
         }
-        ///-- $styles = $styles ? Style::normalize($styles) : [];
         if ($this->currentRowIdx < $this->rowCountWritten) {
             $this->currentRowIdx = $this->rowCountWritten;
         }
-        //$this->withLastCell();
         $cellAddress = [
             'row' => 1 + $this->currentRowIdx,
             'col' => 1 + $this->currentColIdx,
         ];
+        if ($cellAddress['row'] >= Excel::MAX_ROW) {
+            ExceptionAddress::throwNew('Row number is more then ' . Excel::MAX_ROW);
+        }
+        if ($cellAddress['col'] >= Excel::MAX_COL) {
+            ExceptionAddress::throwNew('Column is more then "' . Helper::colLetter(Excel::MAX_COL) . '"');
+        }
+
         $this->_setCellData($cellAddress, $value, $styles, false);
         $this->_touchEnd($this->currentRowIdx, $this->currentColIdx, 'cell');
         ++$this->currentColIdx;
@@ -2171,12 +2229,15 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Write a header row with optional styles and formats for columns
+     *
      * @param array $header
      * @param array|null $rowStyle
      * @param array|null $colStyles
      *
      * @return $this
-     *@example
+     *
+     * @example
      * $sheet->writeHeader(['title1', 'title2', 'title3']); // texts for cells of header
      * $sheet->writeHeader(['title1' => '@text', 'title2' => 'YYYY-MM-DD', 'title3' => ['format' => ..., 'font' => ...]]); // texts and formats of columns
      * $sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of columns and options of row
@@ -2246,7 +2307,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write value to the specified cell and move pointer to the next cell in the row
+     * Write value to the specified cell and move a pointer to the next cell in the row
      *
      * @param string|array $cellAddress
      * @param mixed $value
@@ -2291,7 +2352,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write 2d array form the specified cell
+     * Write 2d array from the specified cell
      *
      * @param $topLeftCell
      * @param array $data
@@ -2579,7 +2640,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write values from two-dimensional array
+     * Write values from a two-dimensional array
      *
      * @param array $rowArray Array of rows
      * @param array|null $rowStyle Style applied to each row
@@ -2876,7 +2937,7 @@ class Sheet implements InterfaceSheetWriter
                 $rowIdx = $row - 1;
                 $colIdx = $col - 1;
 
-                $rowCnt = isset($dimension['rowNum1'], $dimension['rowNum2']) ? $dimension['rowNum2'] - $dimension['colNum1'] : 0;
+                $rowCnt = isset($dimension['rowNum1'], $dimension['rowNum2']) ? $dimension['rowNum2'] - $dimension['rowNum1'] : 0;
                 $colCnt = isset($dimension['colNum1'], $dimension['colNum2']) ? $dimension['colNum2'] - $dimension['colNum1'] : 0;
 
                 $this->lastTouch['cell'] = ['row_idx' => $rowIdx, 'col_idx' => $colIdx, 'dimension' => $dimension];
@@ -3408,7 +3469,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select last written cell for applying
+     * Select the last written cell for applying
      *
      * @return $this
      */
@@ -3420,7 +3481,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select last written row for applying
+     * Select the last written row for applying
      *
      * @return $this
      */
@@ -3432,7 +3493,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Select custom range for applying
+     * Select a custom range for applying
      *
      * @param array|string $range
      *
@@ -3530,7 +3591,7 @@ class Sheet implements InterfaceSheetWriter
     // === NOTES === //
 
     /**
-     * Add note to the sheet
+     * Add a note to the sheet
      *
      * @example
      * $sheet->addNote('A1', $noteText, $noteStyle);
@@ -3635,7 +3696,7 @@ class Sheet implements InterfaceSheetWriter
     // === IMAGES === //
 
     /**
-     * Add image to the sheet from local file, URL or image string in base64
+     * Add an image to the sheet from a local file, URL or image string in base64
      *
      * @example
      * $sheet->addImage('A1', 'path/to/file');
@@ -3721,7 +3782,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add chart object to the specified range of cells
+     * Add a chart object to the specified range of cells
      *
      * @param string $range Set the position where the chart should appear in the worksheet
      * @param Chart $chart Chart object
@@ -3764,7 +3825,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add data validation object to the specified range of cells
+     * Add a data validation object to the specified range of cells
      *
      * @param string $range
      * @param DataValidation $validation
@@ -3782,6 +3843,9 @@ class Sheet implements InterfaceSheetWriter
         }
         $this->_setDimension($dimension['rowNum1'], $dimension['colNum1']);
 
+        if (sizeof($this->validations) >= 65536) {
+            ExceptionDataValidation::throwNew('Maximum number 64K of data validations reached');
+        }
         $this->validations[$dimension['localRange']] = $validation;
 
         return $this;
@@ -3796,7 +3860,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Add conditional formatting object to the specified range of cells
+     * Add a conditional formatting object to the specified range of cells
      *
      * @param string $range
      * @param Conditional|Conditional[] $conditionals
@@ -4555,6 +4619,21 @@ class Sheet implements InterfaceSheetWriter
         return $result;
     }
 
+    public function getPageOptions(): array
+    {
+        return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
+            return in_array($nodeName, ['printOptions', 'pageMargins', 'pageSetup']);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public function getDrawingOptions(): array
+    {
+        return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
+            return in_array($nodeName, ['drawing', 'legacyDrawing']);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+
     // === DESIGN STYLES === //
 
     /**
@@ -4584,6 +4663,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply the style
+     *
      * @param array $style
      *
      * @return $this
@@ -5335,6 +5416,188 @@ class Sheet implements InterfaceSheetWriter
     {
 
         return Excel::cellAddress($this->lastTouch['area']['row_idx2'] + 1, $this->lastTouch['area']['col_idx2'] + 1, $absolute);
+    }
+
+    /**
+     * @param $options
+     *
+     * @return Sheet
+     */
+    public function setHeaderFooterOptions($options): Sheet
+    {
+        static $keys = ['differentOddEven',
+            'differentFirst',
+            'scaleWithDoc',
+            'alignWithMargins',
+            'oddHeader',
+            'oddFooter',
+            'evenHeader',
+            'evenFooter',
+            'firstHeader',
+            'firstFooter',];
+        foreach ($options as $name => $value) {
+            if (in_array($name, $keys)) {
+                $this->headerFooter[$name] = $value;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array|string $value
+     *
+     * @return string
+     */
+    protected function _headerFooterNorm($value): string
+    {
+        if (is_string($value) && $value[0] !== '&') {
+            $value = ['', $value, ''];
+        }
+        if (is_array($value)) {
+            return ($value[0] ?? '&L' . $value[0]) . ($value[1] ?? '&C' . $value[1]) . ($value[2] ?? '&R' . $value[2]);
+        }
+        return (string)$value;
+    }
+
+    /**
+     * Set page header and footer for all pages
+     *
+     * @param string|null $header
+     * @param string|null $footer
+     *
+     * @return Sheet
+     */
+    public function pageHeaderFooter(?string $header, ?string $footer): Sheet
+    {
+        $this->pageHeader(['', $header, '']);
+        $this->pageFooter(['', $footer, '']);
+
+        return $this;
+    }
+
+    /**
+     * Set page header for all pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeader($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'oddHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the header for the first page
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderFirst($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentFirst' => true, 'firstHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set header for odd pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderOdd($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => true, 'oddHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set header for even pages
+     *
+     * @param string|array $header
+     *
+     * @return $this
+     */
+    public function pageHeaderEven($header): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'evenHeader' => $this->_headerFooterNorm($header)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the footer for all pages
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooter($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'oddFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set the footer for the first page
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooterFirst($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentFirst' => true, 'firstFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set footer for odd pages
+     *
+     * @param string $footer
+     *
+     * @return $this
+     */
+    public function pageFooterOdd(string $footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => true, 'oddFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * Set footer for even pages
+     *
+     * @param string|array $footer
+     *
+     * @return $this
+     */
+    public function pageFooterEven($footer): Sheet
+    {
+        $this->setHeaderFooterOptions(['differentOddEven' => false, 'evenFooter' => $this->_headerFooterNorm($footer)]);
+
+        return $this;
+    }
+
+    /**
+     * @return array{differentFirst: bool, differentOddEven: bool, oddHeader: string, oddFooter: string}
+     */
+    public function getHeaderFooterOptions(): array
+    {
+        $default = [
+            'differentOddEven' => false,
+            'differentFirst' => false,
+        ];
+        return array_merge($default, $this->headerFooter);
     }
 }
 

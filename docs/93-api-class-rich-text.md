@@ -8,7 +8,6 @@
 * [setColor()](#setcolor)
 * [setFont()](#setfont)
 * [setItalic()](#setitalic)
-* [outXml()](#outxml)
 * [setSize()](#setsize)
 * [setUnderline()](#setunderline)
 
@@ -95,21 +94,6 @@ public function setFont(string $font): RichText
 
 ```php
 public function setItalic(): RichText
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## outXml()
-
----
-
-```php
-public function outXml(): string
 ```
 
 

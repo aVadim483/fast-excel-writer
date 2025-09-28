@@ -109,6 +109,7 @@ Jump To:
   * [Check type of value](/docs/07-validation.md#check-type-of-value)
   * [Custom filters](/docs/07-validation.md#custom-filters)
   * [All Data Validation settings](/docs/07-validation.md#all-data-validation-settings)
+  * [More than 64K validation rules](/docs/07-validation.md#more-than-64k-validation-rules)
 * [Conditional Formatting](/docs/08-conditional.md)
   * [Simple usage](/docs/08-conditional.md#simple-usage)
   * [General cell value check](/docs/08-conditional.md#general-cell-value-check)

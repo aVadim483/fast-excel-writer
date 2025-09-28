@@ -1283,7 +1283,27 @@ class Writer
             $sheet->fileWriter->write('</hyperlinks>');
         }
 
-        foreach ($sheet->getBottomNodesOptions() as $nodeName => $nodeOptions) {
+        foreach ($sheet->getPageOptions() as $nodeName => $nodeOptions) {
+            $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
+        }
+
+        $headerFooterOptions = $sheet->getHeaderFooterOptions();
+        if ($headerFooterOptions !== []) {
+            $sheet->fileWriter->write(sprintf(
+                '<headerFooter differentFirst="%s" differentOddEven="%s">', 
+                empty($headerFooterOptions['differentFirst']) ? 'false' : 'true',
+                empty($headerFooterOptions['differentOddEven']) ? 'false' : 'true',
+            ));
+            foreach ($headerFooterOptions as $nodeName => $nodeValue) {
+                if (in_array($nodeName, ['oddHeader', 'evenHeader', 'firstHeader', 'oddFooter', 'evenFooter', 'firstFooter']) && !empty($nodeValue)) {
+                    $sheet->fileWriter->write("<$nodeName>" . self::xmlSpecialChars($nodeValue) . "</$nodeName>");
+                }
+            }
+            $sheet->fileWriter->write('</headerFooter>');
+        }
+
+        // must be last tags
+        foreach ($sheet->getDrawingOptions() as $nodeName => $nodeOptions) {
             $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
@@ -1322,37 +1342,47 @@ class Writer
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 
-        if (is_array($value) && isset($value['shared_index'])) {
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value['shared_index'] . '</v></c>');
+        $attr = 'r="' . $cellName . '" s="' . $cellStyleIdx . '"';
+        if (is_array($value) && isset($value['value'])) {
+            if (!empty($value['attr'])) {
+                foreach ($value['attr'] as $attrName => $attrValue) {
+                    $attr .= ' ' . $attrName . '="' . $attrValue . '"';
+                }
+            }
+            $value = $value['value'];
         }
-        elseif ($value && is_string($value) && $value[0] === '=') {
-            // formula
-            $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"><f>' . self::xmlSpecialChars($value) . '</f></c>');
+
+        if (is_array($value) && isset($value['shared_index'])) {
+            $file->write('<c ' . $attr . ' t="s"><v>' . $value['shared_index'] . '</v></c>');
         }
         elseif (is_array($value) && !empty($value[0]) && $value[0][0] === '=' && isset($value[1])) {
             // formula & value
             $formula = $this->_convertFormula($value[0], [$rowNumber, $colNumber]);
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '">');
+            $file->write('<c ' . $attr . '>');
             $file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
             $file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
             $file->write('</c>');
         }
+        elseif ($value && is_string($value) && $value[0] === '=') {
+            // formula
+            $value = $this->_convertFormula($value, [$rowNumber, $colNumber]);
+            $file->write('<c ' . $attr . '><f>' . self::xmlSpecialChars($value) . '</f></c>');
+        }
         elseif (is_bool($value)) {
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="b"><v>' . (int)$value . '</v></c>');
+            $file->write('<c ' . $attr . ' t="b"><v>' . (int)$value . '</v></c>');
         }
         elseif ($value instanceof RichText) {
             $sharedStrIndex = $this->excel->addSharedString($value->outXml(), true);
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
+            $file->write('<c ' . $attr . ' t="s"><v>' . $sharedStrIndex . '</v></c>');
         }
         elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"/>');
+            $file->write('<c ' . $attr . '/>');
         }
         elseif ($numFormatType === 'n_shared_string') {
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $value . '</v></c>');
+            $file->write('<c ' . $attr . ' t="s"><v>' . $value . '</v></c>');
         }
         elseif ($numFormatType === 'n_string' || ($numFormatType === 'n_numeric' && !is_numeric($value))) {
-            $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+            $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
         }
         else {
             if ($numFormatType === 'n_date' || $numFormatType === 'n_datetime') {
@@ -1365,17 +1395,20 @@ class Writer
                 }
             }
             if ($numFormatType === 'n_date') {
-                //$file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . (int)self::convertDateTime($value) . '</v></c>');
-                $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '"><v>' . (int)$value . '</v></c>');
+                //$file->write('<c ' . $attr . ' t="n"><v>' . (int)self::convertDateTime($value) . '</v></c>');
+                $file->write('<c ' . $attr . '><v>' . (int)$value . '</v></c>');
             }
             elseif ($numFormatType === 'n_datetime') {
-                $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');
+                $file->write('<c ' . $attr . ' t="n"><v>' . $value . '</v></c>');
+            }
+            elseif ($numFormatType === 'n_error') {
+                $file->write('<c ' . $attr . ' t="e"><v>' . $value . '</v></c>');
             }
             elseif ($numFormatType === 'n_numeric') {
                 if (!is_int($value) && !is_float($value)) {
                     $value = self::xmlSpecialChars($value);
                 }
-                $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" ><v>' . $value . '</v></c>');//int,float,currency
+                $file->write('<c ' . $attr . ' ><v>' . $value . '</v></c>');//int,float,currency
             }
             elseif ($numFormatType === 'n_auto') {
                 if ($this->autoConvertNumber) {
@@ -1391,18 +1424,19 @@ class Writer
                     $isStr = is_string($value);
                 }
                 if (!$isStr) {
-                    $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="n"><v>' . $value . '</v></c>');//int,float,currency
+                    $file->write('<c ' . $attr . ' t="n"><v>' . $value . '</v></c>');//int,float,currency
                 }
                 else {
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
+                    $valueStr = self::xmlSpecialChars(Helper::escapeString($value));
                     if ($this->sharedString) {
-                        $sharedStrIndex = $this->excel->addSharedString(self::xmlSpecialChars($value));
-                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="s"><v>' . $sharedStrIndex . '</v></c>');
+                        $sharedStrIndex = $this->excel->addSharedString($valueStr);
+                        $file->write('<c ' . $attr . ' t="s"><v>' . $sharedStrIndex . '</v></c>');
                     }
                     else {
-                        $file->write('<c r="' . $cellName . '" s="' . $cellStyleIdx . '" t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+                        $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve">' . $valueStr . '</t></is></c>');
                     }
                 }
             }
@@ -1759,7 +1793,7 @@ class Writer
 
         $xmlText .= '<sheets>';
         foreach ($sheets as $sheet) {
-            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="visible" r:id="' . $sheet->relId . '"/>';
+            $xmlText .= '<sheet name="' . self::xmlSpecialChars($sheet->sanitizedSheetName) . '" sheetId="' . $sheet->index . '" state="' . $sheet->state . '" r:id="' . $sheet->relId . '"/>';
         }
         $xmlText .= '</sheets>';
 

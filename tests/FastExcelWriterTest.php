@@ -72,8 +72,8 @@ final class FastExcelWriterTest extends TestCase
             'border-top-style' => null,
             'border-bottom-style' => null,
             'border-diagonal-style' => null,
-            'format-num-id' => 0,
-            'format-pattern' => 'General',
+            'format-num-id' => 164,
+            'format-pattern' => 'GENERAL',
         ];
 
     }
@@ -81,7 +81,7 @@ final class FastExcelWriterTest extends TestCase
 
     protected function checkDefaultStyle($style)
     {
-        foreach ($this->defaultStyle() as $key => $val) {
+        foreach ($this->defaultStyle() as $key => $val) {echo $key, '|';
             $this->assertEquals($val, $style[$key]);
         }
     }
@@ -106,7 +106,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertTrue($valid);
 
         if (substr(PHP_OS, 0, 3) === 'WIN') {
-            $vbsChecker = __DIR__ . '/check_open_xlsx.vbs';
+            $vbsChecker = __DIR__ . '/win_check_open_xlsx.vbs';
             if (is_file($vbsChecker)) {
                 system("$vbsChecker $testFileName", $result);
                 $this->assertEquals(0, $result);
@@ -239,17 +239,18 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeRow(['text0 text0 text0 text0', time(), 0.0])
             ->applyFont('Times New Roman', 18, 'italic', '#f00');
 
-        // write to C8 and move pointer to D9;
+        // write to C8 and move a pointer to D9;
         $sheet->writeTo('C8', 'C8');
         $sheet->writeCell('D8');
 
-        // write to C8 and move pointer to D9;
+        // write to C8 and move a pointer to D9;
         $sheet->setValue('C9', 'C9');
         $sheet->writeCell('replace C9');
 
         $sheet->setAutofilter();
         $sheet->addNamedRange('b2:c3', 'b2c3');
         $sheet->setPrintArea('a2:f2,a4:f4')->setPrintTitles('1', 'a:b');
+        $sheet->pageHeaderFooter('Header', 'Footer');
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->cells = $this->excelReader->readRows(false, null, true);
@@ -833,7 +834,7 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $style = $this->getStyle('A1', true);
-        $this->assertEquals('General', $style['format-pattern']);
+        $this->assertEquals('GENERAL', $style['format-pattern']);
         $style = $this->getStyle('B1', true);
         $this->assertEquals('#,##0.00', $style['format-pattern']);
         $style = $this->getStyle('C1', true);

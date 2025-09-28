@@ -68,28 +68,28 @@ $sheet->writeRow($rowData, $rowStyle);
 $sheet->setRowStyles('3', $style);
 
 $rowStyles = [
-    3 => ['fill-color' = '#cff'], // options for row 3 
-    4 => ['fill-color' = '#ccc', 'height' = 20], // options for row 4
+    3 => ['fill-color' => '#cff'], // options for row 3 
+    4 => ['fill-color' => '#ccc', 'height' => 20], // options for row 4
 ];
 
 // Set styles to the specified row 
 $sheet->setRowStyles($rowStyles);
 
 // Set options for range of rows 
-$sheet->setRowStyles('2:5', ['fill-color' = '#f00']);
+$sheet->setRowStyles('2:5', ['fill-color' => '#f00']);
 
 ```
 
 You can set the style for the entire sheet row or only for those cells in the row where data is written.
 ```php
 // Style are applied to the entire sheet row
-$sheet->setRowStyle(3, ['height' = 20]);
-$sheet->setRowStyle('2:5', ['font-color' = '#f00']);
+$sheet->setRowStyle(3, ['height' => 20]);
+$sheet->setRowStyle('2:5', ['font-color' => '#f00']);
 $sheet->setRowStyleArray([3 => $style1, 5 => $style2]);
 
 // Set the style only for non-empty cells in a row
-$sheet->setRowDataStyle(3, ['height' = 20]);
-$sheet->setRowDataStyle('2:5', ['font-color' = '#f00']);
+$sheet->setRowDataStyle(3, ['height' => 20]);
+$sheet->setRowDataStyle('2:5', ['font-color' => '#f00']);
 $sheet->setRowDataStyleArray([3 => $style1, 5 => $style2]);
 ```
 
@@ -162,12 +162,12 @@ $sheet->setColStyle('B', $style); // style for cells of column 'B'
 $sheet->setColStyle(2, $style); // column 'B' has a number 2
 $sheet->setColStyle('C:F', $style); // style for range of columns
 $sheet->setColStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
-$sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
+$sheet->setColStyleArray(['B' => ['width' => 20], 'C' => ['font-color' => '#f00']]);
 
 // Set the style only for non-empty cells in a column
-$sheet->setColDataStyle('B', ['width' = 20]);
-$sheet->setColDataStyle(2, ['width' = 20]);
-$sheet->setColDataStyle('B:D', ['width' = 'auto']);
+$sheet->setColDataStyle('B', ['width' => 20]);
+$sheet->setColDataStyle(2, ['width' => 20]);
+$sheet->setColDataStyle('B:D', ['width' => 'auto']);
 $sheet->setColDataStyle(['A', 'B', 'C'], $style);
 $sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]);
 ```

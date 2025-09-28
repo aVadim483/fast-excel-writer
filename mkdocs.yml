@@ -1,0 +1,8 @@
+site_name: FastExcelWriter Documentation
+repo_url: https://github.com/aVadim483/fast-excel-writer
+edit_uri: edit/master/docs/
+
+theme: readthedocs
+
+markdown_extensions:
+  - md_in_html

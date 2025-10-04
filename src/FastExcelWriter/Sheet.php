@@ -2559,6 +2559,12 @@ class Sheet implements InterfaceSheetWriter
                     if (isset($this->rowStyles[$rowIdx])) {
                         unset($this->rowStyles[$rowIdx]);
                     }
+                    if (isset($this->rowAttributes[$rowIdx])) {
+                        unset($this->rowAttributes[$rowIdx]);
+                    }
+                    if (isset($this->rowSettings[$rowIdx])) {
+                        unset($this->rowSettings[$rowIdx]);
+                    }
                 }
                 $this->currentRowIdx++;
             }

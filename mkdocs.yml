@@ -4,6 +4,7 @@ site_url: https://fast-excel-writer.readthedocs.io/
 repo_url: https://github.com/aVadim483/fast-excel-writer
 repo_name: aVadim483/fast-excel-writer
 edit_uri: blob/master/docs/
+use_directory_urls: true
 
 theme:
   name: material

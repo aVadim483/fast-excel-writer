@@ -1,4 +1,4 @@
-mkdocs
-mkdocs-material
-pymdown-extensions
+mkdocs>=1.5
+mkdocs-material>=9.5
+pymdown-extensions>=10.0
 mkdocs-glightbox

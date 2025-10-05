@@ -7,8 +7,8 @@ edit_uri: blob/master/docs/
 
 theme:
   name: material
-  logo: logo/fast-excel-writer-logo.png
-  favicon: logo/fast-excel-writer-logo.png
+  logo: logo/logo-120.png
+  favicon: logo/logo-120.png
   features:
     - navigation.sections
     - navigation.tracking
@@ -16,33 +16,28 @@ theme:
     - content.code.copy
 
 nav:
-  - Overview: index.md
-  - Installation: installation.md
-  - Quick Start: quick-start.md
-  - Cookbook:
-      - Simple Example: cookbook/simple.md
-      - Advanced Example: cookbook/advanced.md
-      - Images & Notes: cookbook/images-notes.md
+  - Installation: index.md#installation
+  - Quick Start:
+      - Simple Example: index.md#simple-example
+      - Advanced Example: index.md#advanced-example
   - Workbook & Sheets:
-      - Workbook: api/workbook.md
-      - Sheets: api/sheets.md
-      - Page settings & Print: api/page-settings.md
-  - Writing & Formats:
-      - Writing Cells: api/writing.md
-      - Formats: api/formats.md
-      - Formulas & Hyperlinks: api/formulas-links.md
-      - Rich Text: api/rich-text.md
-  - Styles:
-      - Styles Overview: api/styles.md
-      - Borders / Fonts / Colors: api/styles-bfc.md
-  - Charts: api/charts.md
-  - Data Validation: api/validation.md
-  - Conditional Formatting: api/conditional-formatting.md
-  - Protection: api/protection.md
-  - Benchmarks: benchmarks.md
-  - Migration:
-      - v5 → v6: migration/v5-to-v6.md
-      - v6.0 → v6.1 changes: migration/v6.1.md
+      - Workbook: 01-workbook.md
+      - Sheets: 02-sheets.md
+      - Print Settings: 02-sheets.md#print-settings
+      - Protection: 06-protection.md
+  - Writing & Styles:
+      - Writing Cells & Rows: 03-writing.md
+      - Formulas: 03-writing.md#formulas
+      - Rich Text: 03-writing.md#using-rich-text
+      - Styles: 04-styles.md
+  - Insertions:
+      - Images: index.md#adding-images
+      - Notes: index.md#adding-notes
+      - Charts: 05-charts.md
+  - Additional Features:
+      - Data Validation: 07-validation.md
+      - Conditional Formatting: 08-conditional.md
+  - API Reference: 90-api-reference.md
   - Laravel Integration (external): https://github.com/aVadim483/fast-excel-laravel
   - Changelog: ../CHANGELOG.md
   - License: ../LICENSE

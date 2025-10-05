@@ -49,7 +49,7 @@ with many features supported:
 
 ## PHP Version Support
 
-Currently the required PHP minimum version is PHP 7.4
+Currently, the required PHP minimum version is PHP 7.4
 
 ## Documentation
 

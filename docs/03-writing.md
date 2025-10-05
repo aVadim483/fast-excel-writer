@@ -324,10 +324,12 @@ Setting the locale allows the use of national language function names.
 You can use both A1 and R1C1 notations in formulas.
 
 You must comply with the following rules:
+
 * Formulas must start with '='
 * Decimal separator in float numbers is '.'
 * Function argument separator is ','
 * Matrix row separator is ';'
+
 ```php
 use \avadim\FastExcelWriter\Excel;
 
@@ -474,6 +476,7 @@ $sheet->writeRow(['plain text', $richText]);
 ```
 
 You can use the following functions to format rich text:
+
 * setBold()
 * setItalic()
 * setUnderline()

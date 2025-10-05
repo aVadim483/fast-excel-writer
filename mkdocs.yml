@@ -1,8 +1,67 @@
-site_name: FastExcelWriter Documentation
+site_name: FastExcelWriter
+site_description: Lightweight and very fast XLSX Excel Spreadsheet Writer in PHP
+site_url: https://fastexcelwriter.readthedocs.io/
 repo_url: https://github.com/aVadim483/fast-excel-writer
-edit_uri: edit/master/docs/
+repo_name: aVadim483/fast-excel-writer
+edit_uri: blob/master/docs/
 
-theme: readthedocs
+theme:
+  name: material
+  logo: logo/fast-excel-writer-logo.png
+  favicon: logo/fast-excel-writer-logo.png
+  features:
+    - navigation.sections
+    - navigation.tracking
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Overview: index.md
+  - Installation: installation.md
+  - Quick Start: quick-start.md
+  - Cookbook:
+      - Simple Example: cookbook/simple.md
+      - Advanced Example: cookbook/advanced.md
+      - Images & Notes: cookbook/images-notes.md
+  - Workbook & Sheets:
+      - Workbook: api/workbook.md
+      - Sheets: api/sheets.md
+      - Page settings & Print: api/page-settings.md
+  - Writing & Formats:
+      - Writing Cells: api/writing.md
+      - Formats: api/formats.md
+      - Formulas & Hyperlinks: api/formulas-links.md
+      - Rich Text: api/rich-text.md
+  - Styles:
+      - Styles Overview: api/styles.md
+      - Borders / Fonts / Colors: api/styles-bfc.md
+  - Charts: api/charts.md
+  - Data Validation: api/validation.md
+  - Conditional Formatting: api/conditional-formatting.md
+  - Protection: api/protection.md
+  - Benchmarks: benchmarks.md
+  - Migration:
+      - v5 → v6: migration/v5-to-v6.md
+      - v6.0 → v6.1 changes: migration/v6.1.md
+  - Laravel Integration (external): https://github.com/aVadim483/fast-excel-laravel
+  - Changelog: ../CHANGELOG.md
+  - License: ../LICENSE
 
 markdown_extensions:
-  - md_in_html
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - footnotes
+  - def_list
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.snippets
+
+plugins:
+  - search
+  # опционально:
+  # - redirects
+  # - glightbox

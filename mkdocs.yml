@@ -16,6 +16,7 @@ theme:
     - content.code.copy
 
 nav:
+  - Overview: index.md
   - Installation: index.md#installation
   - Quick Start:
       - Simple Example: index.md#simple-example
@@ -55,6 +56,5 @@ markdown_extensions:
 
 plugins:
   - search
-  # опционально:
   # - redirects
   # - glightbox

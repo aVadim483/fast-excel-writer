@@ -244,6 +244,7 @@ $sheet->addNote('D7', "Line 1\nLine 2");
 ```
 
 You can change some note options. Allowed options of a note are:
+
 * **width** - default value is ```'96pt'```
 * **height** - default value is ```'55.5pt'```
 * **fill_color** - default value is ```'#FFFFE1'```
@@ -306,6 +307,7 @@ $sheet->addImage('D4', 'path/to/file', ['width' => 150, 'height' => 150, 'hyperl
 ```
 
 Available keys of image style:
+
 * 'width' -- width of image
 * 'height' -- height of image
 * 'hyperlink' -- URL of hyperlink
@@ -331,6 +333,7 @@ $excel = Excel::create([], ['shared_string' => true]);
 and with minimal memory usage.
 
 **FastExcelWriter**:
+
 * 7-9 times faster
 * uses less memory by 8-10 times
 * supports writing huge 100K+ row spreadsheets

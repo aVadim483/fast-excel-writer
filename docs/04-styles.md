@@ -128,6 +128,7 @@ $sheet->writeRow($rowValues, [], $cellStyles);
 
 You can define column style and format with method ```writeHeader()```.
 The code below will do it:
+
 * Writes to cells of the current row values 'column title 1', 'column title 2', 'column title 3'
 * Sets for this row bold font and thin border style (the default color of  borders is #000000)
 * Set styles, widths and formats for the columns 'A', 'B' and 'C'

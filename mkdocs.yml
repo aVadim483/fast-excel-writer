@@ -40,7 +40,10 @@ nav:
       - Data Validation: 07-validation.md
       - Conditional Formatting: 08-conditional.md
   - API Reference: 90-api-reference.md
-  - Laravel Integration (external): https://github.com/aVadim483/fast-excel-laravel
+  - Other libraries:
+      - FastExcelReader: https://github.com/aVadim483/fast-excel-reader
+      - FastExcelTemplator: https://github.com/aVadim483/fast-excel-templator
+      - Laravel Integration: https://github.com/aVadim483/fast-excel-laravel
 
 markdown_extensions:
   - admonition

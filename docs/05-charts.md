@@ -81,7 +81,8 @@ $options = [
 $chart = Chart::make(Chart::TYPE_LINE)
     ->addDataSeriesValues($dataSource, $labelSourse, $options);
 ```    
-Available colors format:
+Available colors formats:
+
 * 6 hex chars with '#' - #ffcc00
 * 6 hex chars without '#' - ffcc00
 * 3 hex chars without '#' - #fc0

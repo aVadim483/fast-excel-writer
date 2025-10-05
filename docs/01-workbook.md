@@ -90,6 +90,14 @@ $excel = Excel::create();
 $excel = Excel::create('SheetName', ['temp_dir' => '/path/to/temp/dir']);
 
 ```
+### Shared Strings
+
+By default, strings are written directly to sheets. This increases the file size a little,
+but speeds up data writing and saves memory. If you want strings to be written to the shared string xml,
+you need to use the 'shared_string' option.
+```php
+$excel = Excel::create([], ['shared_string' => true]);
+```
 
 ### Helpers methods
 
@@ -116,4 +124,3 @@ $address = Excel::cellAddress(8, 12, false, true); // => 'L$8'
 
 ```
 
-Returns to [README.md](/README.md)

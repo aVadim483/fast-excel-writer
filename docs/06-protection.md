@@ -100,7 +100,7 @@ $sheet1->cell('B4')->applyBorder('thin')->applyUnlock();
 $sheet1->writeCell('=SUM(A1:B3)')->applyHide();
 
 ```
-Also, you can unlock cells for the any area
+Also, you can unlock cells for any area
 
 ```php
 $sheet1->protect();

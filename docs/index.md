@@ -317,15 +317,6 @@ Available keys of image style:
 **IMPORTANT:** in MS Excel, value 'x' cannot be greater than the column width of the parent cell,
 and value 'y' cannot be greater than the row height
 
-## Shared Strings
-
-By default, strings are written directly to sheets. This increases the file size a little,
-but speeds up data writing and saves memory. If you want strings to be written to the shared string xml,
-you need to use the 'shared_string' option.
-```php
-$excel = Excel::create([], ['shared_string' => true]);
-```
-
 ## **FastExcelWriter** vs **PhpSpreadsheet**
 
 **PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.

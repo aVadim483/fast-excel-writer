@@ -248,4 +248,4 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyTextWrap(bool $textWrap)
 * applyTextRotation(int $degrees) (thanks to @jarrod-colluco)
 
-Returns to [README.md](/README.md)
+

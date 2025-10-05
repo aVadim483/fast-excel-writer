@@ -502,4 +502,4 @@ The following tags can be used:
 | \<s=fontSize\>  | \<size=fontSize\>   | \<s=18\>text with size 18\</s\>  |
 | \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
 
-Returns to [README.md](/README.md)
+

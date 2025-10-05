@@ -444,4 +444,3 @@ $sheet->setPrintVerticalCentered();
 $sheet->setPrintCentered();
 ```
 
-Returns to [README.md](/README.md)

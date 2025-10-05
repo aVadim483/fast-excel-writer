@@ -56,6 +56,8 @@ Currently, the required PHP minimum version is PHP 7.4
 Read more in the [documentation](/docs/index.md). Or check out the [API reference](/docs/90-api-reference.md). 
 Also, you can see examples in ```/demo``` folder.
 
+Changelog is [here](CHANGELOG.md).
+
 ## Installation
 
 Use `composer` to install **FastExcelWriter** into your project:

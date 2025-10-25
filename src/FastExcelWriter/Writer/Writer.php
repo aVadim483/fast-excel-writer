@@ -1375,11 +1375,14 @@ class Writer
             $sharedStrIndex = $this->excel->addSharedString($value->outXml(), true);
             $file->write('<c ' . $attr . ' t="s"><v>' . $sharedStrIndex . '</v></c>');
         }
-        elseif (!is_scalar($value) || $value === '') { //objects, array, empty; null is not scalar
+        elseif (!is_scalar($value)) { //objects, array, empty; null is not scalar
             $file->write('<c ' . $attr . '/>');
         }
         elseif ($numFormatType === 'n_shared_string') {
             $file->write('<c ' . $attr . ' t="s"><v>' . $value . '</v></c>');
+        }
+        elseif ($value === '') {
+            $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve"></t></is></c>');
         }
         elseif ($numFormatType === 'n_string' || ($numFormatType === 'n_numeric' && !is_numeric($value))) {
             $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');

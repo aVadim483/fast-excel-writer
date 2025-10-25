@@ -2593,6 +2593,13 @@ class Sheet implements InterfaceSheetWriter
      */
     public function writeRow(array $rowValues = [], ?array $rowStyle = null, ?array $cellStyles = null): Sheet
     {
+        if (!$rowValues && !$rowStyle && !$cellStyles) {
+            $rowIdx = $this->currentRowIdx;
+            $this->skipRow();
+
+            return $this;
+        }
+
         $this->_checkOutput();
 
         if (($this->currentColIdx > $this->offsetCol) || $this->areas) {
@@ -2646,7 +2653,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Write values from a two-dimensional array
+     * Write values from a two-dimensional array (alias of writeRows)
      *
      * @param array $rowArray Array of rows
      * @param array|null $rowStyle Style applied to each row
@@ -2655,8 +2662,22 @@ class Sheet implements InterfaceSheetWriter
      */
     public function writeArray(array $rowArray = [], ?array $rowStyle = null): Sheet
     {
+
+        return $this->writeRows($rowArray, $rowStyle);
+    }
+
+    /**
+     * Write several rows from a two-dimensional array
+     *
+     * @param array $rowArray Array of rows
+     * @param array|null $rowStyle Style applied to each row
+     *
+     * @return $this
+     */
+    public function writeRows(array $rowArray = [], ?array $rowStyle = null): Sheet
+    {
         foreach ($rowArray as $rowValues) {
-            $this->writeRow($rowValues, $rowStyle);
+            $this->writeRow($rowValues ?: [], $rowStyle);
         }
 
         return $this;
@@ -2666,17 +2687,18 @@ class Sheet implements InterfaceSheetWriter
      * Move to the next row
      *
      * @param array|null $style
+     * @param bool|null $forceRow
      *
      * @return $this
      */
-    public function nextRow(?array $style = []): Sheet
+    public function nextRow(?array $style = [], ?bool $forceRow = false): Sheet
     {
         $this->_checkOutput();
 
         $ref = $this->lastTouch['ref'];
         $writtenRows = $this->_writeCurrentRow();
         if ($writtenRows) {
-            if ($ref === 'row') {
+            if ($ref === 'row' || $forceRow) {
                 $this->currentRowIdx++;
             }
             $this->currentColIdx = $this->offsetCol;
@@ -2702,7 +2724,7 @@ class Sheet implements InterfaceSheetWriter
     public function skipRow(?int $rowCount = 1): Sheet
     {
         for ($i = 1; $i <= $rowCount; $i++) {
-            $this->nextRow();
+            $this->nextRow(null, true);
         }
 
         return $this;

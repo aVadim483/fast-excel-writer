@@ -158,6 +158,8 @@ final class FastExcelWriterTest extends TestCase
         $sheet->writeTo('B9', 'B9');
         $sheet->writeTo('E9', 'E9');
 
+        $sheet->writeRows([null, [], [''], ['A13', 'b13']]);
+
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->assertCount(0, glob($tempDir . '/*.*'));
         $this->cells = $this->excelReader->readCells();
@@ -180,6 +182,11 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('B9', $this->cells['B9']);
         $this->assertEquals('D9', $this->cells['D9']);
         $this->assertEquals('E9', $this->cells['E9']);
+
+        $this->assertFalse(isset($this->cells['A10']));
+        $this->assertFalse(isset($this->cells['A11']));
+        $this->assertEquals('', $this->cells['A12']);
+        $this->assertEquals('b13', $this->cells['B13']);
 
         unlink($testFileName);
 

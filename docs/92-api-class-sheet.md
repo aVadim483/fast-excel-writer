@@ -148,7 +148,7 @@
 * [pageHeader()](#pageheader) -- Set page header for all pages
 * [pageHeaderEven()](#pageheadereven) -- Set header for even pages
 * [pageHeaderFirst()](#pageheaderfirst) -- Set the header for the first page
-* [pageHeaderFooter()](#pageheaderfooter) -- Set page header and footer for all pages
+* [pageHeaderFooter()](#pageheaderfooter) -- Set the center header and footer for all pages
 * [pageHeaderOdd()](#pageheaderodd) -- Set header for odd pages
 * [pageLandscape()](#pagelandscape) -- Set page orientation as Landscape
 * [pageMarginBottom()](#pagemarginbottom) -- Bottom Page Margin in mm|cm|in
@@ -2298,7 +2298,11 @@ _Merge cells_
 ### Parameters
 
 * `array|string|int $rangeSet`
-* `int|null $actionMode` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
+* `int|null $actionMode` -- Action in case of intersection:
+ 0 - exception;
+ 1 - replace;
+ 2 - keep;
+ -1 - skip intersection check
 
 ---
 
@@ -2631,7 +2635,7 @@ _Set the header for the first page_
 ```php
 public function pageHeaderFooter(?string $header, ?string $footer): Sheet
 ```
-_Set page header and footer for all pages_
+_Set the center header and footer for all pages_
 
 ### Parameters
 

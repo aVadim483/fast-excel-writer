@@ -81,7 +81,7 @@ final class FastExcelWriterTest extends TestCase
 
     protected function checkDefaultStyle($style)
     {
-        foreach ($this->defaultStyle() as $key => $val) {echo $key, '|';
+        foreach ($this->defaultStyle() as $key => $val) {
             $this->assertEquals($val, $style[$key]);
         }
     }
@@ -150,15 +150,16 @@ final class FastExcelWriterTest extends TestCase
         $sheet->nextRow(); // 4
         $sheet->nextRow(); // 5
         $sheet->writeCell('A5'); // 5
-        $sheet->skipRow(3); // skip rows 5, 6 and 7 - go to 8
-        $sheet->skipRow(); // skip row 8 - go to 9
-        $sheet->writeCell('A9');
-        $sheet->writeTo('F9', 'F9');
-        $sheet->writeTo('D9', 'D9');
-        $sheet->writeTo('B9', 'B9');
-        $sheet->writeTo('E9', 'E9');
+        $sheet->skipRow(3); // skip rows 6, 7 and 8 - go to 9
+        $sheet->skipRow(); // skip row 9 - go to 10
+        $sheet->writeCell('A10');
+        $sheet->writeTo('F10', 'F10');
+        $sheet->writeTo('D10', 'D10');
+        $sheet->writeTo('B10', 'B10');
+        $sheet->writeTo('E10', 'E10');
 
-        $sheet->writeRows([null, [], [''], ['A13', 'b13']]);
+        // rows 11, 12, 13, 14
+        $sheet->writeRows([null, [], [''], ['A14', 'b14']]);
 
         $this->excelReader = $this->saveCheckRead($excel, $testFileName);
         $this->assertCount(0, glob($tempDir . '/*.*'));
@@ -178,15 +179,15 @@ final class FastExcelWriterTest extends TestCase
 
         $this->assertEquals('A5', $this->cells['A5']);
 
-        $this->assertEquals('A9', $this->cells['A9']);
-        $this->assertEquals('B9', $this->cells['B9']);
-        $this->assertEquals('D9', $this->cells['D9']);
-        $this->assertEquals('E9', $this->cells['E9']);
+        $this->assertEquals('A10', $this->cells['A10']);
+        $this->assertEquals('B10', $this->cells['B10']);
+        $this->assertEquals('D10', $this->cells['D10']);
+        $this->assertEquals('E10', $this->cells['E10']);
 
-        $this->assertFalse(isset($this->cells['A10']));
-        $this->assertFalse(isset($this->cells['A11']));
-        $this->assertEquals('', $this->cells['A12']);
-        $this->assertEquals('b13', $this->cells['B13']);
+        $this->assertFalse(isset($this->cells['A9']));
+        $this->assertFalse(isset($this->cells['C10']));
+        $this->assertEquals('', $this->cells['A13']);
+        $this->assertEquals('b14', $this->cells['B14']);
 
         unlink($testFileName);
 

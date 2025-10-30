@@ -5489,7 +5489,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set page header and footer for all pages
+     * Set the center header and footer for all pages
      *
      * @param string|null $header
      * @param string|null $footer

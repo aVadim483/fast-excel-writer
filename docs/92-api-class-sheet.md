@@ -68,7 +68,7 @@
 * [applyTextWrap()](#applytextwrap)
 * [applyUnlock()](#applyunlock)
 * [applyVerticalAlign()](#applyverticalalign)
-* [setAutofilter()](#setautofilter) -- Set auto filter
+* [setAutoFilter()](#setautofilter) -- Set auto filter
 * [beginArea()](#beginarea) -- Begin a new area
 * [beginOutlineLevel()](#beginoutlinelevel)
 * [setBgColor()](#setbgcolor)
@@ -198,12 +198,13 @@
 * [withLastCell()](#withlastcell) -- Select the last written cell for applying
 * [withLastRow()](#withlastrow) -- Select the last written row for applying
 * [withRange()](#withrange) -- Select a custom range for applying
-* [writeArray()](#writearray) -- Write values from a two-dimensional array
+* [writeArray()](#writearray) -- Write values from a two-dimensional array (alias of writeRows)
 * [writeArrayTo()](#writearrayto) -- Write 2d array from the specified cell
 * [writeCell()](#writecell) -- Write value to the current cell and move a pointer to the next cell in the row
 * [writeCells()](#writecells) -- Write several values into cells of one row
 * [writeHeader()](#writeheader) -- Write a header row with optional styles and formats for columns
 * [writeRow()](#writerow) -- Write values to the current row
+* [writeRows()](#writerows) -- Write several rows from a two-dimensional array
 * [writeTo()](#writeto) -- Write value to the specified cell and move a pointer to the next cell in the row
 
 ---
@@ -1265,19 +1266,30 @@ public function applyVerticalAlign(string $verticalAlign): Sheet
 
 ---
 
-## setAutofilter()
+## setAutoFilter()
 
 ---
 
 ```php
-public function setAutofilter(?int $row = 1, ?int $col = 1): Sheet
+public function setAutoFilter($rowOrCell, ?int $col = 1): Sheet
 ```
 _Set auto filter_
 
 ### Parameters
 
-* `int|null $row`
+* `mixed|null $rowOrCell`
 * `int|null $col`
+
+---
+
+### Examples
+
+```php
+$sheet->setAutoFilter(2);
+$sheet->setAutoFilter('B2');
+$sheet->setAutoFilter('B2:C4');
+```
+
 
 ---
 
@@ -2298,11 +2310,7 @@ _Merge cells_
 ### Parameters
 
 * `array|string|int $rangeSet`
-* `int|null $actionMode` -- Action in case of intersection:
- 0 - exception;
- 1 - replace;
- 2 - keep;
- -1 - skip intersection check
+* `int|null $actionMode` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
 
 ---
 
@@ -2437,13 +2445,14 @@ _None_
 ---
 
 ```php
-public function nextRow(?array $style = []): Sheet
+public function nextRow(?array $style = [], ?bool $forceRow = false): Sheet
 ```
 _Move to the next row_
 
 ### Parameters
 
 * `array|null $style`
+* `bool|null $forceRow`
 
 ---
 
@@ -3475,7 +3484,7 @@ _Select a custom range for applying_
 public function writeArray(array $rowArray = [], 
                            ?array $rowStyle = null): Sheet
 ```
-_Write values from a two-dimensional array_
+_Write values from a two-dimensional array (alias of writeRows)_
 
 ### Parameters
 
@@ -3576,6 +3585,23 @@ _Write values to the current row_
 * `array $rowValues` -- Values of cells
 * `array|null $rowStyle` -- Style applied to the entire row
 * `array|null $cellStyles` -- Styles of specified cells in the row
+
+---
+
+## writeRows()
+
+---
+
+```php
+public function writeRows(array $rowArray = [], 
+                          ?array $rowStyle = null): Sheet
+```
+_Write several rows from a two-dimensional array_
+
+### Parameters
+
+* `array $rowArray` -- Array of rows
+* `array|null $rowStyle` -- Style applied to each row
 
 ---
 

@@ -1079,10 +1079,11 @@ class Writer
             'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
             'xmlns:r' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
             'xmlns:xdr' => 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
-            //'xmlns:mc' => 'http://schemas.openxmlformats.org/markup-compatibility/2006',
+            'xmlns:mc' => 'http://schemas.openxmlformats.org/markup-compatibility/2006',
             //'mc:Ignorable' => 'x14ac xr xr2 xr3',
             //'xmlns:x14ac' => 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac',
             'xmlns:xr' => 'http://schemas.microsoft.com/office/spreadsheetml/2014/revision',
+            'mc:Ignorable' => 'xr',
             //'xmlns:xr2' => 'http://schemas.microsoft.com/office/spreadsheetml/2015/revision2',
             //'xmlns:xr3' => 'http://schemas.microsoft.com/office/spreadsheetml/2016/revision3',
             'xr:uid' => '{' . Excel::generateUuid() . '}',
@@ -1232,9 +1233,14 @@ class Writer
 
         // <autoFilter>
         if ($sheet->autoFilter) {
-            $minCell = $sheet->autoFilter;
-            $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
-            $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
+            if (strpos($sheet->autoFilter, ':')) {
+                $sheet->fileWriter->write('<autoFilter ref="' . $sheet->autoFilter . '"/>');
+            }
+            else {
+                $minCell = $sheet->autoFilter;
+                $maxCell = Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten);
+                $sheet->fileWriter->write('<autoFilter ref="' . $minCell . ':' . $maxCell . '"/>');
+            }
         }
 
         // <mergeCells>
@@ -1289,17 +1295,27 @@ class Writer
 
         $headerFooterOptions = $sheet->getHeaderFooterOptions();
         if ($headerFooterOptions !== []) {
-            $sheet->fileWriter->write(sprintf(
-                '<headerFooter differentFirst="%s" differentOddEven="%s">', 
-                empty($headerFooterOptions['differentFirst']) ? 'false' : 'true',
-                empty($headerFooterOptions['differentOddEven']) ? 'false' : 'true',
-            ));
+            $str = '';
             foreach ($headerFooterOptions as $nodeName => $nodeValue) {
                 if (in_array($nodeName, ['oddHeader', 'evenHeader', 'firstHeader', 'oddFooter', 'evenFooter', 'firstFooter']) && !empty($nodeValue)) {
-                    $sheet->fileWriter->write("<$nodeName>" . self::xmlSpecialChars($nodeValue) . "</$nodeName>");
+                    $str .= "<$nodeName>" . self::xmlSpecialChars($nodeValue) . "</$nodeName>";
                 }
             }
-            $sheet->fileWriter->write('</headerFooter>');
+            if ($str) {
+                $str = sprintf(
+                    '<headerFooter differentFirst="%s" differentOddEven="%s">',
+                    empty($headerFooterOptions['differentFirst']) ? 'false' : 'true',
+                    empty($headerFooterOptions['differentOddEven']) ? 'false' : 'true',
+                ) . $str . '</headerFooter>';
+            }
+            else {
+                $str = sprintf(
+                        '<headerFooter differentFirst="%s" differentOddEven="%s"/>',
+                        empty($headerFooterOptions['differentFirst']) ? 'false' : 'true',
+                        empty($headerFooterOptions['differentOddEven']) ? 'false' : 'true',
+                    );
+            }
+            $sheet->fileWriter->write($str);
         }
 
         // must be last tags

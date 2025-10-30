@@ -1579,7 +1579,12 @@ class Excel implements InterfaceBookWriter
         $result = $this->definedNames;
         foreach ($this->sheets as $sheet) {
             if ($sheet->absoluteAutoFilter) {
-                $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
+                if (strpos($sheet->absoluteAutoFilter, ':')) {
+                    $filterRange = $sheet->absoluteAutoFilter;
+                }
+                else {
+                    $filterRange = $sheet->absoluteAutoFilter . ':' . Excel::cellAddress($sheet->rowCountWritten, $sheet->colCountWritten, true);
+                }
                 $fullAddress = "'" . $sheet->sanitizedSheetName . "'!" . $filterRange;
                 $result[] = [
                     '_value' => $fullAddress,

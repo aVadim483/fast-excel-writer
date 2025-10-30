@@ -782,22 +782,40 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Set auto filter
      *
-     * @param int|null $row
+     * @param mixed|null $rowOrCell
      * @param int|null $col
      *
      * @return $this
+     *
+     * @example
+     * $sheet->setAutoFilter(2);
+     * $sheet->setAutoFilter('B2');
+     * $sheet->setAutoFilter('B2:C4');
      */
-    public function setAutofilter(?int $row = 1, ?int $col = 1): Sheet
+    public function setAutoFilter($rowOrCell = 1, ?int $col = 1): Sheet
     {
-        if ($row >= 0) {
-            if (empty($row)) {
-                $this->autoFilter = null;
-            }
-            else {
+        if (!$rowOrCell) {
+            $this->autoFilter = null;
+        }
+        elseif (is_numeric($rowOrCell)) {
+            $row = (int)$rowOrCell;
+            if ($row > 0) {
                 $this->autoFilter = Excel::cellAddress($row, $col);
             }
+            $this->absoluteAutoFilter = Excel::cellAddress($rowOrCell, $col, true);
         }
-        $this->absoluteAutoFilter = Excel::cellAddress($row, $col, true);
+        else {
+            $range = Excel::rangeDimension($rowOrCell, true);
+            if (isset($range['cell1'], $range['cell2'])) {
+                if ($range['cell1'] === $range['cell2']) {
+                    $this->autoFilter = $range['cell1'];
+                }
+                else {
+                    $this->autoFilter = $range['cell1'] . ':' . $range['cell2'];
+                }
+                $this->absoluteAutoFilter = $range['absAddress'];
+            }
+        }
 
         return $this;
     }
@@ -2420,7 +2438,7 @@ class Sheet implements InterfaceSheetWriter
                         $dimension['colNum1'] > $this->mergedCellsArray['colNum2'] ||
                         $dimension['colNum2'] < $this->mergedCellsArray['colNum1']
                     )) {
-                        // is intersection
+                        // is the intersection?
                         foreach ($this->mergeCells as $savedRange => $savedDimension) {
                             if (!(
                                 $dimension['rowNum1'] > $savedDimension['rowNum2'] ||

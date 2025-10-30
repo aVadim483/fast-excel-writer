@@ -53,7 +53,8 @@ Currently, the required PHP minimum version is PHP 7.4
 
 ## Documentation
 
-Read more in the [documentation](/docs/index.md). Or check out the [API reference](/docs/90-api-reference.md). 
+Read more in the documentation [here](/docs/index.md) or [here](https://fast-excel-writer.readthedocs.io/en/latest/). 
+Or check out the [API reference](/docs/90-api-reference.md). 
 Also, you can see examples in ```/demo``` folder.
 
 Changelog is [here](CHANGELOG.md).

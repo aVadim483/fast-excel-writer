@@ -1662,11 +1662,12 @@ class Excel implements InterfaceBookWriter
                     ],
                 ])
             );
-            if (isset($http_response_header[0])) {
-                if (preg_match('#\s404\s#', $http_response_header[0])) {
+            $headers = function_exists('http_get_last_response_headers') ? http_get_last_response_headers() : $http_response_header;
+            if (isset($headers[0])) {
+                if (preg_match('#\s404\s#', $headers[0])) {
                     ExceptionFile::throwNew('Image file "%s" does not exist', $imageFile);
                 }
-                elseif (preg_match('#\s200\s#', $http_response_header[0])) {
+                elseif (preg_match('#\s200\s#', $headers[0])) {
                     $imageBlob = $response;
                 }
             }

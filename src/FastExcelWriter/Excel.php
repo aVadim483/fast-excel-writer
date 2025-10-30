@@ -1474,8 +1474,7 @@ class Excel implements InterfaceBookWriter
         if (null === $index) {
             array_shift($this->sheets);
         }
-
-        if (is_int($index)) {
+        elseif (is_int($index)) {
             $keys = array_keys($this->sheets);
             if (!isset($keys[--$index])) {
                 throw  new Exception('Sheet #' . $index . ' not found');

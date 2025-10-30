@@ -1,3 +1,10 @@
+## V.6.8
+
+* Sheet::setAutoFilter() - Supports specifying range
+* Sheet::writeRows() - Write several rows from a two-dimensional array
+* Sheet::nextRow() - fixed exporting of empty rows
+* Fixed errors in php 8.5
+
 ## V.6.4
 
 * Sheet::writeCells($values, $cellStyles) - Write several values into cells of one row

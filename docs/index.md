@@ -10,7 +10,7 @@ with many features supported:
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks
 * Supports most styling options for cells, rows, columns - colors, borders, fonts, etc.
 * You can set the height of the rows and the width of the columns (including auto width calculation)
-* You can add formulas, notes and images in you XLSX-files
+* You can add notes and images in you XLSX-files
 * Supports workbook and sheet protection with/without passwords
 * Supports page settings - page margins, page size
 * Inserting multiple charts

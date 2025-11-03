@@ -297,7 +297,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Create new workbook
+     * Create a new workbook
      *
      * @param array|string|null $sheets Name of sheet or array of names
      * @param array|null $options Options
@@ -335,7 +335,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Create new instance of Style class
+     * Create a new instance of Style class
      *
      * @return Style
      */
@@ -867,7 +867,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Convert letter to number (ONE based)
+     * Convert letter to number (ONE-based)
      *
      * @param string $colLetter
      *
@@ -882,7 +882,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Convert letter to index (ZERO based)
+     * Convert letter to index (ZERO-based)
      *
      * @param string $colLetter
      *
@@ -903,7 +903,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Convert letter range to array of numbers (ONE based)
+     * Convert letter range to array of numbers (ONE-based)
      *
      * @param string|int|array $colLetter e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
      *
@@ -932,7 +932,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Convert letter range to array of numbers (ZERO based)
+     * Convert letter range to an array of numbers (ZERO-based)
      *
      * @param string|int|array $colLetter e.g.: 'B', 2, 'C:F', ['A', 'B', 'C']
      *
@@ -1048,10 +1048,11 @@ class Excel implements InterfaceBookWriter
 
     /**
      * @param array $data
+     * @param int|null $offset
      *
      * @return array
      */
-    public static function colKeysToIndexes(array $data, $offset = 0): array
+    public static function colKeysToIndexes(array $data, ?int $offset = 0): array
     {
         $row = array_combine(Excel::colIndexRange(array_keys($data)), array_values($data));
         if ($offset) {
@@ -1068,7 +1069,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Create cell address by row and col numbers
+     * Create a cell address by row and col numbers
      *
      * @param int $rowNumber ONE based
      * @param int $colNumber ONE based
@@ -1265,7 +1266,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Return offsets by relative address (zero based)
+     * Return offsets by relative address (ZERO-based)
      *
      * @param string $relAddress
      *
@@ -1417,10 +1418,10 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Returns sheet by number or name of sheet.
-     * Return the first sheet if number or name omitted
+     * Returns the sheet by number or name of the sheet.
+     * Return the first sheet if a number or name is omitted
      *
-     * @param int|string|null $index - number or name of sheet
+     * @param int|string|null $index - number or name of a sheet
      *
      * @return Sheet|null
      */
@@ -1452,7 +1453,7 @@ class Excel implements InterfaceBookWriter
     /**
      * Alias of sheet()
      *
-     * @param int|string|null $index - number or name of sheet
+     * @param int|string|null $index - number or name of a sheet
      *
      * @return Sheet|null
      */
@@ -1832,7 +1833,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Download generated file to client (send to browser)
+     * Download the generated file to a client (send to browser)
      *
      * @param string|null $name
      */

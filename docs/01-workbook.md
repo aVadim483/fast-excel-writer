@@ -1,4 +1,4 @@
-## FastExcelWriter - Workbook
+## FastExcelWriter — Workbook
 
 ### Workbook settings
 

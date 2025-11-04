@@ -950,7 +950,7 @@ class Sheet implements InterfaceSheetWriter
      * Styles are applied only to non-empty cells in a column and only take effect starting with the current row
      *
      * @param int|string|array $colRange
-     * @param array $colStyle
+     * @param array|Style $colStyle
      *
      * @return $this
      *
@@ -960,7 +960,7 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->setColDataStyle('B:D', ['width' = 'auto']); // options for range of columns
      * $sheet->setColDataStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
      */
-    public function setColDataStyle($colRange, array $colStyle): Sheet
+    public function setColDataStyle($colRange, $colStyle): Sheet
     {
         if ($this->currentColIdx) {
             $this->_writeCurrentRow();
@@ -969,6 +969,9 @@ class Sheet implements InterfaceSheetWriter
         $options = [];
         $colNumbers = Excel::colNumberRange($colRange);
         if ($colNumbers) {
+            if ($colStyle) {
+                $colStyle = is_array($colStyle) ? $colStyle : $colStyle->toArray();
+            }
             $colOptions = StyleManager::normalize($colStyle);
             foreach ($colNumbers as $col) {
                 $options[$col] = $colOptions;
@@ -1663,7 +1666,7 @@ class Sheet implements InterfaceSheetWriter
      * The style is applied to the entire sheet row (even if it is empty)
      *
      * @param int|string|array $rowRange
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      *
@@ -1671,9 +1674,12 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->setRowStyle(3, ['height' = 20]); // options for row number 3
      * $sheet->setRowStyle('2:5', ['font-color' = '#f00']); // options for range of rows
      */
-    public function setRowStyle($rowRange, array $style): Sheet
+    public function setRowStyle($rowRange, $style): Sheet
     {
         $rows = Excel::rowNumberRange($rowRange);
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
         foreach ($rows as $rowNum) {
             $this->_setRowOptions($rowNum, $style, true);
         }
@@ -1694,6 +1700,9 @@ class Sheet implements InterfaceSheetWriter
     public function setRowStyleArray(array $rowStyles): Sheet
     {
         foreach ($rowStyles as $rowNum => $style) {
+            if ($style) {
+                $style = is_array($style) ? $style : $style->toArray();
+            }
             $this->_setRowOptions($rowNum, $style, true);
         }
         return $this;
@@ -1703,7 +1712,7 @@ class Sheet implements InterfaceSheetWriter
      * Style are applied only to non-empty cells in a row (or row range)
      *
      * @param int|string|array $rowRange
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      *
@@ -1711,9 +1720,12 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->setRowDataStyle(3, ['height' = 20]); // options for row number 3
      * $sheet->setRowDataStyle('2:5', ['font-color' = '#f00']); // options for range of rows
      */
-    public function setRowDataStyle($rowRange, array $style): Sheet
+    public function setRowDataStyle($rowRange, $style): Sheet
     {
         $rows = Excel::rowNumberRange($rowRange);
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
         foreach ($rows as $rowNum) {
             $this->_setRowOptions($rowNum, $style, false);
         }
@@ -1734,6 +1746,9 @@ class Sheet implements InterfaceSheetWriter
     public function setRowDataStyleArray(array $rowStyles): Sheet
     {
         foreach ($rowStyles as $row => $style) {
+            if ($style) {
+                $style = is_array($style) ? $style : $style->toArray();
+            }
             if (is_numeric($row)) {
                 $rows = Excel::rowNumberRange($row);
                 foreach ($rows as $rowNum) {
@@ -2004,7 +2019,8 @@ class Sheet implements InterfaceSheetWriter
                 $len += 1;
             }
 
-            if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
+            if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len)
+                && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
                 $this->_setColAttributes($colIdx, ['width' => $len]);
             }
         }
@@ -2026,13 +2042,16 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Sets default style
      *
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function setDefaultStyle(array $style): Sheet
+    public function setDefaultStyle($style): Sheet
     {
         $this->clearSummary();
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
         $this->defaultStyle = StyleManager::normalize($style);
 
         return $this;
@@ -2171,13 +2190,16 @@ class Sheet implements InterfaceSheetWriter
      * Write value to the current cell and move a pointer to the next cell in the row
      *
      * @param mixed $value
-     * @param array|null $styles
+     * @param array|Style|null $style
      *
      * @return $this
      */
-    public function writeCell($value, ?array $styles = null): Sheet
+    public function writeCell($value, $style = null): Sheet
     {
         $this->_checkOutput();
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
 
         if ($this->lastTouch['ref'] === 'row') {
             $this->_writeCurrentRow();
@@ -2196,7 +2218,7 @@ class Sheet implements InterfaceSheetWriter
             ExceptionAddress::throwNew('Column is more then "' . Helper::colLetter(Excel::MAX_COL) . '"');
         }
 
-        $this->_setCellData($cellAddress, $value, $styles, false);
+        $this->_setCellData($cellAddress, $value, $style, false);
         $this->_touchEnd($this->currentRowIdx, $this->currentColIdx, 'cell');
         ++$this->currentColIdx;
 
@@ -2242,8 +2264,11 @@ class Sheet implements InterfaceSheetWriter
             'col' => 1 + $this->currentColIdx,
         ];
         foreach ($values as $pos => $value) {
-            $styles = !empty($cellStyles[$pos]) ? $cellStyles[$pos] : null;
-            $this->_setCellData($cellAddress, $value, $styles, false);
+            $style = !empty($cellStyles[$pos]) ? $cellStyles[$pos] : null;
+            if ($style) {
+                $style = is_array($style) ? $style : $style->toArray();
+            }
+            $this->_setCellData($cellAddress, $value, $style, false);
             $cellAddress['col']++;
             ++$this->currentColIdx;
         }
@@ -2346,7 +2371,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $styles
+     * @param array|Style|null $style
      * @param int|null $mergeFlag
      *
      * @return $this
@@ -2356,16 +2381,21 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as an array
      * $sheet->writeTo([2, 5], $value); // address as an array
      * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
-     * $sheet->writeTo('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
+     * $sheet->writeTo('B5:C7', $value, $style, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
      */
-    public function writeTo($cellAddress, $value, ?array $styles = [], ?int $mergeFlag = 0): Sheet
+    public function writeTo($cellAddress, $value, $style = null, ?int $mergeFlag = 0): Sheet
     {
         $address = $this->_moveTo($cellAddress);
         $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
-        //$this->withLastCell();
 
-        ///-- $styles = $styles ? Style::normalize($styles) : null;
-        $this->_setCellData($cellAddress, $value, $styles, $mergeFlag, true);
+        if (is_int($style)) {
+            $mergeFlag = $style;
+            $style = null;
+        }
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
+        $this->_setCellData($cellAddress, $value, $style, $mergeFlag, true);
         if (isset($address['width'], $address['range']) && $address['width'] > 1) {
             $this->mergeCells($address['range'], $mergeFlag);
             $this->currentColIdx += $address['width'];
@@ -2624,12 +2654,12 @@ class Sheet implements InterfaceSheetWriter
      * Write values to the current row
      *
      * @param array $rowValues Values of cells
-     * @param array|null $rowStyle Style applied to the entire row
+     * @param array|Style|null $rowStyle Style applied to the entire row
      * @param array|null $cellStyles Styles of specified cells in the row
      *
      * @return $this
      */
-    public function writeRow(array $rowValues = [], ?array $rowStyle = null, ?array $cellStyles = null): Sheet
+    public function writeRow(array $rowValues = [], $rowStyle = null, ?array $cellStyles = null): Sheet
     {
         if (!$rowValues && !$rowStyle && !$cellStyles) {
             $rowIdx = $this->currentRowIdx;
@@ -2661,7 +2691,12 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if ($rowStyle) {
-            $rowStyle = StyleManager::normalize($rowStyle);
+            if (is_array($rowStyle)) {
+                $rowStyle = StyleManager::normalize($rowStyle);
+            }
+            else {
+                $rowStyle = $rowStyle->toArray();
+            }
             $this->rowStyles[$this->currentRowIdx] = $rowStyle;
             if (isset($rowStyle['options']['height'])) {
                 $this->setRowHeight($this->currentRowIdx + 1, $rowStyle['options']['height']);
@@ -2694,7 +2729,7 @@ class Sheet implements InterfaceSheetWriter
      * Write values from a two-dimensional array (alias of writeRows)
      *
      * @param array $rowArray Array of rows
-     * @param array|null $rowStyle Style applied to each row
+     * @param array|Style|null $rowStyle Style applied to each row
      *
      * @return $this
      */
@@ -2708,11 +2743,11 @@ class Sheet implements InterfaceSheetWriter
      * Write several rows from a two-dimensional array
      *
      * @param array $rowArray Array of rows
-     * @param array|null $rowStyle Style applied to each row
+     * @param array|Style|null $rowStyle Style applied to each row
      *
      * @return $this
      */
-    public function writeRows(array $rowArray = [], ?array $rowStyle = null): Sheet
+    public function writeRows(array $rowArray = [], $rowStyle = null): Sheet
     {
         foreach ($rowArray as $rowValues) {
             $this->writeRow($rowValues ?: [], $rowStyle);
@@ -2724,12 +2759,12 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Move to the next row
      *
-     * @param array|null $style
+     * @param array|Style|null $style
      * @param bool|null $forceRow
      *
      * @return $this
      */
-    public function nextRow(?array $style = [], ?bool $forceRow = false): Sheet
+    public function nextRow($style = null, ?bool $forceRow = false): Sheet
     {
         $this->_checkOutput();
 
@@ -2746,6 +2781,7 @@ class Sheet implements InterfaceSheetWriter
             $this->currentRowIdx++;
         }
         if (!empty($style)) {
+            $styles = is_array($style) ? $style : $style->toArray();
             $this->_setRowOptions($this->currentRowIdx + 1, $style, true);
         }
 
@@ -2960,13 +2996,13 @@ class Sheet implements InterfaceSheetWriter
     /**
      * @param string|array|null $cellAddress
      * @param mixed $value
-     * @param mixed|null $styles
+     * @param array|null $style
      * @param int|null $mergeFlag
      * @param bool|null $changeCurrent
      *
      * @return array
      */
-    protected function _setCellData($cellAddress, $value, $styles = null, ?int $mergeFlag = 0, ?bool $changeCurrent = false)
+    protected function _setCellData($cellAddress, $value, ?array $style = null, ?int $mergeFlag = 0, ?bool $changeCurrent = false)
     {
         $dimension = [];
         if (null === $cellAddress) {
@@ -3023,11 +3059,11 @@ class Sheet implements InterfaceSheetWriter
             }
             elseif ($value instanceof \DateTimeInterface) {
                 $this->cells['values'][$rowIdx][$colIdx] = $value->getTimestamp();
-                if (is_array($styles) && empty($styles['format'])) {
-                    $styles['format'] = '@datetime';
+                if (is_array($style) && empty($style['format'])) {
+                    $style['format'] = '@datetime';
                 }
                 else {
-                    $styles = ['format' => '@datetime'];
+                    $style = ['format' => '@datetime'];
                 }
             }
             elseif (is_callable($value)) {
@@ -3042,8 +3078,8 @@ class Sheet implements InterfaceSheetWriter
                 $this->currentColIdx = $colIdx;
             }
         }
-        if ($styles) {
-            $this->cells['styles'][$rowIdx][$colIdx] = StyleManager::normalize($styles);
+        if ($style) {
+            $this->cells['styles'][$rowIdx][$colIdx] = StyleManager::normalize($style);
         }
 
         return $dimension;
@@ -3054,7 +3090,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $styles
+     * @param array|Style|null $style
      *
      * @return $this
      *
@@ -3064,9 +3100,9 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->setValue(['col' => 2, 'row' => 5], $value, $styles);
      * $sheet->setValue([2, 5], $value);
      */
-    public function setValue($cellAddress, $value, ?array $styles = null): Sheet
+    public function setValue($cellAddress, $value, $style = null): Sheet
     {
-        $this->writeTo($cellAddress, $value, $styles);
+        $this->writeTo($cellAddress, $value, $style);
         if ($this->currentColIdx) {
             $this->currentColIdx--;
         }
@@ -3079,7 +3115,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $styles
+     * @param array|Style|null $style
      *
      * @return $this
      *
@@ -3089,7 +3125,7 @@ class Sheet implements InterfaceSheetWriter
      *  $sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
      *  $sheet->setFormula([2, 5], '=SUM(A4:A18)');
      */
-    public function setFormula($cellAddress, $value, ?array $styles = null): Sheet
+    public function setFormula($cellAddress, $value, $style = null): Sheet
     {
         if (empty($value)) {
             $value = null;
@@ -3098,7 +3134,10 @@ class Sheet implements InterfaceSheetWriter
             $value = '=' . $value;
         }
 
-        $this->_setCellData($cellAddress, $value, $styles, true);
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
+        }
+        $this->_setCellData($cellAddress, $value, $style, true);
 
         return $this;
     }
@@ -3130,7 +3169,7 @@ class Sheet implements InterfaceSheetWriter
      * Set style for the specific cell
      *
      * @param string $cellAddress Cell address
-     * @param mixed $style Style array or object
+     * @param array|Style $style Style array or object
      * @param bool|null $mergeStyles True - merge style with previous style for this cell (if exists)
      *
      * @return $this
@@ -3140,6 +3179,9 @@ class Sheet implements InterfaceSheetWriter
         $dimension = $this->_rangeDimension($cellAddress);
         if ($dimension['rowNum1'] <= $this->rowCountWritten) {
             throw new Exception('Row number must be greater than written rows');
+        }
+        if ($style) {
+            $style = is_array($style) ? $style : $style->toArray();
         }
         $style = StyleManager::normalize($style);
         for ($row = $dimension['rowNum1'] - 1; $row < $dimension['rowNum2']; $row++) {
@@ -3167,11 +3209,11 @@ class Sheet implements InterfaceSheetWriter
      * Add additional styles to a cell
      *
      * @param string $cellAddr
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function addCellStyle(string $cellAddr, array $style): Sheet
+    public function addCellStyle(string $cellAddr, $style): Sheet
     {
         return $this->setCellStyle($cellAddr, $style, true);
     }
@@ -3180,11 +3222,11 @@ class Sheet implements InterfaceSheetWriter
      * Alias for 'addCellStyle()'
      *
      * @param string $cellAddr
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function addStyle(string $cellAddr, array $style): Sheet
+    public function addStyle(string $cellAddr, $style): Sheet
     {
         return $this->addCellStyle($cellAddr, $style, true);
     }
@@ -3193,7 +3235,7 @@ class Sheet implements InterfaceSheetWriter
      * Alias for 'setCellStyle()'
      *
      * @param string $cellAddress
-     * @param mixed $style
+     * @param array|Style $style
      * @param bool|null $mergeStyles
      *
      * @return $this

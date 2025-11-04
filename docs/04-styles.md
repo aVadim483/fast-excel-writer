@@ -16,6 +16,8 @@ $sheet->writeCell(0.9, $style);
 
 ### Class Style for Defining Style Properties
 
+Setting styles using the Style class is the preferred way.
+
 ```php
 $style = Excel::newStyle()
     ->setFillGradient('#fff000', '#fff')
@@ -30,11 +32,11 @@ $sheet->writeCell(0.9, $style->toArray());
 ### Cell Styles
 
 ```php
-$style = [
+$style = Excel::newStyle([
     'format' => '#,##0.00',
     'font-color' => '#ff0000',
     'text-align' => 'center',
-];
+]);
 $sheet->writeCell(0.9, $style);
 $sheet->writeTo('B4', $value, $style);
 
@@ -63,20 +65,6 @@ $rowStyle = [
 ];
 // Write row data and set row styles
 $sheet->writeRow($rowData, $rowStyle);
-
-// Set options for several rows 
-$sheet->setRowStyles('3', $style);
-
-$rowStyles = [
-    3 => ['fill-color' => '#cff'], // options for row 3 
-    4 => ['fill-color' => '#ccc', 'height' => 20], // options for row 4
-];
-
-// Set styles to the specified row 
-$sheet->setRowStyles($rowStyles);
-
-// Set options for range of rows 
-$sheet->setRowStyles('2:5', ['fill-color' => '#f00']);
 
 ```
 

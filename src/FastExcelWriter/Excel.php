@@ -337,11 +337,13 @@ class Excel implements InterfaceBookWriter
     /**
      * Create a new instance of Style class
      *
+     * @param array|null $style
+     *
      * @return Style
      */
-    public static function newStyle (): Style
+    public static function newStyle (?array $style = null): Style
     {
-        return new Style();
+        return new Style($style);
     }
 
     /**
@@ -765,11 +767,11 @@ class Excel implements InterfaceBookWriter
     /**
      * Set default style
      *
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function setDefaultStyle(array $style): Excel
+    public function setDefaultStyle($style): Excel
     {
         $this->style->setDefaultStyle($style);
 

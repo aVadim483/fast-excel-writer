@@ -101,8 +101,24 @@ class Style
 
 
     protected array $styles = [];
-    
-    
+
+
+    /**
+     * @param array|null $style
+     */
+    public function __construct(?array $style = null)
+    {
+        if ($style) {
+            $this->styles = StyleManager::normalize($style);
+        }
+    }
+
+    /**
+     * @param string $primaryKey
+     * @param array $options
+     *
+     * @return void
+     */
     protected function _setStyleOptions(string $primaryKey, array $options)
     {
         foreach ($options as $key => $val) {

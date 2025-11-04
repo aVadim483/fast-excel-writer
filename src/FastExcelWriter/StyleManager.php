@@ -200,13 +200,14 @@ class StyleManager
     }
 
     /**
-     * @param array $style
+     * @param array|Style $style
      * @param bool|null $replaceAll
      *
      * @return $this
      */
-    public function setDefaultStyle(array $style, ?bool $replaceAll = true): StyleManager
+    public function setDefaultStyle($style, ?bool $replaceAll = true): StyleManager
     {
+        $style = is_array($style) ? $style : $style->toArray();
         if (!$replaceAll && $this->defaultStyle) {
             $this->defaultStyle = array_replace_recursive($this->defaultStyle, $style);
         }

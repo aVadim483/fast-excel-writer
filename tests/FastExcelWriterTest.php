@@ -1220,7 +1220,7 @@ final class FastExcelWriterTest extends TestCase
 
         foreach ($styles as $cell => $style) {
             $sheet
-                ->writeTo($cell, 12345, $style['set']->toArray())
+                ->writeTo($cell, 12345, $style['set'])
                 ->nextRow();
         }
 

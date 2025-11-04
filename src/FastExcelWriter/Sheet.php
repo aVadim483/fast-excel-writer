@@ -35,6 +35,10 @@ class Sheet implements InterfaceSheetWriter
     public const STATE_HIDDEN = 'hidden';
     public const STATE_VERY_HIDDEN = 'veryHidden';
 
+    public const MERGE_REPLACE = 1;
+    public const MERGE_KEEP = 2;
+    public const MERGE_NO_CHECK = -1;
+
 
     /** @var null|Excel */
     public ?Excel $excel = null;
@@ -2343,26 +2347,27 @@ class Sheet implements InterfaceSheetWriter
      * @param string|array $cellAddress
      * @param mixed $value
      * @param array|null $styles
+     * @param int|null $mergeFlag
      *
      * @return $this
      *
      * @example
      * $sheet->writeTo('B5', $value); // write to single cell
-     * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
      * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as an array
      * $sheet->writeTo([2, 5], $value); // address as an array
-     *
+     * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
+     * $sheet->writeTo('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
      */
-    public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
+    public function writeTo($cellAddress, $value, ?array $styles = [], ?int $mergeFlag = 0): Sheet
     {
         $address = $this->_moveTo($cellAddress);
         $this->_touchStart($address['rowIndex'], $address['colIndex'], 'cell');
         //$this->withLastCell();
 
         ///-- $styles = $styles ? Style::normalize($styles) : null;
-        $this->_setCellData($cellAddress, $value, $styles, true, true);
+        $this->_setCellData($cellAddress, $value, $styles, $mergeFlag, true);
         if (isset($address['width'], $address['range']) && $address['width'] > 1) {
-            $this->mergeCells($address['range']);
+            $this->mergeCells($address['range'], $mergeFlag);
             $this->currentColIdx += $address['width'];
         }
         else {
@@ -2410,20 +2415,22 @@ class Sheet implements InterfaceSheetWriter
     /**
      * Merge cells
      *
-     * @example
-     * $sheet->mergeCells('A1:C3');
-     * $sheet->mergeCells(['A1:B2', 'C1:D2']);
-     *
      * @param array|string|int $rangeSet
-     * @param int|null $actionMode Action in case of intersection:
+     * @param int|null $mergeFlag Action in case of intersection:
      *      0 - exception;
      *      1 - replace;
      *      2 - keep;
      *      -1 - skip intersection check
      *
      * @return $this
+     *
+     * @example
+     * $sheet->mergeCells('A1:C3');
+     * $sheet->mergeCells(['A1:B2', 'C1:D2']);
+     * $sheet->mergeCells('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
+     *
      */
-    public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
+    public function mergeCells($rangeSet, ?int $mergeFlag = 0): Sheet
     {
         foreach((array)$rangeSet as $range) {
             if (isset($this->mergeCells[$range]) || empty($range)) {
@@ -2444,7 +2451,7 @@ class Sheet implements InterfaceSheetWriter
                     'colNum2' => Excel::colNumber($matches[4]),
                 ];
 
-                if ($actionMode > -1) {
+                if ($mergeFlag > -1) {
                     if (!(
                         $dimension['rowNum1'] > $this->mergedCellsArray['rowNum2'] ||
                         $dimension['rowNum2'] < $this->mergedCellsArray['rowNum1'] ||
@@ -2459,10 +2466,10 @@ class Sheet implements InterfaceSheetWriter
                                 $dimension['colNum1'] > $savedDimension['colNum2'] ||
                                 $dimension['colNum2'] < $savedDimension['colNum1']
                             )) {
-                                if ($actionMode === 1) {
+                                if ($mergeFlag === self::MERGE_REPLACE) {
                                     unset($this->mergeCells[$savedRange]);
                                 }
-                                elseif ($actionMode === 2) {
+                                elseif ($mergeFlag === self::MERGE_KEEP) {
                                     $dimension = [];
                                     break;
                                 }
@@ -2954,12 +2961,12 @@ class Sheet implements InterfaceSheetWriter
      * @param string|array|null $cellAddress
      * @param mixed $value
      * @param mixed|null $styles
-     * @param bool|null $merge
+     * @param int|null $mergeFlag
      * @param bool|null $changeCurrent
      *
      * @return array
      */
-    protected function _setCellData($cellAddress, $value, $styles = null, ?bool $merge = false, ?bool $changeCurrent = false)
+    protected function _setCellData($cellAddress, $value, $styles = null, ?int $mergeFlag = 0, ?bool $changeCurrent = false)
     {
         $dimension = [];
         if (null === $cellAddress) {
@@ -2982,8 +2989,8 @@ class Sheet implements InterfaceSheetWriter
                     $dimension = $this->_parseAddress($cellAddress);
                     $row = $dimension['row'];
                     $col = $dimension['col'];
-                    if ($merge && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
-                        $this->mergeCells($dimension['range']);
+                    if ($mergeFlag > -1 && isset($dimension['width'], $dimension['height']) && ($dimension['width'] > 1 || $dimension['height'] > 1)) {
+                        $this->mergeCells($dimension['range'], $mergeFlag);
                     }
                 }
 

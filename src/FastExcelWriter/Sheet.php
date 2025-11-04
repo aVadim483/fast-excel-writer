@@ -1363,6 +1363,11 @@ class Sheet implements InterfaceSheetWriter
      * @param mixed $format
      *
      * @return $this
+     *
+     * @example
+     * $sheet->setColFormat('A', '@date');
+     * $sheet->setColFormat(1, '@date');
+     * $sheet->setColFormat(['A', 'D', 'EX'], '@time');
      */
     public function setColFormat($col, $format): Sheet
     {
@@ -1378,6 +1383,9 @@ class Sheet implements InterfaceSheetWriter
      * @param array $formats
      *
      * @return $this
+     *
+     * @example
+     * $sheet->setColFormats(['A' => '@date', 'D'=> '# ##0.000']);
      */
     public function setColFormats(array $formats): Sheet
     {
@@ -1427,6 +1435,11 @@ class Sheet implements InterfaceSheetWriter
      * @param $height
      *
      * @return $this
+     *
+     * @example
+     * $sheet->setRowHeight(1, 20);
+     * $sheet->setRowHeight([1, 3, 24], 20);
+     * $sheet->setRowHeight('3:7', 30);
      */
     public function setRowHeight($rowNum, $height): Sheet
     {
@@ -2336,8 +2349,8 @@ class Sheet implements InterfaceSheetWriter
      * @example
      * $sheet->writeTo('B5', $value); // write to single cell
      * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
-     * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as array
-     * $sheet->writeTo([2, 5], $value); // address as array
+     * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as an array
+     * $sheet->writeTo([2, 5], $value); // address as an array
      *
      */
     public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
@@ -4206,7 +4219,7 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _pageMargin(string $key, $value)
     {
-        if (preg_match('/^([\d.]+)\s?(mm|cm|in)/', $value, $m)) {
+        if (is_string($value) && preg_match('/^([\d.]+)\s?(mm|cm|in)/', $value, $m)) {
             if ($m[2] === 'cm') {
                 $value = (float)$m[1] * 0.39;
             }

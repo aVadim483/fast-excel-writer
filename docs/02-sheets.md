@@ -46,53 +46,6 @@ $sheet->setStateVisible();
 $sheet->setSheetState('hidden'); // or 'visible', 'veryHidden'
 ```
 
-### Page Settings
-
-```php
-$sheet->pagePortrait();
-$sheet->pageLandscape();
-$sheet->pageFitToWidth(1); // fit width to 1 page
-$sheet->pageFitToHeight(1);// fit height to 1 page
-
-$sheet->pageMargins([
-        'left' => '0.5',
-        'right' => '0.5',
-        'top' => '1.0',
-        'bottom' => '1.0',
-        'header' => '0.5',
-        'footer' => '0.5',
-    ]);
-// the same action    
-$sheet
-    ->pageMarginLeft(0.5)
-    ->pageMarginRight(0.5)
-    ->pageMarginTop(1.0)
-    ->pageMarginBottom(1.0)
-    ->pageMarginHeader(0.5)
-    ->pageMarginFooter(0.5);
-
-$sheet->pagePaperSize(Excel::PAPERSIZE_A3);
-$sheet->pagePaperHeight('297mm');
-$sheet->pagePaperWidth('21cm');
-```
-By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
-
-But you can also specify these values in centimeters or millimeters.
-
-```php
-$sheet->pageMarginLeft(0.5); // set left margin 0.5 inch
-$sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
-$sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
-```
-
-
-### Print Header and Footer
-
-```php
-// Set the same Header and Footer for all Pages
-$sheet->pageHeaderFooter('Print Header', 'Print Footer');
-```
-
 ### Freeze Panes and Autofilter
 
 ```php
@@ -405,7 +358,7 @@ $sheet->setActiveCell('B2');
 $sheet->setActiveCell('B2:C3');
 ```
 
-### Print settings
+### Print Area
 
 Specify printing area
 
@@ -440,7 +393,107 @@ $sheet->setPrintHorizontalCentered();
 // vertical centered
 $sheet->setPrintVerticalCentered();
 
-// centered both direction
+// centered both directions
 $sheet->setPrintCentered();
 ```
 
+### Page Layout
+
+```php
+$sheet->pagePortrait();
+$sheet->pageLandscape();
+$sheet->pageFitToWidth(1); // fit width to 1 page
+$sheet->pageFitToHeight(1);// fit height to 1 page
+
+$sheet->pageMargins([
+        'left' => '0.5',
+        'right' => '0.5',
+        'top' => '1.0',
+        'bottom' => '1.0',
+        'header' => '0.5',
+        'footer' => '0.5',
+    ]);
+// the same action    
+$sheet
+    ->pageMarginLeft(0.5)
+    ->pageMarginRight(0.5)
+    ->pageMarginTop(1.0)
+    ->pageMarginBottom(1.0)
+    ->pageMarginHeader(0.5)
+    ->pageMarginFooter(0.5);
+
+$sheet->pagePaperSize(Excel::PAPERSIZE_A3);
+$sheet->pagePaperHeight('297mm');
+$sheet->pagePaperWidth('21cm');
+```
+By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
+
+But you can also specify these values in centimeters or millimeters.
+
+```php
+$sheet->pageMarginLeft(0.5); // set left margin 0.5 inch
+$sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
+$sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
+```
+
+### Print Header and Footer
+
+```php
+// Set the same Header and Footer for all Pages
+$sheet->pageHeaderFooter('Print Header', 'Print Footer');
+// Set the header as a single centered string
+$sheet->pageHeader('Print Header');
+$sheet->pageHeader(['Left Header', 'Center Header', 'Right Header']);
+
+// Set the footer as a single centered string
+$sheet->pageFooter('Print Footer');
+$sheet->pageFooter(['Left Footer', 'Center Footer', 'Right Footer']);;
+
+// Set footer as a single string
+$sheet->pageHeader('Print Header');
+$sheet->pageFooter('Print Footer');
+
+$sheet->pageHeaderFirst('...');
+$sheet->pageHeaderOdd('...');
+$sheet->pageHeaderEven('...');
+
+$sheet->pageFooterFirst('...');
+$sheet->pageFooterOdd('...');
+$sheet->pageFooterEven('...');
+
+```
+Substitution and formatting codes (starting with '&') can be used inside headers and footers.
+```php
+$sheet->pageFooter('Page &P of &N');
+```
+
+
+The XLSX-format supports the following codes:
+
+| Code                   | Meaning                                                                                                                                                       |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| &P                     | Code for "current page #"                                                                                                                                     |
+| &N                     | Code for "total pages"                                                                                                                                        |
+| &+                     | Code for add to page #                                                                                                                                        |
+| &-                     | Code for subtract from page #                                                                                                                                 |
+| &Z                     | Code for "this workbook's file path"                                                                                                                          |
+| &F                     | Code for "this workbook's file name"                                                                                                                          |
+| &A                     | Code for "sheet tab name"                                                                                                                                     |
+| &font size             | Code for "text font size", where font size is a font size in points.                                                                                          |
+| &K                     | Code for "text font color" - RGB Color is specified as RRGGBB                                                                                                 |
+| &S                     | Code for "text strikethrough" on / off                                                                                                                        |
+| &X                     | Code for "text super script" on / off                                                                                                                         |
+| &Y                     | Code for "text subscript" on / off                                                                                                                            |
+| &D                     | Code for "date"                                                                                                                                               |
+| &T                     | Code for "time"                                                                                                                                               |
+| &U                     | Code for "text single underline"                                                                                                                              |
+| &E                     | Code for "double underline"                                                                                                                                   |
+| &"font name,font type" | Code for "text font name" and "text font type", <br/>where font name and font type are strings specifying the name and type of the font, separated by a comma |
+| &"-,Bold"              | Code for "bold font style"                                                                                                                                    |
+| &B                     | Code for "bold font style"                                                                                                                                    |
+| &"-,Regular"           | Code for "regular font style"                                                                                                                                 |
+| &"-,Italic"            | Code for "italic font style"                                                                                                                                  |
+| &I                     | Code for "italic font style"                                                                                                                                  |
+| &"-,Bold Italic"       | Code for "bold italic font style"                                                                                                                             |
+| &O                     | Code for "outline style"                                                                                                                                      |
+| &H                     | Code for "shadow style"                                                                                                                                       |

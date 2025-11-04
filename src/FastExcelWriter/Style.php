@@ -25,9 +25,20 @@ class Style
     public const TEXT_ALIGN = 'format-align-horizontal';
     public const VERTICAL_ALIGN = 'format-align-vertical';
 
+    // horizontal align
     public const TEXT_ALIGN_LEFT = 'left';
     public const TEXT_ALIGN_CENTER = 'center';
     public const TEXT_ALIGN_RIGHT = 'right';
+
+    // vertical align
+    public const TEXT_ALIGN_TOP = 'top';
+    public const TEXT_ALIGN_BOTTOM = 'bottom';
+    public const TEXT_VERTICAL_TOP = 'top';
+    public const TEXT_VERTICAL_CENTER = 'center';
+    public const TEXT_VERTICAL_BOTTOM = 'bottom';
+
+    // horizontal & vertical
+    public const TEXT_ALIGN_CENTER_CENTER = 'center_center';
 
     public const FILL_COLOR = 'fill-color';
 
@@ -448,7 +459,15 @@ class Style
      */
     public function setTextAlign(string $textAlign, ?string $verticalAlign = null): Style
     {
-        $options = ['format-align-horizontal' => $textAlign];
+        if (strpos($textAlign, '_') !== false) {
+            $values = explode('_', $textAlign);
+            $options = [
+                'format-align-horizontal' => $values[0],
+                'format-align-vertical' => $values[1],
+            ];
+        } else {
+            $options = ['format-align-horizontal' => $textAlign];
+        }
         if ($verticalAlign !== null) {
             $options['format-align-vertical'] = $verticalAlign;
         }

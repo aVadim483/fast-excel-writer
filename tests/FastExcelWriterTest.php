@@ -1388,6 +1388,107 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
+
+    public function testMergedCells()
+    {
+        $testFileName = __DIR__ . '/test_merge.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $sheet->mergeCells('A1:C2');
+        $sheet->mergeCells('B3:E3');
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C2', $merged[0]);
+        $this->assertEquals('B3:E3', $merged[1]);
+
+        $sheet->mergeCells('D3:F3', Sheet::MERGE_REPLACE);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('D3:F3', $merged[1]);
+
+        $sheet->mergeCells('E3:G4', Sheet::MERGE_KEEP);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('D3:F3', $merged[1]);
+
+        $sheet->mergeCells('E3:G4', Sheet::MERGE_NO_CHECK);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C2', $merged[0]);
+        $this->assertEquals('D3:F3', $merged[1]);
+        $this->assertEquals('E3:G4', $merged[2]);
+
+        $excel->save($testFileName);
+        unlink($testFileName);
+        $this->cells = [];
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $sheet->writeTo('a1:c3', 'aaa');
+        $sheet->writeTo('b4:e4', 'bbb');
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C3', $merged[0]);
+        $this->assertEquals('B4:E4', $merged[1]);
+
+        $sheet->writeTo('C4:D5', 'ccc', null, Sheet::MERGE_REPLACE);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C3', $merged[0]);
+        $this->assertEquals('C4:D5', $merged[1]);
+
+        $sheet->writeTo('C5:D5', 'ddd', null, Sheet::MERGE_KEEP);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C3', $merged[0]);
+        $this->assertEquals('C4:D5', $merged[1]);
+
+        $sheet->writeTo('C5:D5', 'eee', null, Sheet::MERGE_NO_CHECK);
+        $merged = $sheet->getMergedCells();
+        $this->assertEquals('A1:C3', $merged[0]);
+        $this->assertEquals('C4:D5', $merged[1]);
+        $this->assertEquals('C5:D5', $merged[2]);
+
+        $excel->save($testFileName);
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+    public function testMergeException1()
+    {
+        $testFileName = __DIR__ . '/test_merge1.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $this->expectException(\avadim\FastExcelWriter\Exceptions\ExceptionAddress::class);
+        $sheet->mergeCells('A1:C3');
+        $sheet->mergeCells('B2:D12');
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+    public function testMergeException2()
+    {
+        $testFileName = __DIR__ . '/test_merge2.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+
+        $this->expectException(\avadim\FastExcelWriter\Exceptions\ExceptionAddress::class);
+        $sheet->writeTo('A1:C3', 'aaa');
+        $sheet->writeTo('B2:D12', 'bbb');
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
     protected function rmdir($tempDir)
     {
         if (is_dir($tempDir)) {

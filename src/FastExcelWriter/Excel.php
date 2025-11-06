@@ -1666,6 +1666,9 @@ class Excel implements InterfaceBookWriter
                     ],
                 ])
             );
+            if (!isset($http_response_header)) {
+                $http_response_header = null;
+            }
             $headers = function_exists('http_get_last_response_headers') ? http_get_last_response_headers() : $http_response_header;
             if (isset($headers[0])) {
                 if (preg_match('#\s404\s#', $headers[0])) {

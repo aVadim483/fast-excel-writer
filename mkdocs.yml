@@ -35,10 +35,10 @@ nav:
   - Insertions:
       - Images: index.md#adding-images
       - Notes: index.md#adding-notes
-      - Charts: 05-charts.md
+      - Charts: 07-charts.md
   - Additional Features:
-      - Data Validation: 07-validation.md
-      - Conditional Formatting: 08-conditional.md
+      - Data Validation: 08-validation.md
+      - Conditional Formatting: 09-conditional.md
   - API Reference: 90-api-reference.md
   - Other libraries:
       - FastExcelReader: https://github.com/aVadim483/fast-excel-reader

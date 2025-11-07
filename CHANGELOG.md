@@ -8,7 +8,7 @@
 ## V.6.4
 
 * Sheet::writeCells($values, $cellStyles) - Write several values into cells of one row
-* Conditional Formatting (see [Conditional Formatting](/docs/08-conditional.md))
+* Conditional Formatting (see [Conditional Formatting](/docs/09-conditional.md))
 * Changed: Ignoring formulas when calculating automatic column width
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/94
 
@@ -37,7 +37,7 @@
 
 ## V.6.0
 
-* Data validation (see [Data validation](/docs/07-validation.md))
+* Data validation (see [Data validation](/docs/08-validation.md))
 * All methods of Style were extracted into class StyleManager (constants remained in the class Style)
 * PHP extension 'intl' is desirable but not required
 * Other refactoring

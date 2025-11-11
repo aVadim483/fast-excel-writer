@@ -910,6 +910,10 @@ class StyleManager
                     }
                     break;
 
+                case 'format-align-indent':
+                    $result['format']['format-align-indent'] = (int)$styleVal;
+                    break;
+
                 default:
                     if ($styleKey === 'font-style') {
                         $result['font']['font-style-' . $styleVal] = 1;

@@ -24,6 +24,7 @@ class Style
     public const TEXT_WRAP = 'format-text-wrap';
     public const TEXT_ALIGN = 'format-align-horizontal';
     public const VERTICAL_ALIGN = 'format-align-vertical';
+    public const INDENT_ALIGN = 'format-align-indent';
 
     public const TEXT_ALIGN_LEFT = 'left';
     public const TEXT_ALIGN_CENTER = 'center';

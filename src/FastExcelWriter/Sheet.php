@@ -1759,6 +1759,111 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param string $url
+     * @param bool $encodeFragment
+     *
+     * @return string
+     */
+    protected function _safeHyperlink(string $url, bool $encodeFragment = true): string
+    {
+        $url = trim((string)$url);
+
+        $parts = @parse_url($url);
+        if ($parts === false) {
+            return htmlspecialchars($url, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        }
+
+        // ---- PATH: segments between "/"
+        $path = $parts['path'] ?? '';
+        if ($path) {
+            $leadingSlash  = (substr($path, 0, 1) === '/') ? '/' : '';
+            $trailingSlash = (strlen($path) > 1 && substr($path, -1) === '/') ? '/' : '';
+
+            $trimmed = trim($path, '/');
+            $segments = ($trimmed === '') ? array() : explode('/', $trimmed);
+
+            $encSegments = array();
+            foreach ($segments as $seg) {
+                // Normalize: decode existing %XX and re-encode
+                $decoded = rawurldecode($seg);
+                $encSegments[] = rawurlencode($decoded);
+            }
+
+            $path = $leadingSlash . implode('/', $encSegments) . $trailingSlash;
+        }
+
+        // ---- QUERY: encode key/value, save "&" and "="
+        $query = $parts['query'] ?? null;
+        if ($query) {
+            $pairs = explode('&', $query);
+            $outPairs = array();
+
+            foreach ($pairs as $pair) {
+                if ($pair === '') continue;
+
+                $kv = explode('=', $pair, 2);
+                $k = rawurldecode($kv[0]);
+                $kEnc = rawurlencode($k);
+
+                if (count($kv) === 1) {
+                    $outPairs[] = $kEnc;
+                }
+                else
+                {
+                    $v = rawurldecode($kv[1]);
+                    $vEnc = rawurlencode($v);
+                    $outPairs[] = $kEnc . '=' . $vEnc;
+                }
+            }
+
+            $query = implode('&', $outPairs);
+        }
+
+        // ---- FRAGMENT: encode non-ascii
+        if (!empty($parts['fragment']) && $encodeFragment) {
+            $fragment = rawurlencode(rawurldecode($parts['fragment']));
+        }
+        else {
+            $fragment = $parts['fragment'] ?? null;
+        }
+
+        // ---- AUTH
+        $auth = '';
+        if (!empty($parts['user'])) {
+            $auth = $parts['user'];
+            if (!empty($parts['pass'])) {
+                $auth .= ':' . $parts['pass'];
+            }
+            $auth .= '@';
+        }
+
+        // ---- BUILD
+        $result = '';
+
+        if (!empty($parts['scheme'])) {
+            $result .= $parts['scheme'] . '://';
+        }
+
+        if (!empty($parts['host'])) {
+            $result .= $auth . $parts['host'];
+            if (!empty($parts['port'])) {
+                $result .= ':' . $parts['port'];
+            }
+        }
+
+        $result .= $path;
+        if ($query) {
+            $result .= '?' . $query;
+        }
+        if ($fragment) {
+            $result .= '#' . $fragment;
+        }
+
+        // ---- XML escape for Target="..."
+        return htmlspecialchars($result, ENT_QUOTES | ENT_XML1, 'UTF-8');
+    }
+
+    /**
      * @param string $address
      * @param string $link
      */
@@ -1799,7 +1904,7 @@ class Sheet implements InterfaceSheetWriter
         if ($external) {
             $this->relationships['links'][++$this->relationshipId] = [
                 'cell' => $address,
-                'link' => $link,
+                'link' => $this->_safeHyperlink($link),
                 'type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
                 'extra' => 'TargetMode="External"',
             ];
@@ -1922,9 +2027,10 @@ class Sheet implements InterfaceSheetWriter
                                 else {
                                     $link = $cellValue;
                                 }
+                                $cellValue = Writer::xmlSpecialChars(Helper::escapeString($cellValue));
                                 $cellValue = [
                                     'shared_value' => $cellValue,
-                                    'shared_index' => $this->excel->addSharedString($cellValue),
+                                    'shared_index' => $this->excel->addSharedString(Helper::escapeString($cellValue)),
                                 ];
                                 $this->_addHyperlink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
                                 if (!empty($this->excel->getHyperlinkStyle())) {
@@ -2343,7 +2449,7 @@ class Sheet implements InterfaceSheetWriter
      * $sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as an array
      * $sheet->writeTo([2, 5], $value); // address as an array
      * $sheet->writeTo('B5:C7', $value); // write a value to merged cells
-     * $sheet->writeTo('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
+     * $sheet->writeTo('B5:C7', $value, $styles, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
      */
     public function writeTo($cellAddress, $value, ?array $styles = [], ?int $mergeFlag = 0): Sheet
     {

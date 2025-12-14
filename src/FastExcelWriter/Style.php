@@ -30,6 +30,12 @@ class Style
     public const TEXT_ALIGN_CENTER = 'center';
     public const TEXT_ALIGN_RIGHT = 'right';
 
+    public const VERTICAL_ALIGN_TOP = 'top';
+    public const VERTICAL_ALIGN_CENTER = 'center';
+    public const VERTICAL_ALIGN_BOTTOM = 'bottom';
+    public const VERTICAL_ALIGN_JUSTIFY = 'justify';
+    public const VERTICAL_ALIGN_DISTRIBUTED = 'distributed';
+
     public const FILL_COLOR = 'fill-color';
 
     const FILL_SOLID = 'solid';

@@ -519,18 +519,32 @@ class StyleManager
      */
     public static function normalizeColor(string $color): ?string
     {
-        static $normColors = [];
+        static $normColors = [
+            'BLACK' => 'FF000000',
+            'WHITE' => 'FFFFFFFF',
+            'RED' => 'FFFF0000',
+            'DARKRED' => 'FF800000',
+            'BLUE' => 'FF0000FF',
+            'DARKBLUE' => 'FF000080',
+            'GREEN' => 'FF00FF00',
+            'DARKGREEN' => 'FF008000',
+            'YELLOW' => 'FFFFFF00',
+            'DARKYELLOW' => 'FF808000',
+            'MAGENTA' => 'FFFF00FF',
+            'CYAN' => 'FF00FFFF',];
 
-        if ($color) {
+        if (trim($color)) {
+            $color = strtoupper($color);
+
             if (isset($normColors[$color])) {
                 return $normColors[$color];
             }
 
             if (strpos($color, '#') === 0) {
-                $resColor = strtoupper(substr($color, 1, 6));
+                $resColor = substr($color, 1, 6);
             }
             else {
-                $resColor = strtoupper($color);
+                $resColor = $color;
             }
             if (preg_match('/^[0-9A-F]+$/i', $resColor)) {
                 if (strlen($resColor) === 3) {

@@ -271,7 +271,7 @@ $sheet->addNote('C8', 'This note is always visible', ['show' => true]);
 Also, you can use rich text in notes
 
 ```php
-$richText = new \avadim\FastExcelWriter\RichText('here is <c=f00>red</c> and <c=00f>blue</c> text');
+$richText = new \avadim\FastExcelWriter\RichText\RichText('here is <c=f00>red</c> and <c=00f>blue</c> text');
 $sheet->addNote('C8', $richText);
 ```
 

@@ -1,30 +1,31 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\RichText;
+
+use avadim\FastExcelWriter\StyleManager;
 
 class RichText
 {
     protected string $text = '';
     protected array $buffer;
     protected int $pos;
+    protected int $cnt = -1;
     protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 's' => null, 'c' => null];
     protected array $fragments = [];
     protected ?string $xml = null;
 
     /**
-     * @param string|null $text
+     * RichText constructor
+     *
+     * @param string|array|null $fragments
      */
-    public function __construct(?string $text = '')
+    public function __construct(...$fragments)
     {
-        $this->resetProps();
-        $this->parse($text);
+        foreach ($fragments as $item) {
+            $this->addTaggedText($item);
+        }
     }
 
-
-    protected function resetProps()
-    {
-        $this->prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 's' => null, 'c' => null];
-    }
 
     /**
      * @return string
@@ -57,6 +58,7 @@ class RichText
      */
     protected function parse(string $text): array
     {
+        $fragments = [];
         if ($text) {
             $this->buffer = mb_str_split($text);
             $this->pos = 0;
@@ -100,133 +102,168 @@ class RichText
                         }
                     }
                     else {
-                        $this->fragments[] = ['text' => $token, 'prop' => $this->prop];
+                        $fragments[] = new RichTextFragment($token, $this->prop);
                     }
                 }
             }
             $this->xml = null;
         }
 
-        return $this->fragments;
+        return $fragments;
     }
 
     /**
+     * Add a text fragment
+     *
      * @param string $text
+     * @param mixed $prop
      *
      * @return $this
      */
-    public function addText(string $text): RichText
+    public function addText(string $text, $prop = []): RichText
     {
-        if ($this->text) {
-            $this->parse($this->text);
-        }
-        $this->text = $text;
-        $this->resetProps();
+        $fragment = new RichTextFragment($text, $prop);
+        $this->fragments[++$this->cnt] = $fragment;
 
         return $this;
     }
 
     /**
+     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>)
+     *
+     * @param string $text
+     *
+     * @return RichText
+     */
+    public function addTaggedText(string $text): RichText
+    {
+        $fragments = $this->parse($text);
+        foreach ($fragments as $fragment) {
+            $this->fragments[++$this->cnt] = $fragment;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set bold font for the last added fragment
+     *
      * @return $this
      */
     public function setBold(): RichText
     {
-        $this->prop['b'] = true;
+        $this->fragments[$this->cnt]->setBold();
 
         return $this;
     }
 
     /**
+     * Set italic font for the last added fragment
+     *
      * @return $this
      */
     public function setItalic(): RichText
     {
-        $this->prop['i'] = true;
+        $this->fragments[$this->cnt]->setItalic();
 
         return $this;
     }
 
     /**
+     * Set underline for the last added fragment
+     *
      * @return $this
      */
     public function setUnderline(): RichText
     {
-        $this->prop['u'] = true;
+        $this->fragments[$this->cnt]->setUnderline();
 
         return $this;
     }
 
     /**
+     * Set font name for the last added fragment
+     *
      * @param string $font
      *
      * @return $this
      */
     public function setFont(string $font): RichText
     {
-        $this->prop['f'] = $font;
+        $this->fragments[$this->cnt]->setFont($font);
 
         return $this;
     }
 
     /**
+     * Set font size for the last added fragment
+     *
      * @param int $size
      *
      * @return $this
      */
     public function setSize(int $size): RichText
     {
-        $this->prop['s'] = $size;
+        $this->fragments[$this->cnt]->setSize($size);
 
         return $this;
     }
 
     /**
+     * Set font color for the last added fragment
+     *
      * @param string $color
      *
      * @return $this
      */
     public function setColor(string $color): RichText
     {
-        $this->prop['c'] = StyleManager::normalizeColor($color);
+        $this->fragments[$this->cnt]->setColor($color);
 
         return $this;
     }
 
     /**
+     * Get all fragments
+     *
+     * @return array
+     */
+    public function fragments(): array
+    {
+        return $this->fragments;
+    }
+
+    /**
+     * Get fragment by its index
+     *
+     * @param $num
+     *
+     * @return RichTextFragment
+     */
+    public function fragment($num): RichTextFragment
+    {
+        return $this->fragments[$num];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->outXml();
+    }
+
+    /**
+     * Returns XML representation
+     *
      * @return string
      */
     public function outXml(): string
     {
-        if ($this->text) {
-            $this->parse($this->text);
-            $this->text = '';
-        }
         if (!$this->xml) {
             $this->xml = '';
             foreach ($this->fragments as $fragment) {
-                $rPr = '';
-                if ($fragment['prop']['b']) {
-                    $rPr .= '<b/>';
-                }
-                if ($fragment['prop']['i']) {
-                    $rPr .= '<i/>';
-                }
-                if ($fragment['prop']['u']) {
-                    $rPr .= '<u/>';
-                }
-                if ($fragment['prop']['f']) {
-                    $rPr .= '<rFont val="' . $fragment['prop']['f'] . '"/>';
-                }
-                if ($fragment['prop']['s']) {
-                    $rPr .= '<sz val="' . $fragment['prop']['s'] . '"/>';
-                }
-                if ($fragment['prop']['c']) {
-                    $rPr .= '<color rgb="' . $fragment['prop']['c'] . '"/>';
-                }
-                if ($rPr) {
-                    $rPr = '<rPr>' . $rPr . '</rPr>';
-                }
-                $this->xml .= '<r>' . $rPr . '<t xml:space="preserve">' . $fragment['text'] . '</t></r>';
+                $this->xml .= $fragment->outXml();
             }
         }
 

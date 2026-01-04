@@ -2303,14 +2303,14 @@ _Make area for writing_
 ---
 
 ```php
-public function mergeCells($rangeSet, ?int $actionMode = 0): Sheet
+public function mergeCells($rangeSet, ?int $mergeFlag = 0): Sheet
 ```
 _Merge cells_
 
 ### Parameters
 
 * `array|string|int $rangeSet`
-* `int|null $actionMode` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
+* `int|null $mergeFlag` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
 
 ---
 
@@ -2319,6 +2319,7 @@ _Merge cells_
 ```php
 $sheet->mergeCells('A1:C3');
 $sheet->mergeCells(['A1:B2', 'C1:D2']);
+$sheet->mergeCells('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
 ```
 
 
@@ -3610,7 +3611,8 @@ _Write several rows from a two-dimensional array_
 ---
 
 ```php
-public function writeTo($cellAddress, $value, ?array $styles = []): Sheet
+public function writeTo($cellAddress, $value, ?array $styles = [], 
+                        ?int $mergeFlag = 0): Sheet
 ```
 _Write value to the specified cell and move a pointer to the next cell in the row_
 
@@ -3619,6 +3621,7 @@ _Write value to the specified cell and move a pointer to the next cell in the ro
 * `string|array $cellAddress`
 * `mixed $value`
 * `array|null $styles`
+* `int|null $mergeFlag`
 
 ---
 
@@ -3626,9 +3629,10 @@ _Write value to the specified cell and move a pointer to the next cell in the ro
 
 ```php
 $sheet->writeTo('B5', $value); // write to single cell
+$sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as an array
+$sheet->writeTo([2, 5], $value); // address as an array
 $sheet->writeTo('B5:C7', $value); // write a value to merged cells
-$sheet->writeTo(['col' => 2, 'row' => 5], $value); // address as array
-$sheet->writeTo([2, 5], $value); // address as array
+$sheet->writeTo('B5:C7', $value, $styles, Sheet:MERGE_NO_CHECK); // don't check for intersection of merged cells
 ```
 
 

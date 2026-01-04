@@ -1,3 +1,7 @@
+## V.6.9
+
+* The namespace of the RichText class has been changed to avadim\FastExcelWriter\RichText
+
 ## V.6.8
 
 * Sheet::setAutoFilter() - Supports specifying range

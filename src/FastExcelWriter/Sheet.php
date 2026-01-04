@@ -11,6 +11,7 @@ use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
+use avadim\FastExcelWriter\RichText\RichText;
 use avadim\FastExcelWriter\Writer\FileWriter;
 use avadim\FastExcelWriter\Writer\Writer;
 

@@ -464,10 +464,10 @@ Writing rich text to a cell can be done using RichText instances. Here's an exam
 ![img/rich-text.jpg](img/rich-text.jpg)
 
 ```php
-$richText = new \avadim\FastExcelWriter\RichText();
+$richText = new \avadim\FastExcelWriter\RichText\RichText();
 $richText->addText('ATTENTION!')->setBold();
 $richText->addText(' The product is reserved for ');
-$richText->addText('5 days')->setUnderline();
+$richText->addText('5 days')->setUnderline()->setColor('red');
 
 $sheet->writeCell($richText);
 $sheet->writeTo('B2', $richText);
@@ -484,10 +484,21 @@ You can use the following functions to format rich text:
 * setSize($size)
 * setColor($color)
 
+Here's another way to do the same thing
+```php
+$richText = new RichText('ATTENTION! ', 'The product is reserved for ', '5 days');
+
+$richText->fragment(0)->setBold();
+$richText->fragment(1)->setUnderline()->setColor('f00');
+
+$sheet->writeCell($richText);
+
+```
+
 Also, you can use simple tags to format rich text
 
 ```php
-$richText = new \avadim\FastExcelWriter\RichText('<b>ATTENTION!</b> The product is reserved for <u>5 days</u>');
+$richText = new \avadim\FastExcelWriter\RichText\RichText('<b>ATTENTION!</b> The product is reserved for <u><c=red>5 days</c></u>');
 $sheet->writeTo('B2', $richText);
 ```
 

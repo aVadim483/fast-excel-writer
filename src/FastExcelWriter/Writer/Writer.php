@@ -7,7 +7,7 @@ use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
-use avadim\FastExcelWriter\RichText;
+use avadim\FastExcelWriter\RichText\RichText;
 use avadim\FastExcelWriter\Sheet;
 
 /**

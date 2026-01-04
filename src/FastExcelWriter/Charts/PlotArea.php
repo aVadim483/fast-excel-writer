@@ -218,9 +218,11 @@ class PlotArea
         if (in_array($index, $keys, true)) {
             return $this->plotDataSeries[$index];
         }
-        elseif (isset($keys[$index])) {
+
+        if (isset($keys[$index])) {
             return $this->plotDataSeries[$keys[$index]];
         }
+
         return null;
     }
 
@@ -235,6 +237,7 @@ class PlotArea
                 $chartTypes[] = $type;
             }
         }
+
         if (!$chartTypes) {
             throw new ExceptionChart('Chart is not yet implemented');
         }

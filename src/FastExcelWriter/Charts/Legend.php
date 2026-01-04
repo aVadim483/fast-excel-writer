@@ -147,6 +147,7 @@ class Legend
         }
 
         $this->overlay = $overlay;
+
         return true;
     }
 

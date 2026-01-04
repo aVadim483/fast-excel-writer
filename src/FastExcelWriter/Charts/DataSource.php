@@ -58,12 +58,11 @@ class DataSource
     /**
      * Set Series Data Type
      *
+     * Typical values are:
+     * DataSeriesValues::DATA_TYPE_STRING - Normally used for axis point values
+     * DataSeriesValues::DATA_TYPE_NUMBER - Normally used for chart data values
+     *
      * @param string|null $dataType Datatype of this data series
-     *                              Typical values are:
-     *                              DataSeriesValues::DATA_TYPE_STRING
-     *                                        Normally used for axis point values
-     *                              DataSeriesValues::DATA_TYPE_NUMBER
-     *                                        Normally used for chart data values
      */
     public function setDataType(string $dataType)
     {

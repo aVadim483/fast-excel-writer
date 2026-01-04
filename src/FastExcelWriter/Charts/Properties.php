@@ -124,12 +124,12 @@ abstract class Properties
         return $angle * 60000;
     }
 
-    public function trueAlpha($alpha)
+    public function trueAlpha($alpha): string
     {
         return (100 - $alpha) . '000';
     }
 
-    protected function setColorProperties($color, $alpha, $type)
+    protected function setColorProperties($color, $alpha, $type): array
     {
         return [
             'type' => (string) $type,
@@ -139,12 +139,12 @@ abstract class Properties
     }
 
     /**
-     * @param $array_selector
-     * @param $array_kay_selector
+     * @param $arraySelector
+     * @param $arrayKaySelector
      *
-     * @return mixed
+     * @return string
      */
-    protected function getLineStyleArrowSize($array_selector, $array_kay_selector)
+    protected function getLineStyleArrowSize($arraySelector, $arrayKaySelector): string
     {
         $sizes = [
             1 => ['w' => 'sm', 'len' => 'sm'],
@@ -158,17 +158,17 @@ abstract class Properties
             9 => ['w' => 'lg', 'len' => 'lg']
         ];
 
-        return $sizes[$array_selector][$array_kay_selector];
+        return $sizes[$arraySelector][$arrayKaySelector];
     }
 
     /**
-     * @param $shadow_presets_option
+     * @param $shadowPresetsOption
      *
      * @return mixed
      */
-    protected function getShadowPresetsMap($shadow_presets_option)
+    protected function getShadowPresetsMap($shadowPresetsOption)
     {
-        $presets_options = [
+        $presetsOptions = [
             //OUTER
             1 => [
                 'effect' => 'outerShdw',
@@ -356,7 +356,7 @@ abstract class Properties
             ],
         ];
 
-        return $presets_options[$shadow_presets_option];
+        return $presetsOptions[$shadowPresetsOption];
     }
 
     /**
@@ -379,4 +379,35 @@ abstract class Properties
         return $reference;
     }
 
+    /**
+     * Set Shadow Properties from Mapped Values
+     *
+     * @param array $propertiesMap
+     * @param mixed $reference
+     *
+     * @return void
+     */
+    protected function setShadowPropertiesMapValues(array $propertiesMap, &$reference = null)
+    {
+        $baseReference = $reference;
+        foreach ($propertiesMap as $propertyKey => $propertyVal) {
+            if (is_array($propertyVal)) {
+                if ($reference === null) {
+                    $reference = &$this->shadowProperties[$propertyKey];
+                }
+                else {
+                    $reference = &$reference[$propertyKey];
+                }
+                $this->setShadowPropertiesMapValues($propertyVal, $reference);
+            }
+            else {
+                if ($baseReference === null) {
+                    $this->shadowProperties[$propertyKey] = $propertyVal;
+                }
+                else {
+                    $reference[$propertyKey] = $propertyVal;
+                }
+            }
+        }
+    }
 }

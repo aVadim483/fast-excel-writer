@@ -251,9 +251,11 @@ class Chart
     }
 
     /**
+     * Create Chart instance
+     *
      * @param string $chartType
-     * @param Title|string $title
-     * @param DataSeries|array $dataSource
+     * @param Title|string|null $title
+     * @param DataSeries|PlotArea|array|null $dataSource
      *
      * @return $this
      */
@@ -282,7 +284,9 @@ class Chart
 
 
     /**
-     * @param $dataSource
+     * Add data series values to the chart
+     *
+     * @param DataSeriesValues|array|string $dataSource
      * @param string|null $dataLabel
      * @param array|null $options
      *
@@ -299,6 +303,8 @@ class Chart
     }
 
     /**
+     * Add multiple data series to the chart
+     *
      * @param array $dataSources
      *
      * @return $this
@@ -311,6 +317,8 @@ class Chart
     }
 
     /**
+     * Add data series of specific type (used for combo charts)
+     *
      * @param string $chartType
      * @param DataSeriesValues|string $dataSource
      * @param string|null $dataLabel
@@ -333,6 +341,8 @@ class Chart
     }
 
     /**
+     * Add data series of specific type to the second axis (used for combo charts)
+     *
      * @param string $chartType
      * @param DataSeriesValues|string $dataSource
      * @param string|null $dataLabel
@@ -348,6 +358,8 @@ class Chart
     }
 
     /**
+     * Set Chart Name
+     *
      * @param string $name
      *
      * @return $this
@@ -360,7 +372,7 @@ class Chart
     }
 
     /**
-     * Get Name
+     * Get Chart Name
      *
      * @return string
      */
@@ -370,7 +382,7 @@ class Chart
     }
 
     /**
-     * Set Title
+     * Set Chart Title
      *
      * @param Title|string $title
      *
@@ -389,7 +401,7 @@ class Chart
     }
 
     /**
-     * Get Title
+     * Get Chart Title
      *
      * @return Title
      */
@@ -399,7 +411,9 @@ class Chart
     }
 
     /**
-     * @param $plotValues
+     * Set Chart Plot Area
+     *
+     * @param PlotArea|array $plotValues
      *
      * @return $this
      */
@@ -416,7 +430,9 @@ class Chart
     }
 
     /**
-     * @param $layout
+     * Set Plot Layout
+     *
+     * @param Layout|array|null $layout
      *
      * @return $this
      */
@@ -428,6 +444,8 @@ class Chart
     }
 
     /**
+     * Set Plot Show Values
+     *
      * @param bool $val
      *
      * @return $this
@@ -445,6 +463,8 @@ class Chart
     }
 
     /**
+     * Set Plot Show Percent
+     *
      * @param bool $val
      *
      * @return $this
@@ -462,9 +482,9 @@ class Chart
     }
 
     /**
-     * Get Legend
+     * Get Chart Legend
      *
-     * @return Legend
+     * @return Legend|null
      */
     public function getLegend(): ?Legend
     {
@@ -472,7 +492,7 @@ class Chart
     }
 
     /**
-     * Set Legend
+     * Set Chart Legend
      *
      * @param Legend $legend
      * 
@@ -486,6 +506,8 @@ class Chart
     }
 
     /**
+     * Set Chart Legend Position
+     *
      * @param string $position
      *
      * @return $this
@@ -503,6 +525,8 @@ class Chart
     }
 
     /**
+     * Set Chart Legend Position to Top
+     *
      * @return $this
      */
     public function setLegendPositionTop(): Chart
@@ -518,6 +542,8 @@ class Chart
     }
 
     /**
+     * Set Chart Legend Position to Right
+     *
      * @return $this
      */
     public function setLegendPositionRight(): Chart
@@ -533,6 +559,8 @@ class Chart
     }
 
     /**
+     * Set Chart Legend Position to Bottom
+     *
      * @return $this
      */
     public function setLegendPositionBottom(): Chart
@@ -548,6 +576,8 @@ class Chart
     }
 
     /**
+     * Set Chart Legend Position to Left
+     *
      * @return $this
      */
     public function setLegendPositionLeft(): Chart
@@ -563,9 +593,9 @@ class Chart
     }
 
     /**
-     * Set Category Axis Labels
+     * Set Category Axis Labels (tick labels)
      *
-     * @param $labels
+     * @param DataSeriesValues|array|string $labels
      *
      * @return $this
      */
@@ -578,8 +608,10 @@ class Chart
     }
 
     /**
-     * @param $labels
-     * @param $title
+     * Set Category Axis Labels and Title
+     *
+     * @param DataSeriesValues|array|string $labels
+     * @param Title|string|null $title
      *
      * @return $this
      */
@@ -594,10 +626,10 @@ class Chart
     }
 
     /**
-     * Backward compatible
-     * @deprecated
-
-     * @param $range
+     * Set Data Series Tick Labels
+     *
+     * @deprecated Use setCategoryAxisLabels()
+     * @param DataSeriesValues|array|string $range
      *
      * @return $this
      */
@@ -624,7 +656,7 @@ class Chart
     /**
      * Get Category Axis Title
      *
-     * @return Title
+     * @return Title|null
      */
     public function getCategoryAxisTitle(): ?Title
     {
@@ -632,9 +664,9 @@ class Chart
     }
 
     /**
-     * Backward compatible
-     * @deprecated
+     * Set X-Axis Label
      *
+     * @deprecated Use setCategoryAxisTitle()
      * @param Title|string $title
      *
      * @return $this
@@ -646,10 +678,10 @@ class Chart
     }
 
     /**
-     * Backward compatible
-     * @deprecated
+     * Get X-Axis Label
      *
-     * @return Title
+     * @deprecated Use getCategoryAxisTitle()
+     * @return Title|null
      */
     public function getXAxisLabel(): ?Title
     {
@@ -674,7 +706,7 @@ class Chart
     /**
      * Get Value Axis Title
      *
-     * @return Title
+     * @return Title|null
      */
     public function getValueAxisTitle(): ?Title
     {
@@ -698,7 +730,7 @@ class Chart
     /**
      * Get Y2 Axis Title
      *
-     * @return Title
+     * @return Title|null
      */
     public function getValueAxisTitle2(): ?Title
     {
@@ -706,9 +738,9 @@ class Chart
     }
 
     /**
-     * Backward compatible
-     * @deprecated
+     * Set Y-Axis Label
      *
+     * @deprecated Use setValueAxisTitle()
      * @param Title|string $title
      *
      * @return $this
@@ -720,16 +752,23 @@ class Chart
     }
 
     /**
-     * Backward compatible
-     * @deprecated
+     * Get Y-Axis Label
      *
-     * @return Title
+     * @deprecated Use getValueAxisTitle()
+     * @return Title|null
      */
     public function getYAxisLabel(): ?Title
     {
         return $this->getValueAxisTitle();
     }
 
+    /**
+     * Set Data Series Names
+     *
+     * @param DataSeriesValues|array|string $labels
+     *
+     * @return $this
+     */
     public function setDataSeriesNames($labels): Chart
     {
         $dataSeries = $this->plotArea->getPlotDataSeriesByIndex(0);
@@ -751,7 +790,7 @@ class Chart
     /**
      * Get Plot Visible Only
      *
-     * @return boolean
+     * @return bool
      */
     public function getPlotVisibleOnly(): bool
     {
@@ -761,7 +800,7 @@ class Chart
     /**
      * Set Plot Visible Only
      *
-     * @param boolean $plotVisibleOnly
+     * @param bool $plotVisibleOnly
      *
      * @return $this
      */
@@ -773,7 +812,7 @@ class Chart
     }
 
     /**
-     * Get Display Blanks as
+     * Get Display Blanks As
      *
      * @return string
      */
@@ -783,19 +822,23 @@ class Chart
     }
 
     /**
-     * Set Display Blanks as
+     * Set Display Blanks As
      *
      * @param string $displayBlanksAs
+     *
+     * @return $this
      */
-    public function setDisplayBlanksAs(string $displayBlanksAs = '0')
+    public function setDisplayBlanksAs(string $displayBlanksAs = '0'): Chart
     {
         $this->displayBlanksAs = $displayBlanksAs;
+
+        return $this;
     }
 
     /**
-     * Get xAxis
+     * Get X Axis
      *
-     * @return Axis
+     * @return Axis|null
      */
     public function getChartAxisX(): ?Axis
     {
@@ -807,9 +850,9 @@ class Chart
     }
 
     /**
-     * Get yAxis
+     * Get Y Axis
      *
-     * @return Axis
+     * @return Axis|null
      */
     public function getChartAxisY(): ?Axis
     {
@@ -821,9 +864,9 @@ class Chart
     }
 
     /**
-     * Get yAxis
+     * Get Y Axis 2
      *
-     * @return Axis
+     * @return Axis|null
      */
     public function getChartAxisY2(): ?Axis
     {
@@ -837,7 +880,7 @@ class Chart
     /**
      * Get Major Gridlines
      *
-     * @return GridLines
+     * @return GridLines|null
      */
     public function getMajorGridlines(): ?GridLines
     {
@@ -851,7 +894,7 @@ class Chart
     /**
      * Get Minor Gridlines
      *
-     * @return GridLines
+     * @return GridLines|null
      */
     public function getMinorGridlines(): ?GridLines
     {
@@ -957,7 +1000,9 @@ class Chart
     }
 
     /**
-     * @param $xOffset
+     * Set Top Left X-Offset
+     *
+     * @param int $xOffset
      *
      * @return $this
      */
@@ -969,6 +1014,8 @@ class Chart
     }
 
     /**
+     * Get Top Left X-Offset
+     *
      * @return int
      */
     public function getTopLeftXOffset(): int
@@ -977,7 +1024,9 @@ class Chart
     }
 
     /**
-     * @param $yOffset
+     * Set Top Left Y-Offset
+     *
+     * @param int $yOffset
      *
      * @return $this
      */
@@ -989,6 +1038,8 @@ class Chart
     }
 
     /**
+     * Get Top Left Y-Offset
+     *
      * @return int
      */
     public function getTopLeftYOffset(): int
@@ -1025,14 +1076,16 @@ class Chart
      */
     public function getBottomRightPosition(): array
     {
-        return array(
+        return [
             'cell'    => $this->bottomRightCellRef,
             'xOffset' => $this->bottomRightXOffset,
             'yOffset' => $this->bottomRightYOffset
-        );
+        ];
     }
 
     /**
+     * Set Bottom Right Cell
+     *
      * @param string $cell
      *
      * @return $this
@@ -1077,7 +1130,7 @@ class Chart
     /**
      * Get the offset position within the Bottom Right cell for the chart
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getBottomRightOffset(): array
     {
@@ -1088,6 +1141,8 @@ class Chart
     }
 
     /**
+     * Set Bottom Right X-Offset
+     *
      * @param int $xOffset
      *
      * @return $this
@@ -1100,6 +1155,8 @@ class Chart
     }
 
     /**
+     * Get Bottom Right X-Offset
+     *
      * @return int
      */
     public function getBottomRightXOffset(): int
@@ -1108,6 +1165,8 @@ class Chart
     }
 
     /**
+     * Set Bottom Right Y-Offset
+     *
      * @param int $yOffset
      *
      * @return $this
@@ -1120,6 +1179,8 @@ class Chart
     }
 
     /**
+     * Get Bottom Right Y-Offset
+     *
      * @return int
      */
     public function getBottomRightYOffset(): int
@@ -1128,6 +1189,8 @@ class Chart
     }
 
     /**
+     * Set Sheet
+     *
      * @param Sheet $sheet
      *
      * @return $this
@@ -1145,6 +1208,8 @@ class Chart
     }
 
     /**
+     * Set Chart Colors
+     *
      * @param array $colors
      *
      * @return $this
@@ -1157,6 +1222,8 @@ class Chart
     }
 
     /**
+     * Set Chart Type
+     *
      * @param string $chartType
      *
      * @return $this

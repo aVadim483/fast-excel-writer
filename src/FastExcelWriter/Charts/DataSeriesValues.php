@@ -126,7 +126,7 @@ class DataSeriesValues extends DataSource
     /**
      * Identify if the Data Series is a multi-level or a simple series
      *
-     * @return boolean
+     * @return bool
      */
     public function isMultiLevelSeries(): ?bool
     {

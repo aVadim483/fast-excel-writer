@@ -8,7 +8,7 @@ class RichTextFragment
 {
     protected string $text = '';
     protected int $pos;
-    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 's' => null, 'c' => null];
+    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'strike' => null];
 
     /**
      * RichTextFragment constructor
@@ -26,6 +26,13 @@ class RichTextFragment
         }
     }
 
+    protected function setProp(string $key, $value): RichTextFragment
+    {
+        $this->prop[$key] = $value;
+
+        return $this;
+    }
+
     /**
      * Set font weight to bold
      *
@@ -33,9 +40,7 @@ class RichTextFragment
      */
     public function setBold(): RichTextFragment
     {
-        $this->prop['b'] = true;
-
-        return $this;
+        return $this->setProp('b', true);
     }
 
     /**
@@ -45,21 +50,29 @@ class RichTextFragment
      */
     public function setItalic(): RichTextFragment
     {
-        $this->prop['i'] = true;
-
-        return $this;
+        return $this->setProp('i', true);
     }
 
     /**
      * Set font decoration to underline
      *
+     * @param bool|null $double
+     *
      * @return $this
      */
-    public function setUnderline(): RichTextFragment
+    public function setUnderline(?bool $double = false): RichTextFragment
     {
-        $this->prop['u'] = true;
+        return $this->setProp('u', $double ? 'single' : 'double');
+    }
 
-        return $this;
+    /**
+     * Set font decoration to strikethrough
+     *
+     * @return $this
+     */
+    public function setStrike(): RichTextFragment
+    {
+        return $this->setProp('strike', true);
     }
 
     /**
@@ -71,9 +84,7 @@ class RichTextFragment
      */
     public function setFont(string $font): RichTextFragment
     {
-        $this->prop['f'] = $font;
-
-        return $this;
+        return $this->setProp('f', $font);
     }
 
     /**
@@ -85,9 +96,7 @@ class RichTextFragment
      */
     public function setSize(int $size): RichTextFragment
     {
-        $this->prop['s'] = $size;
-
-        return $this;
+        return $this->setProp('sz', $size);
     }
 
     /**
@@ -99,9 +108,7 @@ class RichTextFragment
      */
     public function setColor(string $color): RichTextFragment
     {
-        $this->prop['c'] = StyleManager::normalizeColor($color);
-
-        return $this;
+        return $this->setProp('c', StyleManager::normalizeColor($color));
     }
 
     /**
@@ -129,12 +136,16 @@ class RichTextFragment
             $rPr .= '<i/>';
         }
         if ($this->prop['u']) {
-            $rPr .= '<u/>';
+            //$rPr .= '<u/>';
+            $rPr .= '<u val="' . $this->prop['u'] . '"/>';
+        }
+        if ($this->prop['strike']) {
+            $rPr .= '<strike/>';
         }
         if ($this->prop['f']) {
             $rPr .= '<rFont val="' . $this->prop['f'] . '"/>';
         }
-        if ($this->prop['s']) {
+        if ($this->prop['sz']) {
             $rPr .= '<sz val="' . $this->prop['s'] . '"/>';
         }
         if ($this->prop['c']) {

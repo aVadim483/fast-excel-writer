@@ -604,7 +604,7 @@ class Writer
                     $result .= '<si><t>' . $string . '</t></si>';
                 }
                 else {
-                    $result .= '<si>' . $string . '</si>';
+                    $result .= '<si>' . $info['rich_text'] . '</si>';
                 }
             }
             $xmlSharedStrings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'

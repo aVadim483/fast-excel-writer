@@ -172,11 +172,13 @@ class RichText
     /**
      * Set underline for the last added fragment
      *
+     * @param bool|null $double
+     *
      * @return $this
      */
-    public function setUnderline(): RichText
+    public function setUnderline(?bool $double = false): RichText
     {
-        $this->fragments[$this->cnt]->setUnderline();
+        $this->fragments[$this->cnt]->setUnderline($double);
 
         return $this;
     }

@@ -1347,14 +1347,15 @@ class Excel implements InterfaceBookWriter
      */
     public function addSharedString(string $string, ?bool $richText = false): int
     {
-        if (!isset($this->sharedStrings[$string])) {
-            $this->sharedStrings[$string] = ['id' => $this->sharedStringsCount++, 'count' => 1, 'rich_text' => $richText];
+        $key = $richText ? sha1($string) : $string;
+        if (!isset($this->sharedStrings[$key])) {
+            $this->sharedStrings[$key] = ['id' => $this->sharedStringsCount++, 'count' => 1, 'rich_text' => $richText];
         }
         else {
-            $this->sharedStrings[$string]['count']++;
+            $this->sharedStrings[$key]['count']++;
         }
 
-        return $this->sharedStrings[$string]['id'];
+        return $this->sharedStrings[$key]['id'];
     }
 
     /**

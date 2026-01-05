@@ -3424,6 +3424,7 @@ class Sheet implements InterfaceSheetWriter
                     // array of all styles
                     ksort($cellStyles);
                     $this->_writeRow($writer, array_values($rowValues), [], $cellStyles ? array_values($cellStyles) : []);
+                    unset($this->cells['values'][$rowIdx], $this->cells['styles'][$rowIdx]);
                 }
                 else {
                     //$this->_writeRow($writer, [null]);

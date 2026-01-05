@@ -1563,6 +1563,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set outline level for a specific row or range of rows
      *
      * @example
      * setRowOutlineLevel(5, 1)
@@ -1602,6 +1603,10 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Start a new outline level for rows
+     *
+     * @param bool|null $collapsed
+     *
      * @return $this
      */
     public function beginOutlineLevel(?bool $collapsed = false): Sheet
@@ -1613,6 +1618,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * End the current outline level for rows
+     *
      * @return $this
      */
     public function endOutlineLevel(): Sheet
@@ -1630,6 +1637,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get the current outline level for rows
+     *
      * @return int
      */
     public function getOutlineLevel(): int
@@ -1688,6 +1697,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set multiple row styles
+     *
      * @param $arg1
      * @param array|null $arg2
      *
@@ -2199,6 +2210,8 @@ class Sheet implements InterfaceSheetWriter
     // +++ DEFAULT FONT +++ //
 
     /**
+     * Set default font settings for the sheet
+     *
      * @param string|array $font
      *
      * @return $this
@@ -2219,6 +2232,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font name for the sheet
+     *
      * @param string $fontName
      *
      * @return $this
@@ -2231,6 +2246,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font size for the sheet
+     *
      * @param int $fontSize
      *
      * @return $this
@@ -2243,6 +2260,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font style (bold, italic, etc.) for the sheet
+     *
      * @param string $fontStyle
      *
      * @return $this
@@ -2256,6 +2275,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font style as bold for the sheet
+     *
      * @return $this
      */
     public function setDefaultFontStyleBold(): Sheet
@@ -2264,6 +2285,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font style as italic
+     *
      * @return $this
      */
     public function setDefaultFontStyleItalic(): Sheet
@@ -2272,6 +2295,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font style as underline
+     *
      * @param bool|null $double
      *
      * @return $this
@@ -2284,6 +2309,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font style as strikethrough
+     *
      * @return $this
      */
     public function setDefaultFontStyleStrikethrough(): Sheet
@@ -2292,6 +2319,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set default font color
+     *
      * @param string $fontColor
      *
      * @return $this
@@ -2401,6 +2430,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Move pointer to the next cell
+     *
      * @return $this
      */
     public function nextCell(): Sheet
@@ -2458,6 +2489,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Internal method to move a pointer to the specified cell address
+     *
      * @param string|array $cellAddress
      *
      * @return array
@@ -3351,6 +3384,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set background color for the specific cell or range
+     *
      * @param string $cellAddr
      * @param string $color
      *
@@ -3362,6 +3397,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set value format for the specific cell or range
+     *
      * @param string $cellAddr
      * @param string $format
      *
@@ -3373,6 +3410,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set outer border for the specific range
+     *
      * @param string $range
      * @param string|array $style
      *
@@ -3387,6 +3426,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Write all defined areas
+     *
      * @return $this
      */
     public function writeAreas(): Sheet
@@ -3402,11 +3443,12 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Clear all defined areas
+     *
      * @return $this
      */
     public function clearAreas(): Sheet
     {
-        $this->cells = ['values' => [], 'styles' => []];
         $this->areas = [];
         $this->totalArea = [];
 
@@ -3469,6 +3511,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Start writing sheet data
+     *
      * @param Writer $writer
      *
      * @return void
@@ -3492,6 +3536,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Finish writing sheet data
+     *
      * @return void
      */
     public function writeDataEnd()
@@ -3523,6 +3569,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get the address of the first cell in the written range
+     *
      * @return string
      */
     public function minCell(): string
@@ -3531,6 +3579,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get the address of the last cell in the written range
+     *
      * @return string
      */
     public function maxCell(): string
@@ -3539,6 +3589,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Check if the sheet is right-to-left
+     *
      * @return bool
      */
     public function isRightToLeft(): bool
@@ -3547,6 +3599,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set style options for the specific address or the last touched element
+     *
      * @param array $addr
      * @param string $key
      * @param array $options
@@ -3605,6 +3659,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Touch start position
+     *
      * @param int $row1
      * @param int $col1
      * @param string|null $ref
@@ -3617,6 +3673,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Touch end position
+     *
      * @param int $row2
      * @param int $col2
      * @param string|null $ref
@@ -3629,6 +3687,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Internal method to track the last touched cell or range
+     *
      * @param int|null $row1
      * @param int|null $col1
      * @param int|null $row2
@@ -3899,6 +3959,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get all notes in the sheet
+     *
      * @return array
      */
     public function getNotes(): array
@@ -3986,6 +4048,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get all images in the sheet
+     *
      * @return array
      */
     public function getImages(): array
@@ -4029,6 +4093,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get all charts in the sheet
+     *
      * @return Chart[]
      */
     public function getCharts(): array
@@ -4064,6 +4130,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get all data validations in the sheet
+     *
      * @return DataValidation[]
      */
     public function getDataValidations(): array
@@ -4101,6 +4169,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get all conditional formatting in the sheet
+     *
      * @return Conditional[]
      */
     public function getConditionalFormatting(): array
@@ -4365,6 +4435,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set internal action for page margins
+     *
      * @param string $key
      * @param string|float|int $value
      *
@@ -4409,6 +4481,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page margins
+     *
      * @param array $margins
      *
      * @return $this
@@ -4551,6 +4625,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set print area for the sheet
+     *
      * @param string $range
      *
      * @return $this
@@ -4587,6 +4663,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set rows to repeat at top and columns to repeat at left when printing
+     *
      * @param string|null $rowsAtTop
      * @param string|null $colsAtLeft
      *
@@ -4616,6 +4694,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set top rows to repeat on every printed page
+     *
      * @param string $range
      *
      * @return $this
@@ -4628,6 +4708,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set left columns to repeat on every printed page
+     *
      * @param string $range
      *
      * @return $this
@@ -4697,6 +4779,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get sheet view options
+     *
      * @return array|array[]
      */
     public function getSheetViews(): array
@@ -4783,6 +4867,9 @@ class Sheet implements InterfaceSheetWriter
         return $result;
     }
 
+    /**
+     * @return array
+     */
     public function getSheetFormatPr(): array
     {
         return $this->sheetFormatPr;
@@ -4806,6 +4893,9 @@ class Sheet implements InterfaceSheetWriter
         return $this->bottomNodesOptions['pageMargins'] ?? [];
     }
 
+    /**
+     * @return array
+     */
     public function getBottomNodesOptions(): array
     {
         // need specified order for some nodes
@@ -4831,6 +4921,9 @@ class Sheet implements InterfaceSheetWriter
         return $result;
     }
 
+    /**
+     * @return array
+     */
     public function getPageOptions(): array
     {
         return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
@@ -4838,6 +4931,9 @@ class Sheet implements InterfaceSheetWriter
         }, ARRAY_FILTER_USE_KEY);
     }
 
+    /**
+     * @return array
+     */
     public function getDrawingOptions(): array
     {
         return array_filter($this->getBottomNodesOptions(), function ($nodeName) {
@@ -4863,6 +4959,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set outline level for the current row
+     *
      * @param int $outlineLevel
      *
      * @return $this
@@ -4920,6 +5018,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply left border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -4943,6 +5043,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply right border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -4966,6 +5068,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply top border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -4989,6 +5093,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply bottom border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -5012,6 +5118,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply outer border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -5138,6 +5246,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply inner border style and color to the selected area
+     *
      * @param string $style
      * @param string|null $color
      *
@@ -5195,6 +5305,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply font settings to the selected area
+     *
      * @param string $fontName
      * @param int|null $fontSize
      * @param string|null $fontStyle
@@ -5222,6 +5334,8 @@ class Sheet implements InterfaceSheetWriter
 
 
     /**
+     * Apply font name to the selected area
+     *
      * @param string $fontName
      *
      * @return $this
@@ -5234,6 +5348,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply font size to the selected area
+     *
      * @param float $fontSize
      *
      * @return $this
@@ -5246,6 +5362,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply font style (bold, italic, etc.) to the selected area
+     *
      * @param string $fontStyle
      *
      * @return $this
@@ -5258,6 +5376,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply bold font style to the selected area
+     *
      * @return $this
      */
     public function applyFontStyleBold(): Sheet
@@ -5266,6 +5386,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply italic font style to the selected area
+     *
      * @return $this
      */
     public function applyFontStyleItalic(): Sheet
@@ -5274,6 +5396,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply underline font style to the selected area
+     *
      * @param bool|null $double
      *
      * @return $this
@@ -5286,6 +5410,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply strikethrough font style to the selected area
+     *
      * @return $this
      */
     public function applyFontStyleStrikethrough(): Sheet
@@ -5294,6 +5420,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply font color to the selected area
+     *
      * @param string $fontColor
      *
      * @return $this
@@ -5366,6 +5494,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply horizontal alignment to the selected area
+     *
      * @param string $textAlign
      * @param string|null $verticalAlign
      *
@@ -5383,6 +5513,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply vertical alignment to the selected area
+     *
      * @param string $verticalAlign
      *
      * @return $this
@@ -5395,6 +5527,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply horizontal and vertical center alignment to the selected area
+     *
      * @return $this
      */
     public function applyTextCenter(): Sheet
@@ -5425,6 +5559,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set text wrap for the selected area
+     *
      * @param bool|null $textWrap
      *
      * @return $this
@@ -5437,6 +5573,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set text color for the selected area
+     *
      * @param string $color
      *
      * @return $this
@@ -5449,6 +5587,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set text rotation for the selected area
+     *
      * @param int $degrees
      *
      * @return $this
@@ -5461,6 +5601,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set left indent for the selected area
+     *
      * @param int $indent
      *
      * @return $this
@@ -5474,6 +5616,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set right indent for the selected area
+     *
      * @param int $indent
      *
      * @return $this
@@ -5487,6 +5631,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set distributed indent for the selected area
+     *
      * @param int $indent
      *
      * @return $this
@@ -5500,6 +5646,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set value format for the selected area
+     *
      * @param string|array $format
      *
      * @return $this
@@ -5520,6 +5668,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set unlock protection for the selected area
+     *
      * @param bool $unlock
      *
      * @return $this
@@ -5532,6 +5682,10 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set hidden protection for the selected area
+     *
+     * @param bool|null $hide
+     *
      * @return $this
      */
     public function applyHide(?bool $hide = true): Sheet
@@ -5542,6 +5696,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply named range to the selected area
+     *
      * @param string $name
      *
      * @return $this
@@ -5554,6 +5710,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply data validation to the selected area
+     *
      * @param DataValidation $validation
      *
      * @return $this
@@ -5568,6 +5726,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Apply conditional formatting to the selected area
+     *
      * @param Conditional|Conditional[] $conditionals
      *
      * @return $this
@@ -5590,6 +5750,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get address of the last touched range
+     *
      * @param bool|null $absolute
      *
      * @return string
@@ -5620,6 +5782,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get address of the last touched cell
+     *
      * @param bool|null $absolute
      *
      * @return string
@@ -5801,6 +5965,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get header and footer options
+     *
      * @return array{differentFirst: bool, differentOddEven: bool, oddHeader: string, oddFooter: string}
      */
     public function getHeaderFooterOptions(): array

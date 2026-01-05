@@ -32,100 +32,100 @@
 * [applyAlignRight()](#applyalignright) -- Apply right alignment to content
 * [applyBgColor()](#applybgcolor) -- Alias of 'applyFillColor()'
 * [applyBorder()](#applyborder) -- Sets all borders style
-* [applyBorderBottom()](#applyborderbottom)
-* [applyBorderLeft()](#applyborderleft)
-* [applyBorderRight()](#applyborderright)
-* [applyBorderTop()](#applybordertop)
+* [applyBorderBottom()](#applyborderbottom) -- Apply bottom border style and color to the selected area
+* [applyBorderLeft()](#applyborderleft) -- Apply left border style and color to the selected area
+* [applyBorderRight()](#applyborderright) -- Apply right border style and color to the selected area
+* [applyBorderTop()](#applybordertop) -- Apply top border style and color to the selected area
 * [applyColor()](#applycolor) -- Alias of 'setFontColor()'
-* [applyConditionalFormatting()](#applyconditionalformatting)
-* [applyDataValidation()](#applydatavalidation)
+* [applyConditionalFormatting()](#applyconditionalformatting) -- Apply conditional formatting to the selected area
+* [applyDataValidation()](#applydatavalidation) -- Apply data validation to the selected area
 * [applyFillColor()](#applyfillcolor) -- Fill background color
 * [applyFillGradient()](#applyfillgradient) -- Fill background by gradient
-* [applyFont()](#applyfont)
-* [applyFontColor()](#applyfontcolor)
-* [applyFontName()](#applyfontname)
-* [applyFontSize()](#applyfontsize)
-* [applyFontStyle()](#applyfontstyle)
-* [applyFontStyleBold()](#applyfontstylebold)
-* [applyFontStyleItalic()](#applyfontstyleitalic)
-* [applyFontStyleStrikethrough()](#applyfontstylestrikethrough)
-* [applyFontStyleUnderline()](#applyfontstyleunderline)
-* [applyFormat()](#applyformat)
-* [applyHide()](#applyhide)
-* [applyIndentDistributed()](#applyindentdistributed)
-* [applyIndentLeft()](#applyindentleft)
-* [applyIndentRight()](#applyindentright)
-* [applyInnerBorder()](#applyinnerborder)
-* [applyNamedRange()](#applynamedrange)
-* [applyOuterBorder()](#applyouterborder)
+* [applyFont()](#applyfont) -- Apply font settings to the selected area
+* [applyFontColor()](#applyfontcolor) -- Apply font color to the selected area
+* [applyFontName()](#applyfontname) -- Apply font name to the selected area
+* [applyFontSize()](#applyfontsize) -- Apply font size to the selected area
+* [applyFontStyle()](#applyfontstyle) -- Apply font style (bold, italic, etc.) to the selected area
+* [applyFontStyleBold()](#applyfontstylebold) -- Apply bold font style to the selected area
+* [applyFontStyleItalic()](#applyfontstyleitalic) -- Apply italic font style to the selected area
+* [applyFontStyleStrikethrough()](#applyfontstylestrikethrough) -- Apply strikethrough font style to the selected area
+* [applyFontStyleUnderline()](#applyfontstyleunderline) -- Apply underline font style to the selected area
+* [applyFormat()](#applyformat) -- Set value format for the selected area
+* [applyHide()](#applyhide) -- Set hidden protection for the selected area
+* [applyIndentDistributed()](#applyindentdistributed) -- Set distributed indent for the selected area
+* [applyIndentLeft()](#applyindentleft) -- Set left indent for the selected area
+* [applyIndentRight()](#applyindentright) -- Set right indent for the selected area
+* [applyInnerBorder()](#applyinnerborder) -- Apply inner border style and color to the selected area
+* [applyNamedRange()](#applynamedrange) -- Apply named range to the selected area
+* [applyOuterBorder()](#applyouterborder) -- Apply outer border style and color to the selected area
 * [applyRowHeight()](#applyrowheight) -- Sets height to the current row
-* [applyRowOutlineLevel()](#applyrowoutlinelevel)
+* [applyRowOutlineLevel()](#applyrowoutlinelevel) -- Set outline level for the current row
 * [applyStyle()](#applystyle) -- Apply the style
-* [applyTextAlign()](#applytextalign)
-* [applyTextCenter()](#applytextcenter)
-* [applyTextColor()](#applytextcolor)
-* [applyTextRotation()](#applytextrotation)
-* [applyTextWrap()](#applytextwrap)
-* [applyUnlock()](#applyunlock)
-* [applyVerticalAlign()](#applyverticalalign)
+* [applyTextAlign()](#applytextalign) -- Apply horizontal alignment to the selected area
+* [applyTextCenter()](#applytextcenter) -- Apply horizontal and vertical center alignment to the selected area
+* [applyTextColor()](#applytextcolor) -- Set text color for the selected area
+* [applyTextRotation()](#applytextrotation) -- Set text rotation for the selected area
+* [applyTextWrap()](#applytextwrap) -- Set text wrap for the selected area
+* [applyUnlock()](#applyunlock) -- Set unlock protection for the selected area
+* [applyVerticalAlign()](#applyverticalalign) -- Apply vertical alignment to the selected area
 * [setAutoFilter()](#setautofilter) -- Set auto filter
 * [beginArea()](#beginarea) -- Begin a new area
-* [beginOutlineLevel()](#beginoutlinelevel)
-* [setBgColor()](#setbgcolor)
-* [setBottomNodesOptions()](#setbottomnodesoptions)
+* [beginOutlineLevel()](#beginoutlinelevel) -- Start a new outline level for rows
+* [setBgColor()](#setbgcolor) -- Set background color for the specific cell or range
+* [setBottomNodesOptions()](#setbottomnodesoptions) -- Set multiple options for a bottom node
 * [cell()](#cell) -- Select a single cell or cell range in the current row
 * [setCellStyle()](#setcellstyle) -- Set style for the specific cell
-* [getCharts()](#getcharts)
-* [clearAreas()](#clearareas)
-* [getColAttributes()](#getcolattributes)
+* [getCharts()](#getcharts) -- Get all charts in the sheet
+* [clearAreas()](#clearareas) -- Clear all defined areas
+* [getColAttributes()](#getcolattributes) -- Get columns attributes
 * [setColAutoWidth()](#setcolautowidth) -- Alias of setColWidthAuto($col)
 * [setColDataStyle()](#setcoldatastyle) -- Set style of column cells (colors, formats, etc.)
 * [setColDataStyleArray()](#setcoldatastylearray) -- Set style of column cells (colors, formats, etc.)
 * [setColFormat()](#setcolformat) -- Set format of single or multiple column(s)
 * [setColFormats()](#setcolformats) -- Set formats of columns
 * [setColFormula()](#setcolformula) -- Set formula for single or multiple column(s)
-* [setColHidden()](#setcolhidden)
+* [setColHidden()](#setcolhidden) -- Set column as hidden
 * [setColMinWidth()](#setcolminwidth) -- Setting a minimal column's width
 * [setColMinWidths()](#setcolminwidths) -- Setting a multiple column's minimal width
 * [setColOptions()](#setcoloptions) -- Use 'setColDataStyle()' or 'setColDataStyleArray()' instead
-* [setColOutlineLevel()](#setcoloutlinelevel)
+* [setColOutlineLevel()](#setcoloutlinelevel) -- Set column outline level
 * [setColStyle()](#setcolstyle) -- Set style of single or multiple column(s)
 * [setColStyleArray()](#setcolstylearray) -- Set style of single or multiple column(s)
-* [setColStyles()](#setcolstyles)
+* [setColStyles()](#setcolstyles) -- Set multiple columns styles
 * [setColVisible()](#setcolvisible) -- Show/hide a column
 * [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
 * [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
 * [setColWidths()](#setcolwidths) -- Setting a multiple column's width
-* [getConditionalFormatting()](#getconditionalformatting)
+* [getConditionalFormatting()](#getconditionalformatting) -- Get all conditional formatting in the sheet
 * [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
 * [getCurrentCol()](#getcurrentcol) -- Returns current column letter
-* [getCurrentColId()](#getcurrentcolid)
+* [getCurrentColId()](#getcurrentcolid) -- Get current column index (0-based)
 * [getCurrentRow()](#getcurrentrow) -- Returns current row number
-* [getCurrentRowId()](#getcurrentrowid)
-* [getDataValidations()](#getdatavalidations)
-* [setDefaultFont()](#setdefaultfont)
-* [setDefaultFontColor()](#setdefaultfontcolor)
-* [setDefaultFontName()](#setdefaultfontname)
-* [setDefaultFontSize()](#setdefaultfontsize)
-* [setDefaultFontStyle()](#setdefaultfontstyle)
-* [setDefaultFontStyleBold()](#setdefaultfontstylebold)
-* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic)
-* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough)
-* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline)
+* [getCurrentRowId()](#getcurrentrowid) -- Get current row index (0-based)
+* [getDataValidations()](#getdatavalidations) -- Get all data validations in the sheet
+* [setDefaultFont()](#setdefaultfont) -- Set default font settings for the sheet
+* [setDefaultFontColor()](#setdefaultfontcolor) -- Set default font color
+* [setDefaultFontName()](#setdefaultfontname) -- Set default font name for the sheet
+* [setDefaultFontSize()](#setdefaultfontsize) -- Set default font size for the sheet
+* [setDefaultFontStyle()](#setdefaultfontstyle) -- Set default font style (bold, italic, etc.) for the sheet
+* [setDefaultFontStyleBold()](#setdefaultfontstylebold) -- Set default font style as bold for the sheet
+* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic) -- Set default font style as italic
+* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough) -- Set default font style as strikethrough
+* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline) -- Set default font style as underline
 * [getDefaultStyle()](#getdefaultstyle) -- Returns default style
 * [setDefaultStyle()](#setdefaultstyle) -- Sets default style
 * [endAreas()](#endareas)
-* [endOutlineLevel()](#endoutlinelevel)
-* [setFormat()](#setformat)
+* [endOutlineLevel()](#endoutlinelevel) -- End the current outline level for rows
+* [setFormat()](#setformat) -- Set value format for the specific cell or range
 * [setFormula()](#setformula) -- Set a formula to the single cell or to the cell range
 * [setFreeze()](#setfreeze) -- Freeze rows/columns
 * [setFreezeColumns()](#setfreezecolumns) -- Freeze columns
 * [setFreezeRows()](#setfreezerows) -- Freeze rows
-* [getHeaderFooterOptions()](#getheaderfooteroptions)
+* [getHeaderFooterOptions()](#getheaderfooteroptions) -- Get header and footer options
 * [getHyperlinks()](#gethyperlinks) -- Returns added hyperlinks
-* [getImages()](#getimages)
-* [getLastCell()](#getlastcell)
-* [getLastRange()](#getlastrange)
+* [getImages()](#getimages) -- Get all images in the sheet
+* [getLastCell()](#getlastcell) -- Get address of the last touched cell
+* [getLastRange()](#getlastrange) -- Get address of the last touched range
 * [makeArea()](#makearea) -- Make area for writing
 * [mergeCells()](#mergecells) -- Merge cells
 * [getMergedCells()](#getmergedcells) -- Returns merged cells
@@ -134,13 +134,13 @@
 * [isName()](#isname) -- Case-insensitive name checking
 * [setName()](#setname) -- Set sheet name
 * [getNamedRanges()](#getnamedranges) -- Returns named ranges with full addresses
-* [nextCell()](#nextcell)
+* [nextCell()](#nextcell) -- Move pointer to the next cell
 * [nextRow()](#nextrow) -- Move to the next row
-* [getNotes()](#getnotes)
-* [setOuterBorder()](#setouterborder)
-* [getOutlineLevel()](#getoutlinelevel)
-* [pageFitToHeight()](#pagefittoheight)
-* [pageFitToWidth()](#pagefittowidth)
+* [getNotes()](#getnotes) -- Get all notes in the sheet
+* [setOuterBorder()](#setouterborder) -- Set outer border for the specific range
+* [getOutlineLevel()](#getoutlinelevel) -- Get the current outline level for rows
+* [pageFitToHeight()](#pagefittoheight) -- Set page to fit to height
+* [pageFitToWidth()](#pagefittowidth) -- Set page to fit to width
 * [pageFooter()](#pagefooter) -- Set the footer for all pages
 * [pageFooterEven()](#pagefootereven) -- Set footer for even pages
 * [pageFooterFirst()](#pagefooterfirst) -- Set the footer for the first page
@@ -164,26 +164,26 @@
 * [pagePaperSize()](#pagepapersize) -- Set Paper size (when paperHeight and paperWidth are specified, paperSize should be ignored)
 * [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
 * [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
-* [pageScale()](#pagescale)
-* [setPrintArea()](#setprintarea)
+* [pageScale()](#pagescale) -- Set page scale
+* [setPrintArea()](#setprintarea) -- Set print area for the sheet
 * [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
 * [setPrintGridlines()](#setprintgridlines) -- Show grid line in the print area
 * [setPrintHorizontalCentered()](#setprinthorizontalcentered) -- Center the print area horizontally
-* [setPrintLeftColumns()](#setprintleftcolumns)
-* [setPrintTitles()](#setprinttitles)
-* [setPrintTopRows()](#setprinttoprows)
+* [setPrintLeftColumns()](#setprintleftcolumns) -- Set left columns to repeat on every printed page
+* [setPrintTitles()](#setprinttitles) -- Set rows to repeat at top and columns to repeat at left when printing
+* [setPrintTopRows()](#setprinttoprows) -- Set top rows to repeat on every printed page
 * [setPrintVerticalCentered()](#setprintverticalcentered) -- Center the print area vertically
 * [protect()](#protect) -- Protect sheet
-* [isRightToLeft()](#isrighttoleft)
+* [isRightToLeft()](#isrighttoleft) -- Check if the sheet is right-to-left
 * [setRowDataStyle()](#setrowdatastyle) -- Style are applied only to non-empty cells in a row (or row range)
 * [setRowDataStyleArray()](#setrowdatastylearray) -- Styles are applied only to non-empty cells in a rows
 * [setRowHeight()](#setrowheight) -- Height of a specific row
 * [setRowHeights()](#setrowheights) -- Multiple rows height
 * [setRowHidden()](#setrowhidden) -- Hide a specific row
-* [setRowOutlineLevel()](#setrowoutlinelevel)
+* [setRowOutlineLevel()](#setrowoutlinelevel) -- Set outline level for a specific row or range of rows
 * [setRowStyle()](#setrowstyle) -- The style is applied to the entire sheet row (even if it is empty)
 * [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
-* [setRowStyles()](#setrowstyles)
+* [setRowStyles()](#setrowstyles) -- Set multiple row styles
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
 * [setShowGridLines()](#setshowgridlines) -- Turn on/off grid lines
 * [skipRow()](#skiprow) -- Skip rows
@@ -327,7 +327,7 @@ _Add an image to the sheet from a local file, URL or image string in base64_
 
 ```php
 $sheet->addImage('A1', 'path/to/file');
-$sheet->addImage('A1', 'path/to/file', ['width => 100]);
+$sheet->addImage('A1', 'path/to/file', ['width' => 100]);
 ```
 
 
@@ -711,7 +711,7 @@ _Sets all borders style_
 public function applyBorderBottom(string $style, 
                                   ?string $color = '#000000'): Sheet
 ```
-
+_Apply bottom border style and color to the selected area_
 
 ### Parameters
 
@@ -728,7 +728,7 @@ public function applyBorderBottom(string $style,
 public function applyBorderLeft(string $style, 
                                 ?string $color = '#000000'): Sheet
 ```
-
+_Apply left border style and color to the selected area_
 
 ### Parameters
 
@@ -745,7 +745,7 @@ public function applyBorderLeft(string $style,
 public function applyBorderRight(string $style, 
                                  ?string $color = '#000000'): Sheet
 ```
-
+_Apply right border style and color to the selected area_
 
 ### Parameters
 
@@ -762,7 +762,7 @@ public function applyBorderRight(string $style,
 public function applyBorderTop(string $style, 
                                ?string $color = '#000000'): Sheet
 ```
-
+_Apply top border style and color to the selected area_
 
 ### Parameters
 
@@ -793,7 +793,7 @@ _Alias of 'setFontColor()'_
 ```php
 public function applyConditionalFormatting($conditionals): Sheet
 ```
-
+_Apply conditional formatting to the selected area_
 
 ### Parameters
 
@@ -808,7 +808,7 @@ public function applyConditionalFormatting($conditionals): Sheet
 ```php
 public function applyDataValidation(avadim\FastExcelWriter\DataValidation\DataValidation $validation): Sheet
 ```
-
+_Apply data validation to the selected area_
 
 ### Parameters
 
@@ -859,7 +859,7 @@ public function applyFont(string $fontName, ?int $fontSize = null,
                           ?string $fontStyle = null, 
                           ?string $fontColor = null): Sheet
 ```
-
+_Apply font settings to the selected area_
 
 ### Parameters
 
@@ -877,7 +877,7 @@ public function applyFont(string $fontName, ?int $fontSize = null,
 ```php
 public function applyFontColor(string $fontColor): Sheet
 ```
-
+_Apply font color to the selected area_
 
 ### Parameters
 
@@ -892,7 +892,7 @@ public function applyFontColor(string $fontColor): Sheet
 ```php
 public function applyFontName(string $fontName): Sheet
 ```
-
+_Apply font name to the selected area_
 
 ### Parameters
 
@@ -907,7 +907,7 @@ public function applyFontName(string $fontName): Sheet
 ```php
 public function applyFontSize(float $fontSize): Sheet
 ```
-
+_Apply font size to the selected area_
 
 ### Parameters
 
@@ -922,7 +922,7 @@ public function applyFontSize(float $fontSize): Sheet
 ```php
 public function applyFontStyle(string $fontStyle): Sheet
 ```
-
+_Apply font style (bold, italic, etc.) to the selected area_
 
 ### Parameters
 
@@ -937,7 +937,7 @@ public function applyFontStyle(string $fontStyle): Sheet
 ```php
 public function applyFontStyleBold(): Sheet
 ```
-
+_Apply bold font style to the selected area_
 
 ### Parameters
 
@@ -952,7 +952,7 @@ _None_
 ```php
 public function applyFontStyleItalic(): Sheet
 ```
-
+_Apply italic font style to the selected area_
 
 ### Parameters
 
@@ -967,7 +967,7 @@ _None_
 ```php
 public function applyFontStyleStrikethrough(): Sheet
 ```
-
+_Apply strikethrough font style to the selected area_
 
 ### Parameters
 
@@ -982,7 +982,7 @@ _None_
 ```php
 public function applyFontStyleUnderline(?bool $double = false): Sheet
 ```
-
+_Apply underline font style to the selected area_
 
 ### Parameters
 
@@ -997,7 +997,7 @@ public function applyFontStyleUnderline(?bool $double = false): Sheet
 ```php
 public function applyFormat($format): Sheet
 ```
-
+_Set value format for the selected area_
 
 ### Parameters
 
@@ -1012,11 +1012,11 @@ public function applyFormat($format): Sheet
 ```php
 public function applyHide(?bool $hide = true): Sheet
 ```
-
+_Set hidden protection for the selected area_
 
 ### Parameters
 
-* `$hide`
+* `bool|null $hide`
 
 ---
 
@@ -1027,7 +1027,7 @@ public function applyHide(?bool $hide = true): Sheet
 ```php
 public function applyIndentDistributed(int $indent): Sheet
 ```
-
+_Set distributed indent for the selected area_
 
 ### Parameters
 
@@ -1042,7 +1042,7 @@ public function applyIndentDistributed(int $indent): Sheet
 ```php
 public function applyIndentLeft(int $indent): Sheet
 ```
-
+_Set left indent for the selected area_
 
 ### Parameters
 
@@ -1057,7 +1057,7 @@ public function applyIndentLeft(int $indent): Sheet
 ```php
 public function applyIndentRight(int $indent): Sheet
 ```
-
+_Set right indent for the selected area_
 
 ### Parameters
 
@@ -1073,7 +1073,7 @@ public function applyIndentRight(int $indent): Sheet
 public function applyInnerBorder(string $style, 
                                  ?string $color = '#000000'): Sheet
 ```
-
+_Apply inner border style and color to the selected area_
 
 ### Parameters
 
@@ -1089,7 +1089,7 @@ public function applyInnerBorder(string $style,
 ```php
 public function applyNamedRange(string $name): Sheet
 ```
-
+_Apply named range to the selected area_
 
 ### Parameters
 
@@ -1105,7 +1105,7 @@ public function applyNamedRange(string $name): Sheet
 public function applyOuterBorder(string $style, 
                                  ?string $color = '#000000'): Sheet
 ```
-
+_Apply outer border style and color to the selected area_
 
 ### Parameters
 
@@ -1136,7 +1136,7 @@ _Sets height to the current row_
 ```php
 public function applyRowOutlineLevel(int $outlineLevel): Sheet
 ```
-
+_Set outline level for the current row_
 
 ### Parameters
 
@@ -1167,7 +1167,7 @@ _Apply the style_
 public function applyTextAlign(string $textAlign, 
                                ?string $verticalAlign = null): Sheet
 ```
-
+_Apply horizontal alignment to the selected area_
 
 ### Parameters
 
@@ -1183,7 +1183,7 @@ public function applyTextAlign(string $textAlign,
 ```php
 public function applyTextCenter(): Sheet
 ```
-
+_Apply horizontal and vertical center alignment to the selected area_
 
 ### Parameters
 
@@ -1198,7 +1198,7 @@ _None_
 ```php
 public function applyTextColor(string $color): Sheet
 ```
-
+_Set text color for the selected area_
 
 ### Parameters
 
@@ -1213,7 +1213,7 @@ public function applyTextColor(string $color): Sheet
 ```php
 public function applyTextRotation(int $degrees): Sheet
 ```
-
+_Set text rotation for the selected area_
 
 ### Parameters
 
@@ -1228,7 +1228,7 @@ public function applyTextRotation(int $degrees): Sheet
 ```php
 public function applyTextWrap(?bool $textWrap = true): Sheet
 ```
-
+_Set text wrap for the selected area_
 
 ### Parameters
 
@@ -1243,7 +1243,7 @@ public function applyTextWrap(?bool $textWrap = true): Sheet
 ```php
 public function applyUnlock(?bool $unlock = true): Sheet
 ```
-
+_Set unlock protection for the selected area_
 
 ### Parameters
 
@@ -1258,7 +1258,7 @@ public function applyUnlock(?bool $unlock = true): Sheet
 ```php
 public function applyVerticalAlign(string $verticalAlign): Sheet
 ```
-
+_Apply vertical alignment to the selected area_
 
 ### Parameters
 
@@ -1315,11 +1315,11 @@ _Begin a new area_
 ```php
 public function beginOutlineLevel(?bool $collapsed = false): Sheet
 ```
-
+_Start a new outline level for rows_
 
 ### Parameters
 
-* `$collapsed`
+* `bool|null $collapsed`
 
 ---
 
@@ -1330,7 +1330,7 @@ public function beginOutlineLevel(?bool $collapsed = false): Sheet
 ```php
 public function setBgColor(string $cellAddr, string $color): Sheet
 ```
-
+_Set background color for the specific cell or range_
 
 ### Parameters
 
@@ -1346,7 +1346,7 @@ public function setBgColor(string $cellAddr, string $color): Sheet
 ```php
 public function setBottomNodesOptions(string $node, array $options): Sheet
 ```
-
+_Set multiple options for a bottom node_
 
 ### Parameters
 
@@ -1407,7 +1407,7 @@ _Set style for the specific cell_
 ```php
 public function getCharts(): array
 ```
-
+_Get all charts in the sheet_
 
 ### Parameters
 
@@ -1422,7 +1422,7 @@ _None_
 ```php
 public function clearAreas(): Sheet
 ```
-
+_Clear all defined areas_
 
 ### Parameters
 
@@ -1437,7 +1437,7 @@ _None_
 ```php
 public function getColAttributes(): array
 ```
-
+_Get columns attributes_
 
 ### Parameters
 
@@ -1570,7 +1570,7 @@ _Set formula for single or multiple column(s)_
 ```php
 public function setColHidden($col): Sheet
 ```
-
+_Set column as hidden_
 
 ### Parameters
 
@@ -1641,7 +1641,7 @@ _Use 'setColDataStyle()' or 'setColDataStyleArray()' instead_
 ```php
 public function setColOutlineLevel($col, int $outlineLevel): Sheet
 ```
-
+_Set column outline level_
 
 ### Parameters
 
@@ -1713,7 +1713,7 @@ $sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]
 ```php
 public function setColStyles($arg1, ?array $arg2 = null): Sheet
 ```
-
+_Set multiple columns styles_
 
 ### Parameters
 
@@ -1814,7 +1814,7 @@ $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 ```php
 public function getConditionalFormatting(): array
 ```
-
+_Get all conditional formatting in the sheet_
 
 ### Parameters
 
@@ -1859,7 +1859,7 @@ _None_
 ```php
 public function getCurrentColId(): int
 ```
-
+_Get current column index (0-based)_
 
 ### Parameters
 
@@ -1889,7 +1889,7 @@ _None_
 ```php
 public function getCurrentRowId(): int
 ```
-
+_Get current row index (0-based)_
 
 ### Parameters
 
@@ -1904,7 +1904,7 @@ _None_
 ```php
 public function getDataValidations(): array
 ```
-
+_Get all data validations in the sheet_
 
 ### Parameters
 
@@ -1919,7 +1919,7 @@ _None_
 ```php
 public function setDefaultFont($font): Sheet
 ```
-
+_Set default font settings for the sheet_
 
 ### Parameters
 
@@ -1934,7 +1934,7 @@ public function setDefaultFont($font): Sheet
 ```php
 public function setDefaultFontColor(string $fontColor): Sheet
 ```
-
+_Set default font color_
 
 ### Parameters
 
@@ -1949,7 +1949,7 @@ public function setDefaultFontColor(string $fontColor): Sheet
 ```php
 public function setDefaultFontName(string $fontName): Sheet
 ```
-
+_Set default font name for the sheet_
 
 ### Parameters
 
@@ -1964,7 +1964,7 @@ public function setDefaultFontName(string $fontName): Sheet
 ```php
 public function setDefaultFontSize(int $fontSize): Sheet
 ```
-
+_Set default font size for the sheet_
 
 ### Parameters
 
@@ -1979,7 +1979,7 @@ public function setDefaultFontSize(int $fontSize): Sheet
 ```php
 public function setDefaultFontStyle(string $fontStyle): Sheet
 ```
-
+_Set default font style (bold, italic, etc.) for the sheet_
 
 ### Parameters
 
@@ -1994,7 +1994,7 @@ public function setDefaultFontStyle(string $fontStyle): Sheet
 ```php
 public function setDefaultFontStyleBold(): Sheet
 ```
-
+_Set default font style as bold for the sheet_
 
 ### Parameters
 
@@ -2009,7 +2009,7 @@ _None_
 ```php
 public function setDefaultFontStyleItalic(): Sheet
 ```
-
+_Set default font style as italic_
 
 ### Parameters
 
@@ -2024,7 +2024,7 @@ _None_
 ```php
 public function setDefaultFontStyleStrikethrough(): Sheet
 ```
-
+_Set default font style as strikethrough_
 
 ### Parameters
 
@@ -2039,7 +2039,7 @@ _None_
 ```php
 public function setDefaultFontStyleUnderline(?bool $double = false): Sheet
 ```
-
+_Set default font style as underline_
 
 ### Parameters
 
@@ -2099,7 +2099,7 @@ _None_
 ```php
 public function endOutlineLevel(): Sheet
 ```
-
+_End the current outline level for rows_
 
 ### Parameters
 
@@ -2114,7 +2114,7 @@ _None_
 ```php
 public function setFormat(string $cellAddr, string $format): Sheet
 ```
-
+_Set value format for the specific cell or range_
 
 ### Parameters
 
@@ -2215,7 +2215,7 @@ _Freeze rows_
 ```php
 public function getHeaderFooterOptions(): array
 ```
-
+_Get header and footer options_
 
 ### Parameters
 
@@ -2245,7 +2245,7 @@ _None_
 ```php
 public function getImages(): array
 ```
-
+_Get all images in the sheet_
 
 ### Parameters
 
@@ -2260,7 +2260,7 @@ _None_
 ```php
 public function getLastCell(?bool $absolute = false): string
 ```
-
+_Get address of the last touched cell_
 
 ### Parameters
 
@@ -2275,7 +2275,7 @@ public function getLastCell(?bool $absolute = false): string
 ```php
 public function getLastRange(?bool $absolute = false): string
 ```
-
+_Get address of the last touched range_
 
 ### Parameters
 
@@ -2433,7 +2433,7 @@ _None_
 ```php
 public function nextCell(): Sheet
 ```
-
+_Move pointer to the next cell_
 
 ### Parameters
 
@@ -2464,7 +2464,7 @@ _Move to the next row_
 ```php
 public function getNotes(): array
 ```
-
+_Get all notes in the sheet_
 
 ### Parameters
 
@@ -2479,7 +2479,7 @@ _None_
 ```php
 public function setOuterBorder(string $range, $style): Sheet
 ```
-
+_Set outer border for the specific range_
 
 ### Parameters
 
@@ -2495,7 +2495,7 @@ public function setOuterBorder(string $range, $style): Sheet
 ```php
 public function getOutlineLevel(): int
 ```
-
+_Get the current outline level for rows_
 
 ### Parameters
 
@@ -2510,7 +2510,7 @@ _None_
 ```php
 public function pageFitToHeight($numPage): Sheet
 ```
-
+_Set page to fit to height_
 
 ### Parameters
 
@@ -2525,7 +2525,7 @@ public function pageFitToHeight($numPage): Sheet
 ```php
 public function pageFitToWidth($numPage): Sheet
 ```
-
+_Set page to fit to width_
 
 ### Parameters
 
@@ -2886,7 +2886,7 @@ _None_
 ```php
 public function pageScale(int $scale): Sheet
 ```
-
+_Set page scale_
 
 ### Parameters
 
@@ -2901,7 +2901,7 @@ public function pageScale(int $scale): Sheet
 ```php
 public function setPrintArea(string $range): Sheet
 ```
-
+_Set print area for the sheet_
 
 ### Parameters
 
@@ -2961,7 +2961,7 @@ _Center the print area horizontally_
 ```php
 public function setPrintLeftColumns(string $range): Sheet
 ```
-
+_Set left columns to repeat on every printed page_
 
 ### Parameters
 
@@ -2977,7 +2977,7 @@ public function setPrintLeftColumns(string $range): Sheet
 public function setPrintTitles(?string $rowsAtTop, 
                                ?string $colsAtLeft = null): Sheet
 ```
-
+_Set rows to repeat at top and columns to repeat at left when printing_
 
 ### Parameters
 
@@ -2993,7 +2993,7 @@ public function setPrintTitles(?string $rowsAtTop,
 ```php
 public function setPrintTopRows(string $range): Sheet
 ```
-
+_Set top rows to repeat on every printed page_
 
 ### Parameters
 
@@ -3038,7 +3038,7 @@ _Protect sheet_
 ```php
 public function isRightToLeft(): bool
 ```
-
+_Check if the sheet is right-to-left_
 
 ### Parameters
 
@@ -3150,7 +3150,7 @@ _Hide a specific row_
 public function setRowOutlineLevel($rowNum, int $outlineLevel, 
                                    ?bool $collapsed = null): Sheet
 ```
-
+_Set outline level for a specific row or range of rows_
 
 ### Parameters
 
@@ -3228,7 +3228,7 @@ $sheet->setRowStyleArray([3 => $style1, 5 => $style2]); // styles for rows 3 and
 ```php
 public function setRowStyles($arg1, ?array $arg2 = null): Sheet
 ```
-
+_Set multiple row styles_
 
 ### Parameters
 

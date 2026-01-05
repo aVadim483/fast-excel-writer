@@ -1,7 +1,7 @@
 ## FastExcelWriter – Conditional Formatting (since v.6.4)
 
 Conditional Formatting allows formatting options to be set based on the value of a cell.
-It can be applied to individual cells, or to a range of cells.
+It can be applied to individual cells or to a range of cells.
 
 ### Simple usage
 

@@ -25,7 +25,7 @@ nav:
   - Workbook & Sheets:
       - Workbook: 01-workbook.md
       - Sheets: 02-sheets.md
-      - Print Settings: 02-sheets.md#print-settings
+      - Page Setup & Print Settings: 02-sheets.md#page-setup
       - Protection: 06-protection.md
   - Writing & Styles:
       - Writing Cells & Rows: 03-writing.md

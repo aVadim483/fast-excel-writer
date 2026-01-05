@@ -244,7 +244,7 @@ class StyleManager
 
     /**
      * @param $border
-     * @return array|string[]
+     * @return array|string[]|Style
      */
     public static function borderOptions($border): array
     {
@@ -284,6 +284,9 @@ class StyleManager
             }
         }
         else {
+            if ($border instanceof Style) {
+                $border = $border->toArray();
+            }
             foreach($border as $side => $sideOptions) {
                 if ($sideOptions === null) {
                     $style = 'none';
@@ -726,13 +729,16 @@ class StyleManager
     }
 
     /**
-     * @param array $style
+     * @param array|Style $style
      *
      * @return array
      */
-    public static function normalize(array $style): array
+    public static function normalize($style): array
     {
         $result = [];
+        if ($style instanceof Style) {
+            $style = $style->toArray();
+        }
         foreach($style as $styleKey => $styleVal) {
             switch ($styleKey) {
                 case 'format':

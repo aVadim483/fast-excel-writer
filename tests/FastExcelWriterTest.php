@@ -1500,30 +1500,33 @@ final class FastExcelWriterTest extends TestCase
         }
     }
 /*
-    public function testWorkDir()
+    public function testStyles()
     {
-        $testFileName = __DIR__ . '/test0.xlsx';
+        $testFileName = __DIR__ . '/styles.xlsx';
         if (file_exists($testFileName)) {
             unlink($testFileName);
         }
 
-        $tempDir = __DIR__ . '/tmp';
-        $tempPrefix = uniqid();
-        $this->rmdir($tempDir);
-
-        $excel = Excel::create(null, ['temp_dir' => $tempDir, 'temp_prefix' => $tempPrefix]);
+        $excel = Excel::create();
         $sheet = $excel->sheet();
 
-        $sheet->writeArray([['aaa'], ['bbb'], ['ccc']]);
-        $tmpFiles = glob($tempDir . '/' . $tempPrefix . '*.tmp');
-        $this->assertNotEmpty($tmpFiles);
-        $excel->save($testFileName);
+        $style = (new Style())->setColor('red');
+        $sheet->setColStyle('a', $style);
+        $sheet->setColStyle(2, $style);
+        $sheet->setColStyle('C:D', $style);
+        $sheet->setColStyle(['E', 'F'], $style);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+        $this->cells = $this->excelReader->readRows(false, null, true);
+
+        $style = $this->getStyle('a7', true);
+        var_dump($style);
 
         unlink($testFileName);
-        $this->rmdir($tempDir);
 
         $this->excelReader = null;
         $this->cells = [];
+
     }
 */
 }

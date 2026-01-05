@@ -1,6 +1,6 @@
 # FastExcelWriter
 
-Lightweight, powerful and very fast XLSX Spreadsheet Writer in pure PHP. This library is designed to be super-fast and requires minimal memory usage.
+Lightweight, powerful and very fast XLSX Spreadsheet Writer in pure PHP. This library is designed to be superfast and requires minimal memory usage.
 
 **FastExcelWriter** creates spreadsheets in XLSX format, compatible with MS Excel (Office 2007+), LibreOffice, OpenOffice and others,
 with many features supported:
@@ -8,11 +8,11 @@ with many features supported:
 * Takes UTF-8 encoded input
 * Multiple worksheets
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks
-* Supports most styling options for cells, rows, columns - colors, borders, fonts, etc.
+* Supports most styling options for cells, rows, columns – colors, borders, fonts, etc.
 * You can set the height of the rows and the width of the columns (including auto width calculation)
 * You can add formulas, notes and images in you XLSX-files
 * Supports workbook and sheet protection with/without passwords
-* Supports page settings - page margins, page size
+* Supports page settings – page margins, page size
 * Inserting multiple charts
 * Supports data validations and conditional formatting
 

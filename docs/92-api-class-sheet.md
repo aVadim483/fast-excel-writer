@@ -87,11 +87,9 @@
 * [setColHidden()](#setcolhidden) -- Set column as hidden
 * [setColMinWidth()](#setcolminwidth) -- Setting a minimal column's width
 * [setColMinWidths()](#setcolminwidths) -- Setting a multiple column's minimal width
-* [setColOptions()](#setcoloptions) -- Use 'setColDataStyle()' or 'setColDataStyleArray()' instead
 * [setColOutlineLevel()](#setcoloutlinelevel) -- Set column outline level
 * [setColStyle()](#setcolstyle) -- Set style of single or multiple column(s)
 * [setColStyleArray()](#setcolstylearray) -- Set style of single or multiple column(s)
-* [setColStyles()](#setcolstyles) -- Set multiple columns styles
 * [setColVisible()](#setcolvisible) -- Show/hide a column
 * [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
 * [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
@@ -162,14 +160,19 @@
 * [pageOrientationPortrait()](#pageorientationportrait) -- Set page orientation as Portrait, alias of pagePortrait()
 * [pagePaperHeight()](#pagepaperheight) -- Height of custom paper as a number followed by a unit identifier mm|cm|in (ex: 297mm, 11in)
 * [pagePaperSize()](#pagepapersize) -- Set Paper size (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeA3()](#pagepapersizea3) -- Set Paper Size to A3 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeA4()](#pagepapersizea4) -- Set Paper Size to A4 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeLegal()](#pagepapersizelegal) -- Set Paper Size to Legal (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeLetter()](#pagepapersizeletter) -- Set Paper Size to Letter (when paperHeight and paperWidth are specified, paperSize should be ignored)
 * [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
 * [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
 * [pageScale()](#pagescale) -- Set page scale
 * [setPrintArea()](#setprintarea) -- Set print area for the sheet
 * [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
-* [setPrintGridlines()](#setprintgridlines) -- Show grid line in the print area
+* [setPrintGridlines()](#setprintgridlines) -- Show grid lines in the print area
 * [setPrintHorizontalCentered()](#setprinthorizontalcentered) -- Center the print area horizontally
 * [setPrintLeftColumns()](#setprintleftcolumns) -- Set left columns to repeat on every printed page
+* [setPrintRowAndColumnHeading()](#setprintrowandcolumnheading) -- Print row and column headings in the printout
 * [setPrintTitles()](#setprinttitles) -- Set rows to repeat at top and columns to repeat at left when printing
 * [setPrintTopRows()](#setprinttoprows) -- Set top rows to repeat on every printed page
 * [setPrintVerticalCentered()](#setprintverticalcentered) -- Center the print area vertically
@@ -183,7 +186,6 @@
 * [setRowOutlineLevel()](#setrowoutlinelevel) -- Set outline level for a specific row or range of rows
 * [setRowStyle()](#setrowstyle) -- The style is applied to the entire sheet row (even if it is empty)
 * [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
-* [setRowStyles()](#setrowstyles) -- Set multiple row styles
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
 * [setShowGridLines()](#setshowgridlines) -- Turn on/off grid lines
 * [skipRow()](#skiprow) -- Skip rows
@@ -244,14 +246,14 @@ _Set active cell_
 ---
 
 ```php
-public function addCellStyle(string $cellAddr, array $style): Sheet
+public function addCellStyle(string $cellAddr, $style): Sheet
 ```
 _Add additional styles to a cell_
 
 ### Parameters
 
 * `string $cellAddr`
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -390,14 +392,14 @@ $sheet->writeCell($cellValue)->addNote($noteText, $noteStyle);
 ---
 
 ```php
-public function addStyle(string $cellAddr, array $style): Sheet
+public function addStyle(string $cellAddr, $style): Sheet
 ```
 _Alias for 'addCellStyle()'_
 
 ### Parameters
 
 * `string $cellAddr`
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -1149,13 +1151,13 @@ _Set outline level for the current row_
 ---
 
 ```php
-public function applyStyle(array $style): Sheet
+public function applyStyle($style): Sheet
 ```
 _Apply the style_
 
 ### Parameters
 
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -1395,7 +1397,7 @@ _Set style for the specific cell_
 ### Parameters
 
 * `string $cellAddress` -- Cell address
-* `mixed $style` -- Style array or object
+* `array|Style $style` -- Style array or object
 * `bool|null $mergeStyles` -- True - merge style with previous style for this cell (if exists)
 
 ---
@@ -1465,7 +1467,7 @@ _Alias of setColWidthAuto($col)_
 ---
 
 ```php
-public function setColDataStyle($colRange, array $colStyle): Sheet
+public function setColDataStyle($colRange, $colStyle): Sheet
 ```
 _Set style of column cells (colors, formats, etc.)_
 
@@ -1474,7 +1476,7 @@ _Styles are applied only to non-empty cells in a column and only take effect sta
 ### Parameters
 
 * `int|string|array $colRange`
-* `array $colStyle`
+* `array|Style $colStyle`
 
 ---
 
@@ -1618,22 +1620,6 @@ $sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
 
 ---
 
-## setColOptions()
-
----
-
-```php
-public function setColOptions($arg1, ?array $arg2 = null): Sheet
-```
-_Use 'setColDataStyle()' or 'setColDataStyleArray()' instead_
-
-### Parameters
-
-* `$arg1`
-* `$arg2`
-
----
-
 ## setColOutlineLevel()
 
 ---
@@ -1664,7 +1650,7 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 ### Parameters
 
 * `int|string|array $colRange` -- Column number or column letter (or array of these)
-* `mixed $style`
+* `array|Style $style`
 
 ---
 
@@ -1685,7 +1671,7 @@ $sheet->setColStyle(['A', 'B', 'C'], $style);
 ---
 
 ```php
-public function setColStyleArray(array $colStyles): Sheet
+public function setColStyleArray($colStyles): Sheet
 ```
 _Set style of single or multiple column(s)_
 
@@ -1693,7 +1679,7 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 
 ### Parameters
 
-* `array $colStyles`
+* `array|Style $colStyles`
 
 ---
 
@@ -1703,22 +1689,6 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 $sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
 ```
 
-
----
-
-## setColStyles()
-
----
-
-```php
-public function setColStyles($arg1, ?array $arg2 = null): Sheet
-```
-_Set multiple columns styles_
-
-### Parameters
-
-* `$arg1`
-* `array|null $arg2`
 
 ---
 
@@ -2067,13 +2037,13 @@ _None_
 ---
 
 ```php
-public function setDefaultStyle(array $style): Sheet
+public function setDefaultStyle($style): Sheet
 ```
 _Sets default style_
 
 ### Parameters
 
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -2128,7 +2098,7 @@ _Set value format for the specific cell or range_
 ---
 
 ```php
-public function setFormula($cellAddress, $value, ?array $styles = null): Sheet
+public function setFormula($cellAddress, $value, $style): Sheet
 ```
 _Set a formula to the single cell or to the cell range_
 
@@ -2136,7 +2106,8 @@ _Set a formula to the single cell or to the cell range_
 
 * `string|array $cellAddress`
 * `mixed $value`
-* `array|null $styles`
+* `$style`
+* `array|Style|null $styles`
 
 ---
 
@@ -2144,7 +2115,7 @@ _Set a formula to the single cell or to the cell range_
 
 ```php
 $sheet->setFormula('B5', '=F23');
-$sheet->setFormula('B5:C7', $formula, $styles);
+$sheet->setFormula('B5:C7', $formula, $style);
 $sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
 $sheet->setFormula([2, 5], '=SUM(A4:A18)');
 ```
@@ -2446,13 +2417,13 @@ _None_
 ---
 
 ```php
-public function nextRow(?array $style = [], ?bool $forceRow = false): Sheet
+public function nextRow($style, ?bool $forceRow = false): Sheet
 ```
 _Move to the next row_
 
 ### Parameters
 
-* `array|null $style`
+* `array|Style|null $style`
 * `bool|null $forceRow`
 
 ---
@@ -2484,7 +2455,7 @@ _Set outer border for the specific range_
 ### Parameters
 
 * `string $range`
-* `string|array $style`
+* `string|array|Style $style`
 
 ---
 
@@ -2849,6 +2820,66 @@ _Set Paper size (when paperHeight and paperWidth are specified, paperSize should
 
 ---
 
+## pagePaperSizeA3()
+
+---
+
+```php
+public function pagePaperSizeA3(): Sheet
+```
+_Set Paper Size to A3 (when paperHeight and paperWidth are specified, paperSize should be ignored)_
+
+### Parameters
+
+_None_
+
+---
+
+## pagePaperSizeA4()
+
+---
+
+```php
+public function pagePaperSizeA4(): Sheet
+```
+_Set Paper Size to A4 (when paperHeight and paperWidth are specified, paperSize should be ignored)_
+
+### Parameters
+
+_None_
+
+---
+
+## pagePaperSizeLegal()
+
+---
+
+```php
+public function pagePaperSizeLegal(): Sheet
+```
+_Set Paper Size to Legal (when paperHeight and paperWidth are specified, paperSize should be ignored)_
+
+### Parameters
+
+_None_
+
+---
+
+## pagePaperSizeLetter()
+
+---
+
+```php
+public function pagePaperSizeLetter(): Sheet
+```
+_Set Paper Size to Letter (when paperHeight and paperWidth are specified, paperSize should be ignored)_
+
+### Parameters
+
+_None_
+
+---
+
 ## pagePaperWidth()
 
 ---
@@ -2931,7 +2962,7 @@ _Center the print area horizontally and vertically_
 ```php
 public function setPrintGridlines(?bool $bool = true): Sheet
 ```
-_Show grid line in the print area_
+_Show grid lines in the print area_
 
 ### Parameters
 
@@ -2966,6 +2997,21 @@ _Set left columns to repeat on every printed page_
 ### Parameters
 
 * `string $range`
+
+---
+
+## setPrintRowAndColumnHeading()
+
+---
+
+```php
+public function setPrintRowAndColumnHeading(?bool $bool = true): Sheet
+```
+_Print row and column headings in the printout_
+
+### Parameters
+
+* `bool|null $bool`
 
 ---
 
@@ -3051,14 +3097,14 @@ _None_
 ---
 
 ```php
-public function setRowDataStyle($rowRange, array $style): Sheet
+public function setRowDataStyle($rowRange, $style): Sheet
 ```
 _Style are applied only to non-empty cells in a row (or row range)_
 
 ### Parameters
 
 * `int|string|array $rowRange`
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -3176,14 +3222,14 @@ setRowOutlineLevel('5:7', 1)
 ---
 
 ```php
-public function setRowStyle($rowRange, array $style): Sheet
+public function setRowStyle($rowRange, $style): Sheet
 ```
 _The style is applied to the entire sheet row (even if it is empty)_
 
 ### Parameters
 
 * `int|string|array $rowRange`
-* `array $style`
+* `array|Style $style`
 
 ---
 
@@ -3218,22 +3264,6 @@ _Styles are applied to the entire sheet row (even if it is empty)_
 $sheet->setRowStyleArray([3 => $style1, 5 => $style2]); // styles for rows 3 and 5
 ```
 
-
----
-
-## setRowStyles()
-
----
-
-```php
-public function setRowStyles($arg1, ?array $arg2 = null): Sheet
-```
-_Set multiple row styles_
-
-### Parameters
-
-* `$arg1`
-* `array|null $arg2`
 
 ---
 
@@ -3341,7 +3371,7 @@ _Alias for 'setCellStyle()'_
 ### Parameters
 
 * `string $cellAddress`
-* `mixed $style`
+* `array|Style $style`
 * `bool|null $mergeStyles`
 
 ---
@@ -3408,7 +3438,7 @@ _None_
 ---
 
 ```php
-public function setValue($cellAddress, $value, ?array $styles = null): Sheet
+public function setValue($cellAddress, $value, $style): Sheet
 ```
 _Set a value to the single cell or to the cell range_
 
@@ -3416,7 +3446,7 @@ _Set a value to the single cell or to the cell range_
 
 * `string|array $cellAddress`
 * `mixed $value`
-* `array|null $styles`
+* `array|Style|null $style`
 
 ---
 
@@ -3424,8 +3454,8 @@ _Set a value to the single cell or to the cell range_
 
 ```php
 $sheet->setValue('B5', $value);
-$sheet->setValue('B5:C7', $value, $styles);
-$sheet->setValue(['col' => 2, 'row' => 5], $value, $styles);
+$sheet->setValue('B5:C7', $value, $style);
+$sheet->setValue(['col' => 2, 'row' => 5], $value, $style);
 $sheet->setValue([2, 5], $value);
 ```
 
@@ -3482,15 +3512,14 @@ _Select a custom range for applying_
 ---
 
 ```php
-public function writeArray(array $rowArray = [], 
-                           ?array $rowStyle = null): Sheet
+public function writeArray(array $rowArray = [], $rowStyle): Sheet
 ```
 _Write values from a two-dimensional array (alias of writeRows)_
 
 ### Parameters
 
 * `array $rowArray` -- Array of rows
-* `array|null $rowStyle` -- Style applied to each row
+* `array|Style|null $rowStyle` -- Style applied to each row
 
 ---
 
@@ -3576,7 +3605,7 @@ $sheet->writeHeader($cellValues, $rowStyle, $colStyles); // texts and formats of
 ---
 
 ```php
-public function writeRow(array $rowValues = [], ?array $rowStyle = null, 
+public function writeRow(array $rowValues = [], $rowStyle, 
                          ?array $cellStyles = null): Sheet
 ```
 _Write values to the current row_
@@ -3584,7 +3613,7 @@ _Write values to the current row_
 ### Parameters
 
 * `array $rowValues` -- Values of cells
-* `array|null $rowStyle` -- Style applied to the entire row
+* `array|Style|null $rowStyle` -- Style applied to the entire row
 * `array|null $cellStyles` -- Styles of specified cells in the row
 
 ---
@@ -3611,7 +3640,7 @@ _Write several rows from a two-dimensional array_
 ---
 
 ```php
-public function writeTo($cellAddress, $value, ?array $styles = [], 
+public function writeTo($cellAddress, $value, $style, 
                         ?int $mergeFlag = 0): Sheet
 ```
 _Write value to the specified cell and move a pointer to the next cell in the row_
@@ -3620,7 +3649,7 @@ _Write value to the specified cell and move a pointer to the next cell in the ro
 
 * `string|array $cellAddress`
 * `mixed $value`
-* `array|null $styles`
+* `array|Style|null $style`
 * `int|null $mergeFlag`
 
 ---

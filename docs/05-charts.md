@@ -2,7 +2,7 @@
 
 You can insert charts to generated spreadsheets (You can find usage examples below or in */demo* folder)
 
-### Simple usage of chart
+### Simple usage of Chart
 
 ```php
 // Create Excel workbook

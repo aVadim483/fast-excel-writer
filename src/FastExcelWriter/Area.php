@@ -236,11 +236,11 @@ class Area
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $style
+     * @param array|Style|null $style
      *
      * @return $this
      */
-    public function writeTo($cellAddress, $value, ?array $style = null): Area
+    public function writeTo($cellAddress, $value, $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setValue($cellAddress, $value, $style);
@@ -283,11 +283,11 @@ class Area
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $style
+     * @param array|Style|null $style
      *
      * @return $this
      */
-    public function setValue($cellAddress, $value, ?array $style = null): Area
+    public function setValue($cellAddress, $value, $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setValue($cellAddress, $value, $style);
@@ -301,11 +301,11 @@ class Area
      *
      * @param string|array $cellAddress
      * @param mixed $value
-     * @param array|null $style
+     * @param array|Style|null $style
      *
      * @return $this
      */
-    public function setFormula($cellAddress, $value, ?array $style = null): Area
+    public function setFormula($cellAddress, $value, $style = null): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setFormula($cellAddress, $value, $style);
@@ -318,11 +318,11 @@ class Area
      * Set a style (old styles wil be replaced)
      *
      * @param string|array $cellAddress
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function setStyle($cellAddress, array $style): Area
+    public function setStyle($cellAddress, $style): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->setStyle($cellAddress, $style);
@@ -331,14 +331,14 @@ class Area
     }
 
     /**
-     * New style wil be added to old style (if they exist)
+     * New style will be added to old style (if they exist)
      *
      * @param string|array $cellAddress
-     * @param array $style
+     * @param array|Style $style
      *
      * @return $this
      */
-    public function addStyle($cellAddress, array $style): Area
+    public function addStyle($cellAddress, $style): Area
     {
         if ($this->_validateAddressRange($cellAddress)) {
             $this->sheet->addStyle($cellAddress, $style);
@@ -347,7 +347,7 @@ class Area
     }
 
     /**
-     * Set format of values (old styles wil be replaced)
+     * Set format of values (old styles will be replaced)
      *
      * @param string|array $cellAddress
      * @param string $format
@@ -424,7 +424,7 @@ class Area
      * Set outer border
      *
      * @param string|array $range
-     * @param string|array $style
+     * @param string|array|Style $style
      *
      * @return $this
      */

@@ -283,6 +283,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set file writer for the sheet
+     *
      * @param FileWriter $fileWriter
      *
      * @return $this
@@ -299,6 +301,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Reset file writer for the sheet
+     *
      * @param FileWriter $fileWriter
      *
      * @return $this
@@ -313,16 +317,20 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-    * @return int
-    */
+     * Get current row index (0-based)
+     *
+     * @return int
+     */
     public function getCurrentRowId(): int
     {
         return $this->currentRowIdx;
     }
 
     /**
-    * @return int
-    */
+     * Get current column index (0-based)
+     *
+     * @return int
+     */
     public function getCurrentColId(): int
     {
         return $this->currentColIdx;
@@ -369,6 +377,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get external links (deprecated)
+     *
      * @deprecated
      *
      * @return array
@@ -379,6 +389,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get XML relationships content
+     *
      * @return string|null
      */
     public function getXmlRels(): ?string
@@ -400,6 +412,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Increment and return drawing relationship ID
+     *
      * @return string
      */
     public function incDrawingRelsId(): string
@@ -445,6 +459,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set option for a bottom node
+     *
      * @param string $node
      * @param string $key
      * @param mixed $value
@@ -459,6 +475,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set multiple options for a bottom node
+     *
      * @param string $node
      * @param array $options
      *
@@ -472,6 +490,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page options (deprecated)
+     *
      * @deprecated
      *
      * @param string $option
@@ -534,6 +554,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page to fit to width
+     *
      * @param int|string|null $numPage
      *
      * @return $this
@@ -550,6 +572,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page to fit to height
+     *
      * @param int|string|null $numPage
      *
      * @return $this
@@ -566,6 +590,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page scale
+     *
      * @param int $scale
      *
      * @return $this
@@ -578,6 +604,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get page orientation
+     *
      * @return string
      */
     public function getPageOrientation(): string
@@ -586,6 +614,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get page fit to width option
+     *
      * @return int
      */
     public function getPageFitToWidth(): int
@@ -594,6 +624,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get page fit to height option
+     *
      * @return int
      */
     public function getPageFitToHeight(): int
@@ -602,6 +634,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Check if page fit to width/height is set
+     *
      * @return bool
      */
     public function getPageFit(): bool
@@ -610,6 +644,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get sheet properties
+     *
      * @return array
      */
     public function getSheetProperties(): array
@@ -625,6 +661,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get page setup options
+     *
      * @return array
      */
     public function getPageSetup(): array
@@ -633,6 +671,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set page setup options
+     *
      * @param array $options
      *
      * @return $this
@@ -645,6 +685,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set sheet state (visible, hidden, veryHidden)
+     *
      * @param string $state
      *
      * @return $this
@@ -1035,11 +1077,13 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set multiple columns styles
+     *
      * @param $arg1
      * @param array|null $arg2
      *
      * @return $this
-     *@deprecated since v.6.1
+     * @deprecated since v.6.1
      *
      */
     public function setColStyles($arg1, ?array $arg2 = null): Sheet
@@ -1086,13 +1130,14 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set column as hidden
+     *
      * @param int|string|array $col Column number or column letter (or array of these)
      *
      * @return $this
      */
     public function setColHidden($col): Sheet
     {
-
         return $this->setColVisible($col, false);
     }
 
@@ -1216,6 +1261,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set column outline level
+     *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param int $outlineLevel
      *
@@ -1236,6 +1283,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Get columns attributes
+     *
      * @return array
      */
     public function getColAttributes(): array
@@ -1273,6 +1322,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Internal method to set column attributes
+     *
      * @param int $colIdx
      * @param array $settings
      *
@@ -1290,6 +1341,8 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Internal method to delete column attributes
+     *
      * @param int $colIdx
      * @param array $settings
      *
@@ -3860,7 +3913,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @example
      * $sheet->addImage('A1', 'path/to/file');
-     * $sheet->addImage('A1', 'path/to/file', ['width => 100]);
+     * $sheet->addImage('A1', 'path/to/file', ['width' => 100]);
      *
      * @param string $cell Cell address
      * @param string $imageFile URL, local path or image string in base64
@@ -3937,7 +3990,6 @@ class Sheet implements InterfaceSheetWriter
      */
     public function getImages(): array
     {
-
         return $this->media['images'] ?? [];
     }
 

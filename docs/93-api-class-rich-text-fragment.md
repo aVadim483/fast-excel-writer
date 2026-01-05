@@ -8,6 +8,7 @@
 * [setFont()](#setfont) -- Set font name
 * [setItalic()](#setitalic) -- Set font style to italic
 * [setSize()](#setsize) -- Set font size
+* [setStrike()](#setstrike) -- Set font decoration to strikethrough
 * [getText()](#gettext) -- Get fragment text
 * [setUnderline()](#setunderline) -- Set font decoration to underline
 
@@ -104,6 +105,21 @@ _Set font size_
 
 ---
 
+## setStrike()
+
+---
+
+```php
+public function setStrike(): RichTextFragment
+```
+_Set font decoration to strikethrough_
+
+### Parameters
+
+_None_
+
+---
+
 ## getText()
 
 ---
@@ -124,13 +140,13 @@ _None_
 ---
 
 ```php
-public function setUnderline(): RichTextFragment
+public function setUnderline(?bool $double = false): RichTextFragment
 ```
 _Set font decoration to underline_
 
 ### Parameters
 
-_None_
+* `bool|null $double`
 
 ---
 

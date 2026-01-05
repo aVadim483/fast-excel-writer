@@ -188,13 +188,13 @@ _Set font size for the last added fragment_
 ---
 
 ```php
-public function setUnderline(): RichText
+public function setUnderline(?bool $double = false): RichText
 ```
 _Set underline for the last added fragment_
 
 ### Parameters
 
-_None_
+* `bool|null $double`
 
 ---
 

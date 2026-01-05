@@ -3,66 +3,66 @@
 ---
 
 * [__construct()](#__construct) -- Chart constructor
-* [make()](#make)
-* [addDataSeriesSet()](#adddataseriesset)
-* [addDataSeriesType()](#adddataseriestype)
-* [addDataSeriesType2()](#adddataseriestype2)
-* [addDataSeriesValues()](#adddataseriesvalues)
+* [make()](#make) -- Create Chart instance
+* [addDataSeriesSet()](#adddataseriesset) -- Add multiple data series to the chart
+* [addDataSeriesType()](#adddataseriestype) -- Add data series of specific type (used for combo charts)
+* [addDataSeriesType2()](#adddataseriestype2) -- Add data series of specific type to the second axis (used for combo charts)
+* [addDataSeriesValues()](#adddataseriesvalues) -- Add data series values to the chart
 * [getBottomRightCell()](#getbottomrightcell) -- Get the cell address where the bottom right of the chart is fixed
-* [setBottomRightCell()](#setbottomrightcell)
+* [setBottomRightCell()](#setbottomrightcell) -- Set Bottom Right Cell
 * [getBottomRightOffset()](#getbottomrightoffset) -- Get the offset position within the Bottom Right cell for the chart
 * [setBottomRightOffset()](#setbottomrightoffset) -- Set the offset position within the Bottom Right cell for the chart
 * [getBottomRightPosition()](#getbottomrightposition) -- Get the bottom right position of the chart
-* [getBottomRightXOffset()](#getbottomrightxoffset)
-* [setBottomRightXOffset()](#setbottomrightxoffset)
-* [getBottomRightYOffset()](#getbottomrightyoffset)
-* [setBottomRightYOffset()](#setbottomrightyoffset)
-* [setCategoryAxis()](#setcategoryaxis)
-* [setCategoryAxisLabels()](#setcategoryaxislabels) -- Set Category Axis Labels
+* [getBottomRightXOffset()](#getbottomrightxoffset) -- Get Bottom Right X-Offset
+* [setBottomRightXOffset()](#setbottomrightxoffset) -- Set Bottom Right X-Offset
+* [getBottomRightYOffset()](#getbottomrightyoffset) -- Get Bottom Right Y-Offset
+* [setBottomRightYOffset()](#setbottomrightyoffset) -- Set Bottom Right Y-Offset
+* [setCategoryAxis()](#setcategoryaxis) -- Set Category Axis Labels and Title
+* [setCategoryAxisLabels()](#setcategoryaxislabels) -- Set Category Axis Labels (tick labels)
 * [getCategoryAxisTitle()](#getcategoryaxistitle) -- Get Category Axis Title
 * [setCategoryAxisTitle()](#setcategoryaxistitle) -- Set Category Axis Title
-* [getChartAxisX()](#getchartaxisx) -- Get xAxis
-* [getChartAxisY()](#getchartaxisy) -- Get yAxis
-* [getChartAxisY2()](#getchartaxisy2) -- Get yAxis
-* [setChartColors()](#setchartcolors)
-* [setChartType()](#setcharttype)
-* [setDataSeriesNames()](#setdataseriesnames)
-* [setDataSeriesTickLabels()](#setdataseriesticklabels) -- Backward compatible
-* [getDisplayBlanksAs()](#getdisplayblanksas) -- Get Display Blanks as
-* [setDisplayBlanksAs()](#setdisplayblanksas) -- Set Display Blanks as
-* [getLegend()](#getlegend) -- Get Legend
-* [setLegend()](#setlegend) -- Set Legend
-* [setLegendPosition()](#setlegendposition)
-* [setLegendPositionBottom()](#setlegendpositionbottom)
-* [setLegendPositionLeft()](#setlegendpositionleft)
-* [setLegendPositionRight()](#setlegendpositionright)
-* [setLegendPositionTop()](#setlegendpositiontop)
+* [getChartAxisX()](#getchartaxisx) -- Get X Axis
+* [getChartAxisY()](#getchartaxisy) -- Get Y Axis
+* [getChartAxisY2()](#getchartaxisy2) -- Get Y Axis 2
+* [setChartColors()](#setchartcolors) -- Set Chart Colors
+* [setChartType()](#setcharttype) -- Set Chart Type
+* [setDataSeriesNames()](#setdataseriesnames) -- Set Data Series Names
+* [setDataSeriesTickLabels()](#setdataseriesticklabels) -- Set Data Series Tick Labels
+* [getDisplayBlanksAs()](#getdisplayblanksas) -- Get Display Blanks As
+* [setDisplayBlanksAs()](#setdisplayblanksas) -- Set Display Blanks As
+* [getLegend()](#getlegend) -- Get Chart Legend
+* [setLegend()](#setlegend) -- Set Chart Legend
+* [setLegendPosition()](#setlegendposition) -- Set Chart Legend Position
+* [setLegendPositionBottom()](#setlegendpositionbottom) -- Set Chart Legend Position to Bottom
+* [setLegendPositionLeft()](#setlegendpositionleft) -- Set Chart Legend Position to Left
+* [setLegendPositionRight()](#setlegendpositionright) -- Set Chart Legend Position to Right
+* [setLegendPositionTop()](#setlegendpositiontop) -- Set Chart Legend Position to Top
 * [getMajorGridlines()](#getmajorgridlines) -- Get Major Gridlines
 * [getMinorGridlines()](#getminorgridlines) -- Get Minor Gridlines
-* [getName()](#getname) -- Get Name
-* [setName()](#setname)
+* [getName()](#getname) -- Get Chart Name
+* [setName()](#setname) -- Set Chart Name
 * [getPlotArea()](#getplotarea) -- Get Plot Area
-* [setPlotArea()](#setplotarea)
+* [setPlotArea()](#setplotarea) -- Set Chart Plot Area
 * [getPlotChartTypes()](#getplotcharttypes) -- Get the data series type(s) for a chart plot series
-* [setPlotLayout()](#setplotlayout)
-* [setPlotShowPercent()](#setplotshowpercent)
-* [setPlotShowValues()](#setplotshowvalues)
+* [setPlotLayout()](#setplotlayout) -- Set Plot Layout
+* [setPlotShowPercent()](#setplotshowpercent) -- Set Plot Show Percent
+* [setPlotShowValues()](#setplotshowvalues) -- Set Plot Show Values
 * [getPlotVisibleOnly()](#getplotvisibleonly) -- Get Plot Visible Only
 * [setPlotVisibleOnly()](#setplotvisibleonly) -- Set Plot Visible Only
 * [setPosition()](#setposition) -- Set the Bottom Right position of the chart
-* [setSheet()](#setsheet)
-* [getTitle()](#gettitle) -- Get Title
-* [setTitle()](#settitle) -- Set Title
+* [setSheet()](#setsheet) -- Set Sheet
+* [getTitle()](#gettitle) -- Get Chart Title
+* [setTitle()](#settitle) -- Set Chart Title
 * [getTopLeftCell()](#gettopleftcell) -- Get the cell address where the top left of the chart is fixed
 * [setTopLeftCell()](#settopleftcell) -- Set the Top Left cell position for the chart
 * [getTopLeftOffset()](#gettopleftoffset) -- Get the offset position within the Top Left cell for the chart
 * [setTopLeftOffset()](#settopleftoffset) -- Set the offset position within the Top Left cell for the chart
 * [getTopLeftPosition()](#gettopleftposition) -- Get the top left position of the chart
 * [setTopLeftPosition()](#settopleftposition) -- Set the Top Left position for the chart
-* [getTopLeftXOffset()](#gettopleftxoffset)
-* [setTopLeftXOffset()](#settopleftxoffset)
-* [getTopLeftYOffset()](#gettopleftyoffset)
-* [setTopLeftYOffset()](#settopleftyoffset)
+* [getTopLeftXOffset()](#gettopleftxoffset) -- Get Top Left X-Offset
+* [setTopLeftXOffset()](#settopleftxoffset) -- Set Top Left X-Offset
+* [getTopLeftYOffset()](#gettopleftyoffset) -- Get Top Left Y-Offset
+* [setTopLeftYOffset()](#settopleftyoffset) -- Set Top Left Y-Offset
 * [getValueAxisTitle()](#getvalueaxistitle) -- Get Value Axis Title
 * [setValueAxisTitle()](#setvalueaxistitle) -- Set Value Axis Title
 * [getValueAxisTitle2()](#getvalueaxistitle2) -- Get Y2 Axis Title
@@ -108,13 +108,13 @@ _Chart constructor_
 ```php
 public static function make(string $chartType, $title, $dataSource): Chart
 ```
-
+_Create Chart instance_
 
 ### Parameters
 
 * `string $chartType`
-* `Title|string $title`
-* `DataSeries|array $dataSource`
+* `Title|string|null $title`
+* `DataSeries|PlotArea|array|null $dataSource`
 
 ---
 
@@ -125,7 +125,7 @@ public static function make(string $chartType, $title, $dataSource): Chart
 ```php
 public function addDataSeriesSet(array $dataSources): Chart
 ```
-
+_Add multiple data series to the chart_
 
 ### Parameters
 
@@ -142,7 +142,7 @@ public function addDataSeriesType(string $chartType, $dataSource,
                                   ?string $dataLabel = null, 
                                   ?array $options = []): Chart
 ```
-
+_Add data series of specific type (used for combo charts)_
 
 ### Parameters
 
@@ -162,7 +162,7 @@ public function addDataSeriesType2(string $chartType, $dataSource,
                                    ?string $dataLabel = null, 
                                    ?array $options = []): Chart
 ```
-
+_Add data series of specific type to the second axis (used for combo charts)_
 
 ### Parameters
 
@@ -181,11 +181,11 @@ public function addDataSeriesType2(string $chartType, $dataSource,
 public function addDataSeriesValues($dataSource, ?string $dataLabel = null, 
                                     ?array $options = []): Chart
 ```
-
+_Add data series values to the chart_
 
 ### Parameters
 
-* `$dataSource`
+* `DataSeriesValues|array|string $dataSource`
 * `string|null $dataLabel`
 * `array|null $options`
 
@@ -213,7 +213,7 @@ _None_
 ```php
 public function setBottomRightCell(string $cell): Chart
 ```
-
+_Set Bottom Right Cell_
 
 ### Parameters
 
@@ -275,7 +275,7 @@ _None_
 ```php
 public function getBottomRightXOffset(): int
 ```
-
+_Get Bottom Right X-Offset_
 
 ### Parameters
 
@@ -290,7 +290,7 @@ _None_
 ```php
 public function setBottomRightXOffset(int $xOffset): Chart
 ```
-
+_Set Bottom Right X-Offset_
 
 ### Parameters
 
@@ -305,7 +305,7 @@ public function setBottomRightXOffset(int $xOffset): Chart
 ```php
 public function getBottomRightYOffset(): int
 ```
-
+_Get Bottom Right Y-Offset_
 
 ### Parameters
 
@@ -320,7 +320,7 @@ _None_
 ```php
 public function setBottomRightYOffset(int $yOffset): Chart
 ```
-
+_Set Bottom Right Y-Offset_
 
 ### Parameters
 
@@ -335,12 +335,12 @@ public function setBottomRightYOffset(int $yOffset): Chart
 ```php
 public function setCategoryAxis($labels, $title): Chart
 ```
-
+_Set Category Axis Labels and Title_
 
 ### Parameters
 
-* `$labels`
-* `$title`
+* `DataSeriesValues|array|string $labels`
+* `Title|string|null $title`
 
 ---
 
@@ -351,11 +351,11 @@ public function setCategoryAxis($labels, $title): Chart
 ```php
 public function setCategoryAxisLabels($labels): Chart
 ```
-_Set Category Axis Labels_
+_Set Category Axis Labels (tick labels)_
 
 ### Parameters
 
-* `$labels`
+* `DataSeriesValues|array|string $labels`
 
 ---
 
@@ -396,7 +396,7 @@ _Set Category Axis Title_
 ```php
 public function getChartAxisX(): ?Axis
 ```
-_Get xAxis_
+_Get X Axis_
 
 ### Parameters
 
@@ -411,7 +411,7 @@ _None_
 ```php
 public function getChartAxisY(): ?Axis
 ```
-_Get yAxis_
+_Get Y Axis_
 
 ### Parameters
 
@@ -426,7 +426,7 @@ _None_
 ```php
 public function getChartAxisY2(): ?Axis
 ```
-_Get yAxis_
+_Get Y Axis 2_
 
 ### Parameters
 
@@ -441,7 +441,7 @@ _None_
 ```php
 public function setChartColors(array $colors): Chart
 ```
-
+_Set Chart Colors_
 
 ### Parameters
 
@@ -456,7 +456,7 @@ public function setChartColors(array $colors): Chart
 ```php
 public function setChartType(string $chartType): Chart
 ```
-
+_Set Chart Type_
 
 ### Parameters
 
@@ -471,11 +471,11 @@ public function setChartType(string $chartType): Chart
 ```php
 public function setDataSeriesNames($labels): Chart
 ```
-
+_Set Data Series Names_
 
 ### Parameters
 
-* `$labels`
+* `DataSeriesValues|array|string $labels`
 
 ---
 
@@ -486,11 +486,11 @@ public function setDataSeriesNames($labels): Chart
 ```php
 public function setDataSeriesTickLabels($range): Chart
 ```
-_Backward compatible_
+_Set Data Series Tick Labels_
 
 ### Parameters
 
-* `$range`
+* `DataSeriesValues|array|string $range`
 
 ---
 
@@ -501,7 +501,7 @@ _Backward compatible_
 ```php
 public function getDisplayBlanksAs(): string
 ```
-_Get Display Blanks as_
+_Get Display Blanks As_
 
 ### Parameters
 
@@ -514,9 +514,9 @@ _None_
 ---
 
 ```php
-public function setDisplayBlanksAs(string $displayBlanksAs = '0')
+public function setDisplayBlanksAs(string $displayBlanksAs = '0'): Chart
 ```
-_Set Display Blanks as_
+_Set Display Blanks As_
 
 ### Parameters
 
@@ -531,7 +531,7 @@ _Set Display Blanks as_
 ```php
 public function getLegend(): ?Legend
 ```
-_Get Legend_
+_Get Chart Legend_
 
 ### Parameters
 
@@ -546,7 +546,7 @@ _None_
 ```php
 public function setLegend(avadim\FastExcelWriter\Charts\Legend $legend): Chart
 ```
-_Set Legend_
+_Set Chart Legend_
 
 ### Parameters
 
@@ -561,7 +561,7 @@ _Set Legend_
 ```php
 public function setLegendPosition(string $position): Chart
 ```
-
+_Set Chart Legend Position_
 
 ### Parameters
 
@@ -576,7 +576,7 @@ public function setLegendPosition(string $position): Chart
 ```php
 public function setLegendPositionBottom(): Chart
 ```
-
+_Set Chart Legend Position to Bottom_
 
 ### Parameters
 
@@ -591,7 +591,7 @@ _None_
 ```php
 public function setLegendPositionLeft(): Chart
 ```
-
+_Set Chart Legend Position to Left_
 
 ### Parameters
 
@@ -606,7 +606,7 @@ _None_
 ```php
 public function setLegendPositionRight(): Chart
 ```
-
+_Set Chart Legend Position to Right_
 
 ### Parameters
 
@@ -621,7 +621,7 @@ _None_
 ```php
 public function setLegendPositionTop(): Chart
 ```
-
+_Set Chart Legend Position to Top_
 
 ### Parameters
 
@@ -666,7 +666,7 @@ _None_
 ```php
 public function getName(): string
 ```
-_Get Name_
+_Get Chart Name_
 
 ### Parameters
 
@@ -681,7 +681,7 @@ _None_
 ```php
 public function setName(string $name): Chart
 ```
-
+_Set Chart Name_
 
 ### Parameters
 
@@ -711,11 +711,11 @@ _None_
 ```php
 public function setPlotArea($plotValues): Chart
 ```
-
+_Set Chart Plot Area_
 
 ### Parameters
 
-* `$plotValues`
+* `PlotArea|array $plotValues`
 
 ---
 
@@ -741,11 +741,11 @@ _None_
 ```php
 public function setPlotLayout($layout): Chart
 ```
-
+_Set Plot Layout_
 
 ### Parameters
 
-* `$layout`
+* `Layout|array|null $layout`
 
 ---
 
@@ -756,7 +756,7 @@ public function setPlotLayout($layout): Chart
 ```php
 public function setPlotShowPercent(bool $val): Chart
 ```
-
+_Set Plot Show Percent_
 
 ### Parameters
 
@@ -771,7 +771,7 @@ public function setPlotShowPercent(bool $val): Chart
 ```php
 public function setPlotShowValues(bool $val): Chart
 ```
-
+_Set Plot Show Values_
 
 ### Parameters
 
@@ -805,7 +805,7 @@ _Set Plot Visible Only_
 
 ### Parameters
 
-* `boolean $plotVisibleOnly`
+* `bool $plotVisibleOnly`
 
 ---
 
@@ -834,7 +834,7 @@ _Set the Bottom Right position of the chart_
 ```php
 public function setSheet(avadim\FastExcelWriter\Sheet $sheet): Chart
 ```
-
+_Set Sheet_
 
 ### Parameters
 
@@ -849,7 +849,7 @@ public function setSheet(avadim\FastExcelWriter\Sheet $sheet): Chart
 ```php
 public function getTitle(): Title
 ```
-_Get Title_
+_Get Chart Title_
 
 ### Parameters
 
@@ -864,7 +864,7 @@ _None_
 ```php
 public function setTitle($title): Chart
 ```
-_Set Title_
+_Set Chart Title_
 
 ### Parameters
 
@@ -974,7 +974,7 @@ _Set the Top Left position for the chart_
 ```php
 public function getTopLeftXOffset(): int
 ```
-
+_Get Top Left X-Offset_
 
 ### Parameters
 
@@ -989,11 +989,11 @@ _None_
 ```php
 public function setTopLeftXOffset($xOffset): Chart
 ```
-
+_Set Top Left X-Offset_
 
 ### Parameters
 
-* `$xOffset`
+* `int $xOffset`
 
 ---
 
@@ -1004,7 +1004,7 @@ public function setTopLeftXOffset($xOffset): Chart
 ```php
 public function getTopLeftYOffset(): int
 ```
-
+_Get Top Left Y-Offset_
 
 ### Parameters
 
@@ -1019,11 +1019,11 @@ _None_
 ```php
 public function setTopLeftYOffset($yOffset): Chart
 ```
-
+_Set Top Left Y-Offset_
 
 ### Parameters
 
-* `$yOffset`
+* `int $yOffset`
 
 ---
 

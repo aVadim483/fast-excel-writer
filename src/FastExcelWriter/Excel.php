@@ -219,6 +219,9 @@ class Excel implements InterfaceBookWriter
     }
 
 
+    /**
+     * Excel destructor
+     */
     public function __destruct()
     {
         if (!$this->saved && $this->fileName) {
@@ -228,6 +231,8 @@ class Excel implements InterfaceBookWriter
 
 
     /**
+     * Formats a value according to the given format string
+     *
      * @param mixed $value
      * @param string $format
      *
@@ -325,6 +330,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Creates new sheet
+     *
      * @param string $sheetName
      *
      * @return Sheet
@@ -380,7 +387,9 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * @param $string
+     * Writes message to error log
+     *
+     * @param mixed $string
      */
     public static function log($string)
     {
@@ -446,6 +455,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set the usage of shared strings
+     *
      * @param bool $option
      *
      * @return $this
@@ -579,31 +590,73 @@ class Excel implements InterfaceBookWriter
         return $this;
     }
 
+    /**
+     * Set the title of the document
+     *
+     * @param string|null $title
+     *
+     * @return $this
+     */
     public function setTitle(?string $title = ''): Excel
     {
         return $this->setMetaTitle($title);
     }
 
+    /**
+     * Set the subject of the document
+     *
+     * @param string|null $subject
+     *
+     * @return $this
+     */
     public function setSubject(?string $subject = ''): Excel
     {
         return $this->setMetaSubject($subject);
     }
 
+    /**
+     * Set the author of the document
+     *
+     * @param string|null $author
+     *
+     * @return $this
+     */
     public function setAuthor(?string $author = ''): Excel
     {
         return $this->setMetaAuthor($author);
     }
 
+    /**
+     * Set the company of the document
+     *
+     * @param string|null $company
+     *
+     * @return $this
+     */
     public function setCompany(?string $company = ''): Excel
     {
         return $this->setMetaCompany($company);
     }
 
+    /**
+     * Set the description of the document
+     *
+     * @param string|null $description
+     *
+     * @return $this
+     */
     public function setDescription(?string $description = ''): Excel
     {
         return $this->setMetaDescription($description);
     }
 
+    /**
+     * Set the keywords of the document
+     *
+     * @param string|array $keywords
+     *
+     * @return $this
+     */
     public function setKeywords($keywords): Excel
     {
         return $this->setMetaKeywords($keywords);
@@ -719,6 +772,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set right-to-left orientation
+     *
      * @param bool $isRightToLeft
      */
     public function setRightToLeft(bool $isRightToLeft)
@@ -727,6 +782,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get right-to-left orientation
+     *
      * @return bool
      */
     public function isRightToLeft(): bool
@@ -800,6 +857,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Set R1C1 notation mode
+     *
      * @param bool $option
      *
      * @return $this
@@ -812,6 +871,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Is R1C1 notation mode enabled?
+     *
      * @return bool
      */
     public function isR1C1(): bool
@@ -820,6 +881,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get row numbers from the given range
+     *
      * @param int|string|array $rowRange
      *
      * @return int[]
@@ -851,6 +914,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get row indexes (zero based) from the given range
+     *
      * @param int|string|array $rowRange
      *
      * @return int[]
@@ -1027,6 +1092,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Convert column keys of the array to letters
+     *
      * @param array $data
      *
      * @return array
@@ -1037,6 +1104,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Convert column keys of the array to numbers (ONE based)
+     *
      * @param array $data
      *
      * @return array
@@ -1047,7 +1116,10 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Convert column keys of the array to indexes (ZERO based)
+     *
      * @param array $data
+     * @param int $offset
      *
      * @return array
      */
@@ -1089,6 +1161,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get range dimensions (top-left and bottom-right row/column numbers)
+     *
      * @param array|string $range
      * @param array|string $offset
      * @param bool|null $exception
@@ -1232,6 +1306,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get range dimensions (top-left and bottom-right row/column numbers)
+     *
      * @param array|string $range
      * @param bool|null $exception
      *
@@ -1243,6 +1319,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get full address with sheet name
+     *
      * @param string $sheetName
      * @param string $address
      * @param bool|null $force
@@ -1297,7 +1375,9 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * @param $pixels
+     * Convert pixels to EMU (English Metric Units)
+     *
+     * @param int|float $pixels
      *
      * @return float|int
      */
@@ -1340,6 +1420,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Add a string to the shared strings table
+     *
      * @param string $string
      * @param bool|null $richText
      *
@@ -1359,6 +1441,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get the shared strings table
+     *
      * @return array
      */
     public function getSharedStrings(): array
@@ -1367,6 +1451,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get the themes
+     *
      * @return array
      */
     public function getThemes(): array
@@ -1375,6 +1461,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get the writer instance
+     *
      * @return Writer
      */
     public function getWriter()
@@ -1383,6 +1471,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get the default sheet name
+     *
      * @return string
      */
     public function getDefaultSheetName(): string
@@ -1391,6 +1481,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Creates and returns a new sheet
+     *
      * @param string|null $sheetName
      *
      * @return Sheet
@@ -1418,7 +1510,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Returns sheet by number or name of sheet.
+     * Returns sheet by number or name
      * Return the first sheet if number or name omitted
      *
      * @param int|string|null $index - number or name of sheet
@@ -1508,6 +1600,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Add a named range
+     *
      * @param string $range
      * @param string $name
      *
@@ -1528,6 +1622,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Add a defined name
+     *
      * @param string $name
      * @param string $range
      * @param array|null $attributes
@@ -1573,6 +1669,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get all defined names
+     *
      * @return array
      */
     public function getDefinedNames(): array
@@ -1597,6 +1695,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get information about an image from a blob
+     *
      * @param string $imageBlob
      *
      * @return array
@@ -1726,6 +1826,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get list of all loaded image files
+     *
      * @return array
      */
     public function getImageFiles(): array
@@ -1794,6 +1896,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get book views settings
+     *
      * @return array|array[]
      */
     public function getBookViews(): array
@@ -1802,6 +1906,8 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get workbook protection settings
+     *
      * @return array
      */
     public function getProtection(): array
@@ -1874,67 +1980,137 @@ class Excel implements InterfaceBookWriter
         $this->download($name);
     }
 
+    /**
+     * Get default style
+     *
+     * @return array
+     */
     public function getDefaultStyle(): array
     {
         return $this->style->getDefaultStyle();
     }
 
+    /**
+     * Get hyperlink style
+     *
+     * @return array
+     */
     public function getHyperlinkStyle(): array
     {
         return $this->style->getHyperlinkStyle();
     }
 
+    /**
+     * Get default format styles
+     *
+     * @return array
+     */
     public function getDefaultFormatStyles(): array
     {
         return $this->style->getDefaultFormatStyles();
     }
 
+    /**
+     * Get locale settings for styles
+     *
+     * @return array
+     */
     public function getStyleLocaleSettings(): array
     {
         return $this->style->getLocaleSettings();
     }
 
+    /**
+     * Get all fonts used in styles
+     *
+     * @return array
+     */
     public function getStyleFonts(): array
     {
         return $this->style->getStyleFonts();
     }
 
+    /**
+     * Get all fills used in styles
+     *
+     * @return array
+     */
     public function getStyleFills(): array
     {
         return $this->style->getStyleFills();
     }
 
+    /**
+     * Get all borders used in styles
+     *
+     * @return array
+     */
     public function getStyleBorders(): array
     {
         return $this->style->getStyleBorders();
     }
 
+    /**
+     * Get all cellXfs used in styles
+     *
+     * @return array
+     */
     public function getStyleCellXfs(): array
     {
         return $this->style->getStyleCellXfs();
     }
 
+    /**
+     * Get all indexed colors used in styles
+     *
+     * @return array
+     */
     public function getStyleIndexedColors(): array
     {
         return $this->style->getIndexedColors();
     }
 
-
+    /**
+     * Get all number formats used in styles
+     *
+     * @return array
+     */
     public function getStyleNumberFormats(): array
     {
         return $this->style->_getNumberFormats();
     }
 
+    /**
+     * Add a new style
+     *
+     * @param mixed $cellStyle
+     * @param array $resultStyle
+     *
+     * @return int
+     */
     public function addStyle($cellStyle, &$resultStyle = []): int
     {
         return $this->style->addStyle($cellStyle, $resultStyle);
     }
 
+    /**
+     * Add a new DXF style
+     *
+     * @param mixed $style
+     * @param array $resultStyle
+     *
+     * @return int
+     */
     public function addStyleDxfs($style, &$resultStyle = []): int
     {
         return $this->style->addDxfs($style, $resultStyle);
     }
 
+    /**
+     * Get all DXF styles
+     *
+     * @return array
+     */
     public function getStyleDxfs(): array
     {
         return $this->style->getStyleDxfs();

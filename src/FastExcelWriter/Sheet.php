@@ -4591,6 +4591,38 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Set Paper Size to A4 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+     */
+    public function pagePaperSizeA4(): Sheet
+    {
+        return $this->pagePaperSize(Excel::PAPERSIZE_A4);
+    }
+
+    /**
+     * Set Paper Size to A3 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+     */
+    public function pagePaperSizeA3(): Sheet
+    {
+        return $this->pagePaperSize(Excel::PAPERSIZE_A3);
+    }
+
+    /**
+     * Set Paper Size to Letter (when paperHeight and paperWidth are specified, paperSize should be ignored)
+     */
+    public function pagePaperSizeLetter(): Sheet
+    {
+        return $this->pagePaperSize(Excel::PAPERSIZE_LETTER);
+    }
+
+    /**
+     * Set Paper Size to Legal (when paperHeight and paperWidth are specified, paperSize should be ignored)
+     */
+    public function pagePaperSizeLegal(): Sheet
+    {
+        return $this->pagePaperSize(Excel::PAPERSIZE_LEGAL);
+    }
+
+    /**
      * Height of custom paper as a number followed by a unit identifier mm|cm|in (ex: 297mm, 11in)
      *
      * @param string|float|int $paperHeight

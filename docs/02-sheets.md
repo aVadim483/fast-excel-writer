@@ -1,6 +1,6 @@
 ## FastExcelWriter - Sheets
 
-### Create, Select and Remove Sheet
+### Create, Select, and Remove Sheet
 
 ```php
 // Create workbook with three named sheets 
@@ -46,52 +46,6 @@ $sheet->setStateVisible();
 $sheet->setSheetState('hidden'); // or 'visible', 'veryHidden'
 ```
 
-### Page Settings
-
-```php
-$sheet->pagePortrait();
-$sheet->pageLandscape();
-$sheet->pageFitToWidth(1); // fit width to 1 page
-$sheet->pageFitToHeight(1);// fit height to 1 page
-
-$sheet->pageMargins([
-        'left' => '0.5',
-        'right' => '0.5',
-        'top' => '1.0',
-        'bottom' => '1.0',
-        'header' => '0.5',
-        'footer' => '0.5',
-    ]);
-// the same action    
-$sheet
-    ->pageMarginLeft(0.5)
-    ->pageMarginRight(0.5)
-    ->pageMarginTop(1.0)
-    ->pageMarginBottom(1.0)
-    ->pageMarginHeader(0.5)
-    ->pageMarginFooter(0.5);
-
-$sheet->pagePaperSize(Excel::PAPERSIZE_A3);
-$sheet->pagePaperHeight('297mm');
-$sheet->pagePaperWidth('21cm');
-```
-By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
-
-But you can also specify these values in centimeters or millimeters.
-
-```php
-$sheet->pageMarginLeft(0.5); // set left margin 0.5 inch
-$sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
-$sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
-```
-
-
-### Print Header and Footer
-
-```php
-// Set the same Header and Footer for all Pages
-$sheet->pageHeaderFooter('Print Header', 'Print Footer');
-```
 
 ### Freeze Panes and Autofilter
 
@@ -403,6 +357,78 @@ $sheet->setActiveCell('B2');
 
 // Selecting a range of cells
 $sheet->setActiveCell('B2:C3');
+```
+
+### Page Setup
+
+```php
+// Set page size
+$sheet->pagePaperSizeA4();
+$sheet->pagePaperSizeA3();
+$sheet->pagePaperSizeLetter();
+$sheet->pagePaperSizeLegal();
+
+// Other sizes are defined in Excel::PAPERSIZE_* constants
+$sheet->pagePaperSize(Excel::PAPERSIZE_A4);
+$sheet->pagePaperSize(Excel::PAPERSIZE_B5);
+$sheet->pagePaperSize(Excel::PAPERSIZE_JAPANESE_POSTCARD_ROTATED);
+
+$sheet->pagePaperHeight('297mm');
+$sheet->pagePaperWidth('21cm');
+
+// Scaling the page
+$sheet->pageScale(100); // 100%
+$sheet->pageFitToWidth(1); // fit width to 1 page
+$sheet->pageFitToHeight(0);// autofit height
+
+// Set page orientation
+$sheet->pagePortrait();
+$sheet->pageLandscape();
+
+// Set margins
+$sheet->pageMargins([
+        'left' => '0.5',
+        'right' => '0.5',
+        'top' => '1.0',
+        'bottom' => '1.0',
+        'header' => '0.5',
+        'footer' => '0.5',
+    ]);
+// the same action    
+$sheet
+    ->pageMarginLeft(0.5)
+    ->pageMarginRight(0.5)
+    ->pageMarginTop(1.0)
+    ->pageMarginBottom(1.0)
+    ->pageMarginHeader(0.5)
+    ->pageMarginFooter(0.5);
+
+```
+By default, the values are set in inches, 1 inch is 2.54 cm. So when you specify numeric values, they are specified in inches.
+
+But you can also specify these values in centimeters or millimeters.
+
+```php
+$sheet->pageMarginLeft(0.5); // set left margin 0.5 inch
+$sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
+$sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
+```
+
+### Print Header and Footer
+
+```php
+// Set the same Header and Footer for all Pages
+$sheet->pageHeaderFooter('Print Header', 'Print Footer');
+
+$sheet->pageHeader('Print Header');
+$sheet->pageHeaderFirst('Print Header');
+$sheet->pageHeaderOdd('Print Header');
+$sheet->pageHeaderEven('Print Header');
+
+$sheet->pageFooter('Print Footer');
+$sheet->pageFooterFirst('Print Footer');
+$sheet->pageFooterOdd('Print Footer');
+$sheet->pageFooterEven('Print Footer');
 ```
 
 ### Print settings

@@ -1,4 +1,4 @@
-## FastExcelWriter - Styles
+## FastExcelWriter – Styles
 
 You can set styles for the entire workbook, for sheets, for individual cells, as well as for rows and columns.
 The style of each cell can be determined by the combination of all these styles.

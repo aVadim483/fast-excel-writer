@@ -1,4 +1,4 @@
-## FastExcelWriter - Sheets
+## FastExcelWriter – Sheets
 
 ### Create, Select, and Remove Sheet
 
@@ -414,28 +414,15 @@ $sheet->pageMarginLeft('0.5cm'); // set left margin 0.5 centimeters
 $sheet->pageMarginLeft('0.5mm'); // set left margin 0.5 millimeters
 ```
 
-### Print Header and Footer
-
-```php
-// Set the same Header and Footer for all Pages
-$sheet->pageHeaderFooter('Print Header', 'Print Footer');
-
-$sheet->pageHeader('Print Header');
-$sheet->pageHeaderFirst('Print Header');
-$sheet->pageHeaderOdd('Print Header');
-$sheet->pageHeaderEven('Print Header');
-
-$sheet->pageFooter('Print Footer');
-$sheet->pageFooterFirst('Print Footer');
-$sheet->pageFooterOdd('Print Footer');
-$sheet->pageFooterEven('Print Footer');
-```
-
 ### Print settings
 
 Specify printing area
 
 ```php
+$sheet->setPrintArea('A2:F3');
+$sheet->setPrintArea('A8:F10');
+
+// Or several print areas in one call
 $sheet->setPrintArea('A2:F3,A8:F10');
 ```
 
@@ -445,10 +432,11 @@ To repeat specific rows/columns at top/left of a printing page, use the followin
 $sheet->setPrintTopRows('1')->setPrintLeftColumns('A');
 ```
 
-The following code is an example of how to repeat row 1 to 5 on each printed page:
+The following code is an example of how to repeat row 1 to 5 and columns A-C on each printed page:
 
 ```php
 $sheet->setPrintTopRows('1:5');
+$sheet->setPrintLeftColumns('A:C');
 ```
 
 To show/hide gridlines when printing, use the following code:
@@ -466,7 +454,81 @@ $sheet->setPrintHorizontalCentered();
 // vertical centered
 $sheet->setPrintVerticalCentered();
 
-// centered both direction
+// centered both directions
 $sheet->setPrintCentered();
 ```
+### Print Header and Footer
+
+```php
+// Set the same Header and Footer for all Pages
+$sheet->pageHeaderFooter('Print Header', 'Print Footer');
+
+$sheet->pageHeader('Header for all pages');
+$sheet->pageHeaderFirst('Header for the First page');
+$sheet->pageHeaderOdd('Header for Odd pages');
+$sheet->pageHeaderEven('Header for Even pages');
+
+$sheet->pageFooter('Footer for all pages');
+$sheet->pageFooterFirst('Footer for the First page');
+$sheet->pageFooterOdd('Footer for Odd pages');
+$sheet->pageFooterEven('Footer for Even pages');
+```
+
+When defining headers and footers, you can use special formatting codes that begin with `&`.  
+Below is a complete, practical list.
+
+#### Page and document fields
+
+- **`&P`** — current page number
+- **`&N`** — total number of pages
+- **`&D`** — current date
+- **`&T`** — current time
+- **`&A`** — worksheet (sheet) name
+- **`&F`** — file name
+- **`&Z`** — file path
+- **`&G`** — insert an image (picture in the header/footer)
+
+```php
+$sheet->pageFooter('Page &P of &N');
+```
+
+#### Font and text formatting
+
+- **`&"FontName,Style"`** — set font and style
+- **`&12`** — set font size (number = size)
+```php
+$sheet->pageFooter('&"Arial,Bold Italic"Page &P of &N');
+```
+
+Style toggles:
+
+- **`&B`** — bold
+- **`&I`** — italic
+- **`&U`** — underline
+- **`&E`** — double underline
+- **`&S`** — strikethrough
+- **`&X`** — superscript
+- **`&Y`** — subscript
+
+Color:
+
+- **`&Krrggbb`** — text color (hex RGB)
+
+#### Position within the header/footer
+
+These define where text is aligned inside a single header/footer:
+
+- **`&L`** — left section
+- **`&C`** — center section
+- **`&R`** — right section
+
+```php
+$sheet->pageHeaderFirst('&LLeft &CCenter &RRight');
+```
+
+#### Additional rules
+
+- **`&&`** — prints a literal `&` (otherwise it is treated as a control code)
+
+You can combine codes freely
 

@@ -1,10 +1,10 @@
-## FastExcelWriter - Protection
+## FastExcelWriter – Protection
 
 There are three levels of data protection in Excel spreadsheets:
 
-* **Workbook** - You can protect a workbook from changing its structure by prohibiting insertion, deletion, renaming of sheets 
-* **Sheet** - You can protect a sheet from modification, but at the same time allow certain actions with it, for example, selecting and sorting cells, changing the format or inserting rows, etc.
-* **Cell** - If the worksheet is protected, then by default all the cells in the worksheet are protected from changes, but you can allow editing of certain cells, and you can also prevent cell formulas from being displayed in the protected worksheet
+* **Workbook** – You can protect a workbook from changing its structure by prohibiting insertion, deletion, renaming of sheets 
+* **Sheet** – You can protect a sheet from modification, but at the same time allow certain actions with it, for example, selecting and sorting cells, changing the format or inserting rows, etc.
+* **Cell** – If the worksheet is protected, then by default all the cells in the worksheet are protected from changes, but you can allow editing of certain cells, and you can also prevent cell formulas from being displayed in the protected worksheet
 
 You can lock protection the workbook or the sheet by password. If a password is specified, 
 the user can unprotect the workbook or the sheet only by knowing this password.

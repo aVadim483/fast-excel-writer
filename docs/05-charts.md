@@ -1,4 +1,4 @@
-## FastExcelWriter - Charts (since v.5.0)
+## FastExcelWriter – Charts (since v.5.0)
 
 You can insert charts to generated spreadsheets (You can find usage examples below or in */demo* folder)
 

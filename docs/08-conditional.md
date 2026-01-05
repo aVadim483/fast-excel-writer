@@ -1,4 +1,4 @@
-## FastExcelWriter - Conditional Formatting (since v.6.4)
+## FastExcelWriter – Conditional Formatting (since v.6.4)
 
 Conditional Formatting allows formatting options to be set based on the value of a cell.
 It can be applied to individual cells, or to a range of cells.
@@ -9,9 +9,9 @@ It can be applied to individual cells, or to a range of cells.
 use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\Style;
 
-// You can set the foreground colour of a cell to dark red and background to light red if its value is below zero
+// You can set the foreground color of a cell to dark red and background to light red if its value is below zero
 $cond1 = Conditional::make('<', 0)->setStyle([Style::FONT_COLOR => '#900', Style::FILL_COLOR => '#f99']);
-// You can set the foreground colour of a cell to dark green and background to light green if its value is more than 10
+// You can set the foreground color of a cell to dark green and background to light green if its value is more than 10
 $cond2 = Conditional::make('>', 10)->setStyle([Style::FONT_COLOR => '#090', Style::FILL_COLOR => '#9f9']);
 
 // Conditional formatting for single cell

@@ -1,4 +1,4 @@
-## FastExcelWriter - Sheets
+## FastExcelWriter – Sheets
 
 ### Writing Row by Row vs Direct
 

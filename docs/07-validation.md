@@ -1,4 +1,4 @@
-## FastExcelWriter - Data Validation (since v.6.0)
+## FastExcelWriter – Data Validation (since v.6.0)
 
 Data validation allows to specify an input filter on the data that can be inserted in a specific cell.
 The library allows you to set the following types of filters:

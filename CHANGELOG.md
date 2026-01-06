@@ -1,8 +1,8 @@
-## LAST
+## V.6.9
 
+* IMPORTANT: The namespace of the RichText class has been changed to avadim\FastExcelWriter\RichText
+* IMPORTANT: The namespace of the Style, StyleManager, and Font has been changed to avadim\FastExcelWriter\Style
 * Improved hyperlink handling
-* The namespace of the RichText class has been changed to avadim\FastExcelWriter\RichText
-* The namespace of the Style, StyleManager, and Font has been changed to avadim\FastExcelWriter\Style
 * Deprecated methods removed: Sheet::setColStyles(), Sheet::setColOptions(), Sheet::getExternalLinks(), Sheet::setPageOptions(), Sheet::setRowOptions(), Sheet::setRowStyles(),
 * An instance of the Style object can be used as an argument in all methods where an array with styles was passed
 

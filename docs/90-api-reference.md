@@ -13,7 +13,7 @@ namespace **avadim\FastExcelWriter**
 * [Class Charts\Chart](94-api-class-chart.md)
 * [Class DataValidation\DataValidation](95-api-class-data-validation.md)
 * [Class Conditional\Conditional](96-api-class-conditional.md)
-* [Class Style](97-api-class-style.md)
+* [Class Style\Style](97-api-class-style.md)
 
 ---
 

@@ -1,6 +1,8 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\Style;
+
+use avadim\FastExcelWriter\Excel;
 
 class Font
 {

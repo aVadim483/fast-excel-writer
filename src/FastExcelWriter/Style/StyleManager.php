@@ -1,6 +1,8 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\Style;
+
+use avadim\FastExcelWriter\Exceptions\Exception;
 
 /**
  * Class Style
@@ -9,7 +11,7 @@ namespace avadim\FastExcelWriter;
  */
 class StyleManager
 {
-    protected static $instance;
+    protected static StyleManager $instance;
 
     protected array $localeSettings = [];
 
@@ -537,7 +539,8 @@ class StyleManager
             'CYAN' => 'FF00FFFF',];
 
         if (trim($color)) {
-            $color = strtoupper($color);
+            $argColor = $color;
+            $color = strtoupper(trim($color));
 
             if (isset($normColors[$color])) {
                 return $normColors[$color];
@@ -565,6 +568,9 @@ class StyleManager
                 else {
                     $normColors[$color] = null;
                 }
+            }
+            else {
+                Exception::throwNew('Incorrect color code "' . $argColor . '"');
             }
         }
         return $normColors[$color] ?? null;

@@ -1,6 +1,6 @@
 <?php
 
-namespace avadim\FastExcelWriter;
+namespace avadim\FastExcelWriter\Style;
 
 class Style
 {

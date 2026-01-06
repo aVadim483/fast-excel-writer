@@ -14,12 +14,12 @@
 * [contains()](#contains) -- Applies a style if the cell value contains the specified text.
 * [dataBar()](#databar) -- Colored data bar inside a cell
 * [duplicateValues()](#duplicatevalues)
-* [isEmpty()](#isempty) -- Applies a style if the cell is empty
 * [endsWith()](#endswith) -- Applies a style if the cell value ends with the specified text
 * [equals()](#equals) -- The cell value is equal to the given value
 * [expression()](#expression) -- Applies the style if the expression evaluates to TRUE
 * [greaterThan()](#greaterthan) -- The cell value is greater than the specified value
 * [greaterThanOrEqual()](#greaterthanorequal) -- The cell value is greater than or equal to the specified value
+* [isEmpty()](#isempty) -- Applies a style if the cell is empty
 * [lessThan()](#lessthan) -- The cell value is less than the specified value
 * [lessThanOrEqual()](#lessthanorequal) -- The cell value is less than or equal to the specified value
 * [low()](#low)
@@ -31,13 +31,13 @@
 * [top()](#top)
 * [topPercent()](#toppercent)
 * [uniqueValues()](#uniquevalues)
+* [getStyle()](#getstyle)
 * [setDirectionRtl()](#setdirectionrtl) -- Determines the direction of the bars
 * [setDxfId()](#setdxfid)
 * [setFillColor()](#setfillcolor)
 * [setFontColor()](#setfontcolor)
 * [setGradient()](#setgradient) -- Enables or disables the gradient style of the bars
 * [setShowValue()](#setshowvalue) -- Controls the display of the value in a cell
-* [getStyle()](#getstyle)
 * [setStyle()](#setstyle)
 
 ---
@@ -239,23 +239,6 @@ public static function duplicateValues(array $style): Conditional
 
 ---
 
-## isEmpty()
-
----
-
-```php
-public static function isEmpty(?string $cell = null, 
-                               ?array $style = null): Conditional
-```
-_Applies a style if the cell is empty_
-
-### Parameters
-
-* `string|null $cell`
-* `array|null $style`
-
----
-
 ## endsWith()
 
 ---
@@ -335,6 +318,23 @@ _The cell value is greater than or equal to the specified value_
 ### Parameters
 
 * `int|float|string $value`
+* `array|null $style`
+
+---
+
+## isEmpty()
+
+---
+
+```php
+public static function isEmpty(?string $cell = null, 
+                               ?array $style = null): Conditional
+```
+_Applies a style if the cell is empty_
+
+### Parameters
+
+* `string|null $cell`
 * `array|null $style`
 
 ---
@@ -519,6 +519,21 @@ public static function uniqueValues(array $style): Conditional
 
 ---
 
+## getStyle()
+
+---
+
+```php
+public function getStyle(): ?array
+```
+
+
+### Parameters
+
+_None_
+
+---
+
 ## setDirectionRtl()
 
 ---
@@ -606,21 +621,6 @@ _Controls the display of the value in a cell_
 ### Parameters
 
 * `bool $value`
-
----
-
-## getStyle()
-
----
-
-```php
-public function getStyle(): ?array
-```
-
-
-### Parameters
-
-_None_
 
 ---
 

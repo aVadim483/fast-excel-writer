@@ -2,10 +2,6 @@
 
 namespace avadim\FastExcelWriter\Charts;
 
-use avadim\FastExcelWriter\Excel;
-use avadim\FastExcelWriter\Exceptions\Exception;
-use avadim\FastExcelWriter\Sheet;
-
 /**
  * This class uses source code of PHPExcel
  *

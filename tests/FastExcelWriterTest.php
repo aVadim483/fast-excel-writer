@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace avadim\FastExcelWriter;
 
+use avadim\FastExcelReader\Excel as ExcelReader;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\Legend;
 use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
+use avadim\FastExcelWriter\Style\Style;
 use PHPUnit\Framework\TestCase;
-use avadim\FastExcelReader\Excel as ExcelReader;
 
 final class FastExcelWriterTest extends TestCase
 {
@@ -419,7 +420,7 @@ final class FastExcelWriterTest extends TestCase
     }
 
 
-    public function testExcelWriter2()
+    public function testStyleArray()
     {
         $testFileName = __DIR__ . '/test2.xlsx';
         if (file_exists($testFileName)) {
@@ -545,8 +546,6 @@ final class FastExcelWriterTest extends TestCase
         $style = $this->getStyle('a1', true);
         $this->assertEquals($defaultStyle['font-size'], $style['font-size']);
 
-        $style = $this->getStyle('b1', true);
-        //var_dump($style);
         $this->checkDefaultStyle($this->getStyle('b1', true));
 
         $this->assertEquals($title, $this->getValue('a2'));

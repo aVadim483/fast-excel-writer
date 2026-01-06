@@ -9,10 +9,10 @@
 * [dropDown()](#dropdown) -- Make data validation as a dropdown list
 * [expression()](#expression) -- Make data validation as an expression (alias of self::custom())
 * [integer()](#integer) -- Make data validation as an integer value
-* [list()](#list) -- Alias of dropDown()
-* [make()](#make) -- Make a DataValidation instance
 * [isNumber()](#isnumber) -- Checking if a cell value is a number
 * [isText()](#istext) -- Checking if a cell value is a text
+* [list()](#list) -- Alias of dropDown()
+* [make()](#make) -- Make a DataValidation instance
 * [textLength()](#textlength) -- Make data validation as a text length
 * [whole()](#whole) -- Alias of integer()
 * [allowBlank()](#allowblank) -- Allow blank value
@@ -139,36 +139,6 @@ _Make data validation as an integer value_
 
 ---
 
-## list()
-
----
-
-```php
-public static function list($formulas): DataValidation
-```
-_Alias of dropDown()_
-
-### Parameters
-
-* `array|string $formulas`
-
----
-
-## make()
-
----
-
-```php
-public static function make($type): DataValidation
-```
-_Make a DataValidation instance_
-
-### Parameters
-
-* `$type`
-
----
-
 ## isNumber()
 
 ---
@@ -196,6 +166,36 @@ _Checking if a cell value is a text_
 ### Parameters
 
 _None_
+
+---
+
+## list()
+
+---
+
+```php
+public static function list($formulas): DataValidation
+```
+_Alias of dropDown()_
+
+### Parameters
+
+* `array|string $formulas`
+
+---
+
+## make()
+
+---
+
+```php
+public static function make($type): DataValidation
+```
+_Make a DataValidation instance_
+
+### Parameters
+
+* `$type`
 
 ---
 

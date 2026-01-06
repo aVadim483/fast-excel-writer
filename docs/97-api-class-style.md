@@ -1,4 +1,4 @@
-# Class \avadim\FastExcelWriter\Style
+# Class \avadim\FastExcelWriter\Style\Style
 
 ---
 
@@ -31,8 +31,8 @@
 * [setTextColor()](#settextcolor) -- Another alias of 'setFontColor()'
 * [setTextRotation()](#settextrotation) -- Text rotation
 * [setTextWrap()](#settextwrap) -- Text wrap option
-* [toArray()](#toarray) -- Return style properties as array
 * [setVerticalAlign()](#setverticalalign) -- Vertical content align
+* [toArray()](#toarray) -- Return style properties as array
 
 ---
 
@@ -491,21 +491,6 @@ _Text wrap option_
 
 ---
 
-## toArray()
-
----
-
-```php
-public function toArray(): array
-```
-_Return style properties as array_
-
-### Parameters
-
-_None_
-
----
-
 ## setVerticalAlign()
 
 ---
@@ -518,6 +503,21 @@ _Vertical content align_
 ### Parameters
 
 * `string $verticalAlign`
+
+---
+
+## toArray()
+
+---
+
+```php
+public function toArray(): array
+```
+_Return style properties as array_
+
+### Parameters
+
+_None_
 
 ---
 

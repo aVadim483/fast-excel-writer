@@ -2,7 +2,7 @@
 
 namespace avadim\FastExcelWriter\RichText;
 
-use avadim\FastExcelWriter\StyleManager;
+use avadim\FastExcelWriter\Style\StyleManager;
 
 class RichTextFragment
 {

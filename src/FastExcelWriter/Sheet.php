@@ -12,6 +12,9 @@ use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 use avadim\FastExcelWriter\RichText\RichText;
+use avadim\FastExcelWriter\Style\Font;
+use avadim\FastExcelWriter\Style\Style;
+use avadim\FastExcelWriter\Style\StyleManager;
 use avadim\FastExcelWriter\Writer\FileWriter;
 use avadim\FastExcelWriter\Writer\Writer;
 
@@ -912,7 +915,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * Styles are applied to the entire sheet column(s) (even if it is empty)
      *
-     * @param int|string|array $colRange Column number or column letter (or array of these)
+     * @param int|string|array $colRange Column number or column letter or column range (or array of these)
      * @param array|Style $style
      *
      * @return $this
@@ -935,7 +938,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set style of single or multiple column(s)
+     * Set styles of single or multiple column(s)
      *
      * Styles are applied to the entire sheet column(s) (even if it is empty)
      *
@@ -944,7 +947,9 @@ class Sheet implements InterfaceSheetWriter
      * @return $this
      *
      * @example
-     * $sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
+     * $style1 = ['width' = 20];
+     * $style2 = (new Style())->setColor('red');
+     * $sheet->setColStyleArray(['B' => $style1, 'C' => $style2]);
      */
     public function setColStyleArray($colStyles): Sheet
     {
@@ -956,7 +961,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set style of column cells (colors, formats, etc.)
+     * Set styles of column cells (colors, formats, etc.)
      *
      * Styles are applied only to non-empty cells in a column and only take effect starting with the current row
      *
@@ -1070,7 +1075,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set column as hidden
+     * Set a column as hidden
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      *
@@ -1082,7 +1087,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set width of single or multiple column(s)
+     * Set a width of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param int|float|string $width
@@ -1201,7 +1206,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set column outline level
+     * Set a column outline level
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param int $outlineLevel
@@ -1355,7 +1360,7 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
-     * Set format of single or multiple column(s)
+     * Set a format of single or multiple column(s)
      *
      * @param int|string|array $col Column number or column letter (or array of these)
      * @param mixed $format
@@ -1498,12 +1503,11 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setRowHidden($rowNum): Sheet
     {
-
         return $this->setRowVisible($rowNum, false);
     }
 
     /**
-     * Set outline level for a specific row or range of rows
+     * Set an outline level for a specific row or range of rows
      *
      * @example
      * setRowOutlineLevel(5, 1)

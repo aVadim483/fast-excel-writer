@@ -6,8 +6,7 @@ It can be applied to individual cells or to a range of cells.
 ### Simple usage
 
 ```php
-use avadim\FastExcelWriter\Conditional\Conditional;
-use avadim\FastExcelWriter\Style;
+use avadim\FastExcelWriter\Conditional\Conditional;use avadim\FastExcelWriter\Style\Style;
 
 // You can set the foreground color of a cell to dark red and background to light red if its value is below zero
 $cond1 = Conditional::make('<', 0)->setStyle([Style::FONT_COLOR => '#900', Style::FILL_COLOR => '#f99']);

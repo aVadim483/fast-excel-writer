@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter;
 
 use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\Style\Style;
 
 /**
  * Class Area
@@ -115,7 +116,7 @@ class Area
     }
 
     /**
-     * Set index of area in sheet
+     * Set index of area in the sheet
      *
      * @param int $index
      *
@@ -129,7 +130,7 @@ class Area
     }
 
     /**
-     * Get index of area in sheet
+     * Get index of area in the sheet
      *
      * @return int
      */
@@ -230,6 +231,7 @@ class Area
     /**
      * Write a value to the cell and move pointer to the next cell
      *
+     * @example
      * writeTo('A2', $value)
      * writeTo(['col' => 3, 'row' => 1], $value) - equals to 'C1'
      * writeTo('A2:C2', $value) - merge cells and write value
@@ -251,12 +253,18 @@ class Area
     }
 
     /**
-     * Write 2d array form the specified cell
+     * Write 2d array from the specified cell
      *
      * @param $topLeftCell
      * @param array $data
      *
      * @return $this
+     *
+     * @example
+     * writeArrayTo('A2', $data)
+     * writeArrayTo(['col' => 3, 'row' => 1], $data) - equals to 'C1'
+     * writeArrayTo('A2:C2', $data) - merge cells and write value
+     *
      */
     public function writeArrayTo($topLeftCell, array $data): Area
     {
@@ -277,6 +285,7 @@ class Area
     /**
      * Write a value to the cell
      *
+     * @example
      * setValue('A2', $value)
      * setValue(['col' => 3, 'row' => 1], $value) - equals to 'C1'
      * setValue('A2:C2', $value) - merge cells and write value
@@ -315,7 +324,7 @@ class Area
     }
 
     /**
-     * Set a style (old styles wil be replaced)
+     * Set a style (old styles will be replaced)
      *
      * @param string|array $cellAddress
      * @param array|Style $style
@@ -347,7 +356,7 @@ class Area
     }
 
     /**
-     * Set format of values (old styles will be replaced)
+     * Set the format of values (old styles will be replaced)
      *
      * @param string|array $cellAddress
      * @param string $format
@@ -479,7 +488,7 @@ class Area
     }
 
     /**
-     * Write value to the cursor position and move cursor to the next cell in the row
+     * Write value to the cursor position and move the cursor to the next cell in the row
      *
      * @return $this
      */

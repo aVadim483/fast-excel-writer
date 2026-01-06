@@ -2,7 +2,6 @@
 
 namespace avadim\FastExcelWriter\DataValidation;
 
-use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Sheet;
 

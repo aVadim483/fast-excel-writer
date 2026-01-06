@@ -3,7 +3,6 @@
 ---
 
 * [__construct()](#__construct) -- Sheet constructor
-* [setActiveCell()](#setactivecell) -- Set active cell
 * [addCellStyle()](#addcellstyle) -- Add additional styles to a cell
 * [addChart()](#addchart) -- Add a chart object to the specified range of cells
 * [addConditionalFormatting()](#addconditionalformatting) -- Add a conditional formatting object to the specified range of cells
@@ -68,32 +67,14 @@
 * [applyTextWrap()](#applytextwrap) -- Set text wrap for the selected area
 * [applyUnlock()](#applyunlock) -- Set unlock protection for the selected area
 * [applyVerticalAlign()](#applyverticalalign) -- Apply vertical alignment to the selected area
-* [setAutoFilter()](#setautofilter) -- Set auto filter
 * [beginArea()](#beginarea) -- Begin a new area
 * [beginOutlineLevel()](#beginoutlinelevel) -- Start a new outline level for rows
-* [setBgColor()](#setbgcolor) -- Set background color for the specific cell or range
-* [setBottomNodesOptions()](#setbottomnodesoptions) -- Set multiple options for a bottom node
 * [cell()](#cell) -- Select a single cell or cell range in the current row
-* [setCellStyle()](#setcellstyle) -- Set style for the specific cell
-* [getCharts()](#getcharts) -- Get all charts in the sheet
 * [clearAreas()](#clearareas) -- Clear all defined areas
+* [endAreas()](#endareas)
+* [endOutlineLevel()](#endoutlinelevel) -- End the current outline level for rows
+* [getCharts()](#getcharts) -- Get all charts in the sheet
 * [getColAttributes()](#getcolattributes) -- Get columns attributes
-* [setColAutoWidth()](#setcolautowidth) -- Alias of setColWidthAuto($col)
-* [setColDataStyle()](#setcoldatastyle) -- Set style of column cells (colors, formats, etc.)
-* [setColDataStyleArray()](#setcoldatastylearray) -- Set style of column cells (colors, formats, etc.)
-* [setColFormat()](#setcolformat) -- Set format of single or multiple column(s)
-* [setColFormats()](#setcolformats) -- Set formats of columns
-* [setColFormula()](#setcolformula) -- Set formula for single or multiple column(s)
-* [setColHidden()](#setcolhidden) -- Set column as hidden
-* [setColMinWidth()](#setcolminwidth) -- Setting a minimal column's width
-* [setColMinWidths()](#setcolminwidths) -- Setting a multiple column's minimal width
-* [setColOutlineLevel()](#setcoloutlinelevel) -- Set column outline level
-* [setColStyle()](#setcolstyle) -- Set style of single or multiple column(s)
-* [setColStyleArray()](#setcolstylearray) -- Set style of single or multiple column(s)
-* [setColVisible()](#setcolvisible) -- Show/hide a column
-* [setColWidth()](#setcolwidth) -- Set width of single or multiple column(s)
-* [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
-* [setColWidths()](#setcolwidths) -- Setting a multiple column's width
 * [getConditionalFormatting()](#getconditionalformatting) -- Get all conditional formatting in the sheet
 * [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
 * [getCurrentCol()](#getcurrentcol) -- Returns current column letter
@@ -101,42 +82,24 @@
 * [getCurrentRow()](#getcurrentrow) -- Returns current row number
 * [getCurrentRowId()](#getcurrentrowid) -- Get current row index (0-based)
 * [getDataValidations()](#getdatavalidations) -- Get all data validations in the sheet
-* [setDefaultFont()](#setdefaultfont) -- Set default font settings for the sheet
-* [setDefaultFontColor()](#setdefaultfontcolor) -- Set default font color
-* [setDefaultFontName()](#setdefaultfontname) -- Set default font name for the sheet
-* [setDefaultFontSize()](#setdefaultfontsize) -- Set default font size for the sheet
-* [setDefaultFontStyle()](#setdefaultfontstyle) -- Set default font style (bold, italic, etc.) for the sheet
-* [setDefaultFontStyleBold()](#setdefaultfontstylebold) -- Set default font style as bold for the sheet
-* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic) -- Set default font style as italic
-* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough) -- Set default font style as strikethrough
-* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline) -- Set default font style as underline
 * [getDefaultStyle()](#getdefaultstyle) -- Returns default style
-* [setDefaultStyle()](#setdefaultstyle) -- Sets default style
-* [endAreas()](#endareas)
-* [endOutlineLevel()](#endoutlinelevel) -- End the current outline level for rows
-* [setFormat()](#setformat) -- Set value format for the specific cell or range
-* [setFormula()](#setformula) -- Set a formula to the single cell or to the cell range
-* [setFreeze()](#setfreeze) -- Freeze rows/columns
-* [setFreezeColumns()](#setfreezecolumns) -- Freeze columns
-* [setFreezeRows()](#setfreezerows) -- Freeze rows
 * [getHeaderFooterOptions()](#getheaderfooteroptions) -- Get header and footer options
 * [getHyperlinks()](#gethyperlinks) -- Returns added hyperlinks
 * [getImages()](#getimages) -- Get all images in the sheet
 * [getLastCell()](#getlastcell) -- Get address of the last touched cell
 * [getLastRange()](#getlastrange) -- Get address of the last touched range
+* [getMergedCells()](#getmergedcells) -- Returns merged cells
+* [getName()](#getname) -- Get sheet name
+* [getNamedRanges()](#getnamedranges) -- Returns named ranges with full addresses
+* [getNotes()](#getnotes) -- Get all notes in the sheet
+* [getOutlineLevel()](#getoutlinelevel) -- Get the current outline level for rows
+* [isName()](#isname) -- Case-insensitive name checking
+* [isRightToLeft()](#isrighttoleft) -- Check if the sheet is right-to-left
 * [makeArea()](#makearea) -- Make area for writing
 * [mergeCells()](#mergecells) -- Merge cells
-* [getMergedCells()](#getmergedcells) -- Returns merged cells
 * [mergeRelCells()](#mergerelcells) -- Merge relative cells
-* [getName()](#getname) -- Get sheet name
-* [isName()](#isname) -- Case-insensitive name checking
-* [setName()](#setname) -- Set sheet name
-* [getNamedRanges()](#getnamedranges) -- Returns named ranges with full addresses
 * [nextCell()](#nextcell) -- Move pointer to the next cell
 * [nextRow()](#nextrow) -- Move to the next row
-* [getNotes()](#getnotes) -- Get all notes in the sheet
-* [setOuterBorder()](#setouterborder) -- Set outer border for the specific range
-* [getOutlineLevel()](#getoutlinelevel) -- Get the current outline level for rows
 * [pageFitToHeight()](#pagefittoheight) -- Set page to fit to height
 * [pageFitToWidth()](#pagefittowidth) -- Set page to fit to width
 * [pageFooter()](#pagefooter) -- Set the footer for all pages
@@ -167,6 +130,45 @@
 * [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
 * [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
 * [pageScale()](#pagescale) -- Set page scale
+* [protect()](#protect) -- Protect sheet
+* [setActiveCell()](#setactivecell) -- Set active cell
+* [setAutoFilter()](#setautofilter) -- Set auto filter
+* [setBgColor()](#setbgcolor) -- Set background color for the specific cell or range
+* [setBottomNodesOptions()](#setbottomnodesoptions) -- Set multiple options for a bottom node
+* [setCellStyle()](#setcellstyle) -- Set style for the specific cell
+* [setColAutoWidth()](#setcolautowidth) -- Alias of setColWidthAuto($col)
+* [setColDataStyle()](#setcoldatastyle) -- Set styles of column cells (colors, formats, etc.)
+* [setColDataStyleArray()](#setcoldatastylearray) -- Set style of column cells (colors, formats, etc.)
+* [setColFormat()](#setcolformat) -- Set a format of single or multiple column(s)
+* [setColFormats()](#setcolformats) -- Set formats of columns
+* [setColFormula()](#setcolformula) -- Set formula for single or multiple column(s)
+* [setColHidden()](#setcolhidden) -- Set a column as hidden
+* [setColMinWidth()](#setcolminwidth) -- Setting a minimal column's width
+* [setColMinWidths()](#setcolminwidths) -- Setting a multiple column's minimal width
+* [setColOutlineLevel()](#setcoloutlinelevel) -- Set a column outline level
+* [setColStyle()](#setcolstyle) -- Set style of single or multiple column(s)
+* [setColStyleArray()](#setcolstylearray) -- Set styles of single or multiple column(s)
+* [setColVisible()](#setcolvisible) -- Show/hide a column
+* [setColWidth()](#setcolwidth) -- Set a width of single or multiple column(s)
+* [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
+* [setColWidths()](#setcolwidths) -- Setting a multiple column's width
+* [setDefaultFont()](#setdefaultfont) -- Set default font settings for the sheet
+* [setDefaultFontColor()](#setdefaultfontcolor) -- Set default font color
+* [setDefaultFontName()](#setdefaultfontname) -- Set default font name for the sheet
+* [setDefaultFontSize()](#setdefaultfontsize) -- Set default font size for the sheet
+* [setDefaultFontStyle()](#setdefaultfontstyle) -- Set default font style (bold, italic, etc.) for the sheet
+* [setDefaultFontStyleBold()](#setdefaultfontstylebold) -- Set default font style as bold for the sheet
+* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic) -- Set default font style as italic
+* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough) -- Set default font style as strikethrough
+* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline) -- Set default font style as underline
+* [setDefaultStyle()](#setdefaultstyle) -- Sets default style
+* [setFormat()](#setformat) -- Set value format for the specific cell or range
+* [setFormula()](#setformula) -- Set a formula to the single cell or to the cell range
+* [setFreeze()](#setfreeze) -- Freeze rows/columns
+* [setFreezeColumns()](#setfreezecolumns) -- Freeze columns
+* [setFreezeRows()](#setfreezerows) -- Freeze rows
+* [setName()](#setname) -- Set sheet name
+* [setOuterBorder()](#setouterborder) -- Set outer border for the specific range
 * [setPrintArea()](#setprintarea) -- Set print area for the sheet
 * [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
 * [setPrintGridlines()](#setprintgridlines) -- Show grid lines in the print area
@@ -176,27 +178,25 @@
 * [setPrintTitles()](#setprinttitles) -- Set rows to repeat at top and columns to repeat at left when printing
 * [setPrintTopRows()](#setprinttoprows) -- Set top rows to repeat on every printed page
 * [setPrintVerticalCentered()](#setprintverticalcentered) -- Center the print area vertically
-* [protect()](#protect) -- Protect sheet
-* [isRightToLeft()](#isrighttoleft) -- Check if the sheet is right-to-left
 * [setRowDataStyle()](#setrowdatastyle) -- Style are applied only to non-empty cells in a row (or row range)
 * [setRowDataStyleArray()](#setrowdatastylearray) -- Styles are applied only to non-empty cells in a rows
 * [setRowHeight()](#setrowheight) -- Height of a specific row
 * [setRowHeights()](#setrowheights) -- Multiple rows height
 * [setRowHidden()](#setrowhidden) -- Hide a specific row
-* [setRowOutlineLevel()](#setrowoutlinelevel) -- Set outline level for a specific row or range of rows
+* [setRowOutlineLevel()](#setrowoutlinelevel) -- Set an outline level for a specific row or range of rows
 * [setRowStyle()](#setrowstyle) -- The style is applied to the entire sheet row (even if it is empty)
 * [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
 * [setRowVisible()](#setrowvisible) -- Hide/show a specific row
 * [setShowGridLines()](#setshowgridlines) -- Turn on/off grid lines
-* [skipRow()](#skiprow) -- Skip rows
 * [setStateHidden()](#setstatehidden) -- Make the sheet hidden
 * [setStateVeryHidden()](#setstateveryhidden) -- Make the sheet very hidden
 * [setStateVisible()](#setstatevisible) -- Make the sheet visible
 * [setStyle()](#setstyle) -- Alias for 'setCellStyle()'
 * [setTabColor()](#settabcolor) -- Set color for the sheet tab
 * [setTopLeftCell()](#settopleftcell) -- Set the top left cell for writing
-* [unprotect()](#unprotect) -- Unprotect sheet
 * [setValue()](#setvalue) -- Set a value to the single cell or to the cell range
+* [skipRow()](#skiprow) -- Skip rows
+* [unprotect()](#unprotect) -- Unprotect sheet
 * [withLastCell()](#withlastcell) -- Select the last written cell for applying
 * [withLastRow()](#withlastrow) -- Select the last written row for applying
 * [withRange()](#withrange) -- Select a custom range for applying
@@ -223,21 +223,6 @@ _Sheet constructor_
 ### Parameters
 
 * `string $sheetName`
-
----
-
-## setActiveCell()
-
----
-
-```php
-public function setActiveCell($cellAddress): Sheet
-```
-_Set active cell_
-
-### Parameters
-
-* `$cellAddress`
 
 ---
 
@@ -1268,33 +1253,6 @@ _Apply vertical alignment to the selected area_
 
 ---
 
-## setAutoFilter()
-
----
-
-```php
-public function setAutoFilter($rowOrCell, ?int $col = 1): Sheet
-```
-_Set auto filter_
-
-### Parameters
-
-* `mixed|null $rowOrCell`
-* `int|null $col`
-
----
-
-### Examples
-
-```php
-$sheet->setAutoFilter(2);
-$sheet->setAutoFilter('B2');
-$sheet->setAutoFilter('B2:C4');
-```
-
-
----
-
 ## beginArea()
 
 ---
@@ -1325,38 +1283,6 @@ _Start a new outline level for rows_
 
 ---
 
-## setBgColor()
-
----
-
-```php
-public function setBgColor(string $cellAddr, string $color): Sheet
-```
-_Set background color for the specific cell or range_
-
-### Parameters
-
-* `string $cellAddr`
-* `string $color`
-
----
-
-## setBottomNodesOptions()
-
----
-
-```php
-public function setBottomNodesOptions(string $node, array $options): Sheet
-```
-_Set multiple options for a bottom node_
-
-### Parameters
-
-* `string $node`
-* `array $options`
-
----
-
 ## cell()
 
 ---
@@ -1384,21 +1310,48 @@ $sheet->cell([2, 5])->applyColor($color);
 
 ---
 
-## setCellStyle()
+## clearAreas()
 
 ---
 
 ```php
-public function setCellStyle(string $cellAddress, $style, 
-                             ?bool $mergeStyles = false): Sheet
+public function clearAreas(): Sheet
 ```
-_Set style for the specific cell_
+_Clear all defined areas_
 
 ### Parameters
 
-* `string $cellAddress` -- Cell address
-* `array|Style $style` -- Style array or object
-* `bool|null $mergeStyles` -- True - merge style with previous style for this cell (if exists)
+_None_
+
+---
+
+## endAreas()
+
+---
+
+```php
+public function endAreas(): Sheet
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## endOutlineLevel()
+
+---
+
+```php
+public function endOutlineLevel(): Sheet
+```
+_End the current outline level for rows_
+
+### Parameters
+
+_None_
 
 ---
 
@@ -1410,21 +1363,6 @@ _Set style for the specific cell_
 public function getCharts(): array
 ```
 _Get all charts in the sheet_
-
-### Parameters
-
-_None_
-
----
-
-## clearAreas()
-
----
-
-```php
-public function clearAreas(): Sheet
-```
-_Clear all defined areas_
 
 ### Parameters
 
@@ -1444,336 +1382,6 @@ _Get columns attributes_
 ### Parameters
 
 _None_
-
----
-
-## setColAutoWidth()
-
----
-
-```php
-public function setColAutoWidth($col): Sheet
-```
-_Alias of setColWidthAuto($col)_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-
----
-
-## setColDataStyle()
-
----
-
-```php
-public function setColDataStyle($colRange, $colStyle): Sheet
-```
-_Set style of column cells (colors, formats, etc.)_
-
-_Styles are applied only to non-empty cells in a column and only take effect starting with the current row_
-
-### Parameters
-
-* `int|string|array $colRange`
-* `array|Style $colStyle`
-
----
-
-### Examples
-
-```php
-$sheet->setColDataStyle('B', ['width' = 20]); // style for cells of column 'B'
-$sheet->setColDataStyle(2, ['width' = 20]); // 'B' is number 2 column
-$sheet->setColDataStyle('B:D', ['width' = 'auto']); // options for range of columns
-$sheet->setColDataStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
-```
-
-
----
-
-## setColDataStyleArray()
-
----
-
-```php
-public function setColDataStyleArray(array $colStyles): Sheet
-```
-_Set style of column cells (colors, formats, etc.)_
-
-_Styles are applied only to non-empty cells in a column and only take effect starting with the current row_
-
-### Parameters
-
-* `array $colStyles`
-
----
-
-### Examples
-
-```php
-$sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]); // options for columns 'B' and 'C'
-```
-
-
----
-
-## setColFormat()
-
----
-
-```php
-public function setColFormat($col, $format): Sheet
-```
-_Set format of single or multiple column(s)_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `mixed $format`
-
----
-
-## setColFormats()
-
----
-
-```php
-public function setColFormats(array $formats): Sheet
-```
-_Set formats of columns_
-
-### Parameters
-
-* `array $formats`
-
----
-
-## setColFormula()
-
----
-
-```php
-public function setColFormula($col, string $formula): Sheet
-```
-_Set formula for single or multiple column(s)_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `string $formula`
-
----
-
-## setColHidden()
-
----
-
-```php
-public function setColHidden($col): Sheet
-```
-_Set column as hidden_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-
----
-
-## setColMinWidth()
-
----
-
-```php
-public function setColMinWidth($col, $width): Sheet
-```
-_Setting a minimal column's width_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `int|float|string $width`
-
----
-
-## setColMinWidths()
-
----
-
-```php
-public function setColMinWidths(array $widths): Sheet
-```
-_Setting a multiple column's minimal width_
-
-### Parameters
-
-* `array $widths`
-
----
-
-### Examples
-
-```php
-$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
-```
-
-
----
-
-## setColOutlineLevel()
-
----
-
-```php
-public function setColOutlineLevel($col, int $outlineLevel): Sheet
-```
-_Set column outline level_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `int $outlineLevel`
-
----
-
-## setColStyle()
-
----
-
-```php
-public function setColStyle($colRange, $style): Sheet
-```
-_Set style of single or multiple column(s)_
-
-_Styles are applied to the entire sheet column(s) (even if it is empty)_
-
-### Parameters
-
-* `int|string|array $colRange` -- Column number or column letter (or array of these)
-* `array|Style $style`
-
----
-
-### Examples
-
-```php
-$sheet->setColStyle('B', $style);
-$sheet->setColStyle(2, $style); // 'B' is number 2 column
-$sheet->setColStyle('C:F', $style);
-$sheet->setColStyle(['A', 'B', 'C'], $style);
-```
-
-
----
-
-## setColStyleArray()
-
----
-
-```php
-public function setColStyleArray($colStyles): Sheet
-```
-_Set style of single or multiple column(s)_
-
-_Styles are applied to the entire sheet column(s) (even if it is empty)_
-
-### Parameters
-
-* `array|Style $colStyles`
-
----
-
-### Examples
-
-```php
-$sheet->setColStyleArray(['B' => ['width' = 20], 'C' => ['font-color' = '#f00']]);
-```
-
-
----
-
-## setColVisible()
-
----
-
-```php
-public function setColVisible($col, bool $val): Sheet
-```
-_Show/hide a column_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `bool $val`
-
----
-
-## setColWidth()
-
----
-
-```php
-public function setColWidth($col, $width, ?bool $min = false): Sheet
-```
-_Set width of single or multiple column(s)_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-* `int|float|string $width`
-* `bool|null $min`
-
----
-
-## setColWidthAuto()
-
----
-
-```php
-public function setColWidthAuto($col): Sheet
-```
-_Set auto width of single or multiple column(s)_
-
-### Parameters
-
-* `int|string|array $col` -- Column number or column letter (or array of these)
-
----
-
-### Examples
-
-```php
-$sheet->setColWidthAuto(2);
-$sheet->setColWidthAuto('B');
-$sheet->setColWidthAuto(['B', 'C']);
-$sheet->setColWidthAuto(['B:D']);
-```
-
-
----
-
-## setColWidths()
-
----
-
-```php
-public function setColWidths(array $widths, ?bool $min = false): Sheet
-```
-_Setting a multiple column's width_
-
-### Parameters
-
-* `array $widths`
-* `bool|null $min`
-
----
-
-### Examples
-
-```php
-$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
-```
-
 
 ---
 
@@ -1882,141 +1490,6 @@ _None_
 
 ---
 
-## setDefaultFont()
-
----
-
-```php
-public function setDefaultFont($font): Sheet
-```
-_Set default font settings for the sheet_
-
-### Parameters
-
-* `string|array $font`
-
----
-
-## setDefaultFontColor()
-
----
-
-```php
-public function setDefaultFontColor(string $fontColor): Sheet
-```
-_Set default font color_
-
-### Parameters
-
-* `string $fontColor`
-
----
-
-## setDefaultFontName()
-
----
-
-```php
-public function setDefaultFontName(string $fontName): Sheet
-```
-_Set default font name for the sheet_
-
-### Parameters
-
-* `string $fontName`
-
----
-
-## setDefaultFontSize()
-
----
-
-```php
-public function setDefaultFontSize(int $fontSize): Sheet
-```
-_Set default font size for the sheet_
-
-### Parameters
-
-* `int $fontSize`
-
----
-
-## setDefaultFontStyle()
-
----
-
-```php
-public function setDefaultFontStyle(string $fontStyle): Sheet
-```
-_Set default font style (bold, italic, etc.) for the sheet_
-
-### Parameters
-
-* `string $fontStyle`
-
----
-
-## setDefaultFontStyleBold()
-
----
-
-```php
-public function setDefaultFontStyleBold(): Sheet
-```
-_Set default font style as bold for the sheet_
-
-### Parameters
-
-_None_
-
----
-
-## setDefaultFontStyleItalic()
-
----
-
-```php
-public function setDefaultFontStyleItalic(): Sheet
-```
-_Set default font style as italic_
-
-### Parameters
-
-_None_
-
----
-
-## setDefaultFontStyleStrikethrough()
-
----
-
-```php
-public function setDefaultFontStyleStrikethrough(): Sheet
-```
-_Set default font style as strikethrough_
-
-### Parameters
-
-_None_
-
----
-
-## setDefaultFontStyleUnderline()
-
----
-
-```php
-public function setDefaultFontStyleUnderline(?bool $double = false): Sheet
-```
-_Set default font style as underline_
-
-### Parameters
-
-* `bool|null $double`
-
----
-
 ## getDefaultStyle()
 
 ---
@@ -2029,153 +1502,6 @@ _Returns default style_
 ### Parameters
 
 _None_
-
----
-
-## setDefaultStyle()
-
----
-
-```php
-public function setDefaultStyle($style): Sheet
-```
-_Sets default style_
-
-### Parameters
-
-* `array|Style $style`
-
----
-
-## endAreas()
-
----
-
-```php
-public function endAreas(): Sheet
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## endOutlineLevel()
-
----
-
-```php
-public function endOutlineLevel(): Sheet
-```
-_End the current outline level for rows_
-
-### Parameters
-
-_None_
-
----
-
-## setFormat()
-
----
-
-```php
-public function setFormat(string $cellAddr, string $format): Sheet
-```
-_Set value format for the specific cell or range_
-
-### Parameters
-
-* `string $cellAddr`
-* `string $format`
-
----
-
-## setFormula()
-
----
-
-```php
-public function setFormula($cellAddress, $value, $style): Sheet
-```
-_Set a formula to the single cell or to the cell range_
-
-### Parameters
-
-* `string|array $cellAddress`
-* `mixed $value`
-* `$style`
-* `array|Style|null $styles`
-
----
-
-### Examples
-
-```php
-$sheet->setFormula('B5', '=F23');
-$sheet->setFormula('B5:C7', $formula, $style);
-$sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
-$sheet->setFormula([2, 5], '=SUM(A4:A18)');
-```
-
-
----
-
-## setFreeze()
-
----
-
-```php
-public function setFreeze($freezeRows, $freezeColumns): Sheet
-```
-_Freeze rows/columns_
-
-### Parameters
-
-* `mixed $freezeRows`
-* `mixed $freezeColumns`
-
----
-
-### Examples
-
-```php
-$sheet->setFreeze(3, 3); // number rows and columns to freeze
-$sheet->setFreeze('C3'); // left top cell of the free area
-```
-
-
----
-
-## setFreezeColumns()
-
----
-
-```php
-public function setFreezeColumns(int $freezeColumns): Sheet
-```
-_Freeze columns_
-
-### Parameters
-
-* `int $freezeColumns` -- Number columns to freeze
-
----
-
-## setFreezeRows()
-
----
-
-```php
-public function setFreezeRows(int $freezeRows): Sheet
-```
-_Freeze rows_
-
-### Parameters
-
-* `int $freezeRows` -- Number rows to freeze
 
 ---
 
@@ -2254,6 +1580,111 @@ _Get address of the last touched range_
 
 ---
 
+## getMergedCells()
+
+---
+
+```php
+public function getMergedCells(): array
+```
+_Returns merged cells_
+
+### Parameters
+
+_None_
+
+---
+
+## getName()
+
+---
+
+```php
+public function getName(): string
+```
+_Get sheet name_
+
+### Parameters
+
+_None_
+
+---
+
+## getNamedRanges()
+
+---
+
+```php
+public function getNamedRanges(): array
+```
+_Returns named ranges with full addresses_
+
+### Parameters
+
+_None_
+
+---
+
+## getNotes()
+
+---
+
+```php
+public function getNotes(): array
+```
+_Get all notes in the sheet_
+
+### Parameters
+
+_None_
+
+---
+
+## getOutlineLevel()
+
+---
+
+```php
+public function getOutlineLevel(): int
+```
+_Get the current outline level for rows_
+
+### Parameters
+
+_None_
+
+---
+
+## isName()
+
+---
+
+```php
+public function isName(string $name): bool
+```
+_Case-insensitive name checking_
+
+### Parameters
+
+* `string $name`
+
+---
+
+## isRightToLeft()
+
+---
+
+```php
+public function isRightToLeft(): bool
+```
+_Check if the sheet is right-to-left_
+
+### Parameters
+
+_None_
+
+---
+
 ## makeArea()
 
 ---
@@ -2296,21 +1727,6 @@ $sheet->mergeCells('B5:C7', $value, Sheet:MERGE_NO_CHECK); // don't check for in
 
 ---
 
-## getMergedCells()
-
----
-
-```php
-public function getMergedCells(): array
-```
-_Returns merged cells_
-
-### Parameters
-
-_None_
-
----
-
 ## mergeRelCells()
 
 ---
@@ -2334,66 +1750,6 @@ $sheet->mergeCells(3); // 3 columns of current row, equivalent of mergeCells('A5
 $sheet->mergeCells(['RC3:RC5', 'RC6:RC7']); // equivalent of mergeCells(['C7:E7', 'F7:G7']) if current row is 7
 ```
 
-
----
-
-## getName()
-
----
-
-```php
-public function getName(): string
-```
-_Get sheet name_
-
-### Parameters
-
-_None_
-
----
-
-## isName()
-
----
-
-```php
-public function isName(string $name): bool
-```
-_Case-insensitive name checking_
-
-### Parameters
-
-* `string $name`
-
----
-
-## setName()
-
----
-
-```php
-public function setName(string $sheetName): Sheet
-```
-_Set sheet name_
-
-### Parameters
-
-* `string $sheetName`
-
----
-
-## getNamedRanges()
-
----
-
-```php
-public function getNamedRanges(): array
-```
-_Returns named ranges with full addresses_
-
-### Parameters
-
-_None_
 
 ---
 
@@ -2425,52 +1781,6 @@ _Move to the next row_
 
 * `array|Style|null $style`
 * `bool|null $forceRow`
-
----
-
-## getNotes()
-
----
-
-```php
-public function getNotes(): array
-```
-_Get all notes in the sheet_
-
-### Parameters
-
-_None_
-
----
-
-## setOuterBorder()
-
----
-
-```php
-public function setOuterBorder(string $range, $style): Sheet
-```
-_Set outer border for the specific range_
-
-### Parameters
-
-* `string $range`
-* `string|array|Style $style`
-
----
-
-## getOutlineLevel()
-
----
-
-```php
-public function getOutlineLevel(): int
-```
-_Get the current outline level for rows_
-
-### Parameters
-
-_None_
 
 ---
 
@@ -2925,6 +2235,727 @@ _Set page scale_
 
 ---
 
+## protect()
+
+---
+
+```php
+public function protect(?string $password = null): Sheet
+```
+_Protect sheet_
+
+### Parameters
+
+* `string|null $password`
+
+---
+
+## setActiveCell()
+
+---
+
+```php
+public function setActiveCell($cellAddress): Sheet
+```
+_Set active cell_
+
+### Parameters
+
+* `$cellAddress`
+
+---
+
+## setAutoFilter()
+
+---
+
+```php
+public function setAutoFilter($rowOrCell, ?int $col = 1): Sheet
+```
+_Set auto filter_
+
+### Parameters
+
+* `mixed|null $rowOrCell`
+* `int|null $col`
+
+---
+
+### Examples
+
+```php
+$sheet->setAutoFilter(2);
+$sheet->setAutoFilter('B2');
+$sheet->setAutoFilter('B2:C4');
+```
+
+
+---
+
+## setBgColor()
+
+---
+
+```php
+public function setBgColor(string $cellAddr, string $color): Sheet
+```
+_Set background color for the specific cell or range_
+
+### Parameters
+
+* `string $cellAddr`
+* `string $color`
+
+---
+
+## setBottomNodesOptions()
+
+---
+
+```php
+public function setBottomNodesOptions(string $node, array $options): Sheet
+```
+_Set multiple options for a bottom node_
+
+### Parameters
+
+* `string $node`
+* `array $options`
+
+---
+
+## setCellStyle()
+
+---
+
+```php
+public function setCellStyle(string $cellAddress, $style, 
+                             ?bool $mergeStyles = false): Sheet
+```
+_Set style for the specific cell_
+
+### Parameters
+
+* `string $cellAddress` -- Cell address
+* `array|Style $style` -- Style array or object
+* `bool|null $mergeStyles` -- True - merge style with previous style for this cell (if exists)
+
+---
+
+## setColAutoWidth()
+
+---
+
+```php
+public function setColAutoWidth($col): Sheet
+```
+_Alias of setColWidthAuto($col)_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+
+---
+
+## setColDataStyle()
+
+---
+
+```php
+public function setColDataStyle($colRange, $colStyle): Sheet
+```
+_Set styles of column cells (colors, formats, etc.)_
+
+_Styles are applied only to non-empty cells in a column and only take effect starting with the current row_
+
+### Parameters
+
+* `int|string|array $colRange`
+* `array|Style $colStyle`
+
+---
+
+### Examples
+
+```php
+$sheet->setColDataStyle('B', ['width' = 20]); // style for cells of column 'B'
+$sheet->setColDataStyle(2, ['width' = 20]); // 'B' is number 2 column
+$sheet->setColDataStyle('B:D', ['width' = 'auto']); // options for range of columns
+$sheet->setColDataStyle(['A', 'B', 'C'], $style); // options for several columns 'A', 'B' and 'C'
+```
+
+
+---
+
+## setColDataStyleArray()
+
+---
+
+```php
+public function setColDataStyleArray(array $colStyles): Sheet
+```
+_Set style of column cells (colors, formats, etc.)_
+
+_Styles are applied only to non-empty cells in a column and only take effect starting with the current row_
+
+### Parameters
+
+* `array $colStyles`
+
+---
+
+### Examples
+
+```php
+$sheet->setColDataStyleArray(['B' => $style1, 'C' => $style2]); // options for columns 'B' and 'C'
+```
+
+
+---
+
+## setColFormat()
+
+---
+
+```php
+public function setColFormat($col, $format): Sheet
+```
+_Set a format of single or multiple column(s)_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `mixed $format`
+
+---
+
+## setColFormats()
+
+---
+
+```php
+public function setColFormats(array $formats): Sheet
+```
+_Set formats of columns_
+
+### Parameters
+
+* `array $formats`
+
+---
+
+## setColFormula()
+
+---
+
+```php
+public function setColFormula($col, string $formula): Sheet
+```
+_Set formula for single or multiple column(s)_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `string $formula`
+
+---
+
+## setColHidden()
+
+---
+
+```php
+public function setColHidden($col): Sheet
+```
+_Set a column as hidden_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+
+---
+
+## setColMinWidth()
+
+---
+
+```php
+public function setColMinWidth($col, $width): Sheet
+```
+_Setting a minimal column's width_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|float|string $width`
+
+---
+
+## setColMinWidths()
+
+---
+
+```php
+public function setColMinWidths(array $widths): Sheet
+```
+_Setting a multiple column's minimal width_
+
+### Parameters
+
+* `array $widths`
+
+---
+
+### Examples
+
+```php
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+```
+
+
+---
+
+## setColOutlineLevel()
+
+---
+
+```php
+public function setColOutlineLevel($col, int $outlineLevel): Sheet
+```
+_Set a column outline level_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int $outlineLevel`
+
+---
+
+## setColStyle()
+
+---
+
+```php
+public function setColStyle($colRange, $style): Sheet
+```
+_Set style of single or multiple column(s)_
+
+_Styles are applied to the entire sheet column(s) (even if it is empty)_
+
+### Parameters
+
+* `int|string|array $colRange` -- Column number or column letter or column range (or array of these)
+* `array|Style $style`
+
+---
+
+### Examples
+
+```php
+$sheet->setColStyle('B', $style);
+$sheet->setColStyle(2, $style); // 'B' is number 2 column
+$sheet->setColStyle('C:F', $style);
+$sheet->setColStyle(['A', 'B', 'C'], $style);
+```
+
+
+---
+
+## setColStyleArray()
+
+---
+
+```php
+public function setColStyleArray($colStyles): Sheet
+```
+_Set styles of single or multiple column(s)_
+
+_Styles are applied to the entire sheet column(s) (even if it is empty)_
+
+### Parameters
+
+* `array|Style $colStyles`
+
+---
+
+### Examples
+
+```php
+$style1 = ['width' = 20];
+$style2 = (new Style())->setColor('red');
+$sheet->setColStyleArray(['B' => $style1, 'C' => $style2]);
+```
+
+
+---
+
+## setColVisible()
+
+---
+
+```php
+public function setColVisible($col, bool $val): Sheet
+```
+_Show/hide a column_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `bool $val`
+
+---
+
+## setColWidth()
+
+---
+
+```php
+public function setColWidth($col, $width, ?bool $min = false): Sheet
+```
+_Set a width of single or multiple column(s)_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|float|string $width`
+* `bool|null $min`
+
+---
+
+## setColWidthAuto()
+
+---
+
+```php
+public function setColWidthAuto($col): Sheet
+```
+_Set auto width of single or multiple column(s)_
+
+### Parameters
+
+* `int|string|array $col` -- Column number or column letter (or array of these)
+
+---
+
+### Examples
+
+```php
+$sheet->setColWidthAuto(2);
+$sheet->setColWidthAuto('B');
+$sheet->setColWidthAuto(['B', 'C']);
+$sheet->setColWidthAuto(['B:D']);
+```
+
+
+---
+
+## setColWidths()
+
+---
+
+```php
+public function setColWidths(array $widths, ?bool $min = false): Sheet
+```
+_Setting a multiple column's width_
+
+### Parameters
+
+* `array $widths`
+* `bool|null $min`
+
+---
+
+### Examples
+
+```php
+$sheet->setColWidths(['B' => 10, 'C' => 'auto', 'E' => 30, 'F' => 40]);
+```
+
+
+---
+
+## setDefaultFont()
+
+---
+
+```php
+public function setDefaultFont($font): Sheet
+```
+_Set default font settings for the sheet_
+
+### Parameters
+
+* `string|array $font`
+
+---
+
+## setDefaultFontColor()
+
+---
+
+```php
+public function setDefaultFontColor(string $fontColor): Sheet
+```
+_Set default font color_
+
+### Parameters
+
+* `string $fontColor`
+
+---
+
+## setDefaultFontName()
+
+---
+
+```php
+public function setDefaultFontName(string $fontName): Sheet
+```
+_Set default font name for the sheet_
+
+### Parameters
+
+* `string $fontName`
+
+---
+
+## setDefaultFontSize()
+
+---
+
+```php
+public function setDefaultFontSize(int $fontSize): Sheet
+```
+_Set default font size for the sheet_
+
+### Parameters
+
+* `int $fontSize`
+
+---
+
+## setDefaultFontStyle()
+
+---
+
+```php
+public function setDefaultFontStyle(string $fontStyle): Sheet
+```
+_Set default font style (bold, italic, etc.) for the sheet_
+
+### Parameters
+
+* `string $fontStyle`
+
+---
+
+## setDefaultFontStyleBold()
+
+---
+
+```php
+public function setDefaultFontStyleBold(): Sheet
+```
+_Set default font style as bold for the sheet_
+
+### Parameters
+
+_None_
+
+---
+
+## setDefaultFontStyleItalic()
+
+---
+
+```php
+public function setDefaultFontStyleItalic(): Sheet
+```
+_Set default font style as italic_
+
+### Parameters
+
+_None_
+
+---
+
+## setDefaultFontStyleStrikethrough()
+
+---
+
+```php
+public function setDefaultFontStyleStrikethrough(): Sheet
+```
+_Set default font style as strikethrough_
+
+### Parameters
+
+_None_
+
+---
+
+## setDefaultFontStyleUnderline()
+
+---
+
+```php
+public function setDefaultFontStyleUnderline(?bool $double = false): Sheet
+```
+_Set default font style as underline_
+
+### Parameters
+
+* `bool|null $double`
+
+---
+
+## setDefaultStyle()
+
+---
+
+```php
+public function setDefaultStyle($style): Sheet
+```
+_Sets default style_
+
+### Parameters
+
+* `array|Style $style`
+
+---
+
+## setFormat()
+
+---
+
+```php
+public function setFormat(string $cellAddr, string $format): Sheet
+```
+_Set value format for the specific cell or range_
+
+### Parameters
+
+* `string $cellAddr`
+* `string $format`
+
+---
+
+## setFormula()
+
+---
+
+```php
+public function setFormula($cellAddress, $value, $style): Sheet
+```
+_Set a formula to the single cell or to the cell range_
+
+### Parameters
+
+* `string|array $cellAddress`
+* `mixed $value`
+* `array|Style|null $style`
+
+---
+
+### Examples
+
+```php
+$sheet->setFormula('B5', '=F23');
+$sheet->setFormula('B5:C7', $formula, $style);
+$sheet->setFormula(['col' => 2, 'row' => 5], '=R2C3+R3C4');
+$sheet->setFormula([2, 5], '=SUM(A4:A18)');
+```
+
+
+---
+
+## setFreeze()
+
+---
+
+```php
+public function setFreeze($freezeRows, $freezeColumns): Sheet
+```
+_Freeze rows/columns_
+
+### Parameters
+
+* `mixed $freezeRows`
+* `mixed $freezeColumns`
+
+---
+
+### Examples
+
+```php
+$sheet->setFreeze(3, 3); // number rows and columns to freeze
+$sheet->setFreeze('C3'); // left top cell of the free area
+```
+
+
+---
+
+## setFreezeColumns()
+
+---
+
+```php
+public function setFreezeColumns(int $freezeColumns): Sheet
+```
+_Freeze columns_
+
+### Parameters
+
+* `int $freezeColumns` -- Number columns to freeze
+
+---
+
+## setFreezeRows()
+
+---
+
+```php
+public function setFreezeRows(int $freezeRows): Sheet
+```
+_Freeze rows_
+
+### Parameters
+
+* `int $freezeRows` -- Number rows to freeze
+
+---
+
+## setName()
+
+---
+
+```php
+public function setName(string $sheetName): Sheet
+```
+_Set sheet name_
+
+### Parameters
+
+* `string $sheetName`
+
+---
+
+## setOuterBorder()
+
+---
+
+```php
+public function setOuterBorder(string $range, $style): Sheet
+```
+_Set outer border for the specific range_
+
+### Parameters
+
+* `string $range`
+* `string|array|Style $style`
+
+---
+
 ## setPrintArea()
 
 ---
@@ -3062,36 +3093,6 @@ _Center the print area vertically_
 
 ---
 
-## protect()
-
----
-
-```php
-public function protect(?string $password = null): Sheet
-```
-_Protect sheet_
-
-### Parameters
-
-* `string|null $password`
-
----
-
-## isRightToLeft()
-
----
-
-```php
-public function isRightToLeft(): bool
-```
-_Check if the sheet is right-to-left_
-
-### Parameters
-
-_None_
-
----
-
 ## setRowDataStyle()
 
 ---
@@ -3196,7 +3197,7 @@ _Hide a specific row_
 public function setRowOutlineLevel($rowNum, int $outlineLevel, 
                                    ?bool $collapsed = null): Sheet
 ```
-_Set outline level for a specific row or range of rows_
+_Set an outline level for a specific row or range of rows_
 
 ### Parameters
 
@@ -3295,21 +3296,6 @@ _Turn on/off grid lines_
 ### Parameters
 
 * `bool $flag`
-
----
-
-## skipRow()
-
----
-
-```php
-public function skipRow(?int $rowCount = 1): Sheet
-```
-_Skip rows_
-
-### Parameters
-
-* `int|null $rowCount`
 
 ---
 
@@ -3418,21 +3404,6 @@ $sheet->writeRow([44, 55]); // Will be written in cells G7, H7
 
 ---
 
-## unprotect()
-
----
-
-```php
-public function unprotect(): Sheet
-```
-_Unprotect sheet_
-
-### Parameters
-
-_None_
-
----
-
 ## setValue()
 
 ---
@@ -3459,6 +3430,36 @@ $sheet->setValue(['col' => 2, 'row' => 5], $value, $style);
 $sheet->setValue([2, 5], $value);
 ```
 
+
+---
+
+## skipRow()
+
+---
+
+```php
+public function skipRow(?int $rowCount = 1): Sheet
+```
+_Skip rows_
+
+### Parameters
+
+* `int|null $rowCount`
+
+---
+
+## unprotect()
+
+---
+
+```php
+public function unprotect(): Sheet
+```
+_Unprotect sheet_
+
+### Parameters
+
+_None_
 
 ---
 

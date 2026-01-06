@@ -1,19 +1,21 @@
 ## LAST
 
+* Improved hyperlink handling
 * The namespace of the RichText class has been changed to avadim\FastExcelWriter\RichText
+* The namespace of the Style, StyleManager, and Font has been changed to avadim\FastExcelWriter\Style
 * Deprecated methods removed: Sheet::setColStyles(), Sheet::setColOptions(), Sheet::getExternalLinks(), Sheet::setPageOptions(), Sheet::setRowOptions(), Sheet::setRowStyles(),
 * An instance of the Style object can be used as an argument in all methods where an array with styles was passed
 
 ## V.6.8
 
-* Sheet::setAutoFilter() - Supports specifying range
-* Sheet::writeRows() - Write several rows from a two-dimensional array
-* Sheet::nextRow() - fixed exporting of empty rows
+* Sheet::setAutoFilter() – Supports specifying range
+* Sheet::writeRows() – Write several rows from a two-dimensional array
+* Sheet::nextRow() – fixed exporting of empty rows
 * Fixed errors in php 8.5
 
 ## V.6.4
 
-* Sheet::writeCells($values, $cellStyles) - Write several values into cells of one row
+* Sheet::writeCells($values, $cellStyles) – Write several values into cells of one row
 * Conditional Formatting (see [Conditional Formatting](/docs/08-conditional.md))
 * Changed: Ignoring formulas when calculating automatic column width
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/94
@@ -23,7 +25,7 @@
 * New methods Sheet::getCurrentRow(), Sheet::getCurrentCol(), Sheet::getCurrentCell()
 * New methods Sheet::applyIndentLeft(), Sheet::applyIndentRight(), Sheet::applyIndentDistributed()
 * New method Sheet::applyFillGradient()
-* Method Sheet::addImage() has been updated -- Add an image from a local file, URL, or base64 image string
+* Method Sheet::addImage() has been updated – Add an image from a local file, URL, or base64 image string
 * Data can be passed to a cell as a function
 * Fixed page margins
 * Fixed https://github.com/aVadim483/fast-excel-writer/issues/93 (the behavior has been changed)
@@ -32,12 +34,12 @@
 ## V.6.1
 
 * Sheet::setRowOptions(), Sheet::setColOptions(), Sheet::setRowStyles() and Sheet::setColStyles() are deprecated
-* Sheet::setRowStyle($rowNum, $style) - set style for row (or row range)
-* Sheet::setRowStyleArray($rowStyle) - set styles for rows (or row range)
+* Sheet::setRowStyle($rowNum, $style) – set style for row (or row range)
+* Sheet::setRowStyleArray($rowStyle) – set styles for rows (or row range)
 * Sheet::setRowDataStyle($rowNum, $style)
 * Sheet::setRowDataStyleArray($rowStyle)
-* Sheet::setColStyle($colLetter, $style) - set style for column (or column range)
-* Sheet::setColStyleArray($colStyles) - set style for column (or column range)
+* Sheet::setColStyle($colLetter, $style) – set style for column (or column range)
+* Sheet::setColStyleArray($colStyles) – set style for column (or column range)
 * Sheet::setColDataStyle($colLetter, $style)
 * Sheet::setColDataStyleArray($colStyles)
 
@@ -46,7 +48,7 @@
 * Data validation (see [Data validation](/docs/07-validation.md))
 * All methods of Style were extracted into class StyleManager (constants remained in the class Style)
 * PHP extension 'intl' is desirable but not required
-* Other refactoring
+* Another refactoring
 
 ## v.5.8
 

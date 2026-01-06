@@ -10,62 +10,62 @@
 * [colLetterRange()](#colletterrange) -- Convert values to letters array
 * [colNumber()](#colnumber) -- Convert letter to number (ONE based)
 * [colNumberRange()](#colnumberrange) -- Convert letter range to array of numbers (ONE based)
-* [create()](#create) -- Create new workbook
-* [createSheet()](#createsheet) -- Creates new sheet
+* [create()](#create) -- Create a new workbook
+* [createSheet()](#createsheet) -- Creates a new sheet
 * [fullAddress()](#fulladdress) -- Get full address with sheet name
 * [generateUuid()](#generateuuid) -- Generate UUID v4
-* [newStyle()](#newstyle) -- Create new instance of Style class
+* [newStyle()](#newstyle) -- Create a new instance of Style class
 * [pixelsToEMU()](#pixelstoemu) -- Convert pixels to EMU (English Metric Units)
 * [rangeRelOffsets()](#rangereloffsets) -- Return offsets by relative address (zero based)
 * [setTempDir()](#settempdir) -- Set dir for temporary files
 * [toTimestamp()](#totimestamp) -- Convert value (int or string) to Excel timestamp
-* [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
 * [addDefinedName()](#adddefinedname) -- Add a defined name
 * [addNamedRange()](#addnamedrange) -- Add a named range
 * [addSharedString()](#addsharedstring) -- Add a string to the shared strings table
+* [download()](#download) -- Download generated file to client (send to browser)
+* [getDefaultFormatStyles()](#getdefaultformatstyles) -- Get default format styles
+* [getDefaultSheetName()](#getdefaultsheetname) -- Get the default sheet name
+* [getDefaultStyle()](#getdefaultstyle) -- Get default style
+* [getDefinedNames()](#getdefinednames) -- Get all defined names
+* [getFileName()](#getfilename) -- Returns default filename
+* [getImageFiles()](#getimagefiles) -- Get list of all loaded image files
+* [getMetadata()](#getmetadata) -- Get metadata
+* [getSharedStrings()](#getsharedstrings) -- Get the shared strings table
+* [getSheet()](#getsheet) -- Alias of sheet()
+* [getSheets()](#getsheets) -- Returns all sheets
+* [getWriter()](#getwriter) -- Get the writer instance
+* [isR1C1()](#isr1c1) -- Is R1C1 notation mode enabled?
+* [isRightToLeft()](#isrighttoleft) -- Get right-to-left orientation
+* [makeSheet()](#makesheet) -- Creates and returns a new sheet
+* [output()](#output) -- Alias of download()
+* [protect()](#protect) -- Protect workbook
+* [removeSheet()](#removesheet) -- Removes sheet by index or name of sheet.
+* [save()](#save) -- Save generated XLSX-file
+* [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
 * [setAuthor()](#setauthor) -- Set the author of the document
 * [setCompany()](#setcompany) -- Set the company of the document
 * [setDefaultFont()](#setdefaultfont) -- Set default font options
 * [setDefaultFontName()](#setdefaultfontname) -- Set default font name
-* [getDefaultFormatStyles()](#getdefaultformatstyles) -- Get default format styles
 * [setDefaultLocale()](#setdefaultlocale) -- Set default locale from the current environment
-* [getDefaultSheetName()](#getdefaultsheetname) -- Get the default sheet name
-* [getDefaultStyle()](#getdefaultstyle) -- Get default style
 * [setDefaultStyle()](#setdefaultstyle) -- Set default style
-* [getDefinedNames()](#getdefinednames) -- Get all defined names
 * [setDescription()](#setdescription) -- Set the description of the document
-* [download()](#download) -- Download generated file to client (send to browser)
-* [getFileName()](#getfilename) -- Returns default filename
 * [setFileName()](#setfilename) -- Sets default filename for saving
-* [getImageFiles()](#getimagefiles) -- Get list of all loaded image files
 * [setKeywords()](#setkeywords) -- Set the keywords of the document
 * [setLocale()](#setlocale) -- Set locale information
-* [makeSheet()](#makesheet) -- Creates and returns a new sheet
 * [setMetaAuthor()](#setmetaauthor) -- Set metadata 'author'
 * [setMetaCompany()](#setmetacompany) -- Set metadata 'company'
-* [getMetadata()](#getmetadata) -- Get metadata
 * [setMetadata()](#setmetadata) -- Set metadata
 * [setMetaDescription()](#setmetadescription) -- Set metadata 'description'
 * [setMetaKeywords()](#setmetakeywords) -- Set metadata 'keywords'
 * [setMetaSubject()](#setmetasubject) -- Set metadata 'subject'
 * [setMetaTitle()](#setmetatitle) -- Set metadata 'title'
-* [output()](#output) -- Alias of download()
-* [protect()](#protect) -- Protect workbook
-* [isR1C1()](#isr1c1) -- Is R1C1 notation mode enabled?
 * [setR1C1()](#setr1c1) -- Set R1C1 notation mode
-* [removeSheet()](#removesheet) -- Removes sheet by index or name of sheet.
-* [isRightToLeft()](#isrighttoleft) -- Get right-to-left orientation
 * [setRightToLeft()](#setrighttoleft) -- Set right-to-left orientation
-* [save()](#save) -- Save generated XLSX-file
 * [setSharedString()](#setsharedstring) -- Set the usage of shared strings
-* [getSharedStrings()](#getsharedstrings) -- Get the shared strings table
-* [sheet()](#sheet) -- Returns sheet by number or name
-* [getSheet()](#getsheet) -- Alias of sheet()
-* [getSheets()](#getsheets) -- Returns all sheets
 * [setSubject()](#setsubject) -- Set the subject of the document
 * [setTitle()](#settitle) -- Set the title of the document
+* [sheet()](#sheet) -- Returns sheet by number or name
 * [unprotect()](#unprotect) -- Unprotect workbook
-* [getWriter()](#getwriter) -- Get the writer instance
 
 ---
 
@@ -228,7 +228,7 @@ _Convert letter range to array of numbers (ONE based)_
 ```php
 public static function create($sheets, ?array $options = []): Excel
 ```
-_Create new workbook_
+_Create a new workbook_
 
 ### Parameters
 
@@ -244,7 +244,7 @@ _Create new workbook_
 ```php
 public static function createSheet(string $sheetName): Sheet
 ```
-_Creates new sheet_
+_Creates a new sheet_
 
 ### Parameters
 
@@ -290,9 +290,9 @@ _None_
 ---
 
 ```php
-public static function newStyle(): Style
+public static function newStyle(): Style\Style
 ```
-_Create new instance of Style class_
+_Create a new instance of Style class_
 
 ### Parameters
 
@@ -360,21 +360,6 @@ _Convert value (int or string) to Excel timestamp_
 
 ---
 
-## setActiveSheet()
-
----
-
-```php
-public function setActiveSheet(string $name): Excel
-```
-_Set active (default) sheet by case-insensitive name_
-
-### Parameters
-
-* `string $name`
-
----
-
 ## addDefinedName()
 
 ---
@@ -422,6 +407,307 @@ _Add a string to the shared strings table_
 
 * `string $string`
 * `bool|null $richText`
+
+---
+
+## download()
+
+---
+
+```php
+public function download(?string $name = null)
+```
+_Download generated file to client (send to browser)_
+
+### Parameters
+
+* `string|null $name`
+
+---
+
+## getDefaultFormatStyles()
+
+---
+
+```php
+public function getDefaultFormatStyles(): array
+```
+_Get default format styles_
+
+### Parameters
+
+_None_
+
+---
+
+## getDefaultSheetName()
+
+---
+
+```php
+public function getDefaultSheetName(): string
+```
+_Get the default sheet name_
+
+### Parameters
+
+_None_
+
+---
+
+## getDefaultStyle()
+
+---
+
+```php
+public function getDefaultStyle(): array
+```
+_Get default style_
+
+### Parameters
+
+_None_
+
+---
+
+## getDefinedNames()
+
+---
+
+```php
+public function getDefinedNames(): array
+```
+_Get all defined names_
+
+### Parameters
+
+_None_
+
+---
+
+## getFileName()
+
+---
+
+```php
+public function getFileName(): string
+```
+_Returns default filename_
+
+### Parameters
+
+_None_
+
+---
+
+## getImageFiles()
+
+---
+
+```php
+public function getImageFiles(): array
+```
+_Get list of all loaded image files_
+
+### Parameters
+
+_None_
+
+---
+
+## getMetadata()
+
+---
+
+```php
+public function getMetadata($key): mixed
+```
+_Get metadata_
+
+### Parameters
+
+* `null $key`
+
+---
+
+## getSharedStrings()
+
+---
+
+```php
+public function getSharedStrings(): array
+```
+_Get the shared strings table_
+
+### Parameters
+
+_None_
+
+---
+
+## getSheet()
+
+---
+
+```php
+public function getSheet($index): ?Sheet
+```
+_Alias of sheet()_
+
+### Parameters
+
+* `int|string|null $index` -- - number or name of sheet
+
+---
+
+## getSheets()
+
+---
+
+```php
+public function getSheets(): array
+```
+_Returns all sheets_
+
+### Parameters
+
+_None_
+
+---
+
+## getWriter()
+
+---
+
+```php
+public function getWriter(): Writer
+```
+_Get the writer instance_
+
+### Parameters
+
+_None_
+
+---
+
+## isR1C1()
+
+---
+
+```php
+public function isR1C1(): bool
+```
+_Is R1C1 notation mode enabled?_
+
+### Parameters
+
+_None_
+
+---
+
+## isRightToLeft()
+
+---
+
+```php
+public function isRightToLeft(): bool
+```
+_Get right-to-left orientation_
+
+### Parameters
+
+_None_
+
+---
+
+## makeSheet()
+
+---
+
+```php
+public function makeSheet(?string $sheetName = null): Sheet
+```
+_Creates and returns a new sheet_
+
+### Parameters
+
+* `string|null $sheetName`
+
+---
+
+## output()
+
+---
+
+```php
+public function output(?string $name = null): void
+```
+_Alias of download()_
+
+### Parameters
+
+* `string|null $name`
+
+---
+
+## protect()
+
+---
+
+```php
+public function protect(?string $password = null): Excel
+```
+_Protect workbook_
+
+### Parameters
+
+* `string|null $password`
+
+---
+
+## removeSheet()
+
+---
+
+```php
+public function removeSheet($index): Excel
+```
+_Removes sheet by index or name of sheet.Removes the first sheet of index omitted_
+
+### Parameters
+
+* `int|string|null $index`
+
+---
+
+## save()
+
+---
+
+```php
+public function save(?string $fileName = null, ?bool $overWrite = true): bool
+```
+_Save generated XLSX-file_
+
+### Parameters
+
+* `string|null $fileName`
+* `bool|null $overWrite`
+
+---
+
+## setActiveSheet()
+
+---
+
+```php
+public function setActiveSheet(string $name): Excel
+```
+_Set active (default) sheet by case-insensitive name_
+
+### Parameters
+
+* `string $name`
 
 ---
 
@@ -485,21 +771,6 @@ _Set default font name_
 
 ---
 
-## getDefaultFormatStyles()
-
----
-
-```php
-public function getDefaultFormatStyles(): array
-```
-_Get default format styles_
-
-### Parameters
-
-_None_
-
----
-
 ## setDefaultLocale()
 
 ---
@@ -508,36 +779,6 @@ _None_
 public function setDefaultLocale()
 ```
 _Set default locale from the current environment_
-
-### Parameters
-
-_None_
-
----
-
-## getDefaultSheetName()
-
----
-
-```php
-public function getDefaultSheetName(): string
-```
-_Get the default sheet name_
-
-### Parameters
-
-_None_
-
----
-
-## getDefaultStyle()
-
----
-
-```php
-public function getDefaultStyle(): array
-```
-_Get default style_
 
 ### Parameters
 
@@ -560,21 +801,6 @@ _Set default style_
 
 ---
 
-## getDefinedNames()
-
----
-
-```php
-public function getDefinedNames(): array
-```
-_Get all defined names_
-
-### Parameters
-
-_None_
-
----
-
 ## setDescription()
 
 ---
@@ -590,36 +816,6 @@ _Set the description of the document_
 
 ---
 
-## download()
-
----
-
-```php
-public function download(?string $name = null)
-```
-_Download generated file to client (send to browser)_
-
-### Parameters
-
-* `string|null $name`
-
----
-
-## getFileName()
-
----
-
-```php
-public function getFileName(): string
-```
-_Returns default filename_
-
-### Parameters
-
-_None_
-
----
-
 ## setFileName()
 
 ---
@@ -632,21 +828,6 @@ _Sets default filename for saving_
 ### Parameters
 
 * `string $fileName`
-
----
-
-## getImageFiles()
-
----
-
-```php
-public function getImageFiles(): array
-```
-_Get list of all loaded image files_
-
-### Parameters
-
-_None_
 
 ---
 
@@ -681,21 +862,6 @@ _Set locale information_
 
 ---
 
-## makeSheet()
-
----
-
-```php
-public function makeSheet(?string $sheetName = null): Sheet
-```
-_Creates and returns a new sheet_
-
-### Parameters
-
-* `string|null $sheetName`
-
----
-
 ## setMetaAuthor()
 
 ---
@@ -723,21 +889,6 @@ _Set metadata 'company'_
 ### Parameters
 
 * `string|null $company`
-
----
-
-## getMetadata()
-
----
-
-```php
-public function getMetadata($key): mixed
-```
-_Get metadata_
-
-### Parameters
-
-* `null $key`
 
 ---
 
@@ -817,51 +968,6 @@ _Set metadata 'title'_
 
 ---
 
-## output()
-
----
-
-```php
-public function output(?string $name = null): void
-```
-_Alias of download()_
-
-### Parameters
-
-* `string|null $name`
-
----
-
-## protect()
-
----
-
-```php
-public function protect(?string $password = null): Excel
-```
-_Protect workbook_
-
-### Parameters
-
-* `string|null $password`
-
----
-
-## isR1C1()
-
----
-
-```php
-public function isR1C1(): bool
-```
-_Is R1C1 notation mode enabled?_
-
-### Parameters
-
-_None_
-
----
-
 ## setR1C1()
 
 ---
@@ -874,36 +980,6 @@ _Set R1C1 notation mode_
 ### Parameters
 
 * `bool $option`
-
----
-
-## removeSheet()
-
----
-
-```php
-public function removeSheet($index): Excel
-```
-_Removes sheet by index or name of sheet.Removes the first sheet of index omitted_
-
-### Parameters
-
-* `int|string|null $index`
-
----
-
-## isRightToLeft()
-
----
-
-```php
-public function isRightToLeft(): bool
-```
-_Get right-to-left orientation_
-
-### Parameters
-
-_None_
 
 ---
 
@@ -922,22 +998,6 @@ _Set right-to-left orientation_
 
 ---
 
-## save()
-
----
-
-```php
-public function save(?string $fileName = null, ?bool $overWrite = true): bool
-```
-_Save generated XLSX-file_
-
-### Parameters
-
-* `string|null $fileName`
-* `bool|null $overWrite`
-
----
-
 ## setSharedString()
 
 ---
@@ -950,66 +1010,6 @@ _Set the usage of shared strings_
 ### Parameters
 
 * `bool $option`
-
----
-
-## getSharedStrings()
-
----
-
-```php
-public function getSharedStrings(): array
-```
-_Get the shared strings table_
-
-### Parameters
-
-_None_
-
----
-
-## sheet()
-
----
-
-```php
-public function sheet($index): ?Sheet
-```
-_Returns sheet by number or nameReturn the first sheet if number or name omitted_
-
-### Parameters
-
-* `int|string|null $index` -- - number or name of sheet
-
----
-
-## getSheet()
-
----
-
-```php
-public function getSheet($index): ?Sheet
-```
-_Alias of sheet()_
-
-### Parameters
-
-* `int|string|null $index` -- - number or name of sheet
-
----
-
-## getSheets()
-
----
-
-```php
-public function getSheets(): array
-```
-_Returns all sheets_
-
-### Parameters
-
-_None_
 
 ---
 
@@ -1043,6 +1043,21 @@ _Set the title of the document_
 
 ---
 
+## sheet()
+
+---
+
+```php
+public function sheet($index): ?Sheet
+```
+_Returns sheet by number or nameReturn the first sheet if number or name omitted_
+
+### Parameters
+
+* `int|string|null $index` -- - number or name of sheet
+
+---
+
 ## unprotect()
 
 ---
@@ -1051,21 +1066,6 @@ _Set the title of the document_
 public function unprotect(): Excel
 ```
 _Unprotect workbook_
-
-### Parameters
-
-_None_
-
----
-
-## getWriter()
-
----
-
-```php
-public function getWriter(): Writer
-```
-_Get the writer instance_
 
 ### Parameters
 

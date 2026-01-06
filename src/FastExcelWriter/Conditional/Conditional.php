@@ -4,7 +4,7 @@ namespace avadim\FastExcelWriter\Conditional;
 
 use avadim\FastExcelWriter\Exceptions\ExceptionConditionalFormatting;
 use avadim\FastExcelWriter\Sheet;
-use avadim\FastExcelWriter\StyleManager;
+use avadim\FastExcelWriter\Style\StyleManager;
 
 class Conditional
 {

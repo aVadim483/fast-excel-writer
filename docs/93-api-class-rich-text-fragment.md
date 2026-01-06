@@ -3,13 +3,13 @@
 ---
 
 * [__construct()](#__construct) -- RichTextFragment constructor
+* [getText()](#gettext) -- Get fragment text
 * [setBold()](#setbold) -- Set font weight to bold
 * [setColor()](#setcolor) -- Set font color
 * [setFont()](#setfont) -- Set font name
 * [setItalic()](#setitalic) -- Set font style to italic
 * [setSize()](#setsize) -- Set font size
 * [setStrike()](#setstrike) -- Set font decoration to strikethrough
-* [getText()](#gettext) -- Get fragment text
 * [setUnderline()](#setunderline) -- Set font decoration to underline
 
 ---
@@ -27,6 +27,21 @@ _RichTextFragment constructor_
 
 * `string|null $text`
 * `array|null $prop`
+
+---
+
+## getText()
+
+---
+
+```php
+public function getText(): string
+```
+_Get fragment text_
+
+### Parameters
+
+_None_
 
 ---
 
@@ -113,21 +128,6 @@ _Set font size_
 public function setStrike(): RichTextFragment
 ```
 _Set font decoration to strikethrough_
-
-### Parameters
-
-_None_
-
----
-
-## getText()
-
----
-
-```php
-public function getText(): string
-```
-_Get fragment text_
 
 ### Parameters
 

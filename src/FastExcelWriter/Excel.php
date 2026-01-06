@@ -8,6 +8,8 @@ use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceBookWriter;
+use avadim\FastExcelWriter\Style\Style;
+use avadim\FastExcelWriter\Style\StyleManager;
 use avadim\FastExcelWriter\Writer\Writer;
 
 /**
@@ -302,7 +304,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Create new workbook
+     * Create a new workbook
      *
      * @param array|string|null $sheets Name of sheet or array of names
      * @param array|null $options Options
@@ -330,7 +332,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Creates new sheet
+     * Creates a new sheet
      *
      * @param string $sheetName
      *
@@ -342,7 +344,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Create new instance of Style class
+     * Create a new instance of Style class
      *
      * @return Style
      */
@@ -553,7 +555,7 @@ class Excel implements InterfaceBookWriter
             }
             $file = $dir . '/' . $locale . '/settings.php';
 
-            // try load locale settings file
+            // try to load locale settings file
             $includeFile = '';
             if (is_file($file)) {
                 $includeFile = $file;
@@ -914,7 +916,7 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
-     * Get row indexes (zero based) from the given range
+     * Get row indexes (ZERO based) from the given range
      *
      * @param int|string|array $rowRange
      *

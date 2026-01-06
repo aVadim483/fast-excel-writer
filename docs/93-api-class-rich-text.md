@@ -6,11 +6,11 @@
 * [__toString()](#__tostring)
 * [addTaggedText()](#addtaggedtext) -- Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>)
 * [addText()](#addtext) -- Add a text fragment
+* [fragment()](#fragment) -- Get fragment by its index
+* [fragments()](#fragments) -- Get all fragments
 * [setBold()](#setbold) -- Set bold font for the last added fragment
 * [setColor()](#setcolor) -- Set font color for the last added fragment
 * [setFont()](#setfont) -- Set font name for the last added fragment
-* [fragment()](#fragment) -- Get fragment by its index
-* [fragments()](#fragments) -- Get all fragments
 * [setItalic()](#setitalic) -- Set italic font for the last added fragment
 * [setSize()](#setsize) -- Set font size for the last added fragment
 * [setUnderline()](#setunderline) -- Set underline for the last added fragment
@@ -78,6 +78,36 @@ _Add a text fragment_
 
 ---
 
+## fragment()
+
+---
+
+```php
+public function fragment($num): RichTextFragment
+```
+_Get fragment by its index_
+
+### Parameters
+
+* `$num`
+
+---
+
+## fragments()
+
+---
+
+```php
+public function fragments(): array
+```
+_Get all fragments_
+
+### Parameters
+
+_None_
+
+---
+
 ## setBold()
 
 ---
@@ -120,36 +150,6 @@ _Set font name for the last added fragment_
 ### Parameters
 
 * `string $font`
-
----
-
-## fragment()
-
----
-
-```php
-public function fragment($num): RichTextFragment
-```
-_Get fragment by its index_
-
-### Parameters
-
-* `$num`
-
----
-
-## fragments()
-
----
-
-```php
-public function fragments(): array
-```
-_Get all fragments_
-
-### Parameters
-
-_None_
 
 ---
 

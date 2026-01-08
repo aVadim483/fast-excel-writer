@@ -254,13 +254,13 @@ class Writer
      * @param string $localName
      * @param string $contents
      *
-     * @return false|int
+     * @return false|string
      */
     public function writeToTemp(string $localName, string $contents)
     {
         $tmpFile = $this->makeTempFile(null, $localName);
-        if ($tmpFile) {
-            return file_put_contents($tmpFile, $contents);
+        if ($tmpFile && file_put_contents($tmpFile, $contents)) {
+            return $tmpFile;
         }
 
         return false;
@@ -457,6 +457,7 @@ class Writer
 
     /**
      * @param string|null $mask
+     * @param array|null $samples
      *
      * @return void
      */
@@ -590,9 +591,12 @@ class Writer
 
     /**
      * @param array $relationShips
+     *
+     * @return string|null
      */
-    protected function _writeSharedStrings(array &$relationShips)
+    public function _writeSharedStrings(array &$relationShips): ?string
     {
+        $result = null;
         $sharedStrings = $this->excel->getSharedStrings();
         if ($sharedStrings) {
             $uniqueCount = count($sharedStrings);
@@ -614,7 +618,7 @@ class Writer
 
             $entry = 'xl/sharedStrings.xml';
 
-            if ($this->writeToTemp($entry, $xmlSharedStrings)) {
+            if ($result = $this->writeToTemp($entry, $xmlSharedStrings)) {
                 $relationShips['override'][$entry] = [
                     'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml',
                     'rel' => 'workbook',
@@ -623,6 +627,7 @@ class Writer
                 ];
             }
         }
+        return $result ?: null;
     }
 
     /**
@@ -646,9 +651,12 @@ class Writer
      * @param string $entry
      * @param array $commentList
      * @param array $relationShips
+     *
+     * @return string|null
      */
-    protected function _writeCommentsFile(string $entry, array $commentList, array &$relationShips)
+    protected function _writeCommentsFile(string $entry, array $commentList, array &$relationShips): ?string
     {
+        $result = null;
         if ($commentList) {
             $nameSpaces = [
                 'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
@@ -668,23 +676,24 @@ class Writer
             $xmlString .= '</commentList>';
             $xmlString .= '</comments>';
 
-            if ($this->writeToTemp($entry, $xmlString)) {
+            if ($result = $this->writeToTemp($entry, $xmlString)) {
                 $relationShips['override'][$entry] = [
                     'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml',
                 ];
             }
         }
+        return $result ?: null;
     }
 
     /**
      * @param string $entry
      * @param array $commentList
      * @param array $relationShips
+     *
+     * @return string|null
      */
-    protected function _writeCommentOldStyleShape(string $entry, array $commentList, array &$relationShips)
+    protected function _writeCommentOldStyleShape(string $entry, array $commentList, array &$relationShips): ?string
     {
-        $error = null;
-
         $drawingCnt = 0;
         if ($commentList) {
             $nameSpaces = [
@@ -716,8 +725,9 @@ class Writer
             }
             $xmlDrawing .= '</xml>';
 
-            $this->writeToTemp($entry, $xmlDrawing);
+            return $this->writeToTemp($entry, $xmlDrawing) ?: null;
         }
+        return null;
     }
 
     protected function _writeChartFile(string $entry, Chart $chart, array &$relationShips)
@@ -1357,7 +1367,7 @@ class Writer
     /**
      * @return bool|string
      */
-    protected function _writeStylesXML()
+    public function _writeStylesXML()
     {
         $schemaLinks = [
             'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',

@@ -435,6 +435,30 @@ class Writer
     }
 
     /**
+     * @param string $outputFile
+     *
+     * @return bool
+     */
+    public function _replaceStyles(string $outputFile): bool
+    {
+        $this->zip = new \ZipArchive();
+        $result = $this->zip->open($outputFile, \ZIPARCHIVE::CREATE);
+        if ($result !== TRUE) {
+            ExceptionFile::throwNew('Unable to open zip "%s". Error code "%s"', $outputFile, $result);
+        }
+        $stylesFile = $this->_writeStylesXML();
+        if ($stylesFile) {
+            $this->zip->addFile($stylesFile, 'xl/styles.xml');
+
+            $this->zip->close();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param string $entry
      * @param array|null $samples
      *
@@ -594,7 +618,7 @@ class Writer
      *
      * @return string|null
      */
-    public function _writeSharedStrings(array &$relationShips): ?string
+    protected function _writeSharedStrings(array &$relationShips): ?string
     {
         $result = null;
         $sharedStrings = $this->excel->getSharedStrings();
@@ -1367,7 +1391,7 @@ class Writer
     /**
      * @return bool|string
      */
-    public function _writeStylesXML()
+    protected function _writeStylesXML()
     {
         $schemaLinks = [
             'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',

@@ -1930,6 +1930,9 @@ class Sheet implements InterfaceSheetWriter
         }
 
         $rowAttributes = $this->getRowAttributes($rowIdx, $rowOptions);
+        if (isset($rowAttributes['r'])) {
+            unset($rowAttributes['r']);
+        }
         $rowAttrStr = Writer::tagAttributes($rowAttributes);
 
         // add auto formulas of columns
@@ -2655,7 +2658,7 @@ class Sheet implements InterfaceSheetWriter
     protected function _writeCurrentRow(): int
     {
         $savedRow = $this->currentRowIdx;
-        if (!empty($this->cells['values']) || !empty($this->cells['styles']) || $this->rowSettings) {
+        if (!empty($this->cells['values']) || !empty($this->cells['styles']) || $this->rowSettings || $this->rowAttributes) {
             $writer = $this->excel->getWriter();
             if (!$this->open) {
                 $writer->writeSheetDataBegin($this);

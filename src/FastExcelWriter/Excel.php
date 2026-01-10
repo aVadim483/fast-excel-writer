@@ -2086,11 +2086,11 @@ class Excel implements InterfaceBookWriter
      * Add a new style
      *
      * @param mixed $cellStyle
-     * @param array $resultStyle
+     * @param array|null $resultStyle
      *
      * @return int
      */
-    public function addStyle($cellStyle, array &$resultStyle = []): int
+    public function addStyle($cellStyle, ?array &$resultStyle = []): int
     {
         return $this->styleManager->addStyle($cellStyle, $resultStyle);
     }
@@ -2099,11 +2099,11 @@ class Excel implements InterfaceBookWriter
      * Add a new DXF style
      *
      * @param mixed $style
-     * @param array $resultStyle
+     * @param array|null $resultStyle
      *
      * @return int
      */
-    public function addStyleDxfs($style, array &$resultStyle = []): int
+    public function addStyleDxfs($style, ?array &$resultStyle = []): int
     {
         return $this->styleManager->addDxfs($style, $resultStyle);
     }

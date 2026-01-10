@@ -126,7 +126,7 @@ class Excel implements InterfaceBookWriter
     public $writer;
 
     /** @var StyleManager */
-    public $style;
+    public $styleManager;
 
     public bool $saved = false;
 
@@ -195,17 +195,17 @@ class Excel implements InterfaceBookWriter
         }
 
         if (isset($options['style_manager'])) {
-            $this->style = $this->getObject($options['style_manager']);
+            $this->styleManager = $this->getObject($options['style_manager']);
         }
         else {
-            $this->style = new StyleManager($options);
+            $this->styleManager = new StyleManager($options);
         }
 
         $this->setDefaultLocale();
         if (!empty($options['locale'])) {
             $this->setLocale($options['locale']);
         }
-        $settings = $this->style->getLocaleSettings();
+        $settings = $this->styleManager->getLocaleSettings();
         $this->formulaConverter = new FormulaConverter($settings['functions'] ?? []);
         $this->formulaConverter->excel = $this;
 
@@ -587,7 +587,7 @@ class Excel implements InterfaceBookWriter
             $localeSettings = $aFormatSettings;
         }
 
-        $this->style->setLocaleSettings($localeSettings);
+        $this->styleManager->setLocaleSettings($localeSettings);
 
         return $this;
     }
@@ -802,7 +802,7 @@ class Excel implements InterfaceBookWriter
      */
     public function setDefaultFont(array $fontOptions): Excel
     {
-        $this->style->setDefaultFont($fontOptions);
+        $this->styleManager->setDefaultFont($fontOptions);
 
         return $this;
     }
@@ -816,7 +816,7 @@ class Excel implements InterfaceBookWriter
      */
     public function setDefaultFontName(string $fontName): Excel
     {
-        $this->style->setDefaultFont(['font-name' => $fontName]);
+        $this->styleManager->setDefaultFont(['font-name' => $fontName]);
 
         return $this;
     }
@@ -830,7 +830,7 @@ class Excel implements InterfaceBookWriter
      */
     public function setDefaultStyle(array $style): Excel
     {
-        $this->style->setDefaultStyle($style);
+        $this->styleManager->setDefaultStyle($style);
 
         return $this;
     }
@@ -1989,7 +1989,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getDefaultStyle(): array
     {
-        return $this->style->getDefaultStyle();
+        return $this->styleManager->getDefaultStyle();
     }
 
     /**
@@ -1999,7 +1999,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getHyperlinkStyle(): array
     {
-        return $this->style->getHyperlinkStyle();
+        return $this->styleManager->getHyperlinkStyle();
     }
 
     /**
@@ -2009,7 +2009,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getDefaultFormatStyles(): array
     {
-        return $this->style->getDefaultFormatStyles();
+        return $this->styleManager->getDefaultFormatStyles();
     }
 
     /**
@@ -2019,7 +2019,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleLocaleSettings(): array
     {
-        return $this->style->getLocaleSettings();
+        return $this->styleManager->getLocaleSettings();
     }
 
     /**
@@ -2029,7 +2029,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleFonts(): array
     {
-        return $this->style->getStyleFonts();
+        return $this->styleManager->getStyleFonts();
     }
 
     /**
@@ -2039,7 +2039,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleFills(): array
     {
-        return $this->style->getStyleFills();
+        return $this->styleManager->getStyleFills();
     }
 
     /**
@@ -2049,7 +2049,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleBorders(): array
     {
-        return $this->style->getStyleBorders();
+        return $this->styleManager->getStyleBorders();
     }
 
     /**
@@ -2059,7 +2059,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleCellXfs(): array
     {
-        return $this->style->getStyleCellXfs();
+        return $this->styleManager->getStyleCellXfs();
     }
 
     /**
@@ -2069,7 +2069,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleIndexedColors(): array
     {
-        return $this->style->getIndexedColors();
+        return $this->styleManager->getIndexedColors();
     }
 
     /**
@@ -2079,7 +2079,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleNumberFormats(): array
     {
-        return $this->style->_getNumberFormats();
+        return $this->styleManager->_getNumberFormats();
     }
 
     /**
@@ -2090,9 +2090,9 @@ class Excel implements InterfaceBookWriter
      *
      * @return int
      */
-    public function addStyle($cellStyle, &$resultStyle = []): int
+    public function addStyle($cellStyle, array &$resultStyle = []): int
     {
-        return $this->style->addStyle($cellStyle, $resultStyle);
+        return $this->styleManager->addStyle($cellStyle, $resultStyle);
     }
 
     /**
@@ -2103,9 +2103,9 @@ class Excel implements InterfaceBookWriter
      *
      * @return int
      */
-    public function addStyleDxfs($style, &$resultStyle = []): int
+    public function addStyleDxfs($style, array &$resultStyle = []): int
     {
-        return $this->style->addDxfs($style, $resultStyle);
+        return $this->styleManager->addDxfs($style, $resultStyle);
     }
 
     /**
@@ -2115,7 +2115,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleDxfs(): array
     {
-        return $this->style->getStyleDxfs();
+        return $this->styleManager->getStyleDxfs();
     }
 
 }

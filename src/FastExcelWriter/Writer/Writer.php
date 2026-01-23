@@ -1414,10 +1414,11 @@ class Writer
         $numberFormats = $this->excel->getStyleNumberFormats();
         if (!$numberFormats) {
             $file->write('<numFmts count="0"/>');
-        } else {
+        }
+        else {
             $file->write('<numFmts count="' . count($numberFormats) . '">');
             foreach ($numberFormats as $num => $fmt) {
-                $file->write('<numFmt numFmtId="' . (164 + $num) . '" formatCode="' . self::xmlSpecialChars($fmt) . '" />');
+                $file->write('<numFmt numFmtId="' . $num . '" formatCode="' . self::xmlSpecialChars($fmt) . '" />');
             }
             $file->write('</numFmts>');
         }
@@ -1510,7 +1511,7 @@ class Writer
                     'borderId' => $cellXf['_border_id'],
                     'fillId' => $cellXf['_fill_id'],
                     'fontId' => $cellXf['_font_id'],
-                    'numFmtId' => 164 + $cellXf['_num_fmt_id'],
+                    'numFmtId' => $cellXf['_num_fmt_id'],
                     'xfId' => $xfId,
                 ];
 

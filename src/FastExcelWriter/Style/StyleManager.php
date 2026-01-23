@@ -1052,6 +1052,9 @@ class StyleManager
             return $this->elements[$sectionName][$key]['index'];
         }
         $index = isset($this->elements[$sectionName]) ? count($this->elements[$sectionName]) : 0;
+        if ($sectionName === 'numFmts') {
+            $index += 164;
+        }
         $this->elements[$sectionName][$key] = [
             'index' => $index,
             'value' => $value,
@@ -1623,7 +1626,11 @@ class StyleManager
     public function _getNumberFormats(): array
     {
         if (isset($this->elements['numFmts'])) {
-            return array_keys($this->elements['numFmts']);
+            $result = [];
+            foreach ($this->elements['numFmts'] as $element) {
+                $result[$element['index']] = $element['value'];
+            }
+            return $result;
         }
         return [];
     }

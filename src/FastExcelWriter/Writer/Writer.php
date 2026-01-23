@@ -1497,60 +1497,65 @@ class Writer
         else {
             $file->write('<cellXfs count="' . count($cellXfs) . '">');
             foreach ($cellXfs as $cellXf) {
-                $alignmentAttr = '';
-                if (!empty($cellXf['format']['format-text-rotation'])) {
-                    $alignmentAttr .= ' textRotation="' . $cellXf['format']['format-text-rotation'] . '"';
-                }
-                if (!empty($cellXf['format']['format-align-horizontal'])) {
-                    $alignmentAttr .= ' horizontal="' . $cellXf['format']['format-align-horizontal'] . '"';
-                }
-                if (!empty($cellXf['format']['format-align-vertical'])) {
-                    $alignmentAttr .= ' vertical="' . $cellXf['format']['format-align-vertical'] . '"';
-                }
-                if (!empty($cellXf['format']['format-text-wrap'])) {
-                    $alignmentAttr .= ' wrapText="true"';
-                }
-                if (!empty($cellXf['format']['format-align-indent'])) {
-                    $alignmentAttr .= ' indent="' . $cellXf['format']['format-align-indent'] . '"';
-                }
-
-                $xfId = $cellXf['_xf_id'] ?? 0;
-                $xfAttr = [
-                    'borderId' => $cellXf['_border_id'],
-                    'fillId' => $cellXf['_fill_id'],
-                    'fontId' => $cellXf['_font_id'],
-                    'numFmtId' => $cellXf['_num_fmt_id'],
-                    'xfId' => $xfId,
-                ];
-
-                $xfAttr['applyFont'] = 'true';
-
-                $kids = [];
-                if ($alignmentAttr) {
-                    $xfAttr['applyAlignment'] = 'true';
-                    $kids[] = '<alignment ' . $alignmentAttr . '/>';
-                }
-                if (isset($cellXf['protection'])) {
-                    $xfAttr['applyProtection'] = 'true';
-                    if (isset($cellXf['protection']['protection-locked'])) {
-                        $kids[] = '<protection locked="' . $cellXf['protection']['protection-locked'] . '"/>';
-                    }
-                    if (isset($cellXf['protection']['protection-hidden'])) {
-                        $kids[] = '<protection hidden="' . $cellXf['protection']['protection-hidden'] . '"/>';
-                    }
-                }
-
-                if (!empty($cellXf['_border_id'])) {
-                    $xfAttr['applyBorder'] = 'true';
-                }
-
-                if ($kids) {
-                    $file->write('<xf ' . self::tagAttributes($xfAttr) . '>');
-                    $file->write(implode('', $kids));
-                    $file->write('</xf>');
+                if (isset($cellXf['tag'])) {
+                    $file->write($cellXf['tag']);
                 }
                 else {
-                    $file->write('<xf ' . self::tagAttributes($xfAttr) . '/>');
+                    $alignmentAttr = '';
+                    if (!empty($cellXf['format']['format-text-rotation'])) {
+                        $alignmentAttr .= ' textRotation="' . $cellXf['format']['format-text-rotation'] . '"';
+                    }
+                    if (!empty($cellXf['format']['format-align-horizontal'])) {
+                        $alignmentAttr .= ' horizontal="' . $cellXf['format']['format-align-horizontal'] . '"';
+                    }
+                    if (!empty($cellXf['format']['format-align-vertical'])) {
+                        $alignmentAttr .= ' vertical="' . $cellXf['format']['format-align-vertical'] . '"';
+                    }
+                    if (!empty($cellXf['format']['format-text-wrap'])) {
+                        $alignmentAttr .= ' wrapText="true"';
+                    }
+                    if (!empty($cellXf['format']['format-align-indent'])) {
+                        $alignmentAttr .= ' indent="' . $cellXf['format']['format-align-indent'] . '"';
+                    }
+
+                    $xfId = $cellXf['_xf_id'] ?? 0;
+                    $xfAttr = [
+                        'borderId' => $cellXf['_border_id'],
+                        'fillId' => $cellXf['_fill_id'],
+                        'fontId' => $cellXf['_font_id'],
+                        'numFmtId' => $cellXf['_num_fmt_id'],
+                        'xfId' => $xfId,
+                    ];
+
+                    $xfAttr['applyFont'] = 'true';
+
+                    $kids = [];
+                    if ($alignmentAttr) {
+                        $xfAttr['applyAlignment'] = 'true';
+                        $kids[] = '<alignment ' . $alignmentAttr . '/>';
+                    }
+                    if (isset($cellXf['protection'])) {
+                        $xfAttr['applyProtection'] = 'true';
+                        if (isset($cellXf['protection']['protection-locked'])) {
+                            $kids[] = '<protection locked="' . $cellXf['protection']['protection-locked'] . '"/>';
+                        }
+                        if (isset($cellXf['protection']['protection-hidden'])) {
+                            $kids[] = '<protection hidden="' . $cellXf['protection']['protection-hidden'] . '"/>';
+                        }
+                    }
+
+                    if (!empty($cellXf['_border_id'])) {
+                        $xfAttr['applyBorder'] = 'true';
+                    }
+
+                    if ($kids) {
+                        $file->write('<xf ' . self::tagAttributes($xfAttr) . '>');
+                        $file->write(implode('', $kids));
+                        $file->write('</xf>');
+                    }
+                    else {
+                        $file->write('<xf ' . self::tagAttributes($xfAttr) . '/>');
+                    }
                 }
             }
 

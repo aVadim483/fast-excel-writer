@@ -1418,7 +1418,12 @@ class Writer
         else {
             $file->write('<numFmts count="' . count($numberFormats) . '">');
             foreach ($numberFormats as $num => $fmt) {
-                $file->write('<numFmt numFmtId="' . $num . '" formatCode="' . self::xmlSpecialChars($fmt) . '" />');
+                if (is_array($fmt) && isset($fmt['tag'])) {
+                    $file->write($fmt['tag']);
+                }
+                else {
+                    $file->write('<numFmt numFmtId="' . $num . '" formatCode="' . self::xmlSpecialChars($fmt) . '" />');
+                }
             }
             $file->write('</numFmts>');
         }

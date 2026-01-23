@@ -2023,13 +2023,23 @@ class Excel implements InterfaceBookWriter
     }
 
     /**
+     * Get all number formats used in styles
+     *
+     * @return array
+     */
+    public function getStyleNumberFormats(): array
+    {
+        return $this->styleManager->_getNumberFormats();
+    }
+
+    /**
      * Get all fonts used in styles
      *
      * @return array
      */
     public function getStyleFonts(): array
     {
-        return $this->styleManager->getStyleFonts();
+        return $this->styleManager->getElementsFonts();
     }
 
     /**
@@ -2039,7 +2049,7 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleFills(): array
     {
-        return $this->styleManager->getStyleFills();
+        return $this->styleManager->getElementsFills();
     }
 
     /**
@@ -2049,7 +2059,15 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleBorders(): array
     {
-        return $this->styleManager->getStyleBorders();
+        return $this->styleManager->getElementsBorders();
+    }
+
+    /**
+     * @return array
+     */
+    public function getStyleCellStyleXfs(): array
+    {
+        return $this->styleManager->getElementsCellStyleXfs();
     }
 
     /**
@@ -2059,7 +2077,33 @@ class Excel implements InterfaceBookWriter
      */
     public function getStyleCellXfs(): array
     {
-        return $this->styleManager->getStyleCellXfs();
+        return $this->styleManager->getElementsCellXfs();
+    }
+
+    /**
+     * @return array
+     */
+    public function getStyleCellStyles(): array
+    {
+        return $this->styleManager->getElementsCellStyles();
+    }
+
+    /**
+     * Get all DXF styles
+     *
+     * @return array
+     */
+    public function getStyleDxfs(): array
+    {
+        return $this->styleManager->getElementsDxfs();
+    }
+
+    /**
+     * @return array
+     */
+    public function getStyleTableStyles(): array
+    {
+        return $this->styleManager->getElementsTableStyles();
     }
 
     /**
@@ -2070,16 +2114,6 @@ class Excel implements InterfaceBookWriter
     public function getStyleIndexedColors(): array
     {
         return $this->styleManager->getIndexedColors();
-    }
-
-    /**
-     * Get all number formats used in styles
-     *
-     * @return array
-     */
-    public function getStyleNumberFormats(): array
-    {
-        return $this->styleManager->_getNumberFormats();
     }
 
     /**
@@ -2106,16 +2140,6 @@ class Excel implements InterfaceBookWriter
     public function addStyleDxfs($style, ?array &$resultStyle = []): int
     {
         return $this->styleManager->addDxfs($style, $resultStyle);
-    }
-
-    /**
-     * Get all DXF styles
-     *
-     * @return array
-     */
-    public function getStyleDxfs(): array
-    {
-        return $this->styleManager->getStyleDxfs();
     }
 
 }

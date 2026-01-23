@@ -1427,7 +1427,7 @@ class StyleManager
     /**
      * @return array
      */
-    public function getStyleFonts(): array
+    public function getElementsFonts(): array
     {
         return $this->getElements('fonts');
     }
@@ -1435,7 +1435,7 @@ class StyleManager
     /**
      * @return array
      */
-    public function getStyleFills(): array
+    public function getElementsFills(): array
     {
         return $this->getElements('fills');
     }
@@ -1443,7 +1443,7 @@ class StyleManager
     /**
      * @return array
      */
-    public function getStyleBorders(): array
+    public function getElementsBorders(): array
     {
         return $this->getElements('borders');
     }
@@ -1451,7 +1451,15 @@ class StyleManager
     /**
      * @return array
      */
-    public function getStyleCellXfs(): array
+    public function getElementsCellStyleXfs(): array
+    {
+        return $this->getElements('cellStyleXfs');
+    }
+
+    /**
+     * @return array
+     */
+    public function getElementsCellXfs(): array
     {
         return $this->getElements('cellXfs');
     }
@@ -1459,9 +1467,25 @@ class StyleManager
     /**
      * @return array
      */
-    public function getStyleDxfs(): array
+    public function getElementsCellStyles(): array
+    {
+        return $this->getElements('cellStyles');
+    }
+
+    /**
+     * @return array
+     */
+    public function getElementsDxfs(): array
     {
         return $this->getElements('dxfs');
+    }
+
+    /**
+     * @return array
+     */
+    public function getElementsTableStyles(): array
+    {
+        return $this->getElements('tableStyles');
     }
 
     /**

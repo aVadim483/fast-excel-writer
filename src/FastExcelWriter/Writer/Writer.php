@@ -1474,12 +1474,15 @@ class Writer
 
         //// +++++++++++
         // <cellStyleXfs/>
-        $cellStyleXfs = [
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>',
-        ];
+        $cellStyleXfs = $this->excel->getStyleCellStyleXfs();
+        if (!$cellStyleXfs) {
+            $cellStyleXfs = [
+                ['tag' => '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>'],
+            ];
+        }
         $file->write('<cellStyleXfs count="' . count($cellStyleXfs) . '">');
         foreach ($cellStyleXfs as $cellStyleXf) {
-            $file->write($cellStyleXf);
+            $file->write($cellStyleXf['tag']);
         }
         $file->write('</cellStyleXfs>');
 
@@ -1556,18 +1559,21 @@ class Writer
 
         //// +++++++++++
         // <cellStyles/>
-        $cellStyles = [
-            '<cellStyle builtinId="0" customBuiltin="false" name="Normal" xfId="0"/>',
-            //'<cellStyle builtinId="8" customBuiltin="false" name="Hyperlink" xfId="1" />',
-            //'<cellStyle builtinId="3" customBuiltin="false" name="Comma" xfId="2"/>',
-            //'<cellStyle builtinId="6" customBuiltin="false" name="Comma [0]" xfId="3"/>',
-            //'<cellStyle builtinId="4" customBuiltin="false" name="Currency" xfId="4"/>',
-            //'<cellStyle builtinId="7" customBuiltin="false" name="Currency [0]" xfId="5"/>',
-            //'<cellStyle builtinId="5" customBuiltin="false" name="Percent" xfId="6"/>',
-        ];
+        $cellStyles = $this->excel->getStyleCellStyles();
+        if (!$cellStyles) {
+            $cellStyles = [
+                ['tag' => '<cellStyle builtinId="0" customBuiltin="false" name="Normal" xfId="0"/>'],
+                //['tag' => '<cellStyle builtinId="8" customBuiltin="false" name="Hyperlink" xfId="1" />'],
+                //['tag' => '<cellStyle builtinId="3" customBuiltin="false" name="Comma" xfId="2"/>'],
+                //['tag' => '<cellStyle builtinId="6" customBuiltin="false" name="Comma [0]" xfId="3"/>'],
+                //['tag' => '<cellStyle builtinId="4" customBuiltin="false" name="Currency" xfId="4"/>'],
+                //['tag' => '<cellStyle builtinId="7" customBuiltin="false" name="Currency [0]" xfId="5"/>'],
+                //['tag' => '<cellStyle builtinId="5" customBuiltin="false" name="Percent" xfId="6"/>'],
+            ];
+        }
         $file->write('<cellStyles count="' . count($cellStyles) . '">');
         foreach ($cellStyles as $cellStyle) {
-            $file->write($cellStyle);
+            $file->write($cellStyle['tag']);
         }
         $file->write('</cellStyles>');
 
@@ -1586,7 +1592,17 @@ class Writer
 
         //// +++++++++++
         // <tableStyles/>
-        $file->write('<tableStyles count="0"/>');
+        $tableStyles = $this->excel->getStyleTableStyles();
+        if (!$dxfs) {
+            $file->write('<tableStyles count="0"/>');
+        }
+        else {
+            $file->write('<tableStyles count="' . count($tableStyles) . '">');
+            foreach ($tableStyles as $tableStyle) {
+                $file->write($tableStyle['tag']);
+            }
+            $file->write('</tableStyles>');
+        }
 
         if ($this->excel->getStyleIndexedColors()) {
             $file->write('<colors><indexedColors>');

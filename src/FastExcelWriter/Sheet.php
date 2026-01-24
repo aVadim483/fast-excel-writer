@@ -1947,7 +1947,7 @@ class Sheet implements InterfaceSheetWriter
 
         // values or styles
         $colIdxMax = max($row ? max(array_keys($row)) : -1, $cellsOptions ? max(array_keys($cellsOptions)) : -1);
-        if ($colIdxMax || $rowAttrStr) {
+        if ($colIdxMax >= 0 || $rowAttrStr) {
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
@@ -1962,7 +1962,7 @@ class Sheet implements InterfaceSheetWriter
                     ];
                 }
             }
-            if ($colIdxMax) {
+            if ($colIdxMax >= 0) {
                 $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttrStr . '>');
                 //foreach ($row as $colIdx => $cellValue) {
                 $colIdx = 0;

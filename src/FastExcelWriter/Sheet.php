@@ -1945,7 +1945,9 @@ class Sheet implements InterfaceSheetWriter
             ksort($row);
         }
 
-        if ($row || ($row === [null] && $rowAttrStr)) {
+        // values or styles
+        $colIdxMax = max($row ? max(array_keys($row)) : -1, $cellsOptions ? max(array_keys($cellsOptions)) : -1);
+        if ($colIdxMax || $rowAttrStr) {
             if (empty($this->sheetStylesSummary)) {
                 if ($this->defaultStyle) {
                     $this->sheetStylesSummary = [
@@ -1960,9 +1962,12 @@ class Sheet implements InterfaceSheetWriter
                     ];
                 }
             }
-            if ($row && $row !== [null]) {
+            if ($colIdxMax) {
                 $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttrStr . '>');
-                foreach ($row as $colIdx => $cellValue) {
+                //foreach ($row as $colIdx => $cellValue) {
+                $colIdx = 0;
+                while ($colIdx <= $colIdxMax) {
+                    $cellValue = $row[$colIdx] ?? null;
                     if (!isset($this->colStylesSummary[$colIdx])) {
                         if (!isset($this->colStyles[$colIdx])) {
                             $this->colStylesSummary[$colIdx] = $this->sheetStylesSummary;
@@ -3487,7 +3492,7 @@ class Sheet implements InterfaceSheetWriter
             $this->writeAreas();
         }
 
-        if ($this->currentColIdx) {
+        if ($this->currentColIdx || !empty($this->cells['values'][$this->currentRowIdx]) || !empty($this->cells['styles'][$this->currentRowIdx])) {
             $this->_writeCurrentRow();
         }
 
@@ -3567,7 +3572,7 @@ class Sheet implements InterfaceSheetWriter
                 $this->cells['styles'][$rowIdx][$colIdx][$key] = array_replace_recursive($this->cells['styles'][$rowIdx][$colIdx][$key], $options);
             }
             if (!isset($this->cells['values'][$rowIdx][$colIdx])) {
-                $this->cells['values'][$rowIdx][$colIdx] = '';
+                $this->cells['values'][$rowIdx][$colIdx] = null;
             }
         }
         elseif ($ref === 'area') {

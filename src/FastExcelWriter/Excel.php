@@ -164,10 +164,13 @@ class Excel implements InterfaceBookWriter
     /**
      * Excel constructor
      *
-     * @param array|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
+     * @param array|Options|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
      */
-    public function __construct(?array $options = [])
+    public function __construct($options = [])
     {
+        if ($options instanceof Options) {
+            $options = $options->toArray();
+        }
         $writerOptions = [
             'excel' => $this,
         ];
@@ -307,11 +310,11 @@ class Excel implements InterfaceBookWriter
      * Create a new workbook
      *
      * @param array|string|null $sheets Name of sheet or array of names
-     * @param array|null $options Options
+     * @param array|Options|null $options Options
      *
      * @return Excel
      */
-    public static function create($sheets = null, ?array $options = []): Excel
+    public static function create($sheets = null, $options = []): Excel
     {
         $excel = new self($options);
         if ($sheets) {

@@ -33,6 +33,9 @@
 * [getSharedStrings()](#getsharedstrings) -- Get the shared strings table
 * [getSheet()](#getsheet) -- Alias of sheet()
 * [getSheets()](#getsheets) -- Returns all sheets
+* [getStyleCellStyles()](#getstylecellstyles)
+* [getStyleCellStyleXfs()](#getstylecellstylexfs)
+* [getStyleTableStyles()](#getstyletablestyles)
 * [getWriter()](#getwriter) -- Get the writer instance
 * [isR1C1()](#isr1c1) -- Is R1C1 notation mode enabled?
 * [isRightToLeft()](#isrighttoleft) -- Get right-to-left orientation
@@ -74,13 +77,13 @@
 ---
 
 ```php
-public function __construct(?array $options = [])
+public function __construct($options)
 ```
 _Excel constructor_
 
 ### Parameters
 
-* `array|null $options` -- Optional parameters: \['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
+* `array|Options|null $options` -- Optional parameters: \['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
 
 ---
 
@@ -226,14 +229,14 @@ _Convert letter range to array of numbers (ONE based)_
 ---
 
 ```php
-public static function create($sheets, ?array $options = []): Excel
+public static function create($sheets, $options): Excel
 ```
 _Create a new workbook_
 
 ### Parameters
 
 * `array|string|null $sheets` -- Name of sheet or array of names
-* `array|null $options` -- Options
+* `array|Options|null $options` -- Options
 
 ---
 
@@ -568,6 +571,51 @@ _Alias of sheet()_
 public function getSheets(): array
 ```
 _Returns all sheets_
+
+### Parameters
+
+_None_
+
+---
+
+## getStyleCellStyles()
+
+---
+
+```php
+public function getStyleCellStyles(): array
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## getStyleCellStyleXfs()
+
+---
+
+```php
+public function getStyleCellStyleXfs(): array
+```
+
+
+### Parameters
+
+_None_
+
+---
+
+## getStyleTableStyles()
+
+---
+
+```php
+public function getStyleTableStyles(): array
+```
+
 
 ### Parameters
 

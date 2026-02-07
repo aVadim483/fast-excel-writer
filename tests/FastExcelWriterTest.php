@@ -176,6 +176,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('B2', $this->cells['B2']);
         $this->assertEquals('D2', $this->cells['D2']);
 
+        $this->assertEquals(null, $this->cells['A3']);
         $this->assertEquals('F3', $this->cells['F3']);
 
         $this->assertEquals('A5', $this->cells['A5']);

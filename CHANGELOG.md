@@ -1,4 +1,4 @@
-## Current
+## V.6.12
 
 * New class `Options` for workbook settings
 * New methods `Excel::getStyleCellStyles()` and `Excel::getStyleCellStyleXfs()`

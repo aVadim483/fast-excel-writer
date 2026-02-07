@@ -2,15 +2,15 @@
 
 ---
 
-* [__construct()](#__construct) -- RichTextFragment constructor
-* [getText()](#gettext) -- Get fragment text
-* [setBold()](#setbold) -- Set font weight to bold
-* [setColor()](#setcolor) -- Set font color
-* [setFont()](#setfont) -- Set font name
-* [setItalic()](#setitalic) -- Set font style to italic
-* [setSize()](#setsize) -- Set font size
-* [setStrike()](#setstrike) -- Set font decoration to strikethrough
-* [setUnderline()](#setunderline) -- Set font decoration to underline
+* [__construct()](#__construct) – RichTextFragment constructor
+* [getText()](#gettext) – Get fragment text
+* [setBold()](#setbold) – Set font weight to bold
+* [setColor()](#setcolor) – Set font color
+* [setFont()](#setfont) – Set font name
+* [setItalic()](#setitalic) – Set font style to italic
+* [setSize()](#setsize) – Set font size
+* [setStrike()](#setstrike) – Set font decoration to strikethrough
+* [setUnderline()](#setunderline) – Set font decoration to underline
 
 ---
 

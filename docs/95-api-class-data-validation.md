@@ -2,32 +2,32 @@
 
 ---
 
-* [__construct()](#__construct) -- DataValidation constructor
-* [custom()](#custom) -- Make data validation as a custom rule
-* [date()](#date) -- Make data validation as a date value
-* [decimal()](#decimal) -- Make data validation as a decimal value
-* [dropDown()](#dropdown) -- Make data validation as a dropdown list
-* [expression()](#expression) -- Make data validation as an expression (alias of self::custom())
-* [integer()](#integer) -- Make data validation as an integer value
-* [isNumber()](#isnumber) -- Checking if a cell value is a number
-* [isText()](#istext) -- Checking if a cell value is a text
-* [list()](#list) -- Alias of dropDown()
-* [make()](#make) -- Make a DataValidation instance
-* [textLength()](#textlength) -- Make data validation as a text length
-* [whole()](#whole) -- Alias of integer()
-* [allowBlank()](#allowblank) -- Allow blank value
-* [setError()](#seterror) -- Set error message (title and body)
-* [setErrorMessage()](#seterrormessage) -- Error message body
-* [setErrorStyle()](#seterrorstyle) -- Error style (action in case of error)
-* [setErrorTitle()](#seterrortitle) -- Error message title
-* [setFormula()](#setformula) -- Alias of setFormula1()
-* [setFormula1()](#setformula1) -- Set formula 1 for data validation
-* [setFormula2()](#setformula2) -- Set formula 2 for data validation
+* [__construct()](#__construct) – DataValidation constructor
+* [custom()](#custom) – Make data validation as a custom rule
+* [date()](#date) – Make data validation as a date value
+* [decimal()](#decimal) – Make data validation as a decimal value
+* [dropDown()](#dropdown) – Make data validation as a dropdown list
+* [expression()](#expression) – Make data validation as an expression (alias of self::custom())
+* [integer()](#integer) – Make data validation as an integer value
+* [isNumber()](#isnumber) – Checking if a cell value is a number
+* [isText()](#istext) – Checking if a cell value is a text
+* [list()](#list) – Alias of dropDown()
+* [make()](#make) – Make a DataValidation instance
+* [textLength()](#textlength) – Make data validation as a text length
+* [whole()](#whole) – Alias of integer()
+* [allowBlank()](#allowblank) – Allow blank value
+* [setError()](#seterror) – Set error message (title and body)
+* [setErrorMessage()](#seterrormessage) – Error message body
+* [setErrorStyle()](#seterrorstyle) – Error style (action in case of error)
+* [setErrorTitle()](#seterrortitle) – Error message title
+* [setFormula()](#setformula) – Alias of setFormula1()
+* [setFormula1()](#setformula1) – Set formula 1 for data validation
+* [setFormula2()](#setformula2) – Set formula 2 for data validation
 * [setOperator()](#setoperator)
-* [setPrompt()](#setprompt) -- Set prompt
-* [showDropDown()](#showdropdown) -- Show dropdown list
-* [showErrorMessage()](#showerrormessage) -- Allow (or disallow) error message
-* [showInputMessage()](#showinputmessage) -- Show input message
+* [setPrompt()](#setprompt) – Set prompt
+* [showDropDown()](#showdropdown) – Show dropdown list
+* [showErrorMessage()](#showerrormessage) – Allow (or disallow) error message
+* [showInputMessage()](#showinputmessage) – Show input message
 
 ---
 

@@ -2,73 +2,73 @@
 
 ---
 
-* [__construct()](#__construct) -- Excel constructor
-* [cellAddress()](#celladdress) -- Create cell address by row and col numbers
-* [colIndex()](#colindex) -- Convert letter to index (ZERO based)
-* [colIndexRange()](#colindexrange) -- Convert letter range to array of numbers (ZERO based)
-* [colLetter()](#colletter) -- Convert column number to letter
-* [colLetterRange()](#colletterrange) -- Convert values to letters array
-* [colNumber()](#colnumber) -- Convert letter to number (ONE based)
-* [colNumberRange()](#colnumberrange) -- Convert letter range to array of numbers (ONE based)
-* [create()](#create) -- Create a new workbook
-* [createSheet()](#createsheet) -- Creates a new sheet
-* [fullAddress()](#fulladdress) -- Get full address with sheet name
-* [generateUuid()](#generateuuid) -- Generate UUID v4
-* [newStyle()](#newstyle) -- Create a new instance of Style class
-* [pixelsToEMU()](#pixelstoemu) -- Convert pixels to EMU (English Metric Units)
-* [rangeRelOffsets()](#rangereloffsets) -- Return offsets by relative address (zero based)
-* [setTempDir()](#settempdir) -- Set dir for temporary files
-* [toTimestamp()](#totimestamp) -- Convert value (int or string) to Excel timestamp
-* [addDefinedName()](#adddefinedname) -- Add a defined name
-* [addNamedRange()](#addnamedrange) -- Add a named range
-* [addSharedString()](#addsharedstring) -- Add a string to the shared strings table
-* [download()](#download) -- Download generated file to client (send to browser)
-* [getDefaultFormatStyles()](#getdefaultformatstyles) -- Get default format styles
-* [getDefaultSheetName()](#getdefaultsheetname) -- Get the default sheet name
-* [getDefaultStyle()](#getdefaultstyle) -- Get default style
-* [getDefinedNames()](#getdefinednames) -- Get all defined names
-* [getFileName()](#getfilename) -- Returns default filename
-* [getImageFiles()](#getimagefiles) -- Get list of all loaded image files
-* [getMetadata()](#getmetadata) -- Get metadata
-* [getSharedStrings()](#getsharedstrings) -- Get the shared strings table
-* [getSheet()](#getsheet) -- Alias of sheet()
-* [getSheets()](#getsheets) -- Returns all sheets
+* [__construct()](#__construct) – Excel constructor
+* [cellAddress()](#celladdress) – Create cell address by row and col numbers
+* [colIndex()](#colindex) – Convert letter to index (ZERO based)
+* [colIndexRange()](#colindexrange) – Convert letter range to array of numbers (ZERO based)
+* [colLetter()](#colletter) – Convert column number to letter
+* [colLetterRange()](#colletterrange) – Convert values to letters array
+* [colNumber()](#colnumber) – Convert letter to number (ONE based)
+* [colNumberRange()](#colnumberrange) – Convert letter range to array of numbers (ONE based)
+* [create()](#create) – Create a new workbook
+* [createSheet()](#createsheet) – Creates a new sheet
+* [fullAddress()](#fulladdress) – Get full address with sheet name
+* [generateUuid()](#generateuuid) – Generate UUID v4
+* [newStyle()](#newstyle) – Create a new instance of Style class
+* [pixelsToEMU()](#pixelstoemu) – Convert pixels to EMU (English Metric Units)
+* [rangeRelOffsets()](#rangereloffsets) – Return offsets by relative address (zero based)
+* [setTempDir()](#settempdir) – Set dir for temporary files
+* [toTimestamp()](#totimestamp) – Convert value (int or string) to Excel timestamp
+* [addDefinedName()](#adddefinedname) – Add a defined name
+* [addNamedRange()](#addnamedrange) – Add a named range
+* [addSharedString()](#addsharedstring) – Add a string to the shared strings table
+* [download()](#download) – Download generated file to client (send to browser)
+* [getDefaultFormatStyles()](#getdefaultformatstyles) – Get default format styles
+* [getDefaultSheetName()](#getdefaultsheetname) – Get the default sheet name
+* [getDefaultStyle()](#getdefaultstyle) – Get default style
+* [getDefinedNames()](#getdefinednames) – Get all defined names
+* [getFileName()](#getfilename) – Returns default filename
+* [getImageFiles()](#getimagefiles) – Get list of all loaded image files
+* [getMetadata()](#getmetadata) – Get metadata
+* [getSharedStrings()](#getsharedstrings) – Get the shared strings table
+* [getSheet()](#getsheet) – Alias of sheet()
+* [getSheets()](#getsheets) – Returns all sheets
 * [getStyleCellStyles()](#getstylecellstyles)
 * [getStyleCellStyleXfs()](#getstylecellstylexfs)
 * [getStyleTableStyles()](#getstyletablestyles)
-* [getWriter()](#getwriter) -- Get the writer instance
-* [isR1C1()](#isr1c1) -- Is R1C1 notation mode enabled?
-* [isRightToLeft()](#isrighttoleft) -- Get right-to-left orientation
-* [makeSheet()](#makesheet) -- Creates and returns a new sheet
-* [output()](#output) -- Alias of download()
-* [protect()](#protect) -- Protect workbook
-* [removeSheet()](#removesheet) -- Removes sheet by index or name of sheet.
-* [save()](#save) -- Save generated XLSX-file
-* [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
-* [setAuthor()](#setauthor) -- Set the author of the document
-* [setCompany()](#setcompany) -- Set the company of the document
-* [setDefaultFont()](#setdefaultfont) -- Set default font options
-* [setDefaultFontName()](#setdefaultfontname) -- Set default font name
-* [setDefaultLocale()](#setdefaultlocale) -- Set default locale from the current environment
-* [setDefaultStyle()](#setdefaultstyle) -- Set default style
-* [setDescription()](#setdescription) -- Set the description of the document
-* [setFileName()](#setfilename) -- Sets default filename for saving
-* [setKeywords()](#setkeywords) -- Set the keywords of the document
-* [setLocale()](#setlocale) -- Set locale information
-* [setMetaAuthor()](#setmetaauthor) -- Set metadata 'author'
-* [setMetaCompany()](#setmetacompany) -- Set metadata 'company'
-* [setMetadata()](#setmetadata) -- Set metadata
-* [setMetaDescription()](#setmetadescription) -- Set metadata 'description'
-* [setMetaKeywords()](#setmetakeywords) -- Set metadata 'keywords'
-* [setMetaSubject()](#setmetasubject) -- Set metadata 'subject'
-* [setMetaTitle()](#setmetatitle) -- Set metadata 'title'
-* [setR1C1()](#setr1c1) -- Set R1C1 notation mode
-* [setRightToLeft()](#setrighttoleft) -- Set right-to-left orientation
-* [setSharedString()](#setsharedstring) -- Set the usage of shared strings
-* [setSubject()](#setsubject) -- Set the subject of the document
-* [setTitle()](#settitle) -- Set the title of the document
-* [sheet()](#sheet) -- Returns sheet by number or name
-* [unprotect()](#unprotect) -- Unprotect workbook
+* [getWriter()](#getwriter) – Get the writer instance
+* [isR1C1()](#isr1c1) – Is R1C1 notation mode enabled?
+* [isRightToLeft()](#isrighttoleft) – Get right-to-left orientation
+* [makeSheet()](#makesheet) – Creates and returns a new sheet
+* [output()](#output) – Alias of download()
+* [protect()](#protect) – Protect workbook
+* [removeSheet()](#removesheet) – Removes sheet by index or name of sheet.
+* [save()](#save) – Save generated XLSX-file
+* [setActiveSheet()](#setactivesheet) – Set active (default) sheet by case-insensitive name
+* [setAuthor()](#setauthor) – Set the author of the document
+* [setCompany()](#setcompany) – Set the company of the document
+* [setDefaultFont()](#setdefaultfont) – Set default font options
+* [setDefaultFontName()](#setdefaultfontname) – Set default font name
+* [setDefaultLocale()](#setdefaultlocale) – Set default locale from the current environment
+* [setDefaultStyle()](#setdefaultstyle) – Set default style
+* [setDescription()](#setdescription) – Set the description of the document
+* [setFileName()](#setfilename) – Sets default filename for saving
+* [setKeywords()](#setkeywords) – Set the keywords of the document
+* [setLocale()](#setlocale) – Set locale information
+* [setMetaAuthor()](#setmetaauthor) – Set metadata 'author'
+* [setMetaCompany()](#setmetacompany) – Set metadata 'company'
+* [setMetadata()](#setmetadata) – Set metadata
+* [setMetaDescription()](#setmetadescription) – Set metadata 'description'
+* [setMetaKeywords()](#setmetakeywords) – Set metadata 'keywords'
+* [setMetaSubject()](#setmetasubject) – Set metadata 'subject'
+* [setMetaTitle()](#setmetatitle) – Set metadata 'title'
+* [setR1C1()](#setr1c1) – Set R1C1 notation mode
+* [setRightToLeft()](#setrighttoleft) – Set right-to-left orientation
+* [setSharedString()](#setsharedstring) – Set the usage of shared strings
+* [setSubject()](#setsubject) – Set the subject of the document
+* [setTitle()](#settitle) – Set the title of the document
+* [sheet()](#sheet) – Returns sheet by number or name
+* [unprotect()](#unprotect) – Unprotect workbook
 
 ---
 
@@ -83,7 +83,7 @@ _Excel constructor_
 
 ### Parameters
 
-* `array|Options|null $options` -- Optional parameters: \['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
+* `array|Options|null $options` – Optional parameters: \['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
 
 ---
 
@@ -100,8 +100,8 @@ _Create cell address by row and col numbers_
 
 ### Parameters
 
-* `int $rowNumber` -- ONE based
-* `int $colNumber` -- ONE based
+* `int $rowNumber` – ONE based
+* `int $colNumber` – ONE based
 * `bool|null $absolute`
 * `bool|null $absoluteRow`
 
@@ -145,7 +145,7 @@ _Convert letter range to array of numbers (ZERO based)_
 
 ### Parameters
 
-* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
+* `string|int|array $colLetter` – e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
 
 ---
 
@@ -160,7 +160,7 @@ _Convert column number to letter_
 
 ### Parameters
 
-* `int $colNumber` -- ONE based
+* `int $colNumber` – ONE based
 
 ---
 
@@ -176,7 +176,7 @@ _Convert values to letters array_
 ### Parameters
 
 * `array|string $colKeys`
-* `int|null $baseNum` -- 0 or 1
+* `int|null $baseNum` – 0 or 1
 
 ---
 
@@ -220,7 +220,7 @@ _Convert letter range to array of numbers (ONE based)_
 
 ### Parameters
 
-* `string|int|array $colLetter` -- e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
+* `string|int|array $colLetter` – e.g.: 'B', 2, 'C:F', \['A', 'B', 'C']
 
 ---
 
@@ -235,8 +235,8 @@ _Create a new workbook_
 
 ### Parameters
 
-* `array|string|null $sheets` -- Name of sheet or array of names
-* `array|Options|null $options` -- Options
+* `array|string|null $sheets` – Name of sheet or array of names
+* `array|Options|null $options` – Options
 
 ---
 
@@ -559,7 +559,7 @@ _Alias of sheet()_
 
 ### Parameters
 
-* `int|string|null $index` -- - number or name of sheet
+* `int|string|null $index` – - number or name of sheet
 
 ---
 
@@ -1102,7 +1102,7 @@ _Returns sheet by number or nameReturn the first sheet if number or name omitted
 
 ### Parameters
 
-* `int|string|null $index` -- - number or name of sheet
+* `int|string|null $index` – - number or name of sheet
 
 ---
 

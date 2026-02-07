@@ -2,42 +2,42 @@
 
 ---
 
-* [__construct()](#__construct) -- Create a new Conditional
+* [__construct()](#__construct) – Create a new Conditional
 * [aboveAverage()](#aboveaverage)
-* [beginsWith()](#beginswith) -- Applies a style if the cell value starts with the specified text
+* [beginsWith()](#beginswith) – Applies a style if the cell value starts with the specified text
 * [belowAverage()](#belowaverage)
-* [between()](#between) -- The cell value is between two given values
+* [between()](#between) – The cell value is between two given values
 * [colorScale()](#colorscale)
 * [colorScaleMax()](#colorscalemax)
 * [colorScaleMin()](#colorscalemin)
 * [colorScaleNum()](#colorscalenum)
-* [contains()](#contains) -- Applies a style if the cell value contains the specified text.
-* [dataBar()](#databar) -- Colored data bar inside a cell
+* [contains()](#contains) – Applies a style if the cell value contains the specified text.
+* [dataBar()](#databar) – Colored data bar inside a cell
 * [duplicateValues()](#duplicatevalues)
-* [endsWith()](#endswith) -- Applies a style if the cell value ends with the specified text
-* [equals()](#equals) -- The cell value is equal to the given value
-* [expression()](#expression) -- Applies the style if the expression evaluates to TRUE
-* [greaterThan()](#greaterthan) -- The cell value is greater than the specified value
-* [greaterThanOrEqual()](#greaterthanorequal) -- The cell value is greater than or equal to the specified value
-* [isEmpty()](#isempty) -- Applies a style if the cell is empty
-* [lessThan()](#lessthan) -- The cell value is less than the specified value
-* [lessThanOrEqual()](#lessthanorequal) -- The cell value is less than or equal to the specified value
+* [endsWith()](#endswith) – Applies a style if the cell value ends with the specified text
+* [equals()](#equals) – The cell value is equal to the given value
+* [expression()](#expression) – Applies the style if the expression evaluates to TRUE
+* [greaterThan()](#greaterthan) – The cell value is greater than the specified value
+* [greaterThanOrEqual()](#greaterthanorequal) – The cell value is greater than or equal to the specified value
+* [isEmpty()](#isempty) – Applies a style if the cell is empty
+* [lessThan()](#lessthan) – The cell value is less than the specified value
+* [lessThanOrEqual()](#lessthanorequal) – The cell value is less than or equal to the specified value
 * [low()](#low)
 * [lowPercent()](#lowpercent)
-* [make()](#make) -- Cell value is compared to a specified value or formula
-* [notBetween()](#notbetween) -- The cell value is between two given values
-* [notContains()](#notcontains) -- Applies a style if the cell value does not contain the specified text.
-* [notEquals()](#notequals) -- The cell value is not equal to the specified value
+* [make()](#make) – Cell value is compared to a specified value or formula
+* [notBetween()](#notbetween) – The cell value is between two given values
+* [notContains()](#notcontains) – Applies a style if the cell value does not contain the specified text.
+* [notEquals()](#notequals) – The cell value is not equal to the specified value
 * [top()](#top)
 * [topPercent()](#toppercent)
 * [uniqueValues()](#uniquevalues)
 * [getStyle()](#getstyle)
-* [setDirectionRtl()](#setdirectionrtl) -- Determines the direction of the bars
+* [setDirectionRtl()](#setdirectionrtl) – Determines the direction of the bars
 * [setDxfId()](#setdxfid)
 * [setFillColor()](#setfillcolor)
 * [setFontColor()](#setfontcolor)
-* [setGradient()](#setgradient) -- Enables or disables the gradient style of the bars
-* [setShowValue()](#setshowvalue) -- Controls the display of the value in a cell
+* [setGradient()](#setgradient) – Enables or disables the gradient style of the bars
+* [setShowValue()](#setshowvalue) – Controls the display of the value in a cell
 * [setStyle()](#setstyle)
 
 ---

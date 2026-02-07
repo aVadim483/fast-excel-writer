@@ -2,71 +2,71 @@
 
 ---
 
-* [__construct()](#__construct) -- Chart constructor
-* [make()](#make) -- Create Chart instance
-* [addDataSeriesSet()](#adddataseriesset) -- Add multiple data series to the chart
-* [addDataSeriesType()](#adddataseriestype) -- Add data series of specific type (used for combo charts)
-* [addDataSeriesType2()](#adddataseriestype2) -- Add data series of specific type to the second axis (used for combo charts)
-* [addDataSeriesValues()](#adddataseriesvalues) -- Add data series values to the chart
-* [getBottomRightCell()](#getbottomrightcell) -- Get the cell address where the bottom right of the chart is fixed
-* [getBottomRightOffset()](#getbottomrightoffset) -- Get the offset position within the Bottom Right cell for the chart
-* [getBottomRightPosition()](#getbottomrightposition) -- Get the bottom right position of the chart
-* [getBottomRightXOffset()](#getbottomrightxoffset) -- Get Bottom Right X-Offset
-* [getBottomRightYOffset()](#getbottomrightyoffset) -- Get Bottom Right Y-Offset
-* [getCategoryAxisTitle()](#getcategoryaxistitle) -- Get Category Axis Title
-* [getChartAxisX()](#getchartaxisx) -- Get X Axis
-* [getChartAxisY()](#getchartaxisy) -- Get Y Axis
-* [getChartAxisY2()](#getchartaxisy2) -- Get Y Axis 2
-* [getDisplayBlanksAs()](#getdisplayblanksas) -- Get Display Blanks As
-* [getLegend()](#getlegend) -- Get Chart Legend
-* [getMajorGridlines()](#getmajorgridlines) -- Get Major Gridlines
-* [getMinorGridlines()](#getminorgridlines) -- Get Minor Gridlines
-* [getName()](#getname) -- Get Chart Name
-* [getPlotArea()](#getplotarea) -- Get Plot Area
-* [getPlotChartTypes()](#getplotcharttypes) -- Get the data series type(s) for a chart plot series
-* [getPlotVisibleOnly()](#getplotvisibleonly) -- Get Plot Visible Only
-* [getTitle()](#gettitle) -- Get Chart Title
-* [getTopLeftCell()](#gettopleftcell) -- Get the cell address where the top left of the chart is fixed
-* [getTopLeftOffset()](#gettopleftoffset) -- Get the offset position within the Top Left cell for the chart
-* [getTopLeftPosition()](#gettopleftposition) -- Get the top left position of the chart
-* [getTopLeftXOffset()](#gettopleftxoffset) -- Get Top Left X-Offset
-* [getTopLeftYOffset()](#gettopleftyoffset) -- Get Top Left Y-Offset
-* [getValueAxisTitle()](#getvalueaxistitle) -- Get Value Axis Title
-* [getValueAxisTitle2()](#getvalueaxistitle2) -- Get Y2 Axis Title
-* [setBottomRightCell()](#setbottomrightcell) -- Set Bottom Right Cell
-* [setBottomRightOffset()](#setbottomrightoffset) -- Set the offset position within the Bottom Right cell for the chart
-* [setBottomRightXOffset()](#setbottomrightxoffset) -- Set Bottom Right X-Offset
-* [setBottomRightYOffset()](#setbottomrightyoffset) -- Set Bottom Right Y-Offset
-* [setCategoryAxis()](#setcategoryaxis) -- Set Category Axis Labels and Title
-* [setCategoryAxisLabels()](#setcategoryaxislabels) -- Set Category Axis Labels (tick labels)
-* [setCategoryAxisTitle()](#setcategoryaxistitle) -- Set Category Axis Title
-* [setChartColors()](#setchartcolors) -- Set Chart Colors
-* [setChartType()](#setcharttype) -- Set Chart Type
-* [setDataSeriesNames()](#setdataseriesnames) -- Set Data Series Names
-* [setDataSeriesTickLabels()](#setdataseriesticklabels) -- Set Data Series Tick Labels
-* [setDisplayBlanksAs()](#setdisplayblanksas) -- Set Display Blanks As
-* [setLegend()](#setlegend) -- Set Chart Legend
-* [setLegendPosition()](#setlegendposition) -- Set Chart Legend Position
-* [setLegendPositionBottom()](#setlegendpositionbottom) -- Set Chart Legend Position to Bottom
-* [setLegendPositionLeft()](#setlegendpositionleft) -- Set Chart Legend Position to Left
-* [setLegendPositionRight()](#setlegendpositionright) -- Set Chart Legend Position to Right
-* [setLegendPositionTop()](#setlegendpositiontop) -- Set Chart Legend Position to Top
-* [setName()](#setname) -- Set Chart Name
-* [setPlotArea()](#setplotarea) -- Set Chart Plot Area
-* [setPlotLayout()](#setplotlayout) -- Set Plot Layout
-* [setPlotShowPercent()](#setplotshowpercent) -- Set Plot Show Percent
-* [setPlotShowValues()](#setplotshowvalues) -- Set Plot Show Values
-* [setPlotVisibleOnly()](#setplotvisibleonly) -- Set Plot Visible Only
-* [setPosition()](#setposition) -- Set the Bottom Right position of the chart
-* [setSheet()](#setsheet) -- Set Sheet
-* [setTitle()](#settitle) -- Set Chart Title
-* [setTopLeftCell()](#settopleftcell) -- Set the Top Left cell position for the chart
-* [setTopLeftOffset()](#settopleftoffset) -- Set the offset position within the Top Left cell for the chart
-* [setTopLeftPosition()](#settopleftposition) -- Set the Top Left position for the chart
-* [setTopLeftXOffset()](#settopleftxoffset) -- Set Top Left X-Offset
-* [setTopLeftYOffset()](#settopleftyoffset) -- Set Top Left Y-Offset
-* [setValueAxisTitle()](#setvalueaxistitle) -- Set Value Axis Title
-* [setValueAxisTitle2()](#setvalueaxistitle2) -- Set Y2 Axis Title
+* [__construct()](#__construct) – Chart constructor
+* [make()](#make) – Create Chart instance
+* [addDataSeriesSet()](#adddataseriesset) – Add multiple data series to the chart
+* [addDataSeriesType()](#adddataseriestype) – Add data series of specific type (used for combo charts)
+* [addDataSeriesType2()](#adddataseriestype2) – Add data series of specific type to the second axis (used for combo charts)
+* [addDataSeriesValues()](#adddataseriesvalues) – Add data series values to the chart
+* [getBottomRightCell()](#getbottomrightcell) – Get the cell address where the bottom right of the chart is fixed
+* [getBottomRightOffset()](#getbottomrightoffset) – Get the offset position within the Bottom Right cell for the chart
+* [getBottomRightPosition()](#getbottomrightposition) – Get the bottom right position of the chart
+* [getBottomRightXOffset()](#getbottomrightxoffset) – Get Bottom Right X-Offset
+* [getBottomRightYOffset()](#getbottomrightyoffset) – Get Bottom Right Y-Offset
+* [getCategoryAxisTitle()](#getcategoryaxistitle) – Get Category Axis Title
+* [getChartAxisX()](#getchartaxisx) – Get X Axis
+* [getChartAxisY()](#getchartaxisy) – Get Y Axis
+* [getChartAxisY2()](#getchartaxisy2) – Get Y Axis 2
+* [getDisplayBlanksAs()](#getdisplayblanksas) – Get Display Blanks As
+* [getLegend()](#getlegend) – Get Chart Legend
+* [getMajorGridlines()](#getmajorgridlines) – Get Major Gridlines
+* [getMinorGridlines()](#getminorgridlines) – Get Minor Gridlines
+* [getName()](#getname) – Get Chart Name
+* [getPlotArea()](#getplotarea) – Get Plot Area
+* [getPlotChartTypes()](#getplotcharttypes) – Get the data series type(s) for a chart plot series
+* [getPlotVisibleOnly()](#getplotvisibleonly) – Get Plot Visible Only
+* [getTitle()](#gettitle) – Get Chart Title
+* [getTopLeftCell()](#gettopleftcell) – Get the cell address where the top left of the chart is fixed
+* [getTopLeftOffset()](#gettopleftoffset) – Get the offset position within the Top Left cell for the chart
+* [getTopLeftPosition()](#gettopleftposition) – Get the top left position of the chart
+* [getTopLeftXOffset()](#gettopleftxoffset) – Get Top Left X-Offset
+* [getTopLeftYOffset()](#gettopleftyoffset) – Get Top Left Y-Offset
+* [getValueAxisTitle()](#getvalueaxistitle) – Get Value Axis Title
+* [getValueAxisTitle2()](#getvalueaxistitle2) – Get Y2 Axis Title
+* [setBottomRightCell()](#setbottomrightcell) – Set Bottom Right Cell
+* [setBottomRightOffset()](#setbottomrightoffset) – Set the offset position within the Bottom Right cell for the chart
+* [setBottomRightXOffset()](#setbottomrightxoffset) – Set Bottom Right X-Offset
+* [setBottomRightYOffset()](#setbottomrightyoffset) – Set Bottom Right Y-Offset
+* [setCategoryAxis()](#setcategoryaxis) – Set Category Axis Labels and Title
+* [setCategoryAxisLabels()](#setcategoryaxislabels) – Set Category Axis Labels (tick labels)
+* [setCategoryAxisTitle()](#setcategoryaxistitle) – Set Category Axis Title
+* [setChartColors()](#setchartcolors) – Set Chart Colors
+* [setChartType()](#setcharttype) – Set Chart Type
+* [setDataSeriesNames()](#setdataseriesnames) – Set Data Series Names
+* [setDataSeriesTickLabels()](#setdataseriesticklabels) – Set Data Series Tick Labels
+* [setDisplayBlanksAs()](#setdisplayblanksas) – Set Display Blanks As
+* [setLegend()](#setlegend) – Set Chart Legend
+* [setLegendPosition()](#setlegendposition) – Set Chart Legend Position
+* [setLegendPositionBottom()](#setlegendpositionbottom) – Set Chart Legend Position to Bottom
+* [setLegendPositionLeft()](#setlegendpositionleft) – Set Chart Legend Position to Left
+* [setLegendPositionRight()](#setlegendpositionright) – Set Chart Legend Position to Right
+* [setLegendPositionTop()](#setlegendpositiontop) – Set Chart Legend Position to Top
+* [setName()](#setname) – Set Chart Name
+* [setPlotArea()](#setplotarea) – Set Chart Plot Area
+* [setPlotLayout()](#setplotlayout) – Set Plot Layout
+* [setPlotShowPercent()](#setplotshowpercent) – Set Plot Show Percent
+* [setPlotShowValues()](#setplotshowvalues) – Set Plot Show Values
+* [setPlotVisibleOnly()](#setplotvisibleonly) – Set Plot Visible Only
+* [setPosition()](#setposition) – Set the Bottom Right position of the chart
+* [setSheet()](#setsheet) – Set Sheet
+* [setTitle()](#settitle) – Set Chart Title
+* [setTopLeftCell()](#settopleftcell) – Set the Top Left cell position for the chart
+* [setTopLeftOffset()](#settopleftoffset) – Set the offset position within the Top Left cell for the chart
+* [setTopLeftPosition()](#settopleftposition) – Set the Top Left position for the chart
+* [setTopLeftXOffset()](#settopleftxoffset) – Set Top Left X-Offset
+* [setTopLeftYOffset()](#settopleftyoffset) – Set Top Left Y-Offset
+* [setValueAxisTitle()](#setvalueaxistitle) – Set Value Axis Title
+* [setValueAxisTitle2()](#setvalueaxistitle2) – Set Y2 Axis Title
 
 ---
 

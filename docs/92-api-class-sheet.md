@@ -2,212 +2,212 @@
 
 ---
 
-* [__construct()](#__construct) -- Sheet constructor
-* [addCellStyle()](#addcellstyle) -- Add additional styles to a cell
-* [addChart()](#addchart) -- Add a chart object to the specified range of cells
-* [addConditionalFormatting()](#addconditionalformatting) -- Add a conditional formatting object to the specified range of cells
-* [addDataValidation()](#adddatavalidation) -- Add a data validation object to the specified range of cells
-* [addImage()](#addimage) -- Add an image to the sheet from a local file, URL or image string in base64
-* [addNamedRange()](#addnamedrange) -- Define named range
-* [addNote()](#addnote) -- Add a note to the sheet
-* [addStyle()](#addstyle) -- Alias for 'addCellStyle()'
-* [allowAutoFilter()](#allowautofilter) -- AutoFilters should be allowed to operate when the sheet is protected
-* [allowDeleteColumns()](#allowdeletecolumns) -- Deleting columns should be allowed when the sheet is protected
-* [allowDeleteRows()](#allowdeleterows) -- Deleting rows should be allowed when the sheet is protected
-* [allowEditObjects()](#alloweditobjects) -- Objects are allowed to be edited when the sheet is protected
-* [allowEditScenarios()](#alloweditscenarios) -- Scenarios are allowed to be edited when the sheet is protected
-* [allowFormatCells()](#allowformatcells) -- Formatting cells should be allowed when the sheet is protected
-* [allowFormatColumns()](#allowformatcolumns) -- Formatting columns should be allowed when the sheet is protected
-* [allowFormatRows()](#allowformatrows) -- Formatting rows should be allowed when the sheet is protected
-* [allowInsertColumns()](#allowinsertcolumns) -- Inserting columns should be allowed when the sheet is protected
-* [allowInsertHyperlinks()](#allowinserthyperlinks) -- Inserting hyperlinks should be allowed when the sheet is protected
-* [allowInsertRows()](#allowinsertrows) -- Inserting rows should be allowed when the sheet is protected
-* [allowPivotTables()](#allowpivottables) -- PivotTables should be allowed to operate when the sheet is protected
-* [allowSelectCells()](#allowselectcells) -- Selection of any cells should be allowed when the sheet is protected
-* [allowSelectLockedCells()](#allowselectlockedcells) -- Selection of locked cells should be allowed when the sheet is protected
-* [allowSelectUnlockedCells()](#allowselectunlockedcells) -- Selection of unlocked cells should be allowed when the sheet is protected
-* [allowSort()](#allowsort) -- Sorting should be allowed when the sheet is protected
-* [applyAlignLeft()](#applyalignleft) -- Apply left alignment to content
-* [applyAlignRight()](#applyalignright) -- Apply right alignment to content
-* [applyBgColor()](#applybgcolor) -- Alias of 'applyFillColor()'
-* [applyBorder()](#applyborder) -- Sets all borders style
-* [applyBorderBottom()](#applyborderbottom) -- Apply bottom border style and color to the selected area
-* [applyBorderLeft()](#applyborderleft) -- Apply left border style and color to the selected area
-* [applyBorderRight()](#applyborderright) -- Apply right border style and color to the selected area
-* [applyBorderTop()](#applybordertop) -- Apply top border style and color to the selected area
-* [applyColor()](#applycolor) -- Alias of 'setFontColor()'
-* [applyConditionalFormatting()](#applyconditionalformatting) -- Apply conditional formatting to the selected area
-* [applyDataValidation()](#applydatavalidation) -- Apply data validation to the selected area
-* [applyFillColor()](#applyfillcolor) -- Fill background color
-* [applyFillGradient()](#applyfillgradient) -- Fill background by gradient
-* [applyFont()](#applyfont) -- Apply font settings to the selected area
-* [applyFontColor()](#applyfontcolor) -- Apply font color to the selected area
-* [applyFontName()](#applyfontname) -- Apply font name to the selected area
-* [applyFontSize()](#applyfontsize) -- Apply font size to the selected area
-* [applyFontStyle()](#applyfontstyle) -- Apply font style (bold, italic, etc.) to the selected area
-* [applyFontStyleBold()](#applyfontstylebold) -- Apply bold font style to the selected area
-* [applyFontStyleItalic()](#applyfontstyleitalic) -- Apply italic font style to the selected area
-* [applyFontStyleStrikethrough()](#applyfontstylestrikethrough) -- Apply strikethrough font style to the selected area
-* [applyFontStyleUnderline()](#applyfontstyleunderline) -- Apply underline font style to the selected area
-* [applyFormat()](#applyformat) -- Set value format for the selected area
-* [applyHide()](#applyhide) -- Set hidden protection for the selected area
-* [applyIndentDistributed()](#applyindentdistributed) -- Set distributed indent for the selected area
-* [applyIndentLeft()](#applyindentleft) -- Set left indent for the selected area
-* [applyIndentRight()](#applyindentright) -- Set right indent for the selected area
-* [applyInnerBorder()](#applyinnerborder) -- Apply inner border style and color to the selected area
-* [applyNamedRange()](#applynamedrange) -- Apply named range to the selected area
-* [applyOuterBorder()](#applyouterborder) -- Apply outer border style and color to the selected area
-* [applyRowHeight()](#applyrowheight) -- Sets height to the current row
-* [applyRowOutlineLevel()](#applyrowoutlinelevel) -- Set outline level for the current row
-* [applyStyle()](#applystyle) -- Apply the style
-* [applyTextAlign()](#applytextalign) -- Apply horizontal alignment to the selected area
-* [applyTextCenter()](#applytextcenter) -- Apply horizontal and vertical center alignment to the selected area
-* [applyTextColor()](#applytextcolor) -- Set text color for the selected area
-* [applyTextRotation()](#applytextrotation) -- Set text rotation for the selected area
-* [applyTextWrap()](#applytextwrap) -- Set text wrap for the selected area
-* [applyUnlock()](#applyunlock) -- Set unlock protection for the selected area
-* [applyVerticalAlign()](#applyverticalalign) -- Apply vertical alignment to the selected area
-* [beginArea()](#beginarea) -- Begin a new area
-* [beginOutlineLevel()](#beginoutlinelevel) -- Start a new outline level for rows
-* [cell()](#cell) -- Select a single cell or cell range in the current row
-* [clearAreas()](#clearareas) -- Clear all defined areas
+* [__construct()](#__construct) – Sheet constructor
+* [addCellStyle()](#addcellstyle) – Add additional styles to a cell
+* [addChart()](#addchart) – Add a chart object to the specified range of cells
+* [addConditionalFormatting()](#addconditionalformatting) – Add a conditional formatting object to the specified range of cells
+* [addDataValidation()](#adddatavalidation) – Add a data validation object to the specified range of cells
+* [addImage()](#addimage) – Add an image to the sheet from a local file, URL or image string in base64
+* [addNamedRange()](#addnamedrange) – Define named range
+* [addNote()](#addnote) – Add a note to the sheet
+* [addStyle()](#addstyle) – Alias for 'addCellStyle()'
+* [allowAutoFilter()](#allowautofilter) – AutoFilters should be allowed to operate when the sheet is protected
+* [allowDeleteColumns()](#allowdeletecolumns) – Deleting columns should be allowed when the sheet is protected
+* [allowDeleteRows()](#allowdeleterows) – Deleting rows should be allowed when the sheet is protected
+* [allowEditObjects()](#alloweditobjects) – Objects are allowed to be edited when the sheet is protected
+* [allowEditScenarios()](#alloweditscenarios) – Scenarios are allowed to be edited when the sheet is protected
+* [allowFormatCells()](#allowformatcells) – Formatting cells should be allowed when the sheet is protected
+* [allowFormatColumns()](#allowformatcolumns) – Formatting columns should be allowed when the sheet is protected
+* [allowFormatRows()](#allowformatrows) – Formatting rows should be allowed when the sheet is protected
+* [allowInsertColumns()](#allowinsertcolumns) – Inserting columns should be allowed when the sheet is protected
+* [allowInsertHyperlinks()](#allowinserthyperlinks) – Inserting hyperlinks should be allowed when the sheet is protected
+* [allowInsertRows()](#allowinsertrows) – Inserting rows should be allowed when the sheet is protected
+* [allowPivotTables()](#allowpivottables) – PivotTables should be allowed to operate when the sheet is protected
+* [allowSelectCells()](#allowselectcells) – Selection of any cells should be allowed when the sheet is protected
+* [allowSelectLockedCells()](#allowselectlockedcells) – Selection of locked cells should be allowed when the sheet is protected
+* [allowSelectUnlockedCells()](#allowselectunlockedcells) – Selection of unlocked cells should be allowed when the sheet is protected
+* [allowSort()](#allowsort) – Sorting should be allowed when the sheet is protected
+* [applyAlignLeft()](#applyalignleft) – Apply left alignment to content
+* [applyAlignRight()](#applyalignright) – Apply right alignment to content
+* [applyBgColor()](#applybgcolor) – Alias of 'applyFillColor()'
+* [applyBorder()](#applyborder) – Sets all borders style
+* [applyBorderBottom()](#applyborderbottom) – Apply bottom border style and color to the selected area
+* [applyBorderLeft()](#applyborderleft) – Apply left border style and color to the selected area
+* [applyBorderRight()](#applyborderright) – Apply right border style and color to the selected area
+* [applyBorderTop()](#applybordertop) – Apply top border style and color to the selected area
+* [applyColor()](#applycolor) – Alias of 'setFontColor()'
+* [applyConditionalFormatting()](#applyconditionalformatting) – Apply conditional formatting to the selected area
+* [applyDataValidation()](#applydatavalidation) – Apply data validation to the selected area
+* [applyFillColor()](#applyfillcolor) – Fill background color
+* [applyFillGradient()](#applyfillgradient) – Fill background by gradient
+* [applyFont()](#applyfont) – Apply font settings to the selected area
+* [applyFontColor()](#applyfontcolor) – Apply font color to the selected area
+* [applyFontName()](#applyfontname) – Apply font name to the selected area
+* [applyFontSize()](#applyfontsize) – Apply font size to the selected area
+* [applyFontStyle()](#applyfontstyle) – Apply font style (bold, italic, etc.) to the selected area
+* [applyFontStyleBold()](#applyfontstylebold) – Apply bold font style to the selected area
+* [applyFontStyleItalic()](#applyfontstyleitalic) – Apply italic font style to the selected area
+* [applyFontStyleStrikethrough()](#applyfontstylestrikethrough) – Apply strikethrough font style to the selected area
+* [applyFontStyleUnderline()](#applyfontstyleunderline) – Apply underline font style to the selected area
+* [applyFormat()](#applyformat) – Set value format for the selected area
+* [applyHide()](#applyhide) – Set hidden protection for the selected area
+* [applyIndentDistributed()](#applyindentdistributed) – Set distributed indent for the selected area
+* [applyIndentLeft()](#applyindentleft) – Set left indent for the selected area
+* [applyIndentRight()](#applyindentright) – Set right indent for the selected area
+* [applyInnerBorder()](#applyinnerborder) – Apply inner border style and color to the selected area
+* [applyNamedRange()](#applynamedrange) – Apply named range to the selected area
+* [applyOuterBorder()](#applyouterborder) – Apply outer border style and color to the selected area
+* [applyRowHeight()](#applyrowheight) – Sets height to the current row
+* [applyRowOutlineLevel()](#applyrowoutlinelevel) – Set outline level for the current row
+* [applyStyle()](#applystyle) – Apply the style
+* [applyTextAlign()](#applytextalign) – Apply horizontal alignment to the selected area
+* [applyTextCenter()](#applytextcenter) – Apply horizontal and vertical center alignment to the selected area
+* [applyTextColor()](#applytextcolor) – Set text color for the selected area
+* [applyTextRotation()](#applytextrotation) – Set text rotation for the selected area
+* [applyTextWrap()](#applytextwrap) – Set text wrap for the selected area
+* [applyUnlock()](#applyunlock) – Set unlock protection for the selected area
+* [applyVerticalAlign()](#applyverticalalign) – Apply vertical alignment to the selected area
+* [beginArea()](#beginarea) – Begin a new area
+* [beginOutlineLevel()](#beginoutlinelevel) – Start a new outline level for rows
+* [cell()](#cell) – Select a single cell or cell range in the current row
+* [clearAreas()](#clearareas) – Clear all defined areas
 * [endAreas()](#endareas)
-* [endOutlineLevel()](#endoutlinelevel) -- End the current outline level for rows
-* [getCharts()](#getcharts) -- Get all charts in the sheet
-* [getColAttributes()](#getcolattributes) -- Get columns attributes
-* [getConditionalFormatting()](#getconditionalformatting) -- Get all conditional formatting in the sheet
-* [getCurrentCell()](#getcurrentcell) -- Returns address of the current cell
-* [getCurrentCol()](#getcurrentcol) -- Returns current column letter
-* [getCurrentColId()](#getcurrentcolid) -- Get current column index (0-based)
-* [getCurrentRow()](#getcurrentrow) -- Returns current row number
-* [getCurrentRowId()](#getcurrentrowid) -- Get current row index (0-based)
-* [getDataValidations()](#getdatavalidations) -- Get all data validations in the sheet
-* [getDefaultStyle()](#getdefaultstyle) -- Returns default style
-* [getHeaderFooterOptions()](#getheaderfooteroptions) -- Get header and footer options
-* [getHyperlinks()](#gethyperlinks) -- Returns added hyperlinks
-* [getImages()](#getimages) -- Get all images in the sheet
-* [getLastCell()](#getlastcell) -- Get address of the last touched cell
-* [getLastRange()](#getlastrange) -- Get address of the last touched range
-* [getMergedCells()](#getmergedcells) -- Returns merged cells
-* [getName()](#getname) -- Get sheet name
-* [getNamedRanges()](#getnamedranges) -- Returns named ranges with full addresses
-* [getNotes()](#getnotes) -- Get all notes in the sheet
-* [getOutlineLevel()](#getoutlinelevel) -- Get the current outline level for rows
-* [isName()](#isname) -- Case-insensitive name checking
-* [isRightToLeft()](#isrighttoleft) -- Check if the sheet is right-to-left
-* [makeArea()](#makearea) -- Make area for writing
-* [mergeCells()](#mergecells) -- Merge cells
-* [mergeRelCells()](#mergerelcells) -- Merge relative cells
-* [nextCell()](#nextcell) -- Move pointer to the next cell
-* [nextRow()](#nextrow) -- Move to the next row
-* [pageFitToHeight()](#pagefittoheight) -- Set page to fit to height
-* [pageFitToWidth()](#pagefittowidth) -- Set page to fit to width
-* [pageFooter()](#pagefooter) -- Set the footer for all pages
-* [pageFooterEven()](#pagefootereven) -- Set footer for even pages
-* [pageFooterFirst()](#pagefooterfirst) -- Set the footer for the first page
-* [pageFooterOdd()](#pagefooterodd) -- Set footer for odd pages
-* [pageHeader()](#pageheader) -- Set page header for all pages
-* [pageHeaderEven()](#pageheadereven) -- Set header for even pages
-* [pageHeaderFirst()](#pageheaderfirst) -- Set the header for the first page
-* [pageHeaderFooter()](#pageheaderfooter) -- Set the center header and footer for all pages
-* [pageHeaderOdd()](#pageheaderodd) -- Set header for odd pages
-* [pageLandscape()](#pagelandscape) -- Set page orientation as Landscape
-* [pageMarginBottom()](#pagemarginbottom) -- Bottom Page Margin in mm|cm|in
-* [pageMarginFooter()](#pagemarginfooter) -- Footer Page Margin in mm|cm|in
-* [pageMarginHeader()](#pagemarginheader) -- Header Page Margin in mm|cm|in
-* [pageMarginLeft()](#pagemarginleft) -- Left Page Margin in mm|cm|in
-* [pageMarginRight()](#pagemarginright) -- Right page margin in mm|cm|in
-* [pageMargins()](#pagemargins) -- Page margins for a sheet or a custom sheet view in mm|cm|in
-* [pageMarginTop()](#pagemargintop) -- Top Page Margin in mm|cm|in
-* [pageOrientationLandscape()](#pageorientationlandscape) -- Set page orientation as Landscape, alias of pageLandscape()
-* [pageOrientationPortrait()](#pageorientationportrait) -- Set page orientation as Portrait, alias of pagePortrait()
-* [pagePaperHeight()](#pagepaperheight) -- Height of custom paper as a number followed by a unit identifier mm|cm|in (ex: 297mm, 11in)
-* [pagePaperSize()](#pagepapersize) -- Set Paper size (when paperHeight and paperWidth are specified, paperSize should be ignored)
-* [pagePaperSizeA3()](#pagepapersizea3) -- Set Paper Size to A3 (when paperHeight and paperWidth are specified, paperSize should be ignored)
-* [pagePaperSizeA4()](#pagepapersizea4) -- Set Paper Size to A4 (when paperHeight and paperWidth are specified, paperSize should be ignored)
-* [pagePaperSizeLegal()](#pagepapersizelegal) -- Set Paper Size to Legal (when paperHeight and paperWidth are specified, paperSize should be ignored)
-* [pagePaperSizeLetter()](#pagepapersizeletter) -- Set Paper Size to Letter (when paperHeight and paperWidth are specified, paperSize should be ignored)
-* [pagePaperWidth()](#pagepaperwidth) -- Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
-* [pagePortrait()](#pageportrait) -- Set page orientation as Portrait
-* [pageScale()](#pagescale) -- Set page scale
-* [protect()](#protect) -- Protect sheet
-* [setActiveCell()](#setactivecell) -- Set active cell
-* [setAutoFilter()](#setautofilter) -- Set auto filter
-* [setBgColor()](#setbgcolor) -- Set background color for the specific cell or range
-* [setBottomNodesOptions()](#setbottomnodesoptions) -- Set multiple options for a bottom node
-* [setCellStyle()](#setcellstyle) -- Set style for the specific cell
-* [setColAutoWidth()](#setcolautowidth) -- Alias of setColWidthAuto($col)
-* [setColDataStyle()](#setcoldatastyle) -- Set styles of column cells (colors, formats, etc.)
-* [setColDataStyleArray()](#setcoldatastylearray) -- Set style of column cells (colors, formats, etc.)
-* [setColFormat()](#setcolformat) -- Set a format of single or multiple column(s)
-* [setColFormats()](#setcolformats) -- Set formats of columns
-* [setColFormula()](#setcolformula) -- Set formula for single or multiple column(s)
-* [setColHidden()](#setcolhidden) -- Set a column as hidden
-* [setColMinWidth()](#setcolminwidth) -- Setting a minimal column's width
-* [setColMinWidths()](#setcolminwidths) -- Setting a multiple column's minimal width
-* [setColOutlineLevel()](#setcoloutlinelevel) -- Set a column outline level
-* [setColStyle()](#setcolstyle) -- Set style of single or multiple column(s)
-* [setColStyleArray()](#setcolstylearray) -- Set styles of single or multiple column(s)
-* [setColVisible()](#setcolvisible) -- Show/hide a column
-* [setColWidth()](#setcolwidth) -- Set a width of single or multiple column(s)
-* [setColWidthAuto()](#setcolwidthauto) -- Set auto width of single or multiple column(s)
-* [setColWidths()](#setcolwidths) -- Setting a multiple column's width
-* [setDefaultFont()](#setdefaultfont) -- Set default font settings for the sheet
-* [setDefaultFontColor()](#setdefaultfontcolor) -- Set default font color
-* [setDefaultFontName()](#setdefaultfontname) -- Set default font name for the sheet
-* [setDefaultFontSize()](#setdefaultfontsize) -- Set default font size for the sheet
-* [setDefaultFontStyle()](#setdefaultfontstyle) -- Set default font style (bold, italic, etc.) for the sheet
-* [setDefaultFontStyleBold()](#setdefaultfontstylebold) -- Set default font style as bold for the sheet
-* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic) -- Set default font style as italic
-* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough) -- Set default font style as strikethrough
-* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline) -- Set default font style as underline
-* [setDefaultStyle()](#setdefaultstyle) -- Sets default style
-* [setFormat()](#setformat) -- Set value format for the specific cell or range
-* [setFormula()](#setformula) -- Set a formula to the single cell or to the cell range
-* [setFreeze()](#setfreeze) -- Freeze rows/columns
-* [setFreezeColumns()](#setfreezecolumns) -- Freeze columns
-* [setFreezeRows()](#setfreezerows) -- Freeze rows
-* [setName()](#setname) -- Set sheet name
-* [setOuterBorder()](#setouterborder) -- Set outer border for the specific range
-* [setPrintArea()](#setprintarea) -- Set print area for the sheet
-* [setPrintCentered()](#setprintcentered) -- Center the print area horizontally and vertically
-* [setPrintGridlines()](#setprintgridlines) -- Show grid lines in the print area
-* [setPrintHorizontalCentered()](#setprinthorizontalcentered) -- Center the print area horizontally
-* [setPrintLeftColumns()](#setprintleftcolumns) -- Set left columns to repeat on every printed page
-* [setPrintRowAndColumnHeading()](#setprintrowandcolumnheading) -- Print row and column headings in the printout
-* [setPrintTitles()](#setprinttitles) -- Set rows to repeat at top and columns to repeat at left when printing
-* [setPrintTopRows()](#setprinttoprows) -- Set top rows to repeat on every printed page
-* [setPrintVerticalCentered()](#setprintverticalcentered) -- Center the print area vertically
-* [setRowDataStyle()](#setrowdatastyle) -- Style are applied only to non-empty cells in a row (or row range)
-* [setRowDataStyleArray()](#setrowdatastylearray) -- Styles are applied only to non-empty cells in a rows
-* [setRowHeight()](#setrowheight) -- Height of a specific row
-* [setRowHeights()](#setrowheights) -- Multiple rows height
-* [setRowHidden()](#setrowhidden) -- Hide a specific row
-* [setRowOutlineLevel()](#setrowoutlinelevel) -- Set an outline level for a specific row or range of rows
-* [setRowStyle()](#setrowstyle) -- The style is applied to the entire sheet row (even if it is empty)
-* [setRowStyleArray()](#setrowstylearray) -- Styles are applied to the entire sheet row (even if it is empty)
-* [setRowVisible()](#setrowvisible) -- Hide/show a specific row
-* [setShowGridLines()](#setshowgridlines) -- Turn on/off grid lines
-* [setStateHidden()](#setstatehidden) -- Make the sheet hidden
-* [setStateVeryHidden()](#setstateveryhidden) -- Make the sheet very hidden
-* [setStateVisible()](#setstatevisible) -- Make the sheet visible
-* [setStyle()](#setstyle) -- Alias for 'setCellStyle()'
-* [setTabColor()](#settabcolor) -- Set color for the sheet tab
-* [setTopLeftCell()](#settopleftcell) -- Set the top left cell for writing
-* [setValue()](#setvalue) -- Set a value to the single cell or to the cell range
-* [skipRow()](#skiprow) -- Skip rows
-* [unprotect()](#unprotect) -- Unprotect sheet
-* [withLastCell()](#withlastcell) -- Select the last written cell for applying
-* [withLastRow()](#withlastrow) -- Select the last written row for applying
-* [withRange()](#withrange) -- Select a custom range for applying
-* [writeArray()](#writearray) -- Write values from a two-dimensional array (alias of writeRows)
-* [writeArrayTo()](#writearrayto) -- Write 2d array from the specified cell
-* [writeCell()](#writecell) -- Write value to the current cell and move a pointer to the next cell in the row
-* [writeCells()](#writecells) -- Write several values into cells of one row
-* [writeHeader()](#writeheader) -- Write a header row with optional styles and formats for columns
-* [writeRow()](#writerow) -- Write values to the current row
-* [writeRows()](#writerows) -- Write several rows from a two-dimensional array
-* [writeTo()](#writeto) -- Write value to the specified cell and move a pointer to the next cell in the row
+* [endOutlineLevel()](#endoutlinelevel) – End the current outline level for rows
+* [getCharts()](#getcharts) – Get all charts in the sheet
+* [getColAttributes()](#getcolattributes) – Get columns attributes
+* [getConditionalFormatting()](#getconditionalformatting) – Get all conditional formatting in the sheet
+* [getCurrentCell()](#getcurrentcell) – Returns address of the current cell
+* [getCurrentCol()](#getcurrentcol) – Returns current column letter
+* [getCurrentColId()](#getcurrentcolid) – Get current column index (0-based)
+* [getCurrentRow()](#getcurrentrow) – Returns current row number
+* [getCurrentRowId()](#getcurrentrowid) – Get current row index (0-based)
+* [getDataValidations()](#getdatavalidations) – Get all data validations in the sheet
+* [getDefaultStyle()](#getdefaultstyle) – Returns default style
+* [getHeaderFooterOptions()](#getheaderfooteroptions) – Get header and footer options
+* [getHyperlinks()](#gethyperlinks) – Returns added hyperlinks
+* [getImages()](#getimages) – Get all images in the sheet
+* [getLastCell()](#getlastcell) – Get address of the last touched cell
+* [getLastRange()](#getlastrange) – Get address of the last touched range
+* [getMergedCells()](#getmergedcells) – Returns merged cells
+* [getName()](#getname) – Get sheet name
+* [getNamedRanges()](#getnamedranges) – Returns named ranges with full addresses
+* [getNotes()](#getnotes) – Get all notes in the sheet
+* [getOutlineLevel()](#getoutlinelevel) – Get the current outline level for rows
+* [isName()](#isname) – Case-insensitive name checking
+* [isRightToLeft()](#isrighttoleft) – Check if the sheet is right-to-left
+* [makeArea()](#makearea) – Make area for writing
+* [mergeCells()](#mergecells) – Merge cells
+* [mergeRelCells()](#mergerelcells) – Merge relative cells
+* [nextCell()](#nextcell) – Move pointer to the next cell
+* [nextRow()](#nextrow) – Move to the next row
+* [pageFitToHeight()](#pagefittoheight) – Set page to fit to height
+* [pageFitToWidth()](#pagefittowidth) – Set page to fit to width
+* [pageFooter()](#pagefooter) – Set the footer for all pages
+* [pageFooterEven()](#pagefootereven) – Set footer for even pages
+* [pageFooterFirst()](#pagefooterfirst) – Set the footer for the first page
+* [pageFooterOdd()](#pagefooterodd) – Set footer for odd pages
+* [pageHeader()](#pageheader) – Set page header for all pages
+* [pageHeaderEven()](#pageheadereven) – Set header for even pages
+* [pageHeaderFirst()](#pageheaderfirst) – Set the header for the first page
+* [pageHeaderFooter()](#pageheaderfooter) – Set the center header and footer for all pages
+* [pageHeaderOdd()](#pageheaderodd) – Set header for odd pages
+* [pageLandscape()](#pagelandscape) – Set page orientation as Landscape
+* [pageMarginBottom()](#pagemarginbottom) – Bottom Page Margin in mm|cm|in
+* [pageMarginFooter()](#pagemarginfooter) – Footer Page Margin in mm|cm|in
+* [pageMarginHeader()](#pagemarginheader) – Header Page Margin in mm|cm|in
+* [pageMarginLeft()](#pagemarginleft) – Left Page Margin in mm|cm|in
+* [pageMarginRight()](#pagemarginright) – Right page margin in mm|cm|in
+* [pageMargins()](#pagemargins) – Page margins for a sheet or a custom sheet view in mm|cm|in
+* [pageMarginTop()](#pagemargintop) – Top Page Margin in mm|cm|in
+* [pageOrientationLandscape()](#pageorientationlandscape) – Set page orientation as Landscape, alias of pageLandscape()
+* [pageOrientationPortrait()](#pageorientationportrait) – Set page orientation as Portrait, alias of pagePortrait()
+* [pagePaperHeight()](#pagepaperheight) – Height of custom paper as a number followed by a unit identifier mm|cm|in (ex: 297mm, 11in)
+* [pagePaperSize()](#pagepapersize) – Set Paper size (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeA3()](#pagepapersizea3) – Set Paper Size to A3 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeA4()](#pagepapersizea4) – Set Paper Size to A4 (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeLegal()](#pagepapersizelegal) – Set Paper Size to Legal (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperSizeLetter()](#pagepapersizeletter) – Set Paper Size to Letter (when paperHeight and paperWidth are specified, paperSize should be ignored)
+* [pagePaperWidth()](#pagepaperwidth) – Width of custom paper as a number followed by a unit identifier mm|cm|in (ex: 21cm, 8.5in)
+* [pagePortrait()](#pageportrait) – Set page orientation as Portrait
+* [pageScale()](#pagescale) – Set page scale
+* [protect()](#protect) – Protect sheet
+* [setActiveCell()](#setactivecell) – Set active cell
+* [setAutoFilter()](#setautofilter) – Set auto filter
+* [setBgColor()](#setbgcolor) – Set background color for the specific cell or range
+* [setBottomNodesOptions()](#setbottomnodesoptions) – Set multiple options for a bottom node
+* [setCellStyle()](#setcellstyle) – Set style for the specific cell
+* [setColAutoWidth()](#setcolautowidth) – Alias of setColWidthAuto($col)
+* [setColDataStyle()](#setcoldatastyle) – Set styles of column cells (colors, formats, etc.)
+* [setColDataStyleArray()](#setcoldatastylearray) – Set style of column cells (colors, formats, etc.)
+* [setColFormat()](#setcolformat) – Set a format of single or multiple column(s)
+* [setColFormats()](#setcolformats) – Set formats of columns
+* [setColFormula()](#setcolformula) – Set formula for single or multiple column(s)
+* [setColHidden()](#setcolhidden) – Set a column as hidden
+* [setColMinWidth()](#setcolminwidth) – Setting a minimal column's width
+* [setColMinWidths()](#setcolminwidths) – Setting a multiple column's minimal width
+* [setColOutlineLevel()](#setcoloutlinelevel) – Set a column outline level
+* [setColStyle()](#setcolstyle) – Set style of single or multiple column(s)
+* [setColStyleArray()](#setcolstylearray) – Set styles of single or multiple column(s)
+* [setColVisible()](#setcolvisible) – Show/hide a column
+* [setColWidth()](#setcolwidth) – Set a width of single or multiple column(s)
+* [setColWidthAuto()](#setcolwidthauto) – Set auto width of single or multiple column(s)
+* [setColWidths()](#setcolwidths) – Setting a multiple column's width
+* [setDefaultFont()](#setdefaultfont) – Set default font settings for the sheet
+* [setDefaultFontColor()](#setdefaultfontcolor) – Set default font color
+* [setDefaultFontName()](#setdefaultfontname) – Set default font name for the sheet
+* [setDefaultFontSize()](#setdefaultfontsize) – Set default font size for the sheet
+* [setDefaultFontStyle()](#setdefaultfontstyle) – Set default font style (bold, italic, etc.) for the sheet
+* [setDefaultFontStyleBold()](#setdefaultfontstylebold) – Set default font style as bold for the sheet
+* [setDefaultFontStyleItalic()](#setdefaultfontstyleitalic) – Set default font style as italic
+* [setDefaultFontStyleStrikethrough()](#setdefaultfontstylestrikethrough) – Set default font style as strikethrough
+* [setDefaultFontStyleUnderline()](#setdefaultfontstyleunderline) – Set default font style as underline
+* [setDefaultStyle()](#setdefaultstyle) – Sets default style
+* [setFormat()](#setformat) – Set value format for the specific cell or range
+* [setFormula()](#setformula) – Set a formula to the single cell or to the cell range
+* [setFreeze()](#setfreeze) – Freeze rows/columns
+* [setFreezeColumns()](#setfreezecolumns) – Freeze columns
+* [setFreezeRows()](#setfreezerows) – Freeze rows
+* [setName()](#setname) – Set sheet name
+* [setOuterBorder()](#setouterborder) – Set outer border for the specific range
+* [setPrintArea()](#setprintarea) – Set print area for the sheet
+* [setPrintCentered()](#setprintcentered) – Center the print area horizontally and vertically
+* [setPrintGridlines()](#setprintgridlines) – Show grid lines in the print area
+* [setPrintHorizontalCentered()](#setprinthorizontalcentered) – Center the print area horizontally
+* [setPrintLeftColumns()](#setprintleftcolumns) – Set left columns to repeat on every printed page
+* [setPrintRowAndColumnHeading()](#setprintrowandcolumnheading) – Print row and column headings in the printout
+* [setPrintTitles()](#setprinttitles) – Set rows to repeat at top and columns to repeat at left when printing
+* [setPrintTopRows()](#setprinttoprows) – Set top rows to repeat on every printed page
+* [setPrintVerticalCentered()](#setprintverticalcentered) – Center the print area vertically
+* [setRowDataStyle()](#setrowdatastyle) – Style are applied only to non-empty cells in a row (or row range)
+* [setRowDataStyleArray()](#setrowdatastylearray) – Styles are applied only to non-empty cells in a rows
+* [setRowHeight()](#setrowheight) – Height of a specific row
+* [setRowHeights()](#setrowheights) – Multiple rows height
+* [setRowHidden()](#setrowhidden) – Hide a specific row
+* [setRowOutlineLevel()](#setrowoutlinelevel) – Set an outline level for a specific row or range of rows
+* [setRowStyle()](#setrowstyle) – The style is applied to the entire sheet row (even if it is empty)
+* [setRowStyleArray()](#setrowstylearray) – Styles are applied to the entire sheet row (even if it is empty)
+* [setRowVisible()](#setrowvisible) – Hide/show a specific row
+* [setShowGridLines()](#setshowgridlines) – Turn on/off grid lines
+* [setStateHidden()](#setstatehidden) – Make the sheet hidden
+* [setStateVeryHidden()](#setstateveryhidden) – Make the sheet very hidden
+* [setStateVisible()](#setstatevisible) – Make the sheet visible
+* [setStyle()](#setstyle) – Alias for 'setCellStyle()'
+* [setTabColor()](#settabcolor) – Set color for the sheet tab
+* [setTopLeftCell()](#settopleftcell) – Set the top left cell for writing
+* [setValue()](#setvalue) – Set a value to the single cell or to the cell range
+* [skipRow()](#skiprow) – Skip rows
+* [unprotect()](#unprotect) – Unprotect sheet
+* [withLastCell()](#withlastcell) – Select the last written cell for applying
+* [withLastRow()](#withlastrow) – Select the last written row for applying
+* [withRange()](#withrange) – Select a custom range for applying
+* [writeArray()](#writearray) – Write values from a two-dimensional array (alias of writeRows)
+* [writeArrayTo()](#writearrayto) – Write 2d array from the specified cell
+* [writeCell()](#writecell) – Write value to the current cell and move a pointer to the next cell in the row
+* [writeCells()](#writecells) – Write several values into cells of one row
+* [writeHeader()](#writeheader) – Write a header row with optional styles and formats for columns
+* [writeRow()](#writerow) – Write values to the current row
+* [writeRows()](#writerows) – Write several rows from a two-dimensional array
+* [writeTo()](#writeto) – Write value to the specified cell and move a pointer to the next cell in the row
 
 ---
 
@@ -254,8 +254,8 @@ _Add a chart object to the specified range of cells_
 
 ### Parameters
 
-* `string $range` -- Set the position where the chart should appear in the worksheet
-* `Chart $chart` -- Chart object
+* `string $range` – Set the position where the chart should appear in the worksheet
+* `Chart $chart` – Chart object
 
 ---
 
@@ -304,9 +304,9 @@ _Add an image to the sheet from a local file, URL or image string in base64_
 
 ### Parameters
 
-* `string $cell` -- Cell address
-* `string $imageFile` -- URL, local path or image string in base64
-* `array|null $imageStyle` -- \['width' => ..., 'height' => ..., 'hyperlink' => ...]
+* `string $cell` – Cell address
+* `string $imageFile` – URL, local path or image string in base64
+* `array|null $imageStyle` – \['width' => ..., 'height' => ..., 'hyperlink' => ...]
 
 ---
 
@@ -1264,7 +1264,7 @@ _Begin a new area_
 
 ### Parameters
 
-* `string|null $cellAddress` -- Upper left cell of area
+* `string|null $cellAddress` – Upper left cell of area
 
 ---
 
@@ -1696,7 +1696,7 @@ _Make area for writing_
 
 ### Parameters
 
-* `string $range` -- A1:Z9 or R1C1:R9C28
+* `string $range` – A1:Z9 or R1C1:R9C28
 
 ---
 
@@ -1712,7 +1712,7 @@ _Merge cells_
 ### Parameters
 
 * `array|string|int $rangeSet`
-* `int|null $mergeFlag` -- Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
+* `int|null $mergeFlag` – Action in case of intersection: 0 - exception; 1 - replace; 2 - keep; -1 - skip intersection check
 
 ---
 
@@ -2336,9 +2336,9 @@ _Set style for the specific cell_
 
 ### Parameters
 
-* `string $cellAddress` -- Cell address
-* `array|Style $style` -- Style array or object
-* `bool|null $mergeStyles` -- True - merge style with previous style for this cell (if exists)
+* `string $cellAddress` – Cell address
+* `array|Style $style` – Style array or object
+* `bool|null $mergeStyles` – True - merge style with previous style for this cell (if exists)
 
 ---
 
@@ -2353,7 +2353,7 @@ _Alias of setColWidthAuto($col)_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 
 ---
 
@@ -2424,7 +2424,7 @@ _Set a format of single or multiple column(s)_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `mixed $format`
 
 ---
@@ -2455,7 +2455,7 @@ _Set formula for single or multiple column(s)_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `string $formula`
 
 ---
@@ -2471,7 +2471,7 @@ _Set a column as hidden_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 
 ---
 
@@ -2486,7 +2486,7 @@ _Setting a minimal column's width_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `int|float|string $width`
 
 ---
@@ -2526,7 +2526,7 @@ _Set a column outline level_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `int $outlineLevel`
 
 ---
@@ -2544,7 +2544,7 @@ _Styles are applied to the entire sheet column(s) (even if it is empty)_
 
 ### Parameters
 
-* `int|string|array $colRange` -- Column number or column letter or column range (or array of these)
+* `int|string|array $colRange` – Column number or column letter or column range (or array of these)
 * `array|Style $style`
 
 ---
@@ -2600,7 +2600,7 @@ _Show/hide a column_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `bool $val`
 
 ---
@@ -2616,7 +2616,7 @@ _Set a width of single or multiple column(s)_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 * `int|float|string $width`
 * `bool|null $min`
 
@@ -2633,7 +2633,7 @@ _Set auto width of single or multiple column(s)_
 
 ### Parameters
 
-* `int|string|array $col` -- Column number or column letter (or array of these)
+* `int|string|array $col` – Column number or column letter (or array of these)
 
 ---
 
@@ -2906,7 +2906,7 @@ _Freeze columns_
 
 ### Parameters
 
-* `int $freezeColumns` -- Number columns to freeze
+* `int $freezeColumns` – Number columns to freeze
 
 ---
 
@@ -2921,7 +2921,7 @@ _Freeze rows_
 
 ### Parameters
 
-* `int $freezeRows` -- Number rows to freeze
+* `int $freezeRows` – Number rows to freeze
 
 ---
 
@@ -3519,8 +3519,8 @@ _Write values from a two-dimensional array (alias of writeRows)_
 
 ### Parameters
 
-* `array $rowArray` -- Array of rows
-* `array|Style|null $rowStyle` -- Style applied to each row
+* `array $rowArray` – Array of rows
+* `array|Style|null $rowStyle` – Style applied to each row
 
 ---
 
@@ -3613,9 +3613,9 @@ _Write values to the current row_
 
 ### Parameters
 
-* `array $rowValues` -- Values of cells
-* `array|Style|null $rowStyle` -- Style applied to the entire row
-* `array|null $cellStyles` -- Styles of specified cells in the row
+* `array $rowValues` – Values of cells
+* `array|Style|null $rowStyle` – Style applied to the entire row
+* `array|null $cellStyles` – Styles of specified cells in the row
 
 ---
 
@@ -3631,8 +3631,8 @@ _Write several rows from a two-dimensional array_
 
 ### Parameters
 
-* `array $rowArray` -- Array of rows
-* `array|null $rowStyle` -- Style applied to each row
+* `array $rowArray` – Array of rows
+* `array|null $rowStyle` – Style applied to each row
 
 ---
 

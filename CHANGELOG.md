@@ -1,3 +1,8 @@
+## Current
+
+* New class `Options` for workbook settings
+* New methods `Excel::getStyleCellStyles()` and `Excel::getStyleCellStyleXfs()`
+
 ## V.6.9
 
 * IMPORTANT: The namespace of the RichText class has been changed to avadim\FastExcelWriter\RichText

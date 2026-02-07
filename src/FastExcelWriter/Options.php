@@ -118,7 +118,7 @@ class Options implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Set writer class
+     * Set Writer class
      *
      * @param string $writerClass
      *
@@ -132,7 +132,7 @@ class Options implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Set style manager class
+     * Set Style Manager class
      *
      * @param string $styleManagerClass
      *

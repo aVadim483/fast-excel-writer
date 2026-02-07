@@ -7,6 +7,7 @@ namespace **avadim\FastExcelWriter**
 ---
 
 * [Class Excel](91-api-class-excel.md)
+* [Class Options](91-api-class-options.md)
 * [Class Sheet](92-api-class-sheet.md)
 * [Class RichText\RichText](93-api-class-rich-text.md)
 * [Class RichText\RichTextFragment](93-api-class-rich-text-fragment.md)

@@ -166,7 +166,7 @@ class Excel implements InterfaceBookWriter
      *
      * @param array|Options|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
      */
-    public function __construct($options = [])
+    public function __construct($options = null)
     {
         if ($options instanceof Options) {
             $options = $options->toArray();
@@ -314,7 +314,7 @@ class Excel implements InterfaceBookWriter
      *
      * @return Excel
      */
-    public static function create($sheets = null, $options = []): Excel
+    public static function create($sheets = null, $options = null): Excel
     {
         $excel = new self($options);
         if ($sheets) {

@@ -2,37 +2,37 @@
 
 ---
 
-* [setAlignLeft()](#setalignleft) -- Apply left alignment to content
-* [setAlignRight()](#setalignright) -- Apply right alignment to content
-* [setBgColor()](#setbgcolor) -- Alias of 'setFillColor()'
-* [setBorder()](#setborder) -- Sets all borders style
-* [setBorderBottom()](#setborderbottom) -- Styles and color for bottom border
-* [setBorderLeft()](#setborderleft) -- Styles and color for left border
-* [setBorderRight()](#setborderright) -- Styles and color for right border
-* [setBorderTop()](#setbordertop) -- Styles and color for top border
-* [setColor()](#setcolor) -- Alias of 'setFontColor()'
-* [setFillColor()](#setfillcolor) -- Fill background color
-* [setFillGradient()](#setfillgradient) -- Fill background by gradient
-* [setFont()](#setfont) -- Font name, size, style and color
-* [setFontColor()](#setfontcolor) -- Font color
-* [setFontName()](#setfontname) -- Font name
-* [setFontSize()](#setfontsize) -- Font size
-* [setFontStyle()](#setfontstyle) -- Font style
-* [setFontStyleBold()](#setfontstylebold) -- Bold font
-* [setFontStyleItalic()](#setfontstyleitalic) -- Italic font
-* [setFontStyleStrikethrough()](#setfontstylestrikethrough) -- Sets strikethrough
-* [setFontStyleUnderline()](#setfontstyleunderline) -- Sets underline
-* [setFormat()](#setformat) -- Sets format
-* [setIndentDistributed()](#setindentdistributed) -- Indent distributed
-* [setIndentLeft()](#setindentleft) -- Indent left
-* [setIndentRight()](#setindentright) -- Indent right
-* [setTextAlign()](#settextalign) -- Horizontal and vertical content align
-* [setTextCenter()](#settextcenter) -- Center content by horizontal and vertical
-* [setTextColor()](#settextcolor) -- Another alias of 'setFontColor()'
-* [setTextRotation()](#settextrotation) -- Text rotation
-* [setTextWrap()](#settextwrap) -- Text wrap option
-* [setVerticalAlign()](#setverticalalign) -- Vertical content align
-* [toArray()](#toarray) -- Return style properties as array
+* [setAlignLeft()](#setalignleft) – Apply left alignment to content
+* [setAlignRight()](#setalignright) – Apply right alignment to content
+* [setBgColor()](#setbgcolor) – Alias of 'setFillColor()'
+* [setBorder()](#setborder) – Sets all borders style
+* [setBorderBottom()](#setborderbottom) – Styles and color for bottom border
+* [setBorderLeft()](#setborderleft) – Styles and color for left border
+* [setBorderRight()](#setborderright) – Styles and color for right border
+* [setBorderTop()](#setbordertop) – Styles and color for top border
+* [setColor()](#setcolor) – Alias of 'setFontColor()'
+* [setFillColor()](#setfillcolor) – Fill background color
+* [setFillGradient()](#setfillgradient) – Fill background by gradient
+* [setFont()](#setfont) – Font name, size, style and color
+* [setFontColor()](#setfontcolor) – Font color
+* [setFontName()](#setfontname) – Font name
+* [setFontSize()](#setfontsize) – Font size
+* [setFontStyle()](#setfontstyle) – Font style
+* [setFontStyleBold()](#setfontstylebold) – Bold font
+* [setFontStyleItalic()](#setfontstyleitalic) – Italic font
+* [setFontStyleStrikethrough()](#setfontstylestrikethrough) – Sets strikethrough
+* [setFontStyleUnderline()](#setfontstyleunderline) – Sets underline
+* [setFormat()](#setformat) – Sets format
+* [setIndentDistributed()](#setindentdistributed) – Indent distributed
+* [setIndentLeft()](#setindentleft) – Indent left
+* [setIndentRight()](#setindentright) – Indent right
+* [setTextAlign()](#settextalign) – Horizontal and vertical content align
+* [setTextCenter()](#settextcenter) – Center content by horizontal and vertical
+* [setTextColor()](#settextcolor) – Another alias of 'setFontColor()'
+* [setTextRotation()](#settextrotation) – Text rotation
+* [setTextWrap()](#settextwrap) – Text wrap option
+* [setVerticalAlign()](#setverticalalign) – Vertical content align
+* [toArray()](#toarray) – Return style properties as array
 
 ---
 

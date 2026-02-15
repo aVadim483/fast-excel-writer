@@ -122,6 +122,9 @@ class Excel implements InterfaceBookWriter
 
     protected static string $tempDir;
 
+    /** @var int|string  */
+    protected static $bufferLimit = '64K';
+
     /** @var Writer */
     public $writer;
 
@@ -185,6 +188,13 @@ class Excel implements InterfaceBookWriter
         }
         $writerOptions['auto_convert_number'] = !empty($options['auto_convert_number']);
         $writerOptions['shared_string'] = !empty($options['shared_string']);
+
+        if (!empty(self::$bufferLimit)) {
+            $writerOptions['buffer_limit'] = self::$bufferLimit;
+        }
+        if (!empty($options['buffer_limit'])) {
+            $writerOptions['buffer_limit'] = $options['buffer_limit'];
+        }
 
         if (isset($options['writer_class'])) {
             $this->writer = $this->getObject($options['writer_class'], $writerOptions);
@@ -364,6 +374,17 @@ class Excel implements InterfaceBookWriter
     public static function setTempDir($tempDir)
     {
         self::$tempDir = $tempDir;
+    }
+
+    /**
+     * Set buffer limit for file writer
+     *
+     * @param int|string $size
+     * @return void
+     */
+    public static function setBufferLimit($size)
+    {
+        self::$bufferLimit = $size;
     }
 
     /**

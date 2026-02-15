@@ -1930,10 +1930,14 @@ class Sheet implements InterfaceSheetWriter
         }
 
         $rowAttributes = $this->getRowAttributes($rowIdx, $rowOptions);
-        if (isset($rowAttributes['r'])) {
-            unset($rowAttributes['r']);
+        if ($rowAttributes) {
+            if (isset($rowAttributes['r'])) {
+                unset($rowAttributes['r']);
+            }
+            $rowAttrStr = Writer::tagAttributes($rowAttributes);
+        } else {
+            $rowAttrStr = '';
         }
-        $rowAttrStr = Writer::tagAttributes($rowAttributes);
 
         // add auto formulas of columns
         if ($this->colFormulas && $row) {
@@ -2043,7 +2047,13 @@ class Sheet implements InterfaceSheetWriter
 
                         $styleHash = $cellStyle ? json_encode($cellStyle) : '';
                         if (!isset($_styleCache[$styleHash])) {
-                            $cellStyleIdx = $this->excel->addStyle($cellStyle, $resultStyle);
+                            if ($cellStyle) {
+                                $cellStyleIdx = $this->excel->addStyle($cellStyle, $resultStyle);
+                            }
+                            else {
+                                $cellStyleIdx = 0;
+                                $resultStyle = ['number_format' => 'GENERAL', 'number_format_type' => 'n_auto', '_xf_id' => 0];
+                            }
                             $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
                         }
                         else {

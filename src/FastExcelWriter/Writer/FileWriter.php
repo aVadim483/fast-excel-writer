@@ -17,12 +17,13 @@ class FileWriter
     /** @var string  */
     protected string $buffer = '';
 
+    protected int $bufferLimit = 65536;
+
     /** @var bool  */
     protected ?bool $checkUtf8 = false;
 
     protected string $fileName;
     protected ?string $openFlags;
-    protected int $limit = 8191;
 
     protected array $elements = [];
     protected int $level = -1;
@@ -60,12 +61,22 @@ class FileWriter
     }
 
     /**
+     * @param int $bufferLimit
+     *
+     * @return void
+     */
+    public function setBufferLimit(int $bufferLimit)
+    {
+        $this->bufferLimit = $bufferLimit;
+    }
+
+    /**
      * @param $string
      */
     public function write($string)
     {
         $this->buffer .= $string;
-        if (isset($this->buffer[$this->limit])) {
+        if (isset($this->buffer[$this->bufferLimit])) {
             $this->flush();
         }
     }

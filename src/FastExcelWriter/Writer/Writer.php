@@ -17,9 +17,13 @@ use avadim\FastExcelWriter\Sheet;
  */
 class Writer
 {
+    /** @var int|string|null */
+    protected $bufferLimit = null;
+
+    /** @var FileWriter[] */
     protected array $buffers = [];
 
-    /** @var Excel */
+    /** @var Excel Parent Excel object*/
     protected $excel;
 
     /** @var array */
@@ -59,6 +63,9 @@ class Writer
         if (!empty($options['temp_dir'])) {
             $this->setTempDir($options['temp_dir']);
         }
+        if (!empty($options['buffer_limit'])) {
+            $this->setBufferLimit($options['buffer_limit']);
+        }
         $this->autoConvertNumber = !empty($options['auto_convert_number']);
         $this->sharedString = !empty($options['shared_string']);
 
@@ -88,7 +95,11 @@ class Writer
         if (isset($this->buffers[$fileName])) {
             $this->buffers[$fileName] = null;
         }
-        $this->buffers[$fileName] = new FileWriter($fileName);
+        $fileWriter = new FileWriter($fileName);
+        if ($this->bufferLimit) {
+            $fileWriter->setBufferLimit($this->bufferLimit);
+        }
+        $this->buffers[$fileName] = $fileWriter;
 
         return $this->buffers[$fileName];
     }
@@ -135,6 +146,31 @@ class Writer
         }
         else {
             $this->tempDir = '';
+        }
+    }
+
+    /**
+     * @param string|int $bufferLimit
+     *
+     * @return void
+     */
+    public function setBufferLimit($bufferLimit)
+    {
+        if (is_string($bufferLimit) && preg_match('/^\d+([KMG])$/', $bufferLimit, $matches)) {
+            $bufferLimit = (int)$bufferLimit;
+            if ($matches[1] === 'K') {
+                $bufferLimit *= 1024;
+            } elseif ($matches[1] === 'M') {
+                $bufferLimit *= 1024 * 1024;
+            } elseif ($matches[1] === 'G') {
+                $bufferLimit *= 1024 * 1024 * 1024;
+            }
+        }
+        else {
+            $bufferLimit = (int)$bufferLimit;
+        }
+        if ($bufferLimit > 0) {
+            $this->bufferLimit = $bufferLimit;
         }
     }
 
@@ -1235,7 +1271,12 @@ class Writer
     {
         $cellName = Excel::cellAddress($rowNumber, $colNumber);
 
-        $attr = 'r="' . $cellName . '" s="' . $cellStyleIdx . '"';
+        if ($cellStyleIdx) {
+            $attr = 'r="' . $cellName . '" s="' . $cellStyleIdx . '"';
+        }
+        else {
+            $attr = 'r="' . $cellName . '"';
+        }
         if (is_array($value) && isset($value['value'])) {
             if (!empty($value['attr'])) {
                 foreach ($value['attr'] as $attrName => $attrValue) {
@@ -1251,10 +1292,10 @@ class Writer
         elseif (is_array($value) && !empty($value[0]) && $value[0][0] === '=' && isset($value[1])) {
             // formula & value
             $formula = $this->_convertFormula($value[0], [$rowNumber, $colNumber]);
-            $file->write('<c ' . $attr . '>');
-            $file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
-            $file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
-            $file->write('</c>');
+            $file->write('<c ' . $attr . '>' . '<f>' . self::xmlSpecialChars($formula) . '</f>' . '<v>' . self::xmlSpecialChars($value[1]) . '</v>' . '</c>');
+            //$file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
+            //$file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
+            //$file->write('</c>');
         }
         elseif ($value && is_string($value) && $value[0] === '=') {
             // formula
@@ -1403,6 +1444,9 @@ class Writer
 
         $temporaryFilename = $this->makeTempFile(null, 'xl/styles.xml');
         $file = new FileWriter($temporaryFilename);
+        if ($this->bufferLimit) {
+            $file->setBufferLimit($this->bufferLimit);
+        }
         $file->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n");
         $links = implode("\n", $schemaLinks);
         $file->write("<styleSheet $links>");

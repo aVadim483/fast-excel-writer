@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace avadim\FastExcelWriter;
-
-use avadim\FastExcelReader\Excel as ExcelReader;
+use avadim\FastExcelWriter\Excel;
+use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Charts\Chart;
 use avadim\FastExcelWriter\Charts\Legend;
 use avadim\FastExcelWriter\Conditional\Conditional;
 use avadim\FastExcelWriter\Exceptions\ExceptionAddress;
 use avadim\FastExcelWriter\Style\Style;
+use avadim\FastExcelReader\Excel as ExcelReader;
 use PHPUnit\Framework\TestCase;
 
 final class FastExcelWriterTest extends TestCase
@@ -73,8 +73,8 @@ final class FastExcelWriterTest extends TestCase
             'border-top-style' => null,
             'border-bottom-style' => null,
             'border-diagonal-style' => null,
-            'format-num-id' => 164,
-            'format-pattern' => 'GENERAL',
+            'format-num-id' => 0,
+            'format-pattern' => 'General',
         ];
 
     }
@@ -176,7 +176,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('B2', $this->cells['B2']);
         $this->assertEquals('D2', $this->cells['D2']);
 
-        $this->assertEquals(null, $this->cells['A3']);
+        $this->assertArrayNotHasKey('A3', $this->cells);
         $this->assertEquals('F3', $this->cells['F3']);
 
         $this->assertEquals('A5', $this->cells['A5']);
@@ -187,7 +187,7 @@ final class FastExcelWriterTest extends TestCase
         $this->assertEquals('E10', $this->cells['E10']);
 
         $this->assertFalse(isset($this->cells['A9']));
-        $this->assertEquals(null, $this->cells['C10']);
+        $this->assertArrayNotHasKey('C10', $this->cells);
         $this->assertEquals('', $this->cells['A13']);
         $this->assertEquals('b14', $this->cells['B14']);
 
@@ -842,7 +842,7 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
 
         $style = $this->getStyle('A1', true);
-        $this->assertEquals('GENERAL', $style['format-pattern']);
+        $this->assertEquals('GENERAL', strtoupper($style['format-pattern']));
         $style = $this->getStyle('B1', true);
         $this->assertEquals('#,##0.00', $style['format-pattern']);
         $style = $this->getStyle('C1', true);

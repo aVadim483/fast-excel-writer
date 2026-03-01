@@ -13,6 +13,7 @@ use avadim\FastExcelWriter\Exceptions\ExceptionRangeName;
 use avadim\FastExcelWriter\Interfaces\InterfaceSheetWriter;
 use avadim\FastExcelWriter\RichText\RichText;
 use avadim\FastExcelWriter\Style\Font;
+use avadim\FastExcelWriter\Style\ImageStyle;
 use avadim\FastExcelWriter\Style\Style;
 use avadim\FastExcelWriter\Style\StyleManager;
 use avadim\FastExcelWriter\Writer\FileWriter;
@@ -3932,12 +3933,15 @@ class Sheet implements InterfaceSheetWriter
      *
      * @param string $cell Cell address
      * @param string $imageFile URL, local path or image string in base64
-     * @param array|null $imageStyle ['width' => ..., 'height' => ..., 'hyperlink' => ...]
+     * @param array|ImageStyle|null $imageStyle ['width' => ..., 'height' => ..., 'hyperlink' => ...]
      *
      * @return $this
      */
-    public function addImage(string $cell, string $imageFile, ?array $imageStyle = []): Sheet
+    public function addImage(string $cell, string $imageFile, $imageStyle = []): Sheet
     {
+        if ($imageStyle instanceof ImageStyle) {
+            $imageStyle = $imageStyle->toArray();
+        }
         if (func_num_args() === 1) {
             $imageFile = $cell;
             $rowIdx = $this->lastTouch['cell']['row_idx'];

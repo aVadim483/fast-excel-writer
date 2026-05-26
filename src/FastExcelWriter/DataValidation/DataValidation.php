@@ -45,8 +45,8 @@ class DataValidation
 
     protected string $type;
 
-    protected Sheet $sheet;
-    protected string $sqref;
+    protected ?Sheet $sheet = null;
+    protected ?string $sqref = null;
 
     protected ?string $errorStyle = null;
 
@@ -589,7 +589,7 @@ class DataValidation
             else {
                 $formula = $this->formula1;
             }
-            $xml .= '<formula1>' . $formula . '</formula1>';
+            $xml .= '<formula1>' . str_replace(['&', '"', '<', '>'], ['&amp;', '&quot;', '&lt;', '&gt;'], $formula) . '</formula1>';
         }
         if ($this->formula2 !== null && $this->formula2 !== '') {
             if ($this->formula2[0] === '=') {

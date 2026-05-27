@@ -954,8 +954,13 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setColStyleArray($colStyles): Sheet
     {
-        foreach ($colStyles as $col => $style) {
-            $this->setColStyle($col, $style);
+        if ($colStyles) {
+            $keys = array_keys($colStyles);
+            $baseNum = (reset($keys) === 1) ? 1 : 0;
+            $styles = array_combine(Excel::colLetterRange($keys, $baseNum), array_values($colStyles));
+            foreach ($styles as $col => $style) {
+                $this->setColStyle($col, $style);
+            }
         }
 
         return $this;
@@ -1042,9 +1047,13 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setColDataStyleArray(array $colStyles): Sheet
     {
-        $styles = array_combine(Excel::colLetterRange(array_keys($colStyles)), array_values($colStyles));
-        foreach ($styles as $col => $style) {
-            $this->setColDataStyle($col, $style);
+        if ($colStyles) {
+            $keys = array_keys($colStyles);
+            $baseNum = (reset($keys) === 1) ? 1 : 0;
+            $styles = array_combine(Excel::colLetterRange($keys, $baseNum), array_values($colStyles));
+            foreach ($styles as $col => $style) {
+                $this->setColDataStyle($col, $style);
+            }
         }
 
         return $this;
@@ -1386,7 +1395,10 @@ class Sheet implements InterfaceSheetWriter
     public function setColFormats(array $formats): Sheet
     {
         if ($formats) {
-            $formats = array_combine(Excel::colLetterRange(array_keys($formats)), array_values($formats));
+            $keys = array_keys($formats);
+            $baseNum = (reset($keys) === 1) ? 1 : 0;
+            $formats = array_combine(Excel::colLetterRange($keys, $baseNum), array_values($formats));
+            //$formats = array_combine(Excel::colLetterRange($keys), array_values($formats));
             foreach ($formats as $col => $format) {
                 $this->setColFormat($col, $format);
             }

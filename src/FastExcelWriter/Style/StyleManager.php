@@ -745,6 +745,9 @@ class StyleManager
         if ($style instanceof Style) {
             $style = $style->toArray();
         }
+        elseif (is_string($style)) {
+            $style = ['format' => $style];
+        }
         foreach($style as $styleKey => $styleVal) {
             switch ($styleKey) {
                 case 'format':

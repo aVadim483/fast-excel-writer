@@ -457,7 +457,7 @@ class Style
      */
     public function setVerticalAlign(string $verticalAlign): Style
     {
-        $this->_setStyleOptions('format', ['vertical-align' => $verticalAlign]);
+        $this->_setStyleOptions('format', [Style::VERTICAL_ALIGN => $verticalAlign]);
 
         return $this;
     }

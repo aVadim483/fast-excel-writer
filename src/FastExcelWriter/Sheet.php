@@ -3168,11 +3168,11 @@ class Sheet implements InterfaceSheetWriter
             }
             elseif ($value instanceof \DateTimeInterface) {
                 $this->cells['values'][$rowIdx][$colIdx] = $value->getTimestamp();
-                if (is_array($styles) && empty($styles['format'])) {
-                    $styles['format'] = '@datetime';
-                }
-                else {
+                if (!is_array($styles)) {
                     $styles = ['format' => '@datetime'];
+                }
+                elseif (empty($styles['format'])) {
+                    $styles['format'] = '@datetime';
                 }
             }
             elseif (is_callable($value)) {

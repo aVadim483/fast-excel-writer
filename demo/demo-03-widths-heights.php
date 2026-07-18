@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -26,16 +25,16 @@ foreach ($widths as $w) {
 $sheet->writeRow($values, ['text-align' => 'center', 'font' => 'bold', 'border' => 'thin']);
 $sheet->setColWidths($widths);
 
-// set style foe the cell A only
+// set style for the cell A only
 $cellStyles = [['font' => 'bold', 'border' => 'thin']];
 $sheet->setRowHeight(2, $heights[2]);
-$sheet->writeRow(['height:' . $heights[2] ?? '', 234, 456, 789], [], $cellStyles);
+$sheet->writeRow(['height:' . $heights[2], 234, 456, 789], [], $cellStyles);
 
 // Write row with specified height
-$sheet->writeRow(['height:' . $heights[3] ?? '', 234, 456, 789], ['height' => $heights[3]], $cellStyles);
+$sheet->writeRow(['height:' . $heights[3], 234, 456, 789], ['height' => $heights[3]], $cellStyles);
 
 // Write row with specified height - other way (preferred)
-$sheet->writeRow(['height:' . $heights[4] ?? '', 234, 456, 789], [], $cellStyles)
+$sheet->writeRow(['height:' . $heights[4], 234, 456, 789], [], $cellStyles)
     ->applyRowHeight($heights[4]);
 
 $excel->save($outFileName);

@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -37,7 +36,7 @@ $validation = DataValidation::integer('>', 10)
     ->setPrompt('Number greater than 10')
     ->setError('Please enter correct number greater than 10');
 ;
-$sheet->writeCell('Decimal 1');
+$sheet->writeCell('Integer 1');
 $sheet->nextCell()
     ->applyStyle($style)
     ->applyDataValidation($validation)

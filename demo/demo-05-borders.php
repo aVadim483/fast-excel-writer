@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 

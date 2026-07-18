@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -29,7 +28,7 @@ foreach ($data as $row) {
 }
 
 $chart1 = Chart::make(Chart::TYPE_PIE, 'Pie Chart', ['c2:c5'])
-    ->setDataSeriesTickLabels('A2:A5')
+    ->setCategoryAxisLabels('A2:A5')
     ->setLegendPosition(Legend::POSITION_TOPRIGHT)
     ->setPlotShowValues(true)
 ;

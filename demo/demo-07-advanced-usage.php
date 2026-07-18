@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -12,7 +11,7 @@ use avadim\FastExcelWriter\Style\Style;
 // *****************
 // PREPARE DEMO DATA
 $demoNames = [
-    ['John', 'Evan', 'Giovanni', 'Janusz', 'Hans', 'Johann', 'Jean'. 'Peter', 'Pedro', 'Pierre', 'Pietro', 'Francesco', 'James', 'Mateusz', 'Miguel'],
+    ['John', 'Evan', 'Giovanni', 'Janusz', 'Hans', 'Johann', 'Jean', 'Peter', 'Pedro', 'Pierre', 'Pietro', 'Francesco', 'James', 'Mateusz', 'Miguel'],
     ['Smith', 'Johnson', 'Smirnov', 'Lee', 'Wong', 'Muller', 'Schmidt', 'Silva', 'Santos', 'Andersson', 'Johansson', 'Russo', 'Kowalski', 'Novak'],
 ];
 $lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua';
@@ -80,8 +79,8 @@ $sheet->writeTo('a2', '');
 foreach ($images as $n => $image) {
     $cellAddress = Excel::cellAddress(3, $n + 2);
     $sheet->addImage($cellAddress, $image, ['height' => 40]);
-    $bgColor = $noteColors[$n];
-    $sheet->addNote($cellAddress, basename($image), ['bg_color' => $bgColor]);
+    $fillColor = $noteColors[$n];
+    $sheet->addNote($cellAddress, basename($image), ['fill_color' => $fillColor]);
 }
 $sheet->setRowHeight(3, 40);
 
@@ -105,8 +104,7 @@ $area
 
 // Begin new area (specify left top cell)
 $area = $sheet->beginArea('A8');
-//var_dump($area->getBeginAddress()); exit;
-// You can use R1C1-notation, start position in A6
+// You can use R1C1-notation, start position in A8
 $area
     ->setValue('RC:R[1]C', '#') // Merge vertical cells
     ->setValue('RC1:RC2', 'People') // Merge horizontal cells

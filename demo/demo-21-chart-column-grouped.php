@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -37,10 +36,10 @@ foreach ($data as $row) {
 }
 
 $chart1 = Chart::make(Chart::TYPE_COLUMN, 'Grouped Column Chart', ['c1' => 'c2:c13', 'd1' => 'd2:d13', 'e1' => 'e2:e13'])
-    ->setDataSeriesTickLabels('A2:B13')
+    ->setCategoryAxisLabels('A2:B13')
     ->setLegendPosition(Legend::POSITION_BOTTOM)
-    ->setYAxisLabel('Value ($k)')
-    ->setXAxisLabel('Financial Period')
+    ->setValueAxisTitle('Value ($k)')
+    ->setCategoryAxisTitle('Financial Period')
 ;
 
 //	Add the chart to the worksheet

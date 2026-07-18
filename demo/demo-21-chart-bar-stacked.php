@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/autoload.php';
 
 $outFileName = __DIR__ . '/output/' . basename(__FILE__, '.php') . '.xlsx';
 
@@ -29,7 +28,7 @@ foreach ($data as $row) {
 }
 
 $chart1 = Chart::make(Chart::TYPE_BAR_STACKED, 'Stacked Bar Chart', ['b1' => 'B2:B5', 'c1' => 'c2:c5', 'd1' => 'd2:d5'])
-    ->setDataSeriesTickLabels('A2:A5')
+    ->setCategoryAxisLabels('A2:A5')
     ->setLegendPosition(Legend::POSITION_TOPRIGHT)
 ;
 

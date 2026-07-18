@@ -1,3 +1,19 @@
+## V.6.14
+
+* New demos: rich text (demo-14), images & notes (demo-15); errors fixed in other demos, deprecated chart methods replaced
+* Documentation: Russian translation, upgrade guide, ImageStyle and Options pages, rewritten README
+* Optimized `Writer::_writeCell()`
+* Fixed `Charts\Layout::getXMode()` and `Charts\Layout::getYMode()` – fatal TypeError when adding pie/donut charts
+* Fixed `RichTextFragment::outXml()` – font size set via `setSize()` was not written
+
+## V.6.13
+
+* New class `ImageStyle`, can be used as an argument in `Sheet::addImage()`
+* Fixed data validation formulas
+* Fixed `Sheet::setColFormats()`, `Sheet::setColStyleArray()`, `Sheet::setColDataStyleArray()`
+* V.6.13.1: fixed `Style::setVerticalAlign()`
+* V.6.13.2: fixed https://github.com/aVadim483/fast-excel-writer/issues/136
+
 ## V.6.12
 
 * New class `Options` for workbook settings

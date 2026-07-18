@@ -146,7 +146,7 @@ class RichTextFragment
             $rPr .= '<rFont val="' . $this->prop['f'] . '"/>';
         }
         if ($this->prop['sz']) {
-            $rPr .= '<sz val="' . $this->prop['s'] . '"/>';
+            $rPr .= '<sz val="' . $this->prop['sz'] . '"/>';
         }
         if ($this->prop['c']) {
             $rPr .= '<color rgb="' . $this->prop['c'] . '"/>';

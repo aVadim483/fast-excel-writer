@@ -169,9 +169,9 @@ class Layout
     /**
      * Get X-Mode
      *
-     * @return string
+     * @return string|null
      */
-    public function getXMode(): string
+    public function getXMode(): ?string
     {
         return $this->xMode;
     }
@@ -193,9 +193,9 @@ class Layout
     /**
      * Get Y-Mode
      *
-     * @return string
+     * @return string|null
      */
-    public function getYMode(): string
+    public function getYMode(): ?string
     {
         return $this->yMode;
     }

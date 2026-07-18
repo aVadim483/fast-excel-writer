@@ -12,6 +12,7 @@ final class StyleRowColTest extends TestCase
 {
     protected string $tempDir = __DIR__ . '/tmp';
     protected array $cells = [];
+    protected array $savedFiles = [];
 
     protected function setUp(): void
     {
@@ -20,9 +21,20 @@ final class StyleRowColTest extends TestCase
         }
     }
 
+    protected function tearDown(): void
+    {
+        foreach ($this->savedFiles as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+        $this->savedFiles = [];
+    }
+
     protected function saveCheckRead(Excel $excel, string $filename): ExcelReader
     {
         $path = $this->tempDir . '/' . $filename;
+        $this->savedFiles[] = $path;
         $excel->save($path);
         $this->assertFileExists($path);
         return ExcelReader::open($path);

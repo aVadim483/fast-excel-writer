@@ -16,6 +16,18 @@ final class FastExcelWriterTest extends TestCase
 {
     protected ?ExcelReader $excelReader = null;
     protected array $cells = [];
+    protected array $savedFiles = [];
+
+    protected function tearDown(): void
+    {
+        $this->excelReader = null;
+        foreach ($this->savedFiles as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
+        $this->savedFiles = [];
+    }
 
 
     protected function getValue($cell)
@@ -90,6 +102,7 @@ final class FastExcelWriterTest extends TestCase
 
     protected function saveCheckRead($excel, $testFileName): ExcelReader
     {
+        $this->savedFiles[] = $testFileName;
         $excel->save($testFileName);
         $this->assertTrue(file_exists($testFileName));
         $this->assertEquals('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', mime_content_type($testFileName));

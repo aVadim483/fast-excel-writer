@@ -1269,7 +1269,10 @@ class Writer
      */
     public function _writeCell(FileWriter $file, int $rowNumber, int $colNumber, $value, $numFormatType, ?int $cellStyleIdx = 0)
     {
-        $cellName = Excel::cellAddress($rowNumber, $colNumber);
+        static $colLetters = [];
+
+        $colLetter = $colLetters[$colNumber] ?? ($colLetters[$colNumber] = Helper::colLetter($colNumber));
+        $cellName = $colLetter ? $colLetter . $rowNumber : '';
 
         if ($cellStyleIdx) {
             $attr = 'r="' . $cellName . '" s="' . $cellStyleIdx . '"';

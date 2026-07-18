@@ -79,13 +79,13 @@ $options = [
 ];
 
 $chart = Chart::make(Chart::TYPE_LINE)
-    ->addDataSeriesValues($dataSource, $labelSourse, $options);
+    ->addDataSeriesValues($dataSource, $labelSource, $options);
 ```    
 Available colors formats:
 
 * 6 hex chars with '#' - #ffcc00
 * 6 hex chars without '#' - ffcc00
-* 3 hex chars without '#' - #fc0
+* 3 hex chars with '#' - #fc0
 * 3 hex chars without '#' - fc0
 
 
@@ -169,4 +169,4 @@ Result of this code:
 * setValueAxisTitle(\<string>) - value axis title
 * setLegendPosition(\<position>) - position of legend (use constants Legend::POSITION_XXX)
 * setPlotShowValues(true) - show values on the chart
-* setPlotShowPercent(true) - show values is percents (for pie and sonut)
+* setPlotShowPercent(true) - show values as percents (for pie and donut)

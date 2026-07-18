@@ -37,6 +37,8 @@ class ImageStyle
     }
 
     /**
+     * Set style options from array
+     *
      * @param array $options
      * @return $this
      */
@@ -51,6 +53,8 @@ class ImageStyle
     }
 
     /**
+     * Set width of image
+     *
      * @param int|float $width
      * @return $this
      */
@@ -62,6 +66,8 @@ class ImageStyle
     }
 
     /**
+     * Set height of image
+     *
      * @param int|float $height
      * @return $this
      */
@@ -73,6 +79,8 @@ class ImageStyle
     }
 
     /**
+     * Set offset in pixels relative to the left and top borders of the cell
+     *
      * @param int|float $x
      * @param int|float $y
      * @return $this
@@ -86,6 +94,8 @@ class ImageStyle
     }
 
     /**
+     * Set URL of hyperlink
+     *
      * @param string $hyperlink
      * @return $this
      */
@@ -97,6 +107,8 @@ class ImageStyle
     }
 
     /**
+     * Return style options as array
+     *
      * @return array
      */
     public function toArray(): array

@@ -41,23 +41,13 @@ with many features supported:
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks
 * Supports most styling options for cells, rows, columns - colors, borders, fonts, etc.
 * You can set the height of the rows and the width of the columns (including auto width calculation)
-* You can add formulas, notes and images in you XLSX-files
+* You can add formulas, notes and images in your XLSX-files
 * Supports workbook and sheet protection with/without passwords 
 * Supports page settings - page margins, page size
 * Inserting multiple charts
 * Supports data validations and conditional formatting
 
-## PHP Version Support
-
 Currently, the required PHP minimum version is PHP 7.4
-
-## Documentation
-
-Read more in the documentation [here](/docs/index.md) or [here](https://fast-excel-writer.readthedocs.io/en/latest/). 
-Or check out the [API reference](/docs/90-api-reference.md). 
-Also, you can see examples in ```/demo``` folder.
-
-Changelog is [here](CHANGELOG.md).
 
 ## Installation
 
@@ -67,48 +57,52 @@ Use `composer` to install **FastExcelWriter** into your project:
 composer require avadim/fast-excel-writer
 ```
 
-## Changes In Version 6
+## Quick Start
 
-* Data Validation support
-
-### Important changes in version 6.1
-* ```Sheet::setRowOptions()```, ```Sheet::setColOptions()```, ```Sheet::setRowStyles()``` and ```Sheet::setColStyles()``` 
-are deprecated, instead of them you should use other functions: ```setRowStyle()```, ```setRowStyleArray()```, 
-```setRowDataStyle()```, ```setRowDataStyleArray()```, ```setColStyle()```, ```setColStyleArray()```, ```setColDataStyle()```, ```setColDataStyleArray()```
-* The behavior of the ```Sheet::setRowStyle()``` and ```Sheet::setColStyle()``` has changed, they now set styles for the entire row or column (even if they are empty)
-
-## Changes In Version 5
-
-* The general news is Chart support
-
-### Important changes in version 5.8
-
-Before v.5.8
 ```php
-$sheet->writeCell(12345); // The number 12345 will be written into the cell
-$sheet->writeCell('12345'); // The number 12345 will also be written here
+use \avadim\FastExcelWriter\Excel;
+use \avadim\FastExcelWriter\Style\Style;
 
-```
+$data = [
+    ['2003-12-31', 'James', '220'],
+    ['2003-8-23', 'Mike', '153.5'],
+    ['2003-06-01', 'John', '34.12'],
+];
 
-In version 5.8 and later
-```php
-$sheet->writeCell(12345); // The number 12345 will be written into the cell
-$sheet->writeCell('12345'); // Here the string '12345' will be written into the cell
-
-```
-If you want to keep the previous behavior for backward compatibility, 
-you should use option 'auto_convert_number' when creating a workbook.
-```php
-$excel = Excel::create(['Sheet1'], ['auto_convert_number' => true]);
+$excel = Excel::create(['Sheet1']);
 $sheet = $excel->sheet();
-$sheet->writeCell('12345'); // String '12345' will be automatically converted to a number
 
+// Write the head row and set styles via fluent interface
+$sheet->writeHeader(['Date', 'Name', 'Amount'])
+    ->applyFontStyleBold()
+    ->applyBorder(Style::BORDER_STYLE_THIN);
+
+// Set column formats and widths
+$sheet
+    ->setColFormats(['@date', '@text', '0.00'])
+    ->setColWidths([12, 14, 8]);
+
+// Write data
+foreach ($data as $rowData) {
+    $sheet->writeRow($rowData);
+}
+
+// Save to a file
+$excel->save('simple.xlsx');
+
+// ...or download generated file to client (send to browser)
+// $excel->download('simple.xlsx');
 ```
-## Changes In Version 4
 
-* Now the library works even faster
-* Added a fluent interface for applying styles.
-* New methods and code refactoring
+## Documentation
+
+Read more in the documentation [here](/docs/index.md) or [here](https://fast-excel-writer.readthedocs.io/en/latest/). 
+Or check out the [API reference](/docs/90-api-reference.md). 
+Also, you can see examples in ```/demo``` folder.
+
+Upgrading from an older version? See the [upgrade guide](/docs/09-upgrade.md).
+
+Changelog is [here](CHANGELOG.md).
 
 ## **FastExcelWriter** vs **PhpSpreadsheet**
 

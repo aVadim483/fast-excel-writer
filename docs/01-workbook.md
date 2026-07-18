@@ -60,6 +60,29 @@ $excel->download('name.xlsx');
 
 ```
 
+### The Options Class
+
+Instead of an array of options, you can pass an instance of the ```Options``` class
+to ```Excel::create()``` — it has a fluent interface
+
+```php
+use \avadim\FastExcelWriter\Excel;
+use \avadim\FastExcelWriter\Options;
+
+$options = Options::create()
+    ->tempDir('/path/to/temp/dir') // directory for temporary files
+    ->tempPrefix('xlsx_') // custom prefix for temporary files
+    ->autoConvertNumber() // automatically convert strings containing numbers to numbers
+    ->sharedString() // save strings to the shared string xml
+    ->locale('fr') // set locale
+    ->defaultFont(['name' => 'Arial', 'size' => 14]) // set default font
+;
+
+$excel = Excel::create(['Sheet1'], $options);
+```
+
+See also: [Options class](91-api-class-options.md)
+
 ### Sets metadata of workbook
 
 ```php

@@ -167,7 +167,18 @@ class Excel implements InterfaceBookWriter
     /**
      * Excel constructor
      *
-     * @param array|Options|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ...]
+     * Optional parameters:
+     *      'temp_dir' => directory for temporary files
+     *      'temp_prefix' => custom prefix for temporary files
+     *      'auto_convert_number' => automatically convert strings containing numbers to numbers
+     *      'shared_string' => save strings to the shared string xml
+     *      'buffer_limit' => buffer size limit of the file writer
+     *      'locale' => locale code, e.g. 'fr'
+     *      'default_font' => default font options, e.g. ['name' => 'Arial', 'size' => 14]
+     *      'writer_class' => custom writer class
+     *      'style_manager' => custom style manager class
+     *
+     * @param array|Options|null $options Optional parameters: ['temp_dir' => ..., 'temp_prefix' => ..., 'auto_convert_number' => ..., 'shared_string' => ..., 'locale' => ..., 'default_font' => ...]
      */
     public function __construct($options = null)
     {

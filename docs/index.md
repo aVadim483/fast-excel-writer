@@ -10,7 +10,7 @@ with many features supported:
 * Supports currency/date/numeric cell formatting, formulas and active hyperlinks
 * Supports most styling options for cells, rows, columns – colors, borders, fonts, etc.
 * You can set the height of the rows and the width of the columns (including auto width calculation)
-* You can add formulas, notes and images in you XLSX-files
+* You can add formulas, notes and images in your XLSX-files
 * Supports workbook and sheet protection with/without passwords
 * Supports page settings – page margins, page size
 * Inserting multiple charts
@@ -18,82 +18,87 @@ with many features supported:
 
 Jump To:
 
-* [Quick Start](/docs/index.md#quick-start)
-    * [Installation](/docs/index.md#installation)
-    * [Simple Example](/docs/index.md#simple-example)
-    * [Advanced Example](/docs/index.md#advanced-example)
-    * [Adding Notes](/docs/index.md#adding-notes)
-    * [Adding Images](/docs/index.md#adding-images)
-* [Workbook](/docs/01-workbook.md)
-    * [Workbook settings](/docs/01-workbook.md#workbook-settings)
-    * [Sets metadata of workbook](/docs/01-workbook.md#sets-metadata-of-workbook)
-    * [Set Directory For Temporary Files](/docs/01-workbook.md#set-directory-for-temporary-files)
-    * [Helpers methods](/docs/01-workbook.md#helpers-methods)
-* [Sheets](/docs/02-sheets.md)
-    * [Create, select and remove sheet](/docs/02-sheets.md#create-select-and-remove-sheet)
-    * [Sheet settings](/docs/02-sheets.md#sheet-settings)
-    * [Row's settings](/docs/02-sheets.md#rows-settings)
-    * [Column's settings](/docs/02-sheets.md#columns-settings)
-    * [Automatic column widths](/docs/02-sheets.md#automatic-column-widths)
-    * [Group/outline rows and columns](/docs/02-sheets.md#groupoutline-rows-and-columns)
-    * [Define Named Ranges](/docs/02-sheets.md#define-named-ranges)
-    * [Freeze Panes and Autofilter](/docs/02-sheets.md#freeze-panes-and-autofilter)
-    * [Setting Active Sheet and Cells](/docs/02-sheets.md#setting-active-sheet-and-cells)
-    * [Page Setup](/docs/02-sheets.md#page-setup)
-    * [Print Settings](/docs/02-sheets.md#print-settings)
-    * [Print Header and Footer](/docs/02-sheets.md#print-header-and-footer)
-* [Writing](/docs/03-writing.md)
-    * [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
-    * [Direct Writing To Cells](/docs/03-writing.md#direct-writing-to-cells)
-    * [Writing Cell Values](/docs/03-writing.md#writing-cell-values)
-    * [Merging Cells](/docs/03-writing.md#merging-cells)
-    * [Cell Formats](/docs/03-writing.md#cell-formats)
-    * [Formulas](/docs/03-writing.md#formulas)
-    * [Hyperlinks](/docs/03-writing.md#hyperlinks)
-    * [Using Rich Text](/docs/03-writing.md#using-rich-text)
-* [Styles](/docs/04-styles.md)
-    * [Style Properties As Array](/docs/04-styles.md#style-properties-as-array)
-    * [Class Style for Defining Style Properties](/docs/04-styles.md#class-style-for-defining-style-properties)
-    * [Cell Styles](/docs/04-styles.md#cell-styles)
-    * [Row Styles](/docs/04-styles.md#row-styles)
-    * [Column Styles](/docs/04-styles.md#column-styles)
-    * [Other Columns Options](/docs/04-styles.md#other-columns-options)
-    * [Apply Styles (The Fluent Interface)](/docs/04-styles.md#apply-styles-the-fluent-interface)
-    * [Apply Borders](/docs/04-styles.md#apply-borders)
-    * [Apply Fonts](/docs/04-styles.md#apply-fonts)
-    * [Apply Colors](/docs/04-styles.md#apply-colors)
-    * [Apply Text Styles](/docs/04-styles.md#apply-text-styles)
-* [Charts](/docs/05-charts.md)
-    * [Simple usage](/docs/05-charts.md#simple-usage-of-chart)
-    * [Combo charts](/docs/05-charts.md#combo-charts)
-    * [Multiple charts](/docs/05-charts.md#multiple-charts)
-    * [Chart types](/docs/05-charts.md#chart-types)
-    * [Useful Chart Methods](/docs/05-charts.md#useful-chart-methods)
-* [Protection of workbook and sheets](/docs/06-protection.md)
-    * [Workbook protection](/docs/06-protection.md#workbook-protection)
-    * [Sheet protection](/docs/06-protection.md#sheet-protection)
-    * [Cells locking/unlocking](/docs/06-protection.md#cells-lockingunlocking)
-* [Data validation](/docs/07-validation.md)
-    * [Simple usage](/docs/07-validation.md#simple-usage)
-    * [Define filters](/docs/07-validation.md#define-filters)
-    * [Check type of value](/docs/07-validation.md#check-type-of-value)
-    * [Custom filters](/docs/07-validation.md#custom-filters)
-    * [All Data Validation settings](/docs/07-validation.md#all-data-validation-settings)
-    * [More than 64K validation rules](/docs/07-validation.md#more-than-64k-validation-rules)
-* [Conditional Formatting](/docs/08-conditional.md)
-    * [Simple usage](/docs/08-conditional.md#simple-usage)
-    * [General cell value check](/docs/08-conditional.md#general-cell-value-check)
-    * [Expressions](/docs/08-conditional.md#expressions)
-    * [Gradient fill depending on values (colorScale)](/docs/08-conditional.md#gradient-fill-depending-on-values-colorscale)
-    * [Data strip inside a cell (dataBar)](/docs/08-conditional.md#data-strip-inside-a-cell-databar)
-* [API Reference](/docs/90-api-reference.md)
-    * [Excel class](/docs/91-api-class-excel.md)
-    * [Sheet class](/docs/92-api-class-sheet.md)
-    * [RichText class](/docs/93-api-class-rich-text.md)
+* [Quick Start](index.md#quick-start)
+    * [Installation](index.md#installation)
+    * [Simple Example](index.md#simple-example)
+    * [Advanced Example](index.md#advanced-example)
+    * [Adding Notes](index.md#adding-notes)
+    * [Adding Images](index.md#adding-images)
+* [Workbook](01-workbook.md)
+    * [Workbook settings](01-workbook.md#workbook-settings)
+    * [The Options Class](01-workbook.md#the-options-class)
+    * [Sets metadata of workbook](01-workbook.md#sets-metadata-of-workbook)
+    * [Set Directory For Temporary Files](01-workbook.md#set-directory-for-temporary-files)
+    * [Helpers methods](01-workbook.md#helpers-methods)
+* [Sheets](02-sheets.md)
+    * [Create, select and remove sheet](02-sheets.md#create-select-and-remove-sheet)
+    * [Sheet settings](02-sheets.md#sheet-settings)
+    * [Row's settings](02-sheets.md#rows-settings)
+    * [Column's settings](02-sheets.md#columns-settings)
+    * [Automatic column widths](02-sheets.md#automatic-column-widths)
+    * [Group/outline rows and columns](02-sheets.md#groupoutline-rows-and-columns)
+    * [Define Named Ranges](02-sheets.md#define-named-ranges)
+    * [Freeze Panes and Autofilter](02-sheets.md#freeze-panes-and-autofilter)
+    * [Setting Active Sheet and Cells](02-sheets.md#setting-active-sheet-and-cells)
+    * [Page Setup](02-sheets.md#page-setup)
+    * [Print Settings](02-sheets.md#print-settings)
+    * [Print Header and Footer](02-sheets.md#print-header-and-footer)
+* [Writing](03-writing.md)
+    * [Writing Row by Row vs Direct](03-writing.md#writing-row-by-row-vs-direct)
+    * [Direct Writing To Cells](03-writing.md#direct-writing-to-cells)
+    * [Writing Cell Values](03-writing.md#writing-cell-values)
+    * [Merging Cells](03-writing.md#merging-cells)
+    * [Cell Formats](03-writing.md#cell-formats)
+    * [Formulas](03-writing.md#formulas)
+    * [Hyperlinks](03-writing.md#hyperlinks)
+    * [Using Rich Text](03-writing.md#using-rich-text)
+* [Styles](04-styles.md)
+    * [Style Properties As Array](04-styles.md#style-properties-as-array)
+    * [Class Style for Defining Style Properties](04-styles.md#class-style-for-defining-style-properties)
+    * [Cell Styles](04-styles.md#cell-styles)
+    * [Row Styles](04-styles.md#row-styles)
+    * [Column Styles](04-styles.md#column-styles)
+    * [Other Columns Options](04-styles.md#other-columns-options)
+    * [Apply Styles (The Fluent Interface)](04-styles.md#apply-styles-the-fluent-interface)
+    * [Apply Borders](04-styles.md#apply-borders)
+    * [Apply Fonts](04-styles.md#apply-fonts)
+    * [Apply Colors](04-styles.md#apply-colors)
+    * [Apply Text Styles](04-styles.md#apply-text-styles)
+* [Charts](05-charts.md)
+    * [Simple usage](05-charts.md#simple-usage-of-chart)
+    * [Combo charts](05-charts.md#combo-charts)
+    * [Multiple charts](05-charts.md#multiple-charts)
+    * [Chart types](05-charts.md#chart-types)
+    * [Useful Chart Methods](05-charts.md#useful-chart-methods)
+* [Protection of workbook and sheets](06-protection.md)
+    * [Workbook protection](06-protection.md#workbook-protection)
+    * [Sheet protection](06-protection.md#sheet-protection)
+    * [Cells locking/unlocking](06-protection.md#cells-lockingunlocking)
+* [Data validation](07-validation.md)
+    * [Simple usage](07-validation.md#simple-usage)
+    * [Define filters](07-validation.md#define-filters)
+    * [Check type of value](07-validation.md#check-type-of-value)
+    * [Custom filters](07-validation.md#custom-filters)
+    * [All Data Validation settings](07-validation.md#all-data-validation-settings)
+    * [More than 64K validation rules](07-validation.md#more-than-64k-validation-rules)
+* [Conditional Formatting](08-conditional.md)
+    * [Simple usage](08-conditional.md#simple-usage)
+    * [General cell value check](08-conditional.md#general-cell-value-check)
+    * [Expressions](08-conditional.md#expressions)
+    * [Gradient fill depending on values (colorScale)](08-conditional.md#gradient-fill-depending-on-values-colorscale)
+    * [Data strip inside a cell (dataBar)](08-conditional.md#data-strip-inside-a-cell-databar)
+* [Upgrade Guide](09-upgrade.md)
+* [API Reference](90-api-reference.md)
+    * [Excel class](91-api-class-excel.md)
+    * [Options class](91-api-class-options.md)
+    * [Sheet class](92-api-class-sheet.md)
+    * [RichText class](93-api-class-rich-text.md)
+    * [RichTextFragment class](93-api-class-rich-text-fragment.md)
     * [Chart class](94-api-class-chart.md)
     * [DataValidation class](95-api-class-data-validation.md)
     * [Conditional class](96-api-class-conditional.md)
     * [Style class](97-api-class-style.md)
+    * [ImageStyle class](97-api-class-image-style.md)
 
 
 ## Quick Start
@@ -153,6 +158,7 @@ $excel->download('download.xlsx');
 
 ```php
 use \avadim\FastExcelWriter\Excel;
+use \avadim\FastExcelWriter\Style\Style;
 
 $head = ['Date', 'Name', 'Amount'];
 $data = [
@@ -276,7 +282,7 @@ $richText = new \avadim\FastExcelWriter\RichText\RichText('here is <c=f00>red</c
 $sheet->addNote('C8', $richText);
 ```
 
-For more information on using rich text, see here: [Using Rich Text](/docs/03-writing.md#using-rich-text)
+For more information on using rich text, see here: [Using Rich Text](03-writing.md#using-rich-text)
 
 ###  Adding Images
 
@@ -297,7 +303,7 @@ $sheet->addImage('A1', 'data:image/jpeg;base64,/9j/4AAQ...');
 // Insert an image to the cell B2 and set with to 150 pixels (height will change proportionally)
 $sheet->addImage('B2', 'path/to/file', ['width' => 150]);
 
-// Set height to 150 pixels (with will change proportionally)
+// Set height to 150 pixels (width will change proportionally)
 $sheet->addImage('C3', 'path/to/file', ['height' => 150]);
 
 // Set size in pixels
@@ -317,6 +323,25 @@ Available keys of image style:
 
 **IMPORTANT:** in MS Excel, value 'x' cannot be greater than the column width of the parent cell,
 and value 'y' cannot be greater than the row height
+
+Instead of an array, you can pass an instance of the ```ImageStyle``` class — it has a fluent interface
+
+```php
+use \avadim\FastExcelWriter\Style\ImageStyle;
+
+$imageStyle = (new ImageStyle())
+    ->width(150)
+    ->height(150)
+    ->offset(2, 3)
+    ->hyperlink('https://www.google.com/');
+$sheet->addImage('B2', 'path/to/file', $imageStyle);
+
+// Or you can pass an array of options to the constructor
+$imageStyle = new ImageStyle(['width' => 150, 'height' => 150]);
+$sheet->addImage('C3', 'path/to/file', $imageStyle);
+```
+
+See also: [ImageStyle class](97-api-class-image-style.md)
 
 ## **FastExcelWriter** vs **PhpSpreadsheet**
 

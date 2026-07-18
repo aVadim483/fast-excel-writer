@@ -64,19 +64,19 @@ $rowStyle = [
 // Write row data and set row styles
 $sheet->writeRow($rowData, $rowStyle);
 
-// Set options for several rows 
-$sheet->setRowStyles('3', $style);
+// Set style for the row 3
+$sheet->setRowStyle(3, $style);
 
 $rowStyles = [
     3 => ['fill-color' => '#cff'], // options for row 3 
     4 => ['fill-color' => '#ccc', 'height' => 20], // options for row 4
 ];
 
-// Set styles to the specified row 
-$sheet->setRowStyles($rowStyles);
+// Set styles to the specified rows 
+$sheet->setRowStyleArray($rowStyles);
 
 // Set options for range of rows 
-$sheet->setRowStyles('2:5', ['fill-color' => '#f00']);
+$sheet->setRowStyle('2:5', ['fill-color' => '#f00']);
 
 ```
 

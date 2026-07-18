@@ -1,4 +1,4 @@
-## FastExcelWriter – Sheets
+## FastExcelWriter – Writing
 
 ### Writing Row by Row vs Direct
 
@@ -157,7 +157,7 @@ $sheet->writeTo('A4', 'value');
 $style = [
     'format' => '#,##0.00',
     'font-color' => '#ff0000',
-    'tex-align' => 'center',
+    'text-align' => 'center',
 ];
 $sheet->writeCell(0.9, $style);
 
@@ -202,7 +202,7 @@ $sheet = $excel->getSheet();
 $sheet->setTopLeftCell('B3');
 
 // Write header values to the current row and set format of columns A and B 
-$sheet->writeHeader(['title1' => '@integer', 'title2' => '@date'])->applyFontStyleBold();;
+$sheet->writeHeader(['title1' => '@integer', 'title2' => '@date'])->applyFontStyleBold();
 
 $data = [
     [184, '2022-01-23'],
@@ -489,7 +489,7 @@ Here's another way to do the same thing
 $richText = new RichText('ATTENTION! ', 'The product is reserved for ', '5 days');
 
 $richText->fragment(0)->setBold();
-$richText->fragment(1)->setUnderline()->setColor('f00');
+$richText->fragment(2)->setUnderline()->setColor('f00');
 
 $sheet->writeCell($richText);
 

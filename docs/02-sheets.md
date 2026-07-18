@@ -102,7 +102,7 @@ $sheet->setRowVisible([9, 10, 11], false);
 $sheet->setRowVisible(10, true);
 ```
 IMPORTANT: You can only use the setRowXX() functions on rows numbered at least as high as the current one.
-See [Writing Row by Row vs Direct](/docs/03-writing.md#writing-row-by-row-vs-direct)
+See [Writing Row by Row vs Direct](03-writing.md#writing-row-by-row-vs-direct)
 Therefore, the following code will throw an error "Row number must be greater than written rows"
 
 ```php

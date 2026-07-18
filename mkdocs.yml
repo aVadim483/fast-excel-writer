@@ -39,7 +39,19 @@ nav:
   - Additional Features:
       - Data Validation: 07-validation.md
       - Conditional Formatting: 08-conditional.md
-  - API Reference: 90-api-reference.md
+  - Upgrade Guide: 09-upgrade.md
+  - API Reference:
+      - Overview: 90-api-reference.md
+      - Excel: 91-api-class-excel.md
+      - Options: 91-api-class-options.md
+      - Sheet: 92-api-class-sheet.md
+      - RichText: 93-api-class-rich-text.md
+      - RichTextFragment: 93-api-class-rich-text-fragment.md
+      - Chart: 94-api-class-chart.md
+      - DataValidation: 95-api-class-data-validation.md
+      - Conditional: 96-api-class-conditional.md
+      - Style: 97-api-class-style.md
+      - ImageStyle: 97-api-class-image-style.md
   - Other libraries:
       - FastExcelReader: https://github.com/aVadim483/fast-excel-reader
       - FastExcelTemplator: https://github.com/aVadim483/fast-excel-templator
@@ -49,6 +61,9 @@ markdown_extensions:
   - admonition
   - toc:
       permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - tables
   - footnotes
   - def_list
@@ -60,6 +75,45 @@ markdown_extensions:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: ru
+          name: Русский
+          build: true
+          site_description: Быстрая и легковесная библиотека для создания XLSX-файлов на PHP
+          nav_translations:
+            Overview: Обзор
+            Installation: Установка
+            Quick Start: Быстрый старт
+            Simple Example: Простой пример
+            Advanced Example: Расширенный пример
+            Workbook & Sheets: Книга и листы
+            Workbook: Книга (Workbook)
+            Sheets: Листы (Sheets)
+            Page Setup & Print Settings: Параметры страницы и печати
+            Protection: Защита
+            Writing & Styles: Запись и стили
+            Writing Cells & Rows: Запись ячеек и строк
+            Formulas: Формулы
+            Rich Text: Форматированный текст
+            Styles: Стили
+            Insertions: Вставка объектов
+            Images: Изображения
+            Notes: Заметки
+            Charts: Диаграммы
+            Additional Features: Дополнительные возможности
+            Data Validation: Проверка данных
+            Conditional Formatting: Условное форматирование
+            Upgrade Guide: Руководство по обновлению
+            API Reference: Справочник API
+            Other libraries: Другие библиотеки
+            Laravel Integration: Интеграция с Laravel
   # - redirects
   # - glightbox
 

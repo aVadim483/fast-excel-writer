@@ -701,7 +701,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setStateVeryHidden(): Sheet
     {
-        return $this->setSheetState(self::STATE_VISIBLE);
+        return $this->setSheetState(self::STATE_VERY_HIDDEN);
     }
 
     /**
@@ -2324,10 +2324,10 @@ class Sheet implements InterfaceSheetWriter
             'row' => 1 + $this->currentRowIdx,
             'col' => 1 + $this->currentColIdx,
         ];
-        if ($cellAddress['row'] >= Excel::MAX_ROW) {
+        if ($cellAddress['row'] > Excel::MAX_ROW) {
             ExceptionAddress::throwNew('Row number is more then ' . Excel::MAX_ROW);
         }
-        if ($cellAddress['col'] >= Excel::MAX_COL) {
+        if ($cellAddress['col'] > Excel::MAX_COL) {
             ExceptionAddress::throwNew('Column is more then "' . Helper::colLetter(Excel::MAX_COL) . '"');
         }
 

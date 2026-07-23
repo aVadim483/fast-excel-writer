@@ -1223,8 +1223,8 @@ class Excel implements InterfaceBookWriter
                         [$rowNum1, $colNum1] = $cell1;
                     }
                     if (isset($cell2['row'], $cell2['col'])) {
-                        $rowNum2 = $cell1['row'];
-                        $colNum2 = $cell1['col'];
+                        $rowNum2 = $cell2['row'];
+                        $colNum2 = $cell2['col'];
                     }
                     else {
                         [$rowNum2, $colNum2] = $cell2;

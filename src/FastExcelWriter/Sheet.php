@@ -534,7 +534,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function pageFitToWidth($numPage = 1): Sheet
     {
-        if (strtolower($numPage) === 'auto') {
+        if (is_string($numPage) && strtolower($numPage) === 'auto') {
             $numPage = 0;
         }
         if ($numPage >=0) {
@@ -552,7 +552,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function pageFitToHeight($numPage = 1): Sheet
     {
-        if (strtolower($numPage) === 'auto') {
+        if (is_string($numPage) && strtolower($numPage) === 'auto') {
             $numPage = 0;
         }
         if ($numPage >=0) {
@@ -2904,6 +2904,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function skipRow(?int $rowCount = 1): Sheet
     {
+        $rowCount = $rowCount ?? 1;
         for ($i = 1; $i <= $rowCount; $i++) {
             $this->nextRow(null, true);
         }
@@ -3885,7 +3886,7 @@ class Sheet implements InterfaceSheetWriter
                 $text = $comment->outXml();
             }
             else {
-                $text = (new RichText(htmlspecialchars($comment)))->outXml();
+                $text = (new RichText(htmlspecialchars((string)$comment)))->outXml();
             }
             $this->notes[$cell] = [
                 'cell' => $cell,

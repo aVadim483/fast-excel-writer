@@ -295,7 +295,7 @@ class Writer
     public function writeToTemp(string $localName, string $contents)
     {
         $tmpFile = $this->makeTempFile(null, $localName);
-        if ($tmpFile && file_put_contents($tmpFile, $contents)) {
+        if ($tmpFile && file_put_contents($tmpFile, $contents) !== false) {
             return $tmpFile;
         }
 

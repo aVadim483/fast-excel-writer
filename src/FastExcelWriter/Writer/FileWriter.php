@@ -269,12 +269,24 @@ class FileWriter
     public function appendFileWriter(FileWriter $fileWriter, string $newFileName): int
     {
         $fdTarget = fopen($newFileName, 'wb');
+        if ($fdTarget === false) {
+            throw new Exception("Unable to open {$newFileName} for writing");
+        }
 
         $this->close();
         $fd1 = fopen($this->getFileName(), 'rb');
+        if ($fd1 === false) {
+            fclose($fdTarget);
+            throw new Exception("Unable to open {$this->getFileName()} for reading");
+        }
 
         $fileWriter->close();
         $fd2 = fopen($fileWriter->getFileName(), 'rb');
+        if ($fd2 === false) {
+            fclose($fdTarget);
+            fclose($fd1);
+            throw new Exception("Unable to open {$fileWriter->getFileName()} for reading");
+        }
 
         $n1 = stream_copy_to_stream($fd1, $fdTarget);
         fclose($fd1);

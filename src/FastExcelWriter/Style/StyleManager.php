@@ -791,7 +791,6 @@ class StyleManager
                         }
                     }
                     elseif (is_array($styleVal)) {
-                        $s = self::normalizeFont($styleVal);
                         $result['font'] = $styleVal;
                     }
                     break;
@@ -1172,11 +1171,11 @@ class StyleManager
             }
             else {
                 // optimization for default font
-                $value = self::$instance->defaultFont;
-                if (self::$instance->defaultFontId < 0) {
-                    self::$instance->defaultFontId = $this->addElement('fonts', $value);
+                $value = $this->defaultFont;
+                if ($this->defaultFontId < 0) {
+                    $this->defaultFontId = $this->addElement('fonts', $value);
                 }
-                $index = self::$instance->defaultFontId;
+                $index = $this->defaultFontId;
             }
 
             if (isset($cellStyle['font'])) {

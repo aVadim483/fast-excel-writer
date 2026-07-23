@@ -1,3 +1,30 @@
+## V.6.15
+
+* New: a `Style` object can be created directly from an options array – `new Style($options)`
+* New method `Excel::getSharedStringsRefCount()`
+* Fixed reused `DataValidation`/`Conditional` objects – applying one object to several ranges kept only the last range, see https://github.com/aVadim483/fast-excel-writer/issues/137
+* Fixed `Sheet::setStateVeryHidden()` – it made the sheet visible instead of very hidden
+* Fixed `Sheet::writeCell()` – the last valid row (1048576) and column (XFD) were rejected
+* Fixed `Excel::rangeDimensionRelative()` – a range given as two associative points collapsed to a single cell
+* Fixed loss of a cell value containing invalid UTF-8 (`Writer::xmlSpecialChars()` now uses `ENT_SUBSTITUTE`)
+* Fixed number/date output under a comma `LC_NUMERIC` locale (e.g. `de_DE`) on PHP 7.4 – no more invalid `<v>3,14</v>`
+* Fixed style corruption when two workbooks are open in the same process (`StyleManager` read default-font state from the wrong instance)
+* Fixed duplicate sheet names, and reuse of `sheetN.xml` after `removeSheet()` + `makeSheet()`
+* Fixed missing XML escaping of image names, chart names and hyperlink targets/locations
+* Fixed `Sheet::writeCells()` dropping positional (integer-keyed) cell styles
+* Fixed formulas with escaped quotes `""` and national function names containing regex metacharacters
+* Fixed shared strings losing leading/trailing spaces (`xml:space="preserve"`)
+* Fixed `Area::getOffsetAddress()` ignoring its offset argument
+* Fixed `Sheet::skipRow(null)` skipping no rows
+* Fixed PHP 8.1+ deprecations from `strtolower()`/`htmlspecialchars()` on non-string arguments
+* Fixed `ZipArchive` handle not being closed if saving throws an exception
+* Security: `Excel::download()` strips CR/LF and quotes from the file name (header injection), sends the correct xlsx MIME type, adds an RFC 5987 `filename*` and checks `headers_sent()`
+* Security: `Excel::loadImageFile()` rejects dangerous stream wrappers (`php://`, `phar://`, `glob://`, `zip://`, `data://`, `expect://`, …)
+* Optimized formula conversion – the heavy `_xlfn`/`_xlws` passes are skipped when the formula contains no `(`
+* Optimized `sharedStrings.xml` writing – streamed to disk instead of built entirely in memory (much lower peak memory when `shared_string` is enabled)
+* Optimized the `Sheet::writeRow()` hot path
+* Changed: after `removeSheet()` + `makeSheet()`, new worksheet files use a monotonic index and never reuse a previous `sheetN.xml`
+
 ## V.6.14
 
 * New demos: rich text (demo-14), images & notes (demo-15); errors fixed in other demos, deprecated chart methods replaced

@@ -36,7 +36,7 @@ final class DataValidationTest extends TestCase
         $sheet->addDataValidation('A1:A100', $validation);
         $sheet->addDataValidation('C1:C100', $validation);
 
-        $file = __DIR__ . '/tmp/issue137_dv.xlsx';
+        $file = sys_get_temp_dir() . '/fexcel_issue137_dv.xlsx';
         $excel->save($file);
         $xml = $this->worksheetsXml($file);
         unlink($file);
@@ -54,7 +54,7 @@ final class DataValidationTest extends TestCase
         $sheet->addConditionalFormatting('A1:A10', $conditional);
         $sheet->addConditionalFormatting('C1:C10', $conditional);
 
-        $file = __DIR__ . '/tmp/issue137_cf.xlsx';
+        $file = sys_get_temp_dir() . '/fexcel_issue137_cf.xlsx';
         $excel->save($file);
         $xml = $this->worksheetsXml($file);
         unlink($file);

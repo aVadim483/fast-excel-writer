@@ -665,7 +665,7 @@ class Writer
             foreach ($sharedStrings as $string => $info) {
                 $count += $info['count'];
                 if (empty($info['rich_text'])) {
-                    $result .= '<si><t>' . $string . '</t></si>';
+                    $result .= '<si><t xml:space="preserve">' . $string . '</t></si>';
                 }
                 else {
                     $result .= '<si>' . $info['rich_text'] . '</si>';

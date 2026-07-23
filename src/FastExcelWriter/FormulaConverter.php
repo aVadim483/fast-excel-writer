@@ -165,7 +165,7 @@ class FormulaConverter
     /** @var null|Excel */
     public ?Excel $excel = null;
 
-    protected static array $functionNames = [];
+    protected array $functionNames = [];
     protected array $localFunctions = [];
 
 
@@ -174,7 +174,7 @@ class FormulaConverter
      */
     public function __construct(?array $functions = [])
     {
-        $this->localFunctions = $functions;
+        $this->localFunctions = $functions ?? [];
     }
 
 
@@ -191,7 +191,7 @@ class FormulaConverter
         // temporary replace strings
         if (strpos($formula, '"') !== false) {
             $replace = [[], []];
-            $formula = preg_replace_callback('/"[^"]+"/', static function ($matches) use ($mark, &$replace) {
+            $formula = preg_replace_callback('/"(?:[^"]|"")*"/', static function ($matches) use ($mark, &$replace) {
                 $key = '<<' . $mark . '-' . md5($matches[0]) . '>>';
                 $replace[0][] = $key;
                 $replace[1][] = $matches[0];
@@ -216,21 +216,21 @@ class FormulaConverter
             }, $formula);
         }
 
-        if ($this->localFunctions && strpos($formula, '(')) {
+        if ($this->localFunctions && strpos($formula, '(') !== false) {
             // replace national function names
-            if (empty(self::$functionNames)) {
-                self::$functionNames = [[], []];
+            if (empty($this->functionNames)) {
+                $this->functionNames = [[], []];
                 foreach ($this->localFunctions as $name => $nameEn) {
-                    self::$functionNames[0][] = '/' . $name . '\s*\(/ui';
-                    self::$functionNames[1][] = $nameEn . '(';
+                    $this->functionNames[0][] = '/' . preg_quote($name, '/') . '\s*\(/ui';
+                    $this->functionNames[1][] = $nameEn . '(';
                     if ($nameEn === 'FALSE' || $nameEn === 'TRUE') {
-                        self::$functionNames[0][] = '/([\(;,])\s*' . $name . '\s*([\);,])/ui';
-                        self::$functionNames[1][] = '$1' . $nameEn . '$2';
+                        $this->functionNames[0][] = '/([\(;,])\s*' . preg_quote($name, '/') . '\s*([\);,])/ui';
+                        $this->functionNames[1][] = '$1' . $nameEn . '$2';
                     }
                 }
             }
-            //$formula = str_replace(self::$functionNames[0], self::$functionNames[1], $formula);
-            $formula = preg_replace(self::$functionNames[0], self::$functionNames[1], $formula);
+            //$formula = str_replace($this->functionNames[0], $this->functionNames[1], $formula);
+            $formula = preg_replace($this->functionNames[0], $this->functionNames[1], $formula);
         }
 
         if ($replace && !empty($replace[0])) {
@@ -245,7 +245,7 @@ class FormulaConverter
             $formula = (string) preg_replace(self::XLWSREGEXP, '_xlws.$1(', $formula);
         }
 
-        return ($formula[0] === '=') ? mb_substr($formula, 1) : $formula;
+        return ($formula !== '' && $formula[0] === '=') ? mb_substr($formula, 1) : $formula;
     }
 
 

@@ -2364,9 +2364,7 @@ class Sheet implements InterfaceSheetWriter
             if (!is_int($key)) {
                 $cellStyles = Excel::colKeysToIndexes($cellStyles, -$startColIdx);
             }
-            else {
-                $cellStyles = [];
-            }
+            // int keys are treated as positional (0-based) and kept as-is, like writeRow()
         }
         else {
             $cellStyles = [];
@@ -2573,6 +2571,7 @@ class Sheet implements InterfaceSheetWriter
     public function mergeCells($rangeSet, ?int $mergeFlag = 0): Sheet
     {
         foreach((array)$rangeSet as $range) {
+            $dimension = [];
             if (isset($this->mergeCells[$range]) || empty($range)) {
                 // cells are already merged
                 continue;

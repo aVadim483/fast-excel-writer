@@ -108,8 +108,19 @@ class Style
 
 
     protected array $styles = [];
-    
-    
+
+
+    /**
+     * @param array|null $style Optional style options to initialize from
+     */
+    public function __construct(?array $style = null)
+    {
+        if ($style) {
+            $this->styles = StyleManager::normalize($style);
+        }
+    }
+
+
     protected function _setStyleOptions(string $primaryKey, array $options)
     {
         foreach ($options as $key => $val) {

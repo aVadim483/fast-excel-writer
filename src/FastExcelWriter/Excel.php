@@ -138,6 +138,9 @@ class Excel implements InterfaceBookWriter
     /** @var int  */
     protected int $maxSheetIndex = 0;
 
+    /** @var int Monotonic counter for physical sheet index / xml file name; never reused, even after removeSheet() */
+    protected int $lastSheetIndex = 0;
+
     /** @var array Sheet[] */
     protected array $sheets = [];
 
@@ -1532,18 +1535,52 @@ class Excel implements InterfaceBookWriter
         $key = mb_strtolower($sheetName);
         if (!isset($this->sheets[$key])) {
             $sheet = static::createSheet($sheetName);
+            // Ensure the Excel-visible (sanitized) name is unique across sheets.
+            // Different raw names may sanitize to the same value (e.g. "My:Sheet" and "My Sheet"),
+            // which would otherwise produce two sheets with the same name and corrupt the file.
+            $sheet->sanitizedSheetName = $this->uniqueSheetName($sheet->sanitizedSheetName);
+
             $sheet->localSheetId = count($this->sheets);
             $this->sheets[$key] = $sheet;
 
             $this->sheets[$key]->excel = $this;
             $this->sheets[$key]->key = $key;
-            $this->sheets[$key]->index = count($this->sheets);
+            // Physical index must be unique and never reused (used as sheetId and in file names
+            // sheetN.xml / drawingN.xml / commentsN.xml), so take it from a monotonic counter
+            // instead of count(), which collides after removeSheet().
+            $this->sheets[$key]->index = ++$this->lastSheetIndex;
             $this->sheets[$key]->xmlName = 'sheet' . $this->sheets[$key]->index . '.xml';
             if (count($this->sheets) === 1) {
                 $this->sheets[$key]->active = true;
             }
         }
         return $this->sheets[$key];
+    }
+
+    /**
+     * Returns a name unique among existing sheets (case-insensitive), appending a
+     * numeric suffix when needed and keeping within the 31-character sheet name limit
+     *
+     * @param string $sheetName
+     *
+     * @return string
+     */
+    protected function uniqueSheetName(string $sheetName): string
+    {
+        $existing = [];
+        foreach ($this->sheets as $sheet) {
+            $existing[mb_strtolower($sheet->sanitizedSheetName)] = true;
+        }
+        if (!isset($existing[mb_strtolower($sheetName)])) {
+            return $sheetName;
+        }
+        $num = 1;
+        do {
+            $suffix = (string)(++$num);
+            $candidate = mb_substr($sheetName, 0, 31 - mb_strlen($suffix) - 1) . ' ' . $suffix;
+        } while (isset($existing[mb_strtolower($candidate)]));
+
+        return $candidate;
     }
 
     /**

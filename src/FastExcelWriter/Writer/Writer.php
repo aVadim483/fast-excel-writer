@@ -661,38 +661,41 @@ class Writer
      */
     protected function _writeSharedStrings(array &$relationShips): ?string
     {
-        $result = null;
         $sharedStrings = $this->excel->getSharedStrings();
-        if ($sharedStrings) {
-            $uniqueCount = count($sharedStrings);
-            $count = 0;
-            $result = '';
-            foreach ($sharedStrings as $string => $info) {
-                $count += $info['count'];
-                if (empty($info['rich_text'])) {
-                    $result .= '<si><t xml:space="preserve">' . $string . '</t></si>';
-                }
-                else {
-                    $result .= '<si>' . $info['rich_text'] . '</si>';
-                }
+        if (!$sharedStrings) {
+            return null;
+        }
+
+        $uniqueCount = count($sharedStrings);
+        // total number of references == number of addSharedString() calls == sum of per-string counts
+        $count = $this->excel->getSharedStringsRefCount();
+
+        $entry = 'xl/sharedStrings.xml';
+        $tmpFile = $this->makeTempFile(null, $entry);
+        // stream the <si> entries straight to the temp file (buffered) instead of building the
+        // whole XML in memory, so peak memory at save() stays ~1x of the (already in-memory) table
+        $fileWriter = $this->makeFileWriter($tmpFile);
+        $fileWriter->write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="' . $count . '" uniqueCount="' . $uniqueCount . '">');
+        foreach ($sharedStrings as $string => $info) {
+            if (empty($info['rich_text'])) {
+                $fileWriter->write('<si><t xml:space="preserve">' . $string . '</t></si>');
             }
-            $xmlSharedStrings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-                . '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="' . $count . '" uniqueCount="' . $uniqueCount . '">'
-                . $result
-                . '</sst>';
-
-            $entry = 'xl/sharedStrings.xml';
-
-            if ($result = $this->writeToTemp($entry, $xmlSharedStrings)) {
-                $relationShips['override'][$entry] = [
-                    'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml',
-                    'rel' => 'workbook',
-                    'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings',
-                    'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
-                ];
+            else {
+                $fileWriter->write('<si>' . $info['rich_text'] . '</si>');
             }
         }
-        return $result ?: null;
+        $fileWriter->write('</sst>');
+        $fileWriter->close();
+
+        $relationShips['override'][$entry] = [
+            'content_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml',
+            'rel' => 'workbook',
+            'schema' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings',
+            'r_id' => 'rId' . (++$relationShips['rel_id']['workbook']),
+        ];
+
+        return $tmpFile;
     }
 
     /**

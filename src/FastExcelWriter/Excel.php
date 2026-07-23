@@ -157,6 +157,7 @@ class Excel implements InterfaceBookWriter
 
     protected array $sharedStrings = [];
     protected int $sharedStringsCount = 0;
+    protected int $sharedStringsRefCount = 0;
 
     protected string $fileName = '';
 
@@ -1470,6 +1471,7 @@ class Excel implements InterfaceBookWriter
     public function addSharedString(string $string, ?bool $richText = false): int
     {
         $key = $richText ? sha1($string) : $string;
+        $this->sharedStringsRefCount++;
         if (!isset($this->sharedStrings[$key])) {
             $this->sharedStrings[$key] = ['id' => $this->sharedStringsCount++, 'count' => 1, 'rich_text' => $richText ? $string : null];
         }
@@ -1488,6 +1490,16 @@ class Excel implements InterfaceBookWriter
     public function getSharedStrings(): array
     {
         return $this->sharedStrings;
+    }
+
+    /**
+     * Total number of shared string references (the "count" attribute of <sst>)
+     *
+     * @return int
+     */
+    public function getSharedStringsRefCount(): int
+    {
+        return $this->sharedStringsRefCount;
     }
 
     /**

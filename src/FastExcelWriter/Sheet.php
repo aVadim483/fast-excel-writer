@@ -1982,6 +1982,7 @@ class Sheet implements InterfaceSheetWriter
             if ($colIdxMax >= 0) {
                 $this->fileWriter->write('<row r="' . ($this->rowCountWritten + 1) . '" ' . $rowAttrStr . '>');
                 //foreach ($row as $colIdx => $cellValue) {
+                $defaultFormatStyles = $this->excel->getDefaultFormatStyles();
                 $colIdx = 0;
                 while ($colIdx <= $colIdxMax) {
                     $cellValue = $row[$colIdx] ?? null;
@@ -2033,8 +2034,8 @@ class Sheet implements InterfaceSheetWriter
                         else {
                             $cellStyle = $styleStack ? $styleStack[0] : [];
                         }
-                        if (!empty($cellStyle['format']['format-pattern']) && !empty($this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']])) {
-                            $cellStyle = StyleManager::mergeStyles([$this->excel->getDefaultFormatStyles()[$cellStyle['format']['format-pattern']], $cellStyle]);
+                        if (!empty($cellStyle['format']['format-pattern']) && !empty($defaultFormatStyles[$cellStyle['format']['format-pattern']])) {
+                            $cellStyle = StyleManager::mergeStyles([$defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
                         }
 
                         if (isset($cellStyle['hyperlink'])) {
@@ -2812,7 +2813,8 @@ class Sheet implements InterfaceSheetWriter
         }
 
         $this->lastTouch['area']['col_idx1'] = $this->lastTouch['area']['col_idx2'] = -1;
-        $maxColIdx = max($cellStyles ? max(array_keys($cellStyles)) : 0, $rowValues ? max(array_keys($rowValues)) : 0);
+        // $rowValues is a 0-based list after array_values() above, so its max key is count-1
+        $maxColIdx = max($cellStyles ? max(array_keys($cellStyles)) : 0, $rowValues ? count($rowValues) - 1 : 0);
         $this->_touchStart($this->currentRowIdx, $this->offsetCol, 'row');
         for ($colIdx = 0; $colIdx <= $maxColIdx; $colIdx++) {
             if (isset($rowValues[$colIdx]) || isset($cellStyles[$colIdx])) {

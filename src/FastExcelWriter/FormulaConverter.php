@@ -186,7 +186,8 @@ class FormulaConverter
      */
     public function normalize(string $formula, $baseAddress): string
     {
-        $mark = md5(microtime());
+        static $markCounter = 0;
+        $mark = 'fxw' . (++$markCounter);
         $replace = [];
         // temporary replace strings
         if (strpos($formula, '"') !== false) {
@@ -238,10 +239,9 @@ class FormulaConverter
             $formula = str_replace($replace[0], $replace[1], $formula);
         }
 
-        if ($formula) {
+        // both regexes require a "(" after the function name, so skip them when there is none
+        if ($formula !== '' && strpos($formula, '(') !== false) {
             $formula = (string) preg_replace(self::XLFNREGEXP, '_xlfn.$1(', $formula);
-        }
-        if ($formula) {
             $formula = (string) preg_replace(self::XLWSREGEXP, '_xlws.$1(', $formula);
         }
 

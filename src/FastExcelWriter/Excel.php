@@ -1854,7 +1854,12 @@ class Excel implements InterfaceBookWriter
                 }
             }
         }
-        elseif (preg_match('#^\w+://.+#', $imageFile)) {
+        elseif (preg_match('#^(\w+)://.+#', $imageFile, $scheme)) {
+            // reject stream wrappers that enable source disclosure or object injection
+            // (php://filter, phar:// deserialization, etc.); http(s) is handled above
+            if (in_array(strtolower($scheme[1]), ['php', 'phar', 'glob', 'zip', 'data', 'expect', 'rar', 'ogg', 'ssh2'], true)) {
+                ExceptionFile::throwNew('Unsupported image URL scheme "%s://"', $scheme[1]);
+            }
             $imageBlob = file_get_contents($imageFile);
         }
         else {
@@ -2033,10 +2038,16 @@ class Excel implements InterfaceBookWriter
                 $name .= '.xlsx';
             }
         }
+        // strip control characters (incl. CR/LF) and quotes to prevent HTTP header injection
+        $name = preg_replace('/[\x00-\x1f"]+/', '', $name);
+        // ASCII-only fallback for the legacy filename parameter
+        $asciiName = preg_replace('/[^\x20-\x7e]/', '_', $name);
 
-        header('Cache-Control: max-age=0');
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment; filename="' . $name . '"');
+        if (!headers_sent()) {
+            header('Cache-Control: max-age=0');
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($name));
+        }
 
         readfile($tmpFile);
         unlink($tmpFile);

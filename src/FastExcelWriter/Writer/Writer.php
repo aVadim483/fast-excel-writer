@@ -1339,7 +1339,7 @@ class Writer
                 $file->write('<c ' . $attr . '><v>' . (int)$value . '</v></c>');
             }
             elseif ($numFormatType === 'n_datetime') {
-                $file->write('<c ' . $attr . ' t="n"><v>' . $value . '</v></c>');
+                $file->write('<c ' . $attr . ' t="n"><v>' . self::floatStr($value) . '</v></c>');
             }
             elseif ($numFormatType === 'n_error') {
                 $file->write('<c ' . $attr . ' t="e"><v>' . $value . '</v></c>');
@@ -1347,6 +1347,9 @@ class Writer
             elseif ($numFormatType === 'n_numeric') {
                 if (!is_int($value) && !is_float($value)) {
                     $value = self::xmlSpecialChars($value);
+                }
+                elseif (is_float($value)) {
+                    $value = self::floatStr($value);
                 }
                 $file->write('<c ' . $attr . ' ><v>' . $value . '</v></c>');//int,float,currency
             }
@@ -1364,7 +1367,7 @@ class Writer
                     $isStr = is_string($value);
                 }
                 if (!$isStr) {
-                    $file->write('<c ' . $attr . ' t="n"><v>' . $value . '</v></c>');//int,float,currency
+                    $file->write('<c ' . $attr . ' t="n"><v>' . (is_float($value) ? self::floatStr($value) : $value) . '</v></c>');//int,float,currency
                 }
                 else {
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
@@ -1888,7 +1891,7 @@ class Writer
         static $badChars = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
         static $goodChars = "                              ";
 
-        return strtr(htmlspecialchars($val, ENT_QUOTES | ENT_XML1), $badChars, $goodChars);//strtr appears to be faster than str_replace
+        return strtr(htmlspecialchars($val, ENT_QUOTES | ENT_XML1 | ENT_SUBSTITUTE, 'UTF-8'), $badChars, $goodChars);//strtr appears to be faster than str_replace
     }
 
     /**

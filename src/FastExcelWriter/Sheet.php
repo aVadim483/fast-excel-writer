@@ -4083,6 +4083,9 @@ class Sheet implements InterfaceSheetWriter
      */
     public function addDataValidation(string $range, DataValidation $validation): Sheet
     {
+        // clone so the same validation object can be reused for several ranges without
+        // its sqref being overwritten by a later call (issue #137)
+        $validation = clone $validation;
         $dimension = Excel::rangeDimension($range, true);
         if ($dimension['cellCount'] === 1) {
             $validation->setSqref($this, $dimension['cell1']);
@@ -4124,6 +4127,9 @@ class Sheet implements InterfaceSheetWriter
             $conditionals = [$conditionals];
         }
         foreach ($conditionals as $conditional) {
+            // clone so the same conditional object can be reused for several ranges without
+            // its sqref being overwritten by a later call (issue #137)
+            $conditional = clone $conditional;
             $dimension = Excel::rangeDimension($range, true);
             if ($dimension['cellCount'] === 1) {
                 $conditional->setSqref($this, $dimension['cell1']);

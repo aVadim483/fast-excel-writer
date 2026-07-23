@@ -5,10 +5,64 @@ declare(strict_types=1);
 namespace avadim\FastExcelWriter\Tests;
 
 use avadim\FastExcelWriter\DataValidation\DataValidation;
+use avadim\FastExcelWriter\Conditional\Conditional;
+use avadim\FastExcelWriter\Excel;
 use PHPUnit\Framework\TestCase;
 
 final class DataValidationTest extends TestCase
 {
+    private function worksheetsXml(string $file): string
+    {
+        $zip = new \ZipArchive();
+        $zip->open($file);
+        $xml = '';
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (preg_match('#worksheets/sheet\d+\.xml$#', $name)) {
+                $xml .= $zip->getFromName($name);
+            }
+        }
+        $zip->close();
+
+        return $xml;
+    }
+
+    public function testReuseSameValidationForMultipleRanges()
+    {
+        // issue #137: reusing one DataValidation object for several ranges must keep every range
+        $excel = Excel::create(['test']);
+        $sheet = $excel->sheet();
+        $validation = DataValidation::integer('>=', 0);
+        $sheet->addDataValidation('A1:A100', $validation);
+        $sheet->addDataValidation('C1:C100', $validation);
+
+        $file = __DIR__ . '/tmp/issue137_dv.xlsx';
+        $excel->save($file);
+        $xml = $this->worksheetsXml($file);
+        unlink($file);
+
+        $this->assertStringContainsString('sqref="A1:A100"', $xml);
+        $this->assertStringContainsString('sqref="C1:C100"', $xml);
+    }
+
+    public function testReuseSameConditionalForMultipleRanges()
+    {
+        // issue #137: the same aliasing problem applies to reused Conditional objects
+        $excel = Excel::create(['test']);
+        $sheet = $excel->sheet();
+        $conditional = Conditional::greaterThan(10);
+        $sheet->addConditionalFormatting('A1:A10', $conditional);
+        $sheet->addConditionalFormatting('C1:C10', $conditional);
+
+        $file = __DIR__ . '/tmp/issue137_cf.xlsx';
+        $excel->save($file);
+        $xml = $this->worksheetsXml($file);
+        unlink($file);
+
+        $this->assertStringContainsString('sqref="A1:A10"', $xml);
+        $this->assertStringContainsString('sqref="C1:C10"', $xml);
+    }
+
     public function testInteger()
     {
         $validation = DataValidation::integer('between', [1, 10]);

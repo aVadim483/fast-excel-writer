@@ -168,15 +168,25 @@ class Area
     }
 
     /**
-     * @param $offset
+     * Returns the address of a cell offset from the top-left corner of the area
+     *
+     * @param int|array $offset Column offset, or [rowOffset, colOffset] / ['row' => .., 'col' => ..]
      *
      * @return string
      */
     public function getOffsetAddress($offset): string
     {
         $coord = $this->getCoord();
+        if (is_array($offset)) {
+            $rowOffset = (int)($offset['row'] ?? ($offset[0] ?? 0));
+            $colOffset = (int)($offset['col'] ?? ($offset[1] ?? 0));
+        }
+        else {
+            $rowOffset = 0;
+            $colOffset = (int)$offset;
+        }
 
-        return Excel::cellAddress($coord[1]['row'], $coord[1]['col']);
+        return Excel::cellAddress($coord[0]['row'] + $rowOffset, $coord[0]['col'] + $colOffset);
     }
 
     /**

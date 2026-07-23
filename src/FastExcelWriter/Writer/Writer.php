@@ -361,6 +361,7 @@ class Writer
             ExceptionFile::throwNew('Unable to create zip "%s". Error code "%s"', $fileName, $result);
         }
 
+        try {
         // add sheets
         //$this->zip->addEmptyDir('xl/worksheets/');
 
@@ -423,8 +424,12 @@ class Writer
         $this->writeEntriesToZip('xl/worksheets/_rels/', $samples);
         $this->writeEntriesToZip('xl/', $samples);
         $this->writeEntriesToZip('', $samples);
-
-        $this->zip->close();
+        }
+        finally {
+            // always release the zip handle, even if writing an entry threw,
+            // so the output file is not left locked (Windows) with a dangling resource
+            $this->zip->close();
+        }
 
         return true;
     }

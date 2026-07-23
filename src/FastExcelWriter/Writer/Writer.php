@@ -840,7 +840,7 @@ class Writer
 
             $fileWriter->startElement('xdr:nvPicPr');
             if (!empty($image['hyperlink'])) {
-                $fileWriter->startElement('xdr:cNvPr', ['id' => $objectId, 'name' => $baseName]);
+                $fileWriter->startElement('xdr:cNvPr', ['id' => $objectId, 'name' => self::xmlSpecialChars($baseName)]);
                 $fileWriter->writeElement("<a:hlinkClick xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" . $image['hyperlink']['r_id'] . "\"/>");
                 $fileWriter->endElement();
                 $relations[] = [
@@ -851,7 +851,7 @@ class Writer
                 ];
             }
             else {
-                $fileWriter->writeElement("<xdr:cNvPr id=\"{$objectId}\" name=\"{$baseName}\"/>");
+                $fileWriter->writeElement("<xdr:cNvPr id=\"{$objectId}\" name=\"" . self::xmlSpecialChars($baseName) . "\"/>");
             }
             $fileWriter->startElement('xdr:cNvPicPr');
             $fileWriter->writeElement("<a:picLocks noChangeAspect=\"1\"/>");
@@ -915,7 +915,7 @@ class Writer
             $fileWriter->writeAttribute('macro', '');
             $fileWriter->startElement('xdr:nvGraphicFramePr');
             $fileWriter->startElement('xdr:cNvPr');
-            $fileWriter->writeAttribute('name', $chart->getName());
+            $fileWriter->writeAttribute('name', self::xmlSpecialChars($chart->getName()));
             $fileWriter->writeAttribute('id', $relId);
             $fileWriter->endElement();
             $fileWriter->startElement('xdr:cNvGraphicFramePr');
@@ -967,7 +967,7 @@ class Writer
             $xmlRelations = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             $xmlRelations .= '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
             foreach ($relations as $relData) {
-                $xmlRelations .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . $relData['target'] . '"';
+                $xmlRelations .= '<Relationship Id="' . $relData['r_id'] . '" Type="' . $relData['schema'] . '" Target="' . self::xmlSpecialChars($relData['target']) . '"';
                 if (!empty($relData['target_mode'])) {
                     $xmlRelations .= ' TargetMode="' . $relData['target_mode'] . '"';
                 }
@@ -1190,12 +1190,12 @@ class Writer
                 if ($data['external']) {
                     $tag = '<hyperlink ref="' . $data['ref'] . '" r:id="rId' . $data['id'] . '" ';
                     if (!empty($data['location'])) {
-                        $tag .= 'location="' . $data['location'] . '"';
+                        $tag .= 'location="' . self::xmlSpecialChars($data['location']) . '"';
                     }
                     $tag .= '/>';
                 }
                 else {
-                    $tag = '<hyperlink ref="' . $data['ref'] . '" location="' . $data['location'] . '" />';
+                    $tag = '<hyperlink ref="' . $data['ref'] . '" location="' . self::xmlSpecialChars($data['location']) . '" />';
                 }
                 $sheet->fileWriter->write($tag);
             }

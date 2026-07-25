@@ -1,6 +1,13 @@
 # Read the Docs configuration for the Russian translation project.
-# Set this file as the ".readthedocs.yaml" path of the fast-excel-writer-ru
-# project and link it as a translation of fast-excel-writer.
+#
+# Read the Docs requires the file to be named exactly ".readthedocs.yaml", so
+# this Russian variant lives in a subdirectory. In the fast-excel-writer-ru
+# project settings set the config path to:
+#     .readthedocs/ru/.readthedocs.yaml
+# and link that project as a translation of fast-excel-writer.
+#
+# All paths below are relative to the REPOSITORY ROOT (not this subdirectory),
+# and build.jobs commands run from the repository root.
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html
 
 version: 2

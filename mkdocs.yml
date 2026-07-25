@@ -6,6 +6,12 @@ repo_name: aVadim483/fast-excel-writer
 edit_uri: blob/master/docs/
 use_directory_urls: false
 
+# The Russian translation is built as a separate Read the Docs project
+# (served at /ru/latest/) from mkdocs.ru.yml, so exclude docs/ru from the
+# English build.
+exclude_docs: |
+  ru/
+
 theme:
   name: material
   logo: img/logo-120.png
@@ -75,45 +81,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - i18n:
-      docs_structure: folder
-      fallback_to_default: true
-      languages:
-        - locale: en
-          name: English
-          default: true
-          build: true
-        - locale: ru
-          name: Русский
-          build: true
-          site_description: Быстрая и легковесная библиотека для создания XLSX-файлов на PHP
-          nav_translations:
-            Overview: Обзор
-            Installation: Установка
-            Quick Start: Быстрый старт
-            Simple Example: Простой пример
-            Advanced Example: Расширенный пример
-            Workbook & Sheets: Книга и листы
-            Workbook: Книга (Workbook)
-            Sheets: Листы (Sheets)
-            Page Setup & Print Settings: Параметры страницы и печати
-            Protection: Защита
-            Writing & Styles: Запись и стили
-            Writing Cells & Rows: Запись ячеек и строк
-            Formulas: Формулы
-            Rich Text: Форматированный текст
-            Styles: Стили
-            Insertions: Вставка объектов
-            Images: Изображения
-            Notes: Заметки
-            Charts: Диаграммы
-            Additional Features: Дополнительные возможности
-            Data Validation: Проверка данных
-            Conditional Formatting: Условное форматирование
-            Upgrade Guide: Руководство по обновлению
-            API Reference: Справочник API
-            Other libraries: Другие библиотеки
-            Laravel Integration: Интеграция с Laravel
   # - redirects
   # - glightbox
 

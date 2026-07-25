@@ -1,0 +1,87 @@
+site_name: FastExcelWriter
+site_description: Быстрая и легковесная библиотека для создания XLSX-файлов на PHP
+site_url: https://fast-excel-writer.readthedocs.io/ru/latest/
+repo_url: https://github.com/aVadim483/fast-excel-writer
+repo_name: aVadim483/fast-excel-writer
+edit_uri: blob/master/docs/ru/
+use_directory_urls: false
+
+# Russian documentation lives in docs/ru. The English-only API reference
+# pages (91..97), the img/ and ext/ assets are copied into docs/ru at build
+# time by .readthedocs.ru.yaml (build.jobs.pre_build), so this standalone
+# site is self-contained and every internal link resolves.
+docs_dir: docs/ru
+
+theme:
+  name: material
+  language: ru
+  logo: img/logo-120.png
+  favicon: img/logo-120.png
+  features:
+    - navigation.sections
+    - navigation.tracking
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Обзор: index.md
+  - Установка: index.md#installation
+  - Быстрый старт:
+      - Простой пример: index.md#simple-example
+      - Расширенный пример: index.md#advanced-example
+  - Книга и листы:
+      - Книга (Workbook): 01-workbook.md
+      - Листы (Sheets): 02-sheets.md
+      - Параметры страницы и печати: 02-sheets.md#page-setup
+      - Защита: 06-protection.md
+  - Запись и стили:
+      - Запись ячеек и строк: 03-writing.md
+      - Формулы: 03-writing.md#formulas
+      - Форматированный текст: 03-writing.md#using-rich-text
+      - Стили: 04-styles.md
+  - Вставка объектов:
+      - Изображения: index.md#adding-images
+      - Заметки: index.md#adding-notes
+      - Диаграммы: 05-charts.md
+  - Дополнительные возможности:
+      - Проверка данных: 07-validation.md
+      - Условное форматирование: 08-conditional.md
+  - Руководство по обновлению: 09-upgrade.md
+  - Справочник API:
+      - Обзор: 90-api-reference.md
+      - Excel: 91-api-class-excel.md
+      - Options: 91-api-class-options.md
+      - Sheet: 92-api-class-sheet.md
+      - RichText: 93-api-class-rich-text.md
+      - RichTextFragment: 93-api-class-rich-text-fragment.md
+      - Chart: 94-api-class-chart.md
+      - DataValidation: 95-api-class-data-validation.md
+      - Conditional: 96-api-class-conditional.md
+      - Style: 97-api-class-style.md
+      - ImageStyle: 97-api-class-image-style.md
+  - Другие библиотеки:
+      - FastExcelReader: https://github.com/aVadim483/fast-excel-reader
+      - FastExcelTemplator: https://github.com/aVadim483/fast-excel-templator
+      - Интеграция с Laravel: https://github.com/aVadim483/fast-excel-laravel
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - tables
+  - footnotes
+  - def_list
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.snippets
+
+plugins:
+  - search
+
+extra_javascript:
+  - ext/ext.js

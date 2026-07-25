@@ -1,0 +1,30 @@
+# Read the Docs configuration for the Russian translation project.
+# Set this file as the ".readthedocs.yaml" path of the fast-excel-writer-ru
+# project and link it as a translation of fast-excel-writer.
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html
+
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+  jobs:
+    # docs/ru holds only the translated pages. Copy the shared assets and the
+    # English-only API reference pages (91..97) into it so the standalone
+    # Russian site is self-contained. The 90-api-reference.md overview is
+    # translated and must NOT be overwritten, hence the 9[1-7] glob.
+    pre_build:
+      - cp -r docs/img docs/ru/img
+      - cp -r docs/ext docs/ru/ext
+      - find docs -maxdepth 1 -type f -name '9[1-7]-api-*.md' -exec cp {} docs/ru/ \;
+
+mkdocs:
+  configuration: mkdocs.ru.yml
+
+python:
+  install:
+    - requirements: docs/requirements.txt
+
+formats:
+  - pdf

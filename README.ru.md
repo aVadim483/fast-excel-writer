@@ -99,11 +99,11 @@ $excel->save('simple.xlsx');
 
 ## Документация
 
-Подробнее — в документации [здесь](/docs/index.ru.md) или [здесь](https://fast-excel-writer.readthedocs.io/en/latest/ru/index.html). 
-Также есть [справочник API](/docs/90-api-reference.ru.md). 
+Подробнее — в документации [здесь](/docs/ru/index.md) или [здесь](https://fast-excel-writer.readthedocs.io/ru/latest/index.html). 
+Также есть [справочник API](/docs/ru/90-api-reference.md). 
 Примеры можно посмотреть в папке ```/demo```.
 
-Обновляетесь со старой версии? Смотрите [руководство по обновлению](/docs/09-upgrade.ru.md).
+Обновляетесь со старой версии? Смотрите [руководство по обновлению](/docs/ru/09-upgrade.md).
 
 Список изменений — [здесь](CHANGELOG.md).
 

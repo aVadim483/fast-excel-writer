@@ -343,6 +343,14 @@ $sheet->addImage('C3', 'path/to/file', $imageStyle);
 
 See also: [ImageStyle class](97-api-class-image-style.md)
 
+**NOTE:** Apache OpenOffice may render images shifted a few pixels above their anchor cells
+(see [issue #121](https://github.com/aVadim483/fast-excel-writer/issues/121)).
+The generated XML conforms to the OOXML specification — MS Excel and LibreOffice render
+the same file correctly — so the shift is caused by image positioning peculiarities
+of OpenOffice itself and cannot be fixed on the library side. As a workaround you can
+compensate the shift with the 'x' / 'y' offsets, but keep in mind that these offsets
+are applied in all viewers, including MS Excel.
+
 ## **FastExcelWriter** vs **PhpSpreadsheet**
 
 **PhpSpreadsheet** is a perfect library with wonderful features for reading and writing many document formats.

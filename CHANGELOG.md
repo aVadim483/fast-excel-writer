@@ -1,3 +1,7 @@
+## V.6.16
+
+* Fixed `Writer` preventing garbage collection – it registered `[$this, 'removeFiles']` as a shutdown function, which held a global reference to every instance, so the destructor never ran and memory grew in long-running/CLI processes, see https://github.com/aVadim483/fast-excel-writer/issues/138
+
 ## V.6.15
 
 * New: a `Style` object can be created directly from an options array – `new Style($options)`

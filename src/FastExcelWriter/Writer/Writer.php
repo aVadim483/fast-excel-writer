@@ -39,6 +39,18 @@ class Writer
     protected bool $autoConvertNumber = false;
     protected bool $sharedString = false;
 
+    /**
+     * Paths of temp files still pending removal, keyed by path.
+     * Used as a fallback cleanup on shutdown (e.g. after a fatal error).
+     * Holds only strings, never $this, so instances stay garbage-collectable.
+     *
+     * @var array<string, bool>
+     */
+    protected static array $shutdownTempFiles = [];
+
+    /** @var bool Whether the static shutdown cleanup has already been registered */
+    protected static bool $shutdownRegistered = false;
+
 
     /**
      * Writer constructor
@@ -69,7 +81,13 @@ class Writer
         $this->autoConvertNumber = !empty($options['auto_convert_number']);
         $this->sharedString = !empty($options['shared_string']);
 
-        register_shutdown_function([$this, 'removeFiles']);
+        // Register a single, object-independent shutdown cleanup for orphaned temp files.
+        // Note: we intentionally do NOT register [$this, 'removeFiles'] here, because that
+        // keeps a global reference to the instance, preventing garbage collection and the
+        // destructor from running until script shutdown (see issue #138). Normal cleanup is
+        // done by __destruct(); the static handler below is only a fallback for temp files
+        // left behind by a fatal error.
+        self::registerShutdownCleanup();
     }
 
     /**
@@ -78,6 +96,28 @@ class Writer
     public function __destruct()
     {
         $this->removeFiles();
+    }
+
+    /**
+     * Register (once per process) a static shutdown handler that removes any temp files
+     * that were not cleaned up by an instance destructor (e.g. after a fatal error).
+     *
+     * @return void
+     */
+    protected static function registerShutdownCleanup(): void
+    {
+        if (self::$shutdownRegistered) {
+            return;
+        }
+        self::$shutdownRegistered = true;
+        register_shutdown_function(static function () {
+            foreach (self::$shutdownTempFiles as $tempFile => $flag) {
+                if (is_file($tempFile)) {
+                    @unlink($tempFile);
+                }
+            }
+            self::$shutdownTempFiles = [];
+        });
     }
 
     protected function _log($msg)
@@ -239,6 +279,10 @@ class Writer
             $this->tempFiles['tmp'][] = $filename;
         }
 
+        // Track for the static shutdown fallback. Paths are unique (uniqid prefix),
+        // so entries from different Writer instances never collide.
+        self::$shutdownTempFiles[$filename] = true;
+
         return $filename;
     }
 
@@ -255,7 +299,7 @@ class Writer
                     if (is_file($tempFile)) {
                         @unlink($tempFile);
                     }
-                    unset($this->tempFiles['tmp'][$key]);
+                    unset($this->tempFiles['tmp'][$key], self::$shutdownTempFiles[$tempFile]);
                     break;
                 }
             }
@@ -279,7 +323,9 @@ class Writer
                 if (is_file($tempFile)) {
                     @unlink($tempFile);
                 }
+                unset(self::$shutdownTempFiles[$tempFile]);
             }
+            $this->tempFiles['tmp'] = [];
         }
         if (!empty($this->zip) && is_file($this->zip->filename)) {
             @unlink($this->zip->filename);

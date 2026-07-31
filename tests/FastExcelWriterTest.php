@@ -1502,6 +1502,22 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
+    /**
+     * The Writer must not keep a global reference to itself (issue #138):
+     * after unset() the instance has to be garbage-collected and its destructor run.
+     */
+    public function testWriterIsGarbageCollected()
+    {
+        $writer = new \avadim\FastExcelWriter\Writer\Writer();
+        $ref = \WeakReference::create($writer);
+
+        self::assertNotNull($ref->get(), 'WeakReference must hold the live instance');
+
+        unset($writer);
+
+        self::assertNull($ref->get(), 'Writer instance was not garbage-collected after unset() (issue #138)');
+    }
+
     protected function rmdir($tempDir)
     {
         if (is_dir($tempDir)) {

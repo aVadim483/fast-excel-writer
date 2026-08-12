@@ -395,6 +395,15 @@ $b3 = ['=B1+B2', $b1 + $b2];
 $sheet->writeRow([$a3, $b3]);
 ```
 
+A pre-calculated result can be a number, a string, a boolean or an error value
+```php
+$sheet->writeRow([
+    ['=IF(A1>0, "PASS", "FAIL")', 'PASS'],  // string
+    ['=A1=A2', false],                      // boolean
+    ['=A1/0', '#DIV/0!'],                   // error
+]);
+```
+
 
 ### Hyperlinks
 You can insert URLs as active hyperlinks

@@ -1,5 +1,6 @@
-## V.6.16
+## V.6.15.1
 
+* Fixed the cell type of pre-calculated formula results – a text result was written without `t="str"`, so Excel treated it as a number and showed `#VALUE!`; boolean and error results are now written as `t="b"`/`t="e"` too, see https://github.com/aVadim483/fast-excel-writer/issues/139
 * Fixed `Writer` preventing garbage collection – it registered `[$this, 'removeFiles']` as a shutdown function, which held a global reference to every instance, so the destructor never ran and memory grew in long-running/CLI processes, see https://github.com/aVadim483/fast-excel-writer/issues/138
 
 ## V.6.15

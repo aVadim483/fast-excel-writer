@@ -1578,6 +1578,36 @@ final class FastExcelWriterTest extends TestCase
         $this->cells = [];
     }
 
+    /**
+     * A null pre-calculated result must not drop the formula itself:
+     * the cell is written with <f> only, so Excel calculates the result on open
+     */
+    public function testFormulaWithNullPreCalculatedValue()
+    {
+        $testFileName = __DIR__ . '/test_formula_null.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $sheet = $excel->sheet();
+        $sheet->writeRow([10, 20, ['=A1+B1', null]]);
+        $sheet->writeRow([10, 20, ['=A2+B2', 30]]);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+
+        $zip = new ZipArchive();
+        $zip->open($testFileName);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        $this->assertStringContainsString('<c r="C1"><f>A1+B1</f></c>', $xml);
+        $this->assertStringContainsString('<c r="C2"><f>A2+B2</f><v>30</v></c>', $xml);
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
     protected function rmdir($tempDir)
     {
         if (is_dir($tempDir)) {

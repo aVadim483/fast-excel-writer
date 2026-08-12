@@ -1399,11 +1399,17 @@ class Writer
         if (is_array($value) && isset($value['shared_index'])) {
             $file->write('<c ' . $attr . ' t="s"><v>' . $value['shared_index'] . '</v></c>');
         }
-        elseif (is_array($value) && !empty($value[0]) && $value[0][0] === '=' && isset($value[1])) {
+        elseif (is_array($value) && !empty($value[0]) && is_string($value[0]) && $value[0][0] === '=' && array_key_exists(1, $value)) {
             // formula & value
-            $formula = $this->_convertFormula($value[0], [$rowNumber, $colNumber]);
-            [$resultType, $resultValue] = self::_formulaResult($value[1]);
-            $file->write('<c ' . $attr . $resultType . '>' . '<f>' . self::xmlSpecialChars($formula) . '</f>' . '<v>' . $resultValue . '</v>' . '</c>');
+            $formula = self::xmlSpecialChars($this->_convertFormula($value[0], [$rowNumber, $colNumber]));
+            if ($value[1] === null) {
+                // there is no pre-calculated result, Excel will calculate it
+                $file->write('<c ' . $attr . '><f>' . $formula . '</f></c>');
+            }
+            else {
+                [$resultType, $resultValue] = self::_formulaResult($value[1]);
+                $file->write('<c ' . $attr . $resultType . '>' . '<f>' . $formula . '</f>' . '<v>' . $resultValue . '</v>' . '</c>');
+            }
         }
         elseif ($value && is_string($value) && $value[0] === '=') {
             // formula

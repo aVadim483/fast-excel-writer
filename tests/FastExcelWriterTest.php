@@ -1518,6 +1518,96 @@ final class FastExcelWriterTest extends TestCase
         self::assertNull($ref->get(), 'Writer instance was not garbage-collected after unset() (issue #138)');
     }
 
+    /**
+     * A pre-calculated result of a formula must be written with the correct cell type (issue #139):
+     * without t="str" Excel treats a text result as a number and shows #VALUE!
+     */
+    public function testFormulaPreCalculatedValue()
+    {
+        $testFileName = __DIR__ . '/test_formula_value.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $sheet = $excel->sheet();
+        $data = [
+            [4, 4, ['=IF(RC[-1]+RC[-2]>5, "PASS", "FAIL")', 'PASS']],
+            [4, 4, ['=RC[-1]+RC[-2]', 8]],
+            [4, 4, ['=RC[-1]/RC[-2]', 1.5]],
+            [4, 4, ['=RC[-1]=RC[-2]', true]],
+            [4, 4, ['=RC[-1]/0', '#DIV/0!']],
+            [4, 4, ['=RC[-1]&"7"', '007']],
+            [4, 4, ['=RC[-1]&" & <b>"', 'a & <b>']],
+        ];
+        $sheet->writeArrayTo('B2', $data);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+
+        $zip = new ZipArchive();
+        $zip->open($testFileName);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        $types = [];
+        if (preg_match_all('#<c r="(D\d+)"([^>]*)>#', $xml, $m)) {
+            foreach ($m[1] as $idx => $cell) {
+                $types[$cell] = preg_match('#\st="(\w+)"#', $m[2][$idx], $t) ? $t[1] : '';
+            }
+        }
+        $this->assertEquals('str', $types['D2']);
+        $this->assertEquals('', $types['D3']);
+        $this->assertEquals('', $types['D4']);
+        $this->assertEquals('b', $types['D5']);
+        $this->assertEquals('e', $types['D6']);
+        $this->assertEquals('str', $types['D7']);
+        $this->assertEquals('str', $types['D8']);
+
+        // booleans are written as 0/1, texts are escaped
+        $this->assertStringContainsString('t="b"><f>C5=B5</f><v>1</v>', $xml);
+        $this->assertStringContainsString('<v>a &amp; &lt;b&gt;</v>', $xml);
+
+        $this->cells = $this->excelReader->readCells();
+        $this->assertEquals('PASS', $this->cells['D2']);
+        $this->assertEquals(8, $this->cells['D3']);
+        $this->assertEquals(1.5, $this->cells['D4']);
+        $this->assertEquals('007', $this->cells['D7']);
+        $this->assertEquals('a & <b>', $this->cells['D8']);
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
+    /**
+     * A null pre-calculated result must not drop the formula itself:
+     * the cell is written with <f> only, so Excel calculates the result on open
+     */
+    public function testFormulaWithNullPreCalculatedValue()
+    {
+        $testFileName = __DIR__ . '/test_formula_null.xlsx';
+        if (file_exists($testFileName)) {
+            unlink($testFileName);
+        }
+
+        $excel = Excel::create(['Demo']);
+        $sheet = $excel->sheet();
+        $sheet->writeRow([10, 20, ['=A1+B1', null]]);
+        $sheet->writeRow([10, 20, ['=A2+B2', 30]]);
+
+        $this->excelReader = $this->saveCheckRead($excel, $testFileName);
+
+        $zip = new ZipArchive();
+        $zip->open($testFileName);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        $this->assertStringContainsString('<c r="C1"><f>A1+B1</f></c>', $xml);
+        $this->assertStringContainsString('<c r="C2"><f>A2+B2</f><v>30</v></c>', $xml);
+
+        unlink($testFileName);
+        $this->cells = [];
+    }
+
     protected function rmdir($tempDir)
     {
         if (is_dir($tempDir)) {

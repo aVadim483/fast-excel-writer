@@ -17,6 +17,25 @@ use avadim\FastExcelWriter\Sheet;
  */
 class Writer
 {
+    /** Error values of formula results */
+    protected const ERROR_VALUES = [
+        '#NULL!' => 1,
+        '#DIV/0!' => 1,
+        '#VALUE!' => 1,
+        '#REF!' => 1,
+        '#NAME?' => 1,
+        '#NUM!' => 1,
+        '#N/A' => 1,
+        '#GETTING_DATA' => 1,
+        '#SPILL!' => 1,
+        '#CALC!' => 1,
+        '#FIELD!' => 1,
+        '#CONNECT!' => 1,
+        '#BLOCKED!' => 1,
+        '#UNKNOWN!' => 1,
+        '#BUSY!' => 1,
+    ];
+
     /** @var int|string|null */
     protected $bufferLimit = null;
 
@@ -1314,6 +1333,40 @@ class Writer
     }
 
     /**
+     * Detects the cell type of a pre-calculated formula result
+     * Returns the type attribute (may be empty for numbers) and the value for the <v> tag
+     *
+     * @param mixed $result
+     *
+     * @return array
+     */
+    protected static function _formulaResult($result): array
+    {
+        if (is_bool($result)) {
+            return [' t="b"', (int)$result];
+        }
+        if (is_int($result)) {
+            return ['', $result];
+        }
+        if (is_float($result)) {
+            return ['', self::floatStr($result)];
+        }
+        if (is_string($result)) {
+            if (isset(self::ERROR_VALUES[$result])) {
+                return [' t="e"', $result];
+            }
+            // numbers with leading zeros are texts, not numbers
+            if (is_numeric($result) && ($result === '0' || $result[0] !== '0' || $result[1] === '.')) {
+                return ['', $result];
+            }
+
+            return [' t="str"', self::xmlSpecialChars($result)];
+        }
+
+        return [' t="str"', self::xmlSpecialChars((string)$result)];
+    }
+
+    /**
      * @param FileWriter $file
      * @param int $rowNumber
      * @param int $colNumber
@@ -1346,13 +1399,17 @@ class Writer
         if (is_array($value) && isset($value['shared_index'])) {
             $file->write('<c ' . $attr . ' t="s"><v>' . $value['shared_index'] . '</v></c>');
         }
-        elseif (is_array($value) && !empty($value[0]) && $value[0][0] === '=' && isset($value[1])) {
+        elseif (is_array($value) && !empty($value[0]) && is_string($value[0]) && $value[0][0] === '=' && array_key_exists(1, $value)) {
             // formula & value
-            $formula = $this->_convertFormula($value[0], [$rowNumber, $colNumber]);
-            $file->write('<c ' . $attr . '>' . '<f>' . self::xmlSpecialChars($formula) . '</f>' . '<v>' . self::xmlSpecialChars($value[1]) . '</v>' . '</c>');
-            //$file->write('<f>' . self::xmlSpecialChars($formula) . '</f>');
-            //$file->write('<v>' . self::xmlSpecialChars($value[1]) . '</v>');
-            //$file->write('</c>');
+            $formula = self::xmlSpecialChars($this->_convertFormula($value[0], [$rowNumber, $colNumber]));
+            if ($value[1] === null) {
+                // there is no pre-calculated result, Excel will calculate it
+                $file->write('<c ' . $attr . '><f>' . $formula . '</f></c>');
+            }
+            else {
+                [$resultType, $resultValue] = self::_formulaResult($value[1]);
+                $file->write('<c ' . $attr . $resultType . '>' . '<f>' . $formula . '</f>' . '<v>' . $resultValue . '</v>' . '</c>');
+            }
         }
         elseif ($value && is_string($value) && $value[0] === '=') {
             // formula

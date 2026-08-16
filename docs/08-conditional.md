@@ -126,3 +126,11 @@ $cond = Conditional::dataBar($color)
     ->directionRtl(true) // draw bar from right to left
 ;
 ```
+### Rules referring to another sheet
+
+A formula of a rule can refer to a cell of another sheet:
+```php
+$sheet->addConditionalFormatting('B2:B100', Conditional::greaterThan('=Limits!$A$1')->setFillColor('#FFC7CE'));
+```
+The plain ```<cfRule>``` element does not support such references, so this rule is written to the x14
+extension list of the worksheet (with its style inlined into the rule), exactly as Excel itself does it.

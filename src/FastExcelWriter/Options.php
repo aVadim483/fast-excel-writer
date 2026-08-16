@@ -118,6 +118,48 @@ class Options implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Set the default date format of the workbook (the '@date' style)
+     *
+     * @param string $format e.g. 'DD.MM.YYYY'
+     *
+     * @return $this
+     */
+    public function defaultDateFormat(string $format): Options
+    {
+        $this->options['default_date_format'] = $format;
+
+        return $this;
+    }
+
+    /**
+     * Set the default time format of the workbook (the '@time' style)
+     *
+     * @param string $format e.g. 'HH:MM'
+     *
+     * @return $this
+     */
+    public function defaultTimeFormat(string $format): Options
+    {
+        $this->options['default_time_format'] = $format;
+
+        return $this;
+    }
+
+    /**
+     * Set the default date and time format of the workbook (the '@datetime' style, used for DateTime values)
+     *
+     * @param string $format e.g. 'DD.MM.YYYY HH:MM'
+     *
+     * @return $this
+     */
+    public function defaultDateTimeFormat(string $format): Options
+    {
+        $this->options['default_datetime_format'] = $format;
+
+        return $this;
+    }
+
+    /**
      * Set Writer class
      *
      * @param string $writerClass

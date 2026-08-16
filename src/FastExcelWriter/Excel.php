@@ -167,6 +167,9 @@ class Excel implements InterfaceBookWriter
 
     protected bool $enableR1C1 = true;
 
+    /** @var array Formats of the workbook that override the formats of the locale */
+    protected array $defaultFormats = [];
+
 
     /**
      * Excel constructor
@@ -178,7 +181,10 @@ class Excel implements InterfaceBookWriter
      *      'shared_string' => save strings to the shared string xml
      *      'buffer_limit' => buffer size limit of the file writer
      *      'locale' => locale code, e.g. 'fr'
-     *      'default_font' => default font options, e.g. ['name' => 'Arial', 'size' => 14]
+     *      'default_font' => default font options, e.g. ['font-name' => 'Arial', 'font-size' => 14]
+     *      'default_date_format' => format of the '@date' style of the workbook, e.g. 'DD.MM.YYYY'
+     *      'default_time_format' => format of the '@time' style of the workbook
+     *      'default_datetime_format' => format of the '@datetime' style of the workbook (used for DateTime values)
      *      'writer_class' => custom writer class
      *      'style_manager' => custom style manager class
      *
@@ -232,6 +238,11 @@ class Excel implements InterfaceBookWriter
         $this->setDefaultLocale();
         if (!empty($options['locale'])) {
             $this->setLocale($options['locale']);
+        }
+        foreach (['date', 'time', 'datetime'] as $formatName) {
+            if (!empty($options['default_' . $formatName . '_format'])) {
+                $this->setDefaultFormat($formatName, $options['default_' . $formatName . '_format']);
+            }
         }
         $settings = $this->styleManager->getLocaleSettings();
         $this->formulaConverter = new FormulaConverter($settings['functions'] ?? []);
@@ -625,10 +636,89 @@ class Excel implements InterfaceBookWriter
         else {
             $localeSettings = $aFormatSettings;
         }
+        if ($this->defaultFormats) {
+            // formats of the workbook are stronger than formats of the locale
+            $localeSettings['formats'] = array_merge($localeSettings['formats'] ?? [], $this->defaultFormats);
+        }
 
         $this->styleManager->setLocaleSettings($localeSettings);
 
         return $this;
+    }
+
+    /**
+     * Set the format of the workbook which overrides the format of the locale
+     *
+     * @param string $formatName Format name, e.g. 'date', '@date', 'DATETIME'
+     * @param string $format Format pattern, e.g. 'DD.MM.YYYY'
+     *
+     * @return $this
+     *
+     * @example
+     * $excel->setDefaultFormat('date', 'DD.MM.YYYY');
+     */
+    public function setDefaultFormat(string $formatName, string $format): Excel
+    {
+        $formatName = strtoupper(trim($formatName));
+        if ($formatName === '' || $format === '') {
+            Exception::throwNew('Format name and format pattern cannot be empty');
+        }
+        if ($formatName[0] !== '@') {
+            $formatName = '@' . $formatName;
+        }
+        $this->defaultFormats[$formatName] = $format;
+
+        $localeSettings = $this->styleManager->getLocaleSettings();
+        $localeSettings['formats'][$formatName] = $format;
+        $this->styleManager->setLocaleSettings($localeSettings);
+
+        return $this;
+    }
+
+    /**
+     * Set the default date format of the workbook (the '@date' style)
+     *
+     * @param string $format e.g. 'DD.MM.YYYY'
+     *
+     * @return $this
+     */
+    public function setDefaultDateFormat(string $format): Excel
+    {
+        return $this->setDefaultFormat('@DATE', $format);
+    }
+
+    /**
+     * Set the default time format of the workbook (the '@time' style)
+     *
+     * @param string $format e.g. 'HH:MM'
+     *
+     * @return $this
+     */
+    public function setDefaultTimeFormat(string $format): Excel
+    {
+        return $this->setDefaultFormat('@TIME', $format);
+    }
+
+    /**
+     * Set the default date and time format of the workbook (the '@datetime' style, used for DateTime values)
+     *
+     * @param string $format e.g. 'DD.MM.YYYY HH:MM'
+     *
+     * @return $this
+     */
+    public function setDefaultDateTimeFormat(string $format): Excel
+    {
+        return $this->setDefaultFormat('@DATETIME', $format);
+    }
+
+    /**
+     * Returns formats of the workbook that override formats of the locale
+     *
+     * @return array
+     */
+    public function getDefaultFormats(): array
+    {
+        return $this->defaultFormats;
     }
 
     /**

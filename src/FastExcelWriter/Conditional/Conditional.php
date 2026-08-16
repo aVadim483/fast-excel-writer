@@ -5,6 +5,7 @@ namespace avadim\FastExcelWriter\Conditional;
 use avadim\FastExcelWriter\Exceptions\ExceptionConditionalFormatting;
 use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Style\StyleManager;
+use avadim\FastExcelWriter\Writer\Writer;
 
 class Conditional
 {
@@ -679,7 +680,8 @@ class Conditional
         $result = '';
         foreach ($attributes as $attribute => $value) {
             if ($value !== null) {
-                $result .= ' ' . $attribute . '="' . $value . '"';
+                // "text" of a rule is free text, it must be escaped, otherwise any "&" or quote breaks the file
+                $result .= ' ' . $attribute . '="' . Writer::xmlSpecialChars($value) . '"';
             }
         }
 
@@ -709,8 +711,15 @@ class Conditional
             else {
                 $formula = 'NOT(ISERROR(SEARCH("' . $this->text . '",' . $firstCell . ')))';
             }
-            $xml .= '<cfRule type="' . $this->conditionType . '" dxfId="' . $this->dxfId . '" priority="' . $priority . '" operator="' . $this->operator . '" text="' . $this->text . '">';
-            $xml .= '<formula>' . $formula . '</formula>';
+            $attributes = [
+                'type' => $this->conditionType,
+                'dxfId' => $this->dxfId,
+                'priority' => $priority,
+                'operator' => $this->operator,
+                'text' => $this->text,
+            ];
+            $xml .= '<cfRule' . $this->_attr($attributes) . '>';
+            $xml .= '<formula>' . Writer::xmlSpecialChars($formula) . '</formula>';
             $xml .= '</cfRule>';
         }
         elseif ($this->conditionType === self::CONDITION_COLOR_SCALE || $this->conditionType === self::CONDITION_DATA_BAR) {
@@ -778,7 +787,8 @@ class Conditional
                     if ($formula[0] === '=') {
                         $formula = ($formulaConverter ? $formulaConverter($formula, $firstCell) : substr($formula, 1));
                     }
-                    $xml .= '<formula>' . $formula . '</formula>';
+                    // a formula may contain "<", ">" or "&" - as an operator or inside a string literal
+                    $xml .= '<formula>' . Writer::xmlSpecialChars($formula) . '</formula>';
                 }
             }
             $xml .= '</cfRule>';
@@ -786,6 +796,93 @@ class Conditional
         $xml .= '</conditionalFormatting>';
 
         return $xml;
+    }
+
+    /**
+     * Conditional formatting referring to another sheet is not supported by the plain <cfRule> element,
+     * Excel writes such rules to the x14 extension list
+     *
+     * @param callable|null $formulaConverter
+     *
+     * @return bool
+     */
+    public function isExternal($formulaConverter = null): bool
+    {
+        // only formula based rules can refer to another sheet
+        if ($this->conditionType === self::CONDITION_COLOR_SCALE || $this->conditionType === self::CONDITION_DATA_BAR
+            || $this->conditionType === self::CONDITION_TOP10 || $this->conditionType === self::CONDITION_TEXT) {
+            return false;
+        }
+        $firstCell = strpos($this->sqref, ':') ? strstr($this->sqref, ':', true) : $this->sqref;
+        foreach ($this->formula as $formula) {
+            if ($formula === null || $formula === '') {
+                continue;
+            }
+            if ($formula[0] === '=') {
+                $formula = ($formulaConverter ? $formulaConverter($formula, $firstCell) : substr($formula, 1));
+            }
+            // a sheet name before "!" means a reference to another sheet
+            if (strpos($formula, '!') !== false && strpos($formula, '"') === false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * XML of the rule for the x14 extension list (a reference to another sheet).
+     * The style cannot be taken from styles.xml here, x14 rules carry it inline
+     *
+     * @param int $priority
+     * @param string $dxfXml XML of the dxf style of this rule
+     * @param callable|null $formulaConverter
+     *
+     * @return string
+     */
+    public function toExtXml(int $priority, string $dxfXml, $formulaConverter = null): string
+    {
+        $firstCell = strpos($this->sqref, ':') ? strstr($this->sqref, ':', true) : $this->sqref;
+        if ($this->conditionType === self::CONDITION_BELOW_AVERAGE) {
+            $type = self::CONDITION_ABOVE_AVERAGE;
+            $aboveAverage = 0;
+        }
+        else {
+            $type = $this->conditionType;
+            $aboveAverage = null;
+        }
+        $attributes = [
+            'type' => $type,
+            'priority' => $priority,
+            'operator' => $this->operator ?: null,
+            'aboveAverage' => $aboveAverage,
+        ];
+
+        $xml = '<x14:conditionalFormatting xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main">';
+        $xml .= '<x14:cfRule' . $this->_attr($attributes) . '>';
+        foreach ($this->formula as $formula) {
+            if ($formula !== null && $formula !== '') {
+                if ($formula[0] === '=') {
+                    $formula = ($formulaConverter ? $formulaConverter($formula, $firstCell) : substr($formula, 1));
+                }
+                $xml .= '<xm:f>' . Writer::xmlSpecialChars($formula) . '</xm:f>';
+            }
+        }
+        // <dxf>...</dxf> of styles.xml becomes an inline <x14:dxf>...</x14:dxf>
+        $xml .= '<x14:dxf>' . preg_replace('#^<dxf>|</dxf>$#', '', $dxfXml) . '</x14:dxf>';
+        $xml .= '</x14:cfRule>';
+        $xml .= '<xm:sqref>' . $this->sqref . '</xm:sqref>';
+        $xml .= '</x14:conditionalFormatting>';
+
+        return $xml;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDxfId(): int
+    {
+        return (int)$this->dxfId;
     }
 
 }

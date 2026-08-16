@@ -171,3 +171,19 @@ $validation = DataValidation::dropDown(['item1', 'item2', 'item3']);
 $sheet->addDataValidation('B10:E32', $validation);
 ```
 That is, first fill the sheet with data and then call this method.
+
+### Rules referring to another sheet
+
+A rule can refer to a range of another sheet:
+```php
+$excel = Excel::create(['Main', 'Lists']);
+$lists = $excel->getSheet('Lists');
+$lists->writeRow(['red']);
+$lists->writeRow(['green']);
+
+$sheet = $excel->getSheet('Main');
+$sheet->addDataValidation('A2:A100', DataValidation::dropDown('=Lists!$A$1:$A$2'));
+```
+The plain ```<dataValidation>``` element does not support such references, so this rule is written
+to the x14 extension list of the worksheet, exactly as Excel itself does it. Nothing has to be done
+for that, the rule is detected by the ```!``` in its formula.

@@ -4,6 +4,7 @@ namespace avadim\FastExcelWriter\DataValidation;
 
 use avadim\FastExcelWriter\Exceptions\ExceptionDataValidation;
 use avadim\FastExcelWriter\Sheet;
+use avadim\FastExcelWriter\Writer\Writer;
 
 class DataValidation
 {
@@ -579,28 +580,89 @@ class DataValidation
     {
         $xml = '<dataValidation';
         foreach ($this->getAttributes() as $attribute => $value) {
-            $xml .= ' ' . $attribute . '="' . $value . '"';
+            // titles and messages are free text, they must be escaped, otherwise any "&" or quote breaks the file
+            $xml .= ' ' . $attribute . '="' . Writer::xmlSpecialChars($value) . '"';
         }
         $xml .= '>';
-        if ($this->formula1 !== null && $this->formula1 !== '') {
-            if ($this->formula1[0] === '=') {
-                $formula = ($formulaConverter ? $formulaConverter($this->formula1, $this->sqref) : substr($this->formula1, 1));
-            }
-            else {
-                $formula = $this->formula1;
-            }
-            $xml .= '<formula1>' . str_replace(['&', '"', '<', '>'], ['&amp;', '&quot;', '&lt;', '&gt;'], $formula) . '</formula1>';
+        $formula1 = $this->getFormula(1, $formulaConverter);
+        if ($formula1 !== null) {
+            $xml .= '<formula1>' . Writer::xmlSpecialChars($formula1) . '</formula1>';
         }
-        if ($this->formula2 !== null && $this->formula2 !== '') {
-            if ($this->formula2[0] === '=') {
-                $formula = ($formulaConverter ? $formulaConverter($this->formula2, $this->sqref) : substr($this->formula2, 1));
-            }
-            else {
-                $formula = $this->formula2;
-            }
-            $xml .= '<formula2>' . $formula . '</formula2>';
+        $formula2 = $this->getFormula(2, $formulaConverter);
+        if ($formula2 !== null) {
+            $xml .= '<formula2>' . Writer::xmlSpecialChars($formula2) . '</formula2>';
         }
         $xml .= '</dataValidation>';
+
+        return $xml;
+    }
+
+    /**
+     * Returns the converted formula 1 or 2 (null if it is not set)
+     *
+     * @param int $num
+     * @param callable|null $formulaConverter
+     *
+     * @return string|null
+     */
+    public function getFormula(int $num, $formulaConverter = null): ?string
+    {
+        $formula = ($num === 2) ? $this->formula2 : $this->formula1;
+        if ($formula === null || $formula === '') {
+            return null;
+        }
+        if ($formula[0] === '=') {
+            return $formulaConverter ? $formulaConverter($formula, $this->sqref) : substr($formula, 1);
+        }
+
+        return $formula;
+    }
+
+    /**
+     * Data validation referring to another sheet is not supported by the plain <dataValidation> element,
+     * Excel writes such rules to the x14 extension list
+     *
+     * @param callable|null $formulaConverter
+     *
+     * @return bool
+     */
+    public function isExternal($formulaConverter = null): bool
+    {
+        foreach ([1, 2] as $num) {
+            $formula = $this->getFormula($num, $formulaConverter);
+            // a sheet name before "!" means a reference to another sheet ("A1:B2" and '"a,b,c"' do not have it)
+            if ($formula !== null && strpos($formula, '!') !== false && strpos($formula, '"') === false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * XML of the rule for the x14 extension list (a reference to another sheet)
+     *
+     * @param callable|null $formulaConverter
+     *
+     * @return string
+     */
+    public function toExtXml($formulaConverter = null): string
+    {
+        $attributes = $this->getAttributes();
+        unset($attributes['sqref']);
+        $xml = '<x14:dataValidation';
+        foreach ($attributes as $attribute => $value) {
+            $xml .= ' ' . $attribute . '="' . Writer::xmlSpecialChars($value) . '"';
+        }
+        $xml .= '>';
+        foreach ([1, 2] as $num) {
+            $formula = $this->getFormula($num, $formulaConverter);
+            if ($formula !== null) {
+                $xml .= '<x14:formula' . $num . '><xm:f>' . Writer::xmlSpecialChars($formula) . '</xm:f></x14:formula' . $num . '>';
+            }
+        }
+        $xml .= '<xm:sqref>' . Writer::xmlSpecialChars((string)$this->sqref) . '</xm:sqref>';
+        $xml .= '</x14:dataValidation>';
 
         return $xml;
     }

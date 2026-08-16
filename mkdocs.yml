@@ -37,6 +37,7 @@ nav:
       - Writing Cells & Rows: 03-writing.md
       - Formulas: 03-writing.md#formulas
       - Rich Text: 03-writing.md#using-rich-text
+      - Streaming Mode & Memory: 03-writing.md#streaming-mode-and-memory
       - Styles: 04-styles.md
   - Insertions:
       - Images: index.md#adding-images

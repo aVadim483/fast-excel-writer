@@ -17,6 +17,12 @@ use avadim\FastExcelWriter\Sheet;
  */
 class Writer
 {
+    /** Number of significant digits Excel keeps in a numeric cell */
+    protected const MAX_SIGNIFICANT_DIGITS = 15;
+
+    /** Max number of characters of a cell value, a longer text makes the file unreadable for Excel */
+    public const MAX_CELL_LENGTH = 32767;
+
     /** Error values of formula results */
     protected const ERROR_VALUES = [
         '#NULL!' => 1,
@@ -489,11 +495,17 @@ class Writer
         $this->writeEntriesToZip('xl/worksheets/_rels/', $samples);
         $this->writeEntriesToZip('xl/', $samples);
         $this->writeEntriesToZip('', $samples);
+            $completed = true;
         }
         finally {
             // always release the zip handle, even if writing an entry threw,
-            // so the output file is not left locked (Windows) with a dangling resource
-            $this->zip->close();
+            // so the output file is not left locked (Windows) with a dangling resource.
+            // Entries are written to the archive on close(), that is where a full disk or
+            // a zip64 limit shows up - a silent false here would leave a truncated file
+            $closed = $this->zip->close();
+            if (!empty($completed) && !$closed) {
+                ExceptionFile::throwNew('Unable to write zip "%s"', $fileName);
+            }
         }
 
         return true;
@@ -1240,19 +1252,42 @@ class Writer
         }
 
         // <conditionalFormatting>
+        $extConditional = [];
         if ($conditional = $sheet->getConditionalFormatting()) {
+            $formulaConverter = [$this->excel->formulaConverter , 'normalize'];
             foreach ($conditional as $idx => $cond) {
-                $sheet->fileWriter->write($cond->toXml($idx + 1, [$this->excel->formulaConverter , 'normalize']));
+                // a rule referring to another sheet is written to the x14 extension list only
+                if ($cond->isExternal($formulaConverter)) {
+                    $extConditional[$idx + 1] = $cond;
+                }
+                else {
+                    $sheet->fileWriter->write($cond->toXml($idx + 1, $formulaConverter));
+                }
             }
         }
 
         // <dataValidations>
+        $extValidations = [];
         if ($validations = $sheet->getDataValidations()) {
-            $sheet->fileWriter->write('<dataValidations count="' . count($validations) . '">');
+            $formulaConverter = [$this->excel->formulaConverter , 'normalize'];
+            $plainValidations = [];
             foreach ($validations as $validation) {
-                $sheet->fileWriter->write($validation->toXml([$this->excel->formulaConverter , 'normalize']));
+                // a rule referring to another sheet is written to the x14 extension list only,
+                // the plain <dataValidation> element does not support it
+                if ($validation->isExternal($formulaConverter)) {
+                    $extValidations[] = $validation;
+                }
+                else {
+                    $plainValidations[] = $validation;
+                }
             }
-            $sheet->fileWriter->write('</dataValidations>');
+            if ($plainValidations) {
+                $sheet->fileWriter->write('<dataValidations count="' . count($plainValidations) . '">');
+                foreach ($plainValidations as $validation) {
+                    $sheet->fileWriter->write($validation->toXml($formulaConverter));
+                }
+                $sheet->fileWriter->write('</dataValidations>');
+            }
         }
 
         // <hyperlinks>
@@ -1309,6 +1344,30 @@ class Writer
             $sheet->fileWriter->write($this->_makeTag($nodeName, $nodeOptions));
         }
 
+        // <extLst> is the last element of the worksheet
+        if ($extValidations || $extConditional) {
+            $formulaConverter = [$this->excel->formulaConverter , 'normalize'];
+            $sheet->fileWriter->write('<extLst>');
+            if ($extConditional) {
+                $dxfs = $this->excel->getStyleDxfs();
+                $sheet->fileWriter->write('<ext uri="{78C0D931-6437-407d-A8EE-F0AAD7539E65}" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main">'
+                    . '<x14:conditionalFormattings>');
+                foreach ($extConditional as $priority => $cond) {
+                    $sheet->fileWriter->write($cond->toExtXml($priority, $dxfs[$cond->getDxfId()] ?? '<dxf/>', $formulaConverter));
+                }
+                $sheet->fileWriter->write('</x14:conditionalFormattings></ext>');
+            }
+            if ($extValidations) {
+                $sheet->fileWriter->write('<ext uri="{CCE6A557-97BC-4b89-ADB6-D9C93CAAB3DF}" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main">'
+                    . '<x14:dataValidations xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main" count="' . count($extValidations) . '">');
+                foreach ($extValidations as $validation) {
+                    $sheet->fileWriter->write($validation->toExtXml($formulaConverter));
+                }
+                $sheet->fileWriter->write('</x14:dataValidations></ext>');
+            }
+            $sheet->fileWriter->write('</extLst>');
+        }
+
         $sheet->fileWriter->write('</worksheet>');
         $sheet->fileWriter->flush(true);
 
@@ -1360,10 +1419,10 @@ class Writer
                 return ['', $result];
             }
 
-            return [' t="str"', self::xmlSpecialChars($result)];
+            return [' t="str"', self::xmlEscapedString($result)];
         }
 
-        return [' t="str"', self::xmlSpecialChars((string)$result)];
+        return [' t="str"', self::xmlEscapedString((string)$result)];
     }
 
     /**
@@ -1433,7 +1492,7 @@ class Writer
             $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve"></t></is></c>');
         }
         elseif ($numFormatType === 'n_string' || ($numFormatType === 'n_numeric' && !is_numeric($value))) {
-            $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve">' . self::xmlSpecialChars($value) . '</t></is></c>');
+            $file->write('<c ' . $attr . ' t="inlineStr"><is><t xml:space="preserve">' . self::xmlEscapedString($value) . '</t></is></c>');
         }
         else {
             if ($numFormatType === 'n_date' || $numFormatType === 'n_datetime') {
@@ -1473,6 +1532,11 @@ class Writer
                     else {
                         $isStr = true;
                     }
+                    if (!$isStr && is_string($value) && strlen(ltrim(preg_replace('/[^0-9].*$/', '', ltrim($value, '+-')), '0')) > self::MAX_SIGNIFICANT_DIGITS) {
+                        // Excel keeps 15 significant digits only, so a longer number (an ID, a barcode, a card number)
+                        // would be silently rounded - keep it as a text instead
+                        $isStr = true;
+                    }
                 }
                 else {
                     $isStr = is_string($value);
@@ -1484,7 +1548,7 @@ class Writer
                     if (strpos($value, '\=') === 0 || strpos($value, '\\\\=') === 0) {
                         $value = substr($value, 1);
                     }
-                    $valueStr = self::xmlSpecialChars(Helper::escapeString($value));
+                    $valueStr = self::xmlEscapedString($value);
                     if ($this->sharedString) {
                         $sharedStrIndex = $this->excel->addSharedString($valueStr);
                         $file->write('<c ' . $attr . ' t="s"><v>' . $sharedStrIndex . '</v></c>');
@@ -1988,7 +2052,15 @@ class Writer
         $sheetName = mb_substr($sheetName, 0, 31);
         $sheetName = trim(trim(trim($sheetName), "'"));//trim before and after trimming single quotes
 
-        return !empty($sheetName) ? $sheetName : 'Sheet' . ((mt_rand() % 900) + 100);
+        if ($sheetName === '') {
+            return 'Sheet' . ((mt_rand() % 900) + 100);
+        }
+        if (strcasecmp($sheetName, 'History') === 0) {
+            // "History" is reserved by Excel (the change history sheet of a shared workbook)
+            $sheetName .= '_';
+        }
+
+        return $sheetName;
     }
 
     /**
@@ -2006,6 +2078,45 @@ class Writer
     }
 
     /**
+     * Escapes a text value of a cell (ST_Xstring)
+     *
+     * Characters that XML cannot carry as is are encoded as "_xHHHH_" instead of being replaced with a space,
+     * so Excel restores them when the file is read. CR (\r) is encoded too, otherwise an XML parser
+     * normalizes it and the character is lost. A literal "_xHHHH_" in the source is escaped as "_x005F_xHHHH_"
+     *
+     * @param $val
+     *
+     * @return string
+     */
+    public static function xmlEscapedString($val): string
+    {
+        //note, bad chars does not include \t\n (\x09\x0a) - they are valid in XML and survive a round trip
+        static $badChars = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
+
+        $val = (string)$val;
+        if ($val === '') {
+            return '';
+        }
+        // a value longer than the limit of Excel is truncated, as Excel itself does on input -
+        // a longer text does not break the XML but makes the whole file unreadable for Excel.
+        // isset() on the byte offset is a cheap pre-check: a shorter string cannot exceed the limit
+        if (isset($val[self::MAX_CELL_LENGTH]) && mb_strlen($val) > self::MAX_CELL_LENGTH) {
+            $val = mb_substr($val, 0, self::MAX_CELL_LENGTH);
+        }
+        // most values contain neither a control character nor a "_xHHHH_" literal, do not pay for them
+        $badChar = (strpbrk($val, $badChars) !== false);
+        if ($badChar || strpos($val, '_x') !== false) {
+            $val = Helper::escapeString($val, $badChar);
+            if (strpos($val, "\x7f") !== false) {
+                // DEL is valid in XML, but xmlSpecialChars() replaces it with a space, so encode it too
+                $val = str_replace("\x7f", '_x007F_', $val);
+            }
+        }
+
+        return self::xmlSpecialChars($val);
+    }
+
+    /**
      * //thanks to Excel::Writer::XLSX::Worksheet.pm (perl)
      *
      * @param mixed $dateInput
@@ -2014,6 +2125,13 @@ class Writer
      */
     public static function convertDateTime($dateInput)
     {
+        if (is_string($dateInput) && preg_match('#^\s*1900[-/]0?2[-/]29(?:[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?\s*$#', $dateInput, $m)) {
+            // Excel has a non-existent 29.02.1900 (serial 60), PHP normalizes such a date to 1900-03-01,
+            // so this day must be caught before strtotime()
+            $seconds = isset($m[1]) ? ((int)$m[1] / 24 + (int)$m[2] / 1440 + (int)($m[3] ?? 0) / 86400) : 0;
+
+            return 60 + $seconds;
+        }
         if (is_int($dateInput) || (is_string($dateInput) && preg_match('/^\d+$/', $dateInput))) {
             // date as timestamp
             $time = (int)$dateInput;

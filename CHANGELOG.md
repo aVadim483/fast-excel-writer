@@ -1,3 +1,26 @@
+## V.6.16
+
+* Requires `avadim/fast-excel-helper` ^1.4 – it carries the `ST_Xstring` escaping shared by the writer and the reader, so a control character written as `_xHHHH_` is decoded back on reading
+* New: default formats of the workbook – options `default_date_format`, `default_time_format`, `default_datetime_format` and methods `Excel::setDefaultDateFormat()`, `setDefaultTimeFormat()`, `setDefaultDateTimeFormat()`, `setDefaultFormat()`; they override the formats of the locale and survive a later `setLocale()`
+* New: data validation referring to another sheet (`DataValidation::dropDown('=Lists!$A$1:$A$5')`) is written to the x14 extension list, the way Excel writes it – the plain `<dataValidation>` element does not support such references
+* New: conditional formatting referring to another sheet is written to the x14 extension list too, with its style inlined into the rule
+* New: `Writer::MAX_CELL_LENGTH` and `Sheet::MAX_HYPERLINKS` – the limits of Excel the library now respects
+* Fixed a cell value longer than 32 767 characters – Excel refused to open such a file, now the value is truncated to the limit, as Excel does on input
+* Fixed loss of control characters in cell values – they were silently replaced with a space, now they are encoded as `_xHHHH_` (OOXML `ST_Xstring`) and Excel restores them when the file is read
+* Fixed loss of `CR` (``) in multi-line text – it is written as `_x000D_`, otherwise an XML parser normalizes it away
+* Fixed double escaping of a hyperlink text containing a literal `_xHHHH_`
+* Fixed broken XML when a title or a message of a data validation contains `&`, `"` or `<` – attributes of `<dataValidation>` were not escaped at all
+* Fixed `<formula2>` of a data validation not being escaped
+* Fixed broken XML in conditional formatting – the searched text and formulas were not escaped, so `Conditional::contains('R&D')` or `Conditional::expression('=B1<5')` produced an unreadable file
+* Fixed panes: `<selection>` was written for the wrong pane (the selections of `topRight` and `bottomLeft` were swapped, and an active cell inside the frozen area was still reported as the selection of `bottomRight`); `activePane` now points to the pane that really holds the active cell
+* Fixed the serial number of 29.02.1900 – Excel has this non-existent day (serial 60), PHP normalized such a date to 01.03.1900
+* Fixed silent rounding of long numeric strings with `auto_convert_number` – IDs, barcodes and card numbers longer than 15 significant digits are kept as text
+* Fixed `save()` reporting success when packing the xlsx failed – the result of closing the zip archive was ignored, which could leave a truncated file (zip64 is used automatically by libzip when the archive exceeds the plain zip limits)
+* Above 65 530 hyperlinks per sheet Excel cannot read `sheetN.xml.rels`, so adding one more now throws a clear exception instead of writing a broken file
+* A sheet cannot be named `History` anymore – the name is reserved by Excel (the change history sheet of a shared workbook), an underscore is appended to it
+* Documentation: the trade-off of inline strings vs shared strings with measured numbers, a new "Streaming mode and memory" section (what is kept in memory until `save()` and when an `Area` is needed), the limits of Excel, default formats of the workbook and rules referring to another sheet
+* Tests: two new suites – regression tests of the audit fixes and compatibility tests verified against the output of the real Excel
+
 ## V.6.15.1
 
 * Fixed a formula with a `null` pre-calculated result (`['=A1+B1', null]`) – the whole cell was written empty and the formula was lost

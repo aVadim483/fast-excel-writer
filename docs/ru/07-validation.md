@@ -171,3 +171,20 @@ $validation = DataValidation::dropDown(['item1', 'item2', 'item3']);
 $sheet->addDataValidation('B10:E32', $validation);
 ```
 То есть сначала заполните лист данными, а затем вызовите этот метод.
+
+
+### Правила со ссылкой на другой лист
+
+Правило может ссылаться на диапазон другого листа:
+```php
+$excel = Excel::create(['Main', 'Lists']);
+$lists = $excel->getSheet('Lists');
+$lists->writeRow(['red']);
+$lists->writeRow(['green']);
+
+$sheet = $excel->getSheet('Main');
+$sheet->addDataValidation('A2:A100', DataValidation::dropDown('=Lists!$A$1:$A$2'));
+```
+Обычный элемент ```<dataValidation>``` такие ссылки не поддерживает, поэтому это правило
+записывается в x14-расширение листа — так же, как это делает сам Excel. Ничего дополнительно
+делать не нужно, такое правило определяется по символу ```!``` в формуле.

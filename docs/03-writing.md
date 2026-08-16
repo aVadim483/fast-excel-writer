@@ -522,4 +522,64 @@ The following tags can be used:
 | \<s=fontSize\>  | \<size=fontSize\>   | \<s=18\>text with size 18\</s\>  |
 | \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
 
+### Streaming Mode And Memory
 
+Row-by-row writing is streaming: as soon as you move to the next row, the current one is flushed
+into a temporary file of the sheet. Therefore the memory does not depend on the number of rows -
+in a measurement there was no growth at all between 50 000 and 500 000 written rows.
+
+Everything that cannot be flushed together with the row stays in memory until ```Excel::save()```:
+
+| kept in memory until saving | about | notes |
+|---|---|---|
+| cells of an ```Area``` | 0.3 KB per cell | flushed by ```Sheet::writeAreas()``` or ```Excel::save()``` |
+| merged cells | 0.5 KB per merge | |
+| hyperlinks | 1 KB per link | max 65 530 per sheet (```Sheet::MAX_HYPERLINKS```) |
+| notes | 1 KB per note | |
+| data validation rules | 0.6 KB per rule | one rule may cover a whole range |
+| conditional formatting rules | 0.5 KB per rule | one rule may cover a whole range |
+| table of shared strings | 0.5 KB per unique string | only with ```'shared_string' => true``` |
+| charts | the whole definition of the chart | values passed as an array are kept too |
+
+Images are an exception: the content of an image is written to a temporary file at once, only its
+size and hash stay in memory, and identical images are stored in the file only once.
+
+So a plain export of millions of rows costs almost nothing, but the same export where **every** row
+also gets a note, a hyperlink or its own merge does grow linearly. If you hit the memory limit,
+look at that column first: usually a single rule applied to a range replaces thousands of per-cell rules.
+
+```php
+$conditional = Conditional::greaterThan(100, ['fill-color' => '#FFC7CE']);
+
+// 100 000 rules in memory
+foreach ($rows as $i => $row) {
+    $sheet->writeRow($row);
+    $sheet->addConditionalFormatting('C' . ($i + 1), $conditional);
+}
+
+// the same result, one rule
+$sheet->addConditionalFormatting('C1:C100000', $conditional);
+```
+
+### When You Need An Area
+
+Row-by-row writing goes forward only - a row that is already flushed cannot be changed. Use
+```Sheet::beginArea()``` / ```Sheet::makeArea()``` when you need to
+
+* write into a cell of a row that has already been written;
+* apply a style to cells of previous rows;
+* fill cells in an arbitrary order (for example, build a table of contents while the data is written).
+
+The cells of an area live in memory until it is flushed, so keep areas as small as the task allows -
+a header block or a summary table, not the whole sheet.
+
+### Limits of Excel
+
+Some limits of the format cannot be exceeded, a file that breaks them is not readable by Excel:
+
+| limit | value | behaviour of the library |
+|---|---|---|
+| characters in a cell | 32 767 | a longer value is truncated, as Excel does on input |
+| hyperlinks on a sheet | 65 530 | adding one more throws an exception (```Sheet::MAX_HYPERLINKS```) |
+| significant digits of a number | 15 | with ```auto_convert_number``` a longer numeric string is kept as text |
+| rows / columns of a sheet | 1 048 576 / XFD | an address beyond them is rejected |

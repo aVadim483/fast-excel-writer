@@ -44,6 +44,9 @@ class Sheet implements InterfaceSheetWriter
     public const MERGE_KEEP = 2;
     public const MERGE_NO_CHECK = -1;
 
+    /** Max number of hyperlinks of one sheet, above it Excel cannot read the relationships of the sheet */
+    public const MAX_HYPERLINKS = 65530;
+
 
     /** @var null|Excel */
     public ?Excel $excel = null;
@@ -166,6 +169,8 @@ class Sheet implements InterfaceSheetWriter
 
     protected ?string $activeCell = null;
     protected ?string $activeRef = null;
+    protected ?int $activeCellRow = null;
+    protected ?int $activeCellCol = null;
 
     protected array $sheetViews = [];
 
@@ -793,8 +798,40 @@ class Sheet implements InterfaceSheetWriter
             $this->activeCell = $address['cell1'];
             $this->activeRef = $address['cell1'] . ':' . $address['cell2'];
         }
+        // the active cell is always the top left cell of the reference, so it is inside <selection sqref="...">
+        $this->activeCellRow = (int)$address['row'];
+        $this->activeCellCol = (int)$address['col'];
 
         return $this;
+    }
+
+    /**
+     * Name of the pane the active cell belongs to
+     *
+     * A <selection> must be written for the pane that really contains its active cell,
+     * otherwise Excel shows the file as damaged
+     *
+     * @return string
+     */
+    protected function activePaneName(): string
+    {
+        if (!$this->freezeRows && !$this->freezeColumns) {
+            return 'topLeft';
+        }
+        // without an explicit active cell the first cell after the frozen panes is active
+        $row = $this->activeCellRow ?? ($this->freezeRows + 1);
+        $col = $this->activeCellCol ?? ($this->freezeColumns + 1);
+        $bottom = ($this->freezeRows && $row > $this->freezeRows);
+        $right = ($this->freezeColumns && $col > $this->freezeColumns);
+
+        if ($this->freezeRows && $this->freezeColumns) {
+            return ($bottom ? 'bottom' : 'top') . ($right ? 'Right' : 'Left');
+        }
+        if ($this->freezeRows) {
+            return $bottom ? 'bottomLeft' : 'topLeft';
+        }
+
+        return $right ? 'topRight' : 'topLeft';
     }
 
 
@@ -1875,6 +1912,11 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _addHyperlink(string $address, string $link)
     {
+        if (count($this->hyperlinks) >= self::MAX_HYPERLINKS) {
+            // above this limit Excel cannot read sheetN.xml.rels anymore and refuses to open the file,
+            // so it is better to stop here than to write a broken workbook
+            Exception::throwNew('Too many hyperlinks on the sheet "%s", max %d', $this->sheetName, self::MAX_HYPERLINKS);
+        }
         if (strpos($link, 'sheet://') === 0) {
             // internal link started with 'sheet://'
             $ref = $address;
@@ -2046,10 +2088,10 @@ class Sheet implements InterfaceSheetWriter
                                 else {
                                     $link = $cellValue;
                                 }
-                                $cellValue = Writer::xmlSpecialChars(Helper::escapeString($cellValue));
+                                $cellValue = Writer::xmlEscapedString($cellValue);
                                 $cellValue = [
                                     'shared_value' => $cellValue,
-                                    'shared_index' => $this->excel->addSharedString(Helper::escapeString($cellValue)),
+                                    'shared_index' => $this->excel->addSharedString($cellValue),
                                 ];
                                 $this->_addHyperlink(Excel::cellAddress($rowIdx + 1, $colIdx + 1), $link);
                                 if (!empty($this->excel->getHyperlinkStyle())) {
@@ -4821,28 +4863,38 @@ class Sheet implements InterfaceSheetWriter
             if ($this->active) {
                 $result[$n]['_attr']['tabSelected'] = 'true';
             }
+            $activePane = $this->activePaneName();
             if ($this->freezeRows && $this->freezeColumns) {
                 // frozen rows and cols
                 $activeCell = $this->activeCell ?? Excel::cellAddress($paneRow, $paneCol);
                 $activeRef = $this->activeRef ?? $activeCell;
+                // the first cell of each pane, it is selected in the panes without the active cell
+                $paneCells = [
+                    'topRight' => Excel::cellAddress(1, $paneCol),
+                    'bottomLeft' => Excel::cellAddress($paneRow, 1),
+                    'bottomRight' => Excel::cellAddress($paneRow, $paneCol),
+                ];
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
-                        '_attr' => ['ySplit' => $this->freezeRows, 'xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress($paneRow, $paneCol), 'activePane' => 'bottomRight', 'state' => 'frozen'],
-                    ],
-                    [
-                        '_tag' => 'selection',
-                        '_attr' => ['pane' => 'topRight', 'activeCell' => Excel::cellAddress($paneRow, 1), 'sqref' => Excel::cellAddress($paneRow, 1)],
-                    ],
-                    [
-                        '_tag' => 'selection',
-                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => Excel::cellAddress(1, $paneCol), 'sqref' => Excel::cellAddress(1, $paneCol)],
-                    ],
-                    [
-                        '_tag' => 'selection',
-                        '_attr' => ['pane' => 'bottomRight', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                        '_attr' => ['ySplit' => $this->freezeRows, 'xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress($paneRow, $paneCol), 'activePane' => $activePane, 'state' => 'frozen'],
                     ],
                 ];
+                if ($activePane === 'topLeft') {
+                    // the active cell is inside the frozen corner
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'topLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                    ];
+                }
+                foreach ($paneCells as $pane => $paneCell) {
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ($pane === $activePane)
+                            ? ['pane' => $pane, 'activeCell' => $activeCell, 'sqref' => $activeRef]
+                            : ['pane' => $pane, 'activeCell' => $paneCell, 'sqref' => $paneCell],
+                    ];
+                }
             }
             elseif ($this->freezeRows) {
                 // frozen rows only
@@ -4851,13 +4903,26 @@ class Sheet implements InterfaceSheetWriter
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
-                        '_attr' => ['ySplit' => $this->freezeRows, 'topLeftCell' => Excel::cellAddress($paneRow, 1), 'activePane' => 'bottomRight', 'state' => 'frozen'],
-                    ],
-                    [
-                        '_tag' => 'selection',
-                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                        '_attr' => ['ySplit' => $this->freezeRows, 'topLeftCell' => Excel::cellAddress($paneRow, 1), 'activePane' => $activePane, 'state' => 'frozen'],
                     ],
                 ];
+                if ($activePane === 'topLeft') {
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'topLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                    ];
+                    $paneCell = Excel::cellAddress($paneRow, 1);
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => $paneCell, 'sqref' => $paneCell],
+                    ];
+                }
+                else {
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'bottomLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                    ];
+                }
             }
             elseif ($this->freezeColumns) {
                 // frozen cols only
@@ -4866,13 +4931,26 @@ class Sheet implements InterfaceSheetWriter
                 $result[$n]['_items'] = [
                     [
                         '_tag' => 'pane',
-                        '_attr' => ['xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress(1, $paneCol), 'activePane' => 'topRight', 'state' => 'frozen'],
-                    ],
-                    [
-                        '_tag' => 'selection',
-                        '_attr' => ['pane' => 'topRight', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                        '_attr' => ['xSplit' => $this->freezeColumns, 'topLeftCell' => Excel::cellAddress(1, $paneCol), 'activePane' => $activePane, 'state' => 'frozen'],
                     ],
                 ];
+                if ($activePane === 'topLeft') {
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'topLeft', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                    ];
+                    $paneCell = Excel::cellAddress(1, $paneCol);
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'topRight', 'activeCell' => $paneCell, 'sqref' => $paneCell],
+                    ];
+                }
+                else {
+                    $result[$n]['_items'][] = [
+                        '_tag' => 'selection',
+                        '_attr' => ['pane' => 'topRight', 'activeCell' => $activeCell, 'sqref' => $activeRef],
+                    ];
+                }
             }
             else {
                 // not frozen

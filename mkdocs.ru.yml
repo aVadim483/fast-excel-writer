@@ -38,6 +38,7 @@ nav:
       - Запись ячеек и строк: 03-writing.md
       - Формулы: 03-writing.md#formulas
       - Форматированный текст: 03-writing.md#using-rich-text
+      - Потоковый режим и память: 03-writing.md#streaming-mode-and-memory
       - Стили: 04-styles.md
   - Вставка объектов:
       - Изображения: index.md#adding-images

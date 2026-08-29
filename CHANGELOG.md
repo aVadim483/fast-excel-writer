@@ -1,3 +1,10 @@
+## V.6.16.1
+
+* Fixed the R1C1 notation leaking into a saved file – a reference shifted out of the sheet (`=R[-4]C[-1]` written to `B2`) was written as is, and Excel refused to open such a file; now it becomes `#REF!`, as Excel does
+* Fixed a range in R1C1 notation being converted by halves – `=SUM(R[-4]C[-1]:RC[-1])` produced a hybrid like `SUM(R[-4]C[-1]:A2)`, now the range is converted as a whole
+* Fixed the locale of one workbook overriding the locale of another – with two workbooks open in one process the number formats (`@money`, `@DATETIME`, etc.) of the last created one won, so a report could be saved with a foreign currency; the same applied to the default font
+* Fixed the style cache shared between workbooks – with interleaved writing into two workbooks the cells of one of them got the style indexes of the other, which silently lost formats
+
 ## V.6.16
 
 * Requires `avadim/fast-excel-helper` ^1.4 – it carries the `ST_Xstring` escaping shared by the writer and the reader, so a control character written as `_xHHHH_` is decoded back on reading

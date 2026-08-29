@@ -202,15 +202,20 @@ class FormulaConverter
 
         if ($this->excel->isR1C1()) {
             // change relative addresses: =RC[-1]*RC[-2] -> =B1*A1
-            $formula = preg_replace_callback('/(\W)(R\[?(-?\d+)?]?C\[?(-?\d+)?]?)/', static function ($matches) use ($baseAddress) {
+            // a range is captured as a whole, otherwise its halves would be converted independently
+            $pattern = '/(\W)(R\[?(?:-?\d+)?]?C\[?(?:-?\d+)?]?(?::R\[?(?:-?\d+)?]?C\[?(?:-?\d+)?]?)?)/';
+            $formula = preg_replace_callback($pattern, static function ($matches) use ($baseAddress) {
                 if (is_array($baseAddress)) {
                     $cell = Excel::cellAddress($baseAddress[0], $baseAddress[1]);
                 }
                 else {
                     $cell = $baseAddress;
                 }
-                if ($cell && ($address = Helper::RCtoA1($matches[2], $cell))) {
-                    return $matches[1] . $address;
+                if ($cell) {
+                    $address = Helper::RCtoA1($matches[2], $cell);
+
+                    // an address shifted out of a sheet does not exist, Excel writes #REF! in this case
+                    return $matches[1] . ($address !== '' ? $address : '#REF!');
                 }
 
                 return $matches[0];

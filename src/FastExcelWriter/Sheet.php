@@ -51,6 +51,9 @@ class Sheet implements InterfaceSheetWriter
     /** @var null|Excel */
     public ?Excel $excel = null;
 
+    /** @var array Cache of the styles of the sheet, it must not be shared between workbooks */
+    protected array $_styleCache = [];
+
     /** @var int Index of the sheet */
     public int $index;
 
@@ -1973,10 +1976,8 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _writeRow(?Writer $writer, array $row = [], array $rowOptions = [], array $cellsOptions = [])
     {
-        static $_styleCache = [];
-
         if ($this->rowCountWritten === 0) {
-            $_styleCache = [];
+            $this->_styleCache = [];
         }
 
         $rowIdx = $this->rowCountWritten;
@@ -2102,7 +2103,7 @@ class Sheet implements InterfaceSheetWriter
                         }
 
                         $styleHash = $cellStyle ? json_encode($cellStyle) : '';
-                        if (!isset($_styleCache[$styleHash])) {
+                        if (!isset($this->_styleCache[$styleHash])) {
                             if ($cellStyle) {
                                 $cellStyleIdx = $this->excel->addStyle($cellStyle, $resultStyle);
                             }
@@ -2110,11 +2111,11 @@ class Sheet implements InterfaceSheetWriter
                                 $cellStyleIdx = 0;
                                 $resultStyle = ['number_format' => 'GENERAL', 'number_format_type' => 'n_auto', '_xf_id' => 0];
                             }
-                            $_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
+                            $this->_styleCache[$styleHash] = ['cell_style' => $cellStyle, 'result_style' => $resultStyle, 'style_idx' => $cellStyleIdx];
                         }
                         else {
-                            $resultStyle = $_styleCache[$styleHash]['result_style'];
-                            $cellStyleIdx = $_styleCache[$styleHash]['style_idx'];
+                            $resultStyle = $this->_styleCache[$styleHash]['result_style'];
+                            $cellStyleIdx = $this->_styleCache[$styleHash]['style_idx'];
                         }
 
                         $numberFormat = $resultStyle['number_format'];
@@ -2220,7 +2221,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setDefaultFont($font): Sheet
     {
-        $normStyle = StyleManager::normalizeFont($font);
+        $normStyle = StyleManager::normalizeFont($font, $this->excel ? $this->excel->styleManager : null);
         if (isset($normStyle['font'])) {
             if (isset($this->defaultStyle['font'])) {
                 $this->defaultStyle['font'] = array_replace($this->defaultStyle['font'], $normStyle['font']);

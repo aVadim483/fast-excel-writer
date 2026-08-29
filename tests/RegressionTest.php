@@ -369,4 +369,73 @@ final class RegressionTest extends TestCase
             unlink($testFileName);
         }
     }
+
+    /**
+     * A reference shifted out of a sheet becomes #REF!, RC notation never gets into a saved file
+     */
+    public function testR1C1ShiftedOffTheSheet()
+    {
+        $testFileName = __DIR__ . '/regr_r1c1.xlsx';
+
+        $excel = Excel::create(['R1C1']);
+        $sheet = $excel->sheet();
+        $sheet->writeRow([1, 2]);
+        $sheet->writeRow([3, 4]);
+        // the reference is shifted above the first row, such an address does not exist
+        $sheet->writeTo('B3', '=R[-4]C[-1]*2');
+        // a range is converted as a whole, not by halves
+        $sheet->writeTo('C3', '=SUM(R[-2]C[-2]:R[-1]C[-2])');
+        // an endpoint out of the sheet invalidates the whole range
+        $sheet->writeTo('D3', '=SUM(R[-5]C[-3]:RC[-3])');
+
+        $this->saveCheckRead($excel, $testFileName);
+        $xml = $this->readXml($testFileName, 'xl/worksheets/sheet1.xml');
+
+        // the internal notation must not leak into the file in any form
+        $this->assertStringNotContainsString('R[', $xml);
+        $this->assertStringNotContainsString('C[', $xml);
+
+        $this->assertStringContainsString('<f>#REF!*2</f>', $xml);
+        $this->assertStringContainsString('<f>SUM(A1:A2)</f>', $xml);
+        $this->assertStringContainsString('<f>SUM(#REF!)</f>', $xml);
+    }
+
+
+    /**
+     * Workbooks with different locales must not redefine the formats of each other
+     */
+    public function testWorkbooksWithDifferentLocales()
+    {
+        $testFileNameRu = __DIR__ . '/regr_locale_ru.xlsx';
+        $testFileNameIt = __DIR__ . '/regr_locale_it.xlsx';
+
+        $rouble = "\u{20BD}";
+        $euro = "\u{20AC}";
+
+        $ru = Excel::create(['Ru'], ['locale' => 'ru']);
+        // the second workbook is created later, the first one must keep its own locale
+        $it = Excel::create(['It'], ['locale' => 'it']);
+
+        foreach ([$ru, $it] as $excel) {
+            $sheet = $excel->sheet();
+            $sheet->writeRow([1234.5], ['format' => '@money']);
+            $sheet->writeRow(['2026-08-16'], ['format' => '@date']);
+        }
+
+        $this->saveCheckRead($ru, $testFileNameRu);
+        $this->saveCheckRead($it, $testFileNameIt);
+
+        $stylesRu = $this->readXml($testFileNameRu, 'xl/styles.xml');
+        $stylesIt = $this->readXml($testFileNameIt, 'xl/styles.xml');
+
+        $this->assertStringContainsString($rouble, $stylesRu);
+        $this->assertStringNotContainsString($euro, $stylesRu);
+        $this->assertStringContainsString('DD.MM.YYYY', $stylesRu);
+        $this->assertStringNotContainsString('DD/MM/YYYY', $stylesRu);
+
+        $this->assertStringContainsString($euro, $stylesIt);
+        $this->assertStringNotContainsString($rouble, $stylesIt);
+        $this->assertStringContainsString('DD/MM/YYYY', $stylesIt);
+        $this->assertStringNotContainsString('DD.MM.YYYY', $stylesIt);
+    }
 }

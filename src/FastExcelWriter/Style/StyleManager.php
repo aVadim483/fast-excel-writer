@@ -11,7 +11,8 @@ use avadim\FastExcelWriter\Exceptions\Exception;
  */
 class StyleManager
 {
-    protected static StyleManager $instance;
+    /** @var StyleManager|null The last created instance, a fallback for static calls without an explicit context */
+    protected static ?StyleManager $instance = null;
 
     protected array $localeSettings = [];
 
@@ -49,6 +50,8 @@ class StyleManager
 
 
     public array $_styleCache = [];
+
+    protected array $formatDefines = [];
 
     /**
      * Constructor of Style
@@ -185,10 +188,10 @@ class StyleManager
     public function setDefaultFont(array $fontOptions): StyleManager
     {
         if ($this->defaultFont) {
-            $this->defaultFont = array_replace_recursive($this->defaultFont, self::normalizeFont($fontOptions));
+            $this->defaultFont = array_replace_recursive($this->defaultFont, self::normalizeFont($fontOptions, $this));
         }
         else {
-            $this->defaultFont = self::normalizeFont($fontOptions);
+            $this->defaultFont = self::normalizeFont($fontOptions, $this);
         }
         $this->addElement('fonts', $this->defaultFont, null, 0);
         if (!empty($this->defaultStyle['font'])) {
@@ -618,12 +621,16 @@ class StyleManager
 
     /**
      * @param array|string $font
+     * @param StyleManager|null $context Style manager whose default font is taken as the base, the last created one by default
      *
      * @return array
      */
-    public static function normalizeFont($font): array
+    public static function normalizeFont($font, ?StyleManager $context = null): array
     {
-        $result = self::$instance->defaultFont;
+        if (null === $context) {
+            $context = self::$instance;
+        }
+        $result = $context ? $context->defaultFont : [];
         $result['tag'] = [];
         if (is_string($font)) {
             if (in_array($font, self::$fontStyleDefines, true)) {
@@ -1166,7 +1173,7 @@ class StyleManager
             }
 
             if ($cellStyle['font']) {
-                $value = self::normalizeFont($cellStyle['font']);
+                $value = self::normalizeFont($cellStyle['font'], $this);
                 $index = $this->addElement('fonts', $value);
             }
             else {
@@ -1337,7 +1344,7 @@ class StyleManager
         if ($numFormat && !isset($cellStyle['_num_fmt_id'])) {
             $cellStyle['_num_fmt_id'] = 0;
 
-            $numberFormat = self::numberFormatStandardized($numFormat, $xfId);
+            $numberFormat = $this->numberFormatStandardized($numFormat, $xfId);
             $numberFormatType = self::determineNumberFormatType($numberFormat, $numFormat);
             $cellStyle['_num_fmt_id'] = $this->addElement('numFmts', $numberFormat);
 
@@ -1551,7 +1558,7 @@ class StyleManager
      *
      * @return string
      */
-    private static function numberFormatStandardized($numFormat, ?int &$xfId = 0): string
+    private function numberFormatStandardized($numFormat, ?int &$xfId = 0): string
     {
         if (!$numFormat || !is_scalar($numFormat) || $numFormat === 'auto' || $numFormat === 'GENERAL') {
             return 'GENERAL';
@@ -1571,12 +1578,12 @@ class StyleManager
                 return '0%';
             }
 
-            while (isset(self::$instance->localeSettings['formats'][$numFormat])) {
+            while (isset($this->localeSettings['formats'][$numFormat])) {
                 if (!$numFormat) {
                     break;
                 }
-                if (isset(self::$instance->localeSettings['formats'][$numFormat])) {
-                    $numFormat = self::$instance->localeSettings['formats'][$numFormat];
+                if (isset($this->localeSettings['formats'][$numFormat])) {
+                    $numFormat = $this->localeSettings['formats'][$numFormat];
                 }
                 else {
                     break;
@@ -1625,25 +1632,23 @@ class StyleManager
      */
     public function defineFormatType($format): array
     {
-        static $defines = [];
-
         if (is_array($format)) {
             $format = reset($format);
         }
 
-        if (!isset($defines[$format])) {
-            $numberFormat = self::numberFormatStandardized($format);
+        if (!isset($this->formatDefines[$format])) {
+            $numberFormat = $this->numberFormatStandardized($format);
             $numberFormatType = self::determineNumberFormatType($numberFormat);
             $cellStyleIdx = $this->addCellStyle($numberFormat, null);
 
-            $defines[$format] = [
+            $this->formatDefines[$format] = [
                 'number_format' => $numberFormat, //contains excel format like 'YYYY-MM-DD HH:MM:SS'
                 'number_format_type' => $numberFormatType, //contains friendly format like 'datetime'
                 'default_style_idx' => $cellStyleIdx,
             ];
         }
 
-        return $defines[$format];
+        return $this->formatDefines[$format];
     }
 
     /**

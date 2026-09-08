@@ -160,4 +160,56 @@ final class StyleRowColTest extends TestCase
         $styleB1 = $this->getCompleteStyle($reader, 'B1');
         $this->assertEquals('#FF0000', $styleB1['fill']['fill-color'] ?? null);
     }
+    public function testColHiddenBooleanValues()
+    {
+        $excel = Excel::create(['Sheet1']);
+        $sheet = $excel->sheet();
+
+        // the 'hidden' attribute is of xs:boolean type: Excel writes 0/1, LibreOffice writes 'false'/'true'
+        $sheet->_setColAttributes(0, ['hidden' => 'false', 'width' => 12]);
+        $sheet->_setColAttributes(1, ['hidden' => 'true']);
+        $sheet->_setColAttributes(2, ['hidden' => '0']);
+        $sheet->_setColAttributes(3, ['hidden' => '1']);
+        $sheet->setColHidden('E');
+        $sheet->setColVisible('F', true);
+        $sheet->writeRow(['A1', 'B1', 'C1', 'D1', 'E1', 'F1']);
+
+        $reader = $this->saveCheckRead($excel, 'col_hidden.xlsx');
+        $cols = $reader->sheet()->getAllColAttributes();
+
+        $this->assertArrayNotHasKey('hidden', $cols['A'] ?? []);
+        $this->assertEquals('1', $cols['B']['hidden'] ?? null);
+        $this->assertArrayNotHasKey('hidden', $cols['C'] ?? []);
+        $this->assertEquals('1', $cols['D']['hidden'] ?? null);
+        $this->assertEquals('1', $cols['E']['hidden'] ?? null);
+        $this->assertArrayNotHasKey('hidden', $cols['F'] ?? []);
+    }
+
+    public function testRowHiddenBooleanValues()
+    {
+        $excel = Excel::create(['Sheet1']);
+        $sheet = $excel->sheet();
+
+        $setRowSettings = new \ReflectionMethod(Sheet::class, '_setRowSettings');
+        $setRowSettings->setAccessible(true);
+
+        $sheet->setRowHidden(2);
+        $sheet->setRowVisible(3, true);
+        // the same xs:boolean values as in a template made by LibreOffice
+        $setRowSettings->invoke($sheet, 4, 'hidden', 'false');
+        $setRowSettings->invoke($sheet, 5, 'hidden', 'true');
+
+        for ($i = 1; $i <= 5; $i++) {
+            $sheet->writeRow(['A' . $i]);
+        }
+
+        $reader = $this->saveCheckRead($excel, 'row_hidden.xlsx');
+        $rows = $reader->sheet()->getAllRowAttributes();
+
+        $this->assertArrayNotHasKey('hidden', $rows[1]);
+        $this->assertEquals('1', $rows[2]['hidden'] ?? null);
+        $this->assertEquals('0', $rows[3]['hidden'] ?? null);
+        $this->assertEquals('0', $rows[4]['hidden'] ?? null);
+        $this->assertEquals('1', $rows[5]['hidden'] ?? null);
+    }
 }

@@ -1,3 +1,7 @@
+## V.6.16.2
+
+* Fixed the `hidden` attribute of a column and a row being treated as a flag, not as `xs:boolean` – `hidden="false"`, as LibreOffice writes it, was read as "hidden", so visible columns of such a template became hidden in the saved file, see https://github.com/aVadim483/fast-excel-writer/issues/140
+
 ## V.6.16.1
 
 * Fixed the R1C1 notation leaking into a saved file – a reference shifted out of the sheet (`=R[-4]C[-1]` written to `B2`) was written as is, and Excel refused to open such a file; now it becomes `#REF!`, as Excel does

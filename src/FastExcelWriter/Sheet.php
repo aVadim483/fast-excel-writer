@@ -1278,6 +1278,24 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Convert a value of xs:boolean type ('0'/'1' as Excel writes it, 'false'/'true' as LibreOffice does)
+     *
+     * @param mixed $val
+     *
+     * @return bool
+     */
+    protected static function _boolAttribute($val): bool
+    {
+        if (is_string($val)) {
+            $val = strtolower(trim($val));
+
+            return !($val === '' || $val === '0' || $val === 'false' || $val === 'f' || $val === 'n' || $val === 'off');
+        }
+
+        return (bool)$val;
+    }
+
+    /**
      * Get columns attributes
      *
      * @return array
@@ -1302,8 +1320,15 @@ class Sheet implements InterfaceSheetWriter
                     if (isset($attributes['width'])) {
                         $result[$colIdx]['width'] = number_format($attributes['width'], 8, '.', '');
                     }
-                    if (!empty($attributes['hidden'])) {
-                        $result[$colIdx]['hidden'] = '1';
+                    foreach (['hidden', 'collapsed'] as $boolAttribute) {
+                        if (isset($attributes[$boolAttribute])) {
+                            if (self::_boolAttribute($attributes[$boolAttribute])) {
+                                $result[$colIdx][$boolAttribute] = '1';
+                            }
+                            else {
+                                unset($result[$colIdx][$boolAttribute]);
+                            }
+                        }
                     }
                     if (!isset($result[$colIdx]['hidden']) && !isset($result[$colIdx]['width'])) {
                         $result[$colIdx]['width'] = Excel::DEFAULT_COL_WIDTH;
@@ -1346,7 +1371,7 @@ class Sheet implements InterfaceSheetWriter
     public function _delColAttributes(int $colIdx, array $settings)
     {
         foreach ($settings as $key) {
-            if ($this->colAttributes[$colIdx][$key]) {
+            if (isset($this->colAttributes[$colIdx][$key])) {
                 unset($this->colAttributes[$colIdx][$key]);
             }
         }
@@ -1468,7 +1493,10 @@ class Sheet implements InterfaceSheetWriter
             $this->rowAttributes[$rowIdx]['customFormat'] = 1;
             $this->rowAttributes[$rowIdx]['s'] = $val;
         }
-        elseif ($key === 'hidden' || $key === 'outlineLevel' || $key === 'collapsed') {
+        elseif ($key === 'hidden' || $key === 'collapsed') {
+            $this->rowAttributes[$rowIdx][$key] = self::_boolAttribute($val) ? 1 : 0;
+        }
+        elseif ($key === 'outlineLevel') {
             $this->rowAttributes[$rowIdx][$key] = $val;
         }
         else {
@@ -1794,11 +1822,13 @@ class Sheet implements InterfaceSheetWriter
             $rowAttributes['customHeight'] = 1;
             $rowAttributes['ht'] = Writer::floatStr($rowOptions['height']);
         }
-        if (!empty($rowOptions['hidden'])) {
-            $rowAttributes['hidden'] = 1;
-        }
-        if (!empty($rowOptions['collapsed'])) {
-            $rowAttributes['collapsed'] = 1;
+        foreach (['hidden', 'collapsed'] as $boolAttribute) {
+            if (isset($rowOptions[$boolAttribute])) {
+                $rowAttributes[$boolAttribute] = self::_boolAttribute($rowOptions[$boolAttribute]) ? 1 : 0;
+            }
+            elseif (isset($rowAttributes[$boolAttribute])) {
+                $rowAttributes[$boolAttribute] = self::_boolAttribute($rowAttributes[$boolAttribute]) ? 1 : 0;
+            }
         }
 
         return $rowAttributes;

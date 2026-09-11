@@ -261,6 +261,98 @@ final class RegressionTest extends TestCase
 
 
     /**
+     * Returns the contents of all <font> elements of styles.xml
+     *
+     * @param string $testFileName
+     *
+     * @return array
+     */
+    protected function readFonts(string $testFileName): array
+    {
+        $styles = $this->readXml($testFileName, 'xl/styles.xml');
+        $this->assertEquals(1, preg_match('#<fonts[^>]*>(.*?)</fonts>#s', $styles, $m));
+        preg_match_all('#<font>(.*?)</font>#s', $m[1], $matches);
+
+        return $matches[1];
+    }
+
+
+    /**
+     * A font of a cell style must be complete: the name, size and color missing in the style
+     * are taken from the default font (issue #141)
+     */
+    public function testFontInheritsDefaultFont()
+    {
+        $testFileName = __DIR__ . '/regr_font_defaults.xlsx';
+
+        $excel = Excel::create(['Sheet1'], ['default_font' => ['font-name' => 'Arial', 'font-size' => 14, 'font-color' => '#0000ff']]);
+        $sheet = $excel->sheet();
+        $sheet->writeHeader(['bold', "line1\nline2"])->applyFontStyleBold();
+        $sheet->writeRow(['italic'], ['font' => ['style' => 'italic', 'color' => '#ff0000']]);
+        $sheet->writeRow(['sized'], ['font-size' => 20]);
+        $sheet->writeRow(['named'], ['font-name' => 'Times New Roman', 'font-style' => 'underline']);
+
+        $this->saveCheckRead($excel, $testFileName);
+        $fonts = $this->readFonts($testFileName);
+
+        $this->assertCount(5, $fonts);
+        foreach ($fonts as $font) {
+            $this->assertStringContainsString('<name val=', $font);
+            $this->assertStringContainsString('<sz val=', $font);
+            $this->assertStringContainsString('<color rgb=', $font);
+        }
+        $findFont = function (string $marker) use ($fonts): string {
+            foreach ($fonts as $font) {
+                if (strpos($font, $marker) !== false) {
+                    return $font;
+                }
+            }
+            $this->fail('Font with ' . $marker . ' not found');
+        };
+
+        $bold = $findFont('<b/>');
+        $this->assertStringContainsString('<name val="Arial"/>', $bold);
+        $this->assertStringContainsString('<sz val="14"/>', $bold);
+        $this->assertStringContainsString('<color rgb="FF0000FF"/>', $bold);
+
+        $italic = $findFont('<i/>');
+        $this->assertStringContainsString('<name val="Arial"/>', $italic);
+        $this->assertStringContainsString('<sz val="14"/>', $italic);
+        $this->assertStringContainsString('<color rgb="FFFF0000"/>', $italic);
+
+        $sized = $findFont('<sz val="20"/>');
+        $this->assertStringContainsString('<name val="Arial"/>', $sized);
+
+        $named = $findFont('<name val="Times New Roman"/>');
+        $this->assertStringContainsString('<sz val="14"/>', $named);
+        $this->assertStringContainsString('<u/>', $named);
+    }
+
+
+    /**
+     * Changing one property of the default font must keep the others
+     */
+    public function testChangeDefaultFontKeepsOtherProperties()
+    {
+        $testFileName = __DIR__ . '/regr_font_default_name.xlsx';
+
+        $excel = Excel::create(['Sheet1']);
+        $excel->setDefaultFontName('Arial');
+        $excel->sheet()->writeRow(['bold'], ['font' => ['style' => 'bold']]);
+
+        $this->saveCheckRead($excel, $testFileName);
+        $fonts = $this->readFonts($testFileName);
+
+        $this->assertCount(2, $fonts);
+        $this->assertStringContainsString('<name val="Arial"/>', $fonts[0]);
+        $this->assertStringContainsString('<sz val="11"/>', $fonts[0]);
+        $this->assertStringContainsString('<name val="Arial"/>', $fonts[1]);
+        $this->assertStringContainsString('<sz val="11"/>', $fonts[1]);
+        $this->assertStringContainsString('<b/>', $fonts[1]);
+    }
+
+
+    /**
      * A sheet added after removeSheet() must not reuse the file name of the removed one
      */
     public function testRemoveSheetAndMakeSheet()

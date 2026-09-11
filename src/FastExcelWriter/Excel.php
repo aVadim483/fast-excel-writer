@@ -170,6 +170,9 @@ class Excel implements InterfaceBookWriter
     /** @var array Formats of the workbook that override the formats of the locale */
     protected array $defaultFormats = [];
 
+    /** @var bool Enable the wrap text for multi-line strings unless the cell style sets it explicitly */
+    protected bool $autoWrapText = true;
+
 
     /**
      * Excel constructor
@@ -179,6 +182,7 @@ class Excel implements InterfaceBookWriter
      *      'temp_prefix' => custom prefix for temporary files
      *      'auto_convert_number' => automatically convert strings containing numbers to numbers
      *      'shared_string' => save strings to the shared string xml
+     *      'auto_wrap_text' => enable the wrap text for multi-line strings (true by default)
      *      'buffer_limit' => buffer size limit of the file writer
      *      'locale' => locale code, e.g. 'fr'
      *      'default_font' => default font options, e.g. ['font-name' => 'Arial', 'font-size' => 14]
@@ -209,6 +213,9 @@ class Excel implements InterfaceBookWriter
         }
         $writerOptions['auto_convert_number'] = !empty($options['auto_convert_number']);
         $writerOptions['shared_string'] = !empty($options['shared_string']);
+        if (isset($options['auto_wrap_text'])) {
+            $this->autoWrapText = (bool)$options['auto_wrap_text'];
+        }
 
         if (!empty(self::$bufferLimit)) {
             $writerOptions['buffer_limit'] = self::$bufferLimit;
@@ -518,6 +525,28 @@ class Excel implements InterfaceBookWriter
         $this->writer->setSharedString($option);
 
         return $this;
+    }
+
+    /**
+     * Enable the wrap text for cells with multi-line strings (containing "\n") unless their style sets it explicitly
+     *
+     * @param bool $option
+     *
+     * @return $this
+     */
+    public function setAutoWrapText(bool $option = true): Excel
+    {
+        $this->autoWrapText = $option;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAutoWrapText(): bool
+    {
+        return $this->autoWrapText;
     }
 
     /**

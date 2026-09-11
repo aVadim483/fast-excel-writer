@@ -2111,6 +2111,11 @@ class Sheet implements InterfaceSheetWriter
                             $cellStyle = StyleManager::mergeStyles([$defaultFormatStyles[$cellStyle['format']['format-pattern']], $cellStyle]);
                         }
 
+                        // a multi-line text is displayed in several lines only when the wrap text is enabled
+                        if (!isset($cellStyle['format']['format-text-wrap']) && self::_isMultiLine($cellValue) && $this->excel->isAutoWrapText()) {
+                            $cellStyle['format']['format-text-wrap'] = true;
+                        }
+
                         if (isset($cellStyle['hyperlink'])) {
                             if (!empty($cellStyle['hyperlink'])) {
                                 if (is_string($cellStyle['hyperlink'])) {
@@ -2152,7 +2157,7 @@ class Sheet implements InterfaceSheetWriter
                         $numberFormatType = $resultStyle['number_format_type'];
 
                         if (!empty($cellStyle['options']['width-auto']) && !($cellValue && is_string($cellValue) && $cellValue[0] === '=')) {
-                            $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? []);
+                            $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? [], !empty($cellStyle['format']['format-text-wrap']));
                         }
 
                         if (!$writer) {
@@ -2182,15 +2187,25 @@ class Sheet implements InterfaceSheetWriter
      * @param $cellValue
      * @param $numberFormat
      * @param $style
+     * @param bool|null $textWrap
      */
-    protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style)
+    protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
         if ($cellValue) {
             $fontName = $style['font']['val']['name'] ?? Font::DEFAULT_FONT_NAME;
             $fontSize = $style['font']['val']['size'] ?? Font::DEFAULT_FONT_SIZE;
             $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
 
-            $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
+            if ($textWrap && is_string($value) && strpos($value, "\n") !== false) {
+                // a wrapped multi-line text is as wide as its longest line
+                $len = 0;
+                foreach (explode("\n", $value) as $line) {
+                    $len = max($len, Font::calcTextWidth($fontName, $fontSize, $line, $numberFormat));
+                }
+            }
+            else {
+                $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
+            }
             if ($this->autoFilter) {
                 $len += 1;
             }
@@ -2199,6 +2214,25 @@ class Sheet implements InterfaceSheetWriter
                 $this->_setColAttributes($colIdx, ['width' => $len]);
             }
         }
+    }
+
+    /**
+     * Whether the value is a multi-line text (a formula is not)
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    protected static function _isMultiLine($value): bool
+    {
+        if (is_string($value)) {
+            return strpos($value, "\n") !== false && $value[0] !== '=';
+        }
+        if ($value instanceof RichText) {
+            return strpos($value->outXml(), "\n") !== false;
+        }
+
+        return false;
     }
 
     /**

@@ -90,6 +90,20 @@ class Options implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Enable the wrap text for multi-line strings (true by default)
+     *
+     * @param bool $autoWrapText
+     *
+     * @return $this
+     */
+    public function autoWrapText(bool $autoWrapText = true): Options
+    {
+        $this->options['auto_wrap_text'] = $autoWrapText;
+
+        return $this;
+    }
+
+    /**
      * Set locale
      *
      * @param string $locale

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Exceptions\Exception;
+use avadim\FastExcelWriter\RichText\RichText;
 use avadim\FastExcelWriter\Writer\Writer;
 use avadim\FastExcelReader\Excel as ExcelReader;
 use PHPUnit\Framework\TestCase;
@@ -349,6 +350,33 @@ final class RegressionTest extends TestCase
         $this->assertStringContainsString('<name val="Arial"/>', $fonts[1]);
         $this->assertStringContainsString('<sz val="11"/>', $fonts[1]);
         $this->assertStringContainsString('<b/>', $fonts[1]);
+    }
+
+
+    /**
+     * An empty rich text must be written as an empty string, not as the hash of its XML
+     */
+    public function testEmptyRichText()
+    {
+        $testFileName = __DIR__ . '/regr_empty_rich_text.xlsx';
+
+        $excel = Excel::create(['Sheet1']);
+        $sheet = $excel->sheet();
+        $sheet->writeRow([new RichText(''), new RichText('<b>bold</b> text'), 'plain']);
+        $sheet->writeRow([new RichText(), new RichText('')]);
+
+        $reader = $this->saveCheckRead($excel, $testFileName);
+        $cells = $reader->readCells();
+
+        $this->assertSame('', (string)($cells['A1'] ?? ''));
+        $this->assertEquals('bold text', $cells['B1']);
+        $this->assertEquals('plain', $cells['C1']);
+        $this->assertSame('', (string)($cells['A2'] ?? ''));
+        $this->assertSame('', (string)($cells['B2'] ?? ''));
+
+        $sharedStrings = $this->readXml($testFileName, 'xl/sharedStrings.xml');
+        $this->assertStringNotContainsString(sha1(''), $sharedStrings);
+        $this->assertStringContainsString('<b/>', $sharedStrings);
     }
 
 

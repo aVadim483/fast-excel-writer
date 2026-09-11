@@ -1589,6 +1589,10 @@ class Excel implements InterfaceBookWriter
      */
     public function addSharedString(string $string, ?bool $richText = false): int
     {
+        if ($richText && $string === '') {
+            // an empty rich text is an empty string, otherwise its key (a hash) would be written as the text
+            $richText = false;
+        }
         $key = $richText ? sha1($string) : $string;
         $this->sharedStringsRefCount++;
         if (!isset($this->sharedStrings[$key])) {

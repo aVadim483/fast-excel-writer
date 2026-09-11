@@ -248,4 +248,27 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyTextWrap(bool $textWrap)
 * applyTextRotation(int $degrees) (thanks to @jarrod-colluco)
 
+### Multi-line Text
+
+A line break in a cell is the LF character (```"\n"```). Excel displays such text in several lines only
+when the wrap text is enabled, so the library enables it automatically for a string (or a rich text) containing ```"\n"```,
+unless the cell style sets ```text-wrap``` explicitly. The auto width of such a column is calculated by the longest line.
+If the row height is set explicitly, the lines that do not fit are not visible.
+
+```php
+// the wrap text is enabled automatically
+$sheet->writeRow(["Line 1\nLine 2"]);
+
+// the explicit setting wins: the text is displayed in one line
+$sheet->writeRow(["Line 1\nLine 2"], ['text-wrap' => false]);
+
+// turn off the automatic wrap text for the whole workbook
+$excel = Excel::create([], ['auto_wrap_text' => false]);
+// or other way
+$excel->setAutoWrapText(false);
+```
+
+Note that PHP interprets ```\n``` only in double-quoted strings: ```'Line 1\nLine 2'``` in single quotes
+is a backslash followed by the letter "n", not a line break.
+
 

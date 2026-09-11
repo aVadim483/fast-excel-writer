@@ -31,6 +31,13 @@ $excel = Excel::create([], ['shared_string' => true]);
 $excel = Excel::create();
 $excel->setSharedString();
 
+// Многострочным строкам (содержащим "\n") перенос текста включается автоматически,
+// если стиль ячейки не задаёт его явно; чтобы отключить:
+$excel = Excel::create([], ['auto_wrap_text' => false]);
+// или другим способом
+$excel = Excel::create();
+$excel->setAutoWrapText(false);
+
 // Задаёт локаль
 // В большинстве случаев локаль определяется автоматически,
 // но иногда её нужно задать вручную

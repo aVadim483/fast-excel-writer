@@ -31,6 +31,13 @@ $excel = Excel::create([], ['shared_string' => true]);
 $excel = Excel::create();
 $excel->setSharedString();
 
+// Multi-line strings (containing "\n") get the wrap text automatically,
+// unless the cell style sets it explicitly; to turn it off:
+$excel = Excel::create([], ['auto_wrap_text' => false]);
+// or other way
+$excel = Excel::create();
+$excel->setAutoWrapText(false);
+
 // Sets locale
 // In most cases, the locale is automatically set correctly,
 // but sometimes you need to do it manually

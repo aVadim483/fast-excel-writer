@@ -1,3 +1,8 @@
+## V.6.17
+
+* New: the wrap text is enabled automatically for a string containing a line break (`"\n"`), rich text included – otherwise Excel displays such text in one line; an explicit `text-wrap` of the cell style wins, the option `auto_wrap_text` (`Options::autoWrapText()`) and `Excel::setAutoWrapText(false)` turn it off, see https://github.com/aVadim483/fast-excel-writer/issues/141
+* The auto width of a column with a wrapped multi-line text is calculated by its longest line, not by the whole text
+
 ## V.6.16.3
 
 * Fixed incomplete fonts in `styles.xml` – a cell font got only the properties set explicitly, so a bold header was written as `<font><b/></font>` without the name and the size, and applications like LibreOffice rendered it with their own default font (a serif one), see https://github.com/aVadim483/fast-excel-writer/issues/141. Now the name, size and color missing in a style are taken from the default font; the same applies to `Excel::setDefaultFontName()` and `setDefaultFont()`, which used to drop the other properties of the default font

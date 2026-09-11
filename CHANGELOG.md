@@ -3,6 +3,7 @@
 * New: the wrap text is enabled automatically for a string containing a line break (`"\n"`), rich text included – otherwise Excel displays such text in one line; an explicit `text-wrap` of the cell style wins, the option `auto_wrap_text` (`Options::autoWrapText()`) and `Excel::setAutoWrapText(false)` turn it off, see https://github.com/aVadim483/fast-excel-writer/issues/141
 * The auto width of a column with a wrapped multi-line text is calculated by its longest line, not by the whole text
 * Fixed an empty rich text (`new RichText('')`) written as a 40-character hash – the key of the shared strings table was written instead of the text, now such a cell holds an empty string
+* Fixed the short keys of the default font being ignored – `Excel::create([], ['default_font' => ['name' => 'Arial', 'size' => 14]])` produced Calibri 11, because the full keys (`font-name`, `font-size`) of the built-in default font won; the short keys `name`, `size`, `color` and `style` now work there as they do in cell styles
 
 ## V.6.16.3
 

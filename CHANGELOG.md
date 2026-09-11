@@ -1,3 +1,7 @@
+## V.6.16.3
+
+* Fixed incomplete fonts in `styles.xml` – a cell font got only the properties set explicitly, so a bold header was written as `<font><b/></font>` without the name and the size, and applications like LibreOffice rendered it with their own default font (a serif one), see https://github.com/aVadim483/fast-excel-writer/issues/141. Now the name, size and color missing in a style are taken from the default font; the same applies to `Excel::setDefaultFontName()` and `setDefaultFont()`, which used to drop the other properties of the default font
+
 ## V.6.16.2
 
 * Fixed the `hidden` attribute of a column and a row being treated as a flag, not as `xs:boolean` – `hidden="false"`, as LibreOffice writes it, was read as "hidden", so visible columns of such a template became hidden in the saved file, see https://github.com/aVadim483/fast-excel-writer/issues/140

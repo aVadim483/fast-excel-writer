@@ -651,7 +651,6 @@ class StyleManager
                 $fontCharset = $font['font-charset'];
             }
             $result['val']['name'] = $fontName;
-            $result['tag']['name'] = '<name val="' . $fontName . '"/><charset val="' . $fontCharset . '"/><family val="' . (int)$fontFamily . '"/>';
             $result['font']['font-name'] = $fontName;
             $result['font']['font-family'] = $fontFamily;
             $result['font']['font-charset'] = $fontCharset;
@@ -661,7 +660,6 @@ class StyleManager
         if ($size && (float)$size > 0) {
             $size = str_replace(',', '.', (string)$size);
             $result['val']['size'] = $size;
-            $result['tag']['size'] = '<sz val="' . $size . '"/>';
             $result['font']['font-size'] = $size;
         }
 
@@ -670,9 +668,22 @@ class StyleManager
             $color = self::normalizeColor($color);
             if ($color) {
                 $result['val']['color'] = $color;
-                $result['tag']['color'] = '<color rgb="' . $color . '"/>';
                 $result['font']['font-color'] = $color;
             }
+        }
+
+        // A <font> element describes the whole font, so the name, size and color missing in the options
+        // are taken from the default font, otherwise other applications substitute their own (issue #141)
+        if (!empty($result['font']['font-name'])) {
+            $result['tag']['name'] = '<name val="' . $result['font']['font-name'] . '"/>'
+                . '<charset val="' . ($result['font']['font-charset'] ?? 1) . '"/>'
+                . '<family val="' . (int)($result['font']['font-family'] ?? 0) . '"/>';
+        }
+        if (!empty($result['font']['font-size'])) {
+            $result['tag']['size'] = '<sz val="' . $result['font']['font-size'] . '"/>';
+        }
+        if (!empty($result['font']['font-color'])) {
+            $result['tag']['color'] = '<color rgb="' . $result['font']['font-color'] . '"/>';
         }
 
         $style = $font['font-style'] ?? ($font['style'] ?? null);

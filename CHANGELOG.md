@@ -2,6 +2,7 @@
 
 * New: the wrap text is enabled automatically for a string containing a line break (`"\n"`), rich text included – otherwise Excel displays such text in one line; an explicit `text-wrap` of the cell style wins, the option `auto_wrap_text` (`Options::autoWrapText()`) and `Excel::setAutoWrapText(false)` turn it off, see https://github.com/aVadim483/fast-excel-writer/issues/141
 * The auto width of a column with a wrapped multi-line text is calculated by its longest line, not by the whole text
+* Fixed an empty rich text (`new RichText('')`) written as a 40-character hash – the key of the shared strings table was written instead of the text, now such a cell holds an empty string
 
 ## V.6.16.3
 

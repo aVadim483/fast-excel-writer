@@ -81,7 +81,10 @@ class StyleManager
             $fontOptions = [];
         }
         if ($fontOptions) {
+            // short keys are aliases of the full ones, otherwise the full keys of the default font would win
+            $aliases = ['name' => 'font-name', 'size' => 'font-size', 'color' => 'font-color', 'style' => 'font-style'];
             foreach($fontOptions as $key => $font) {
+                $key = $aliases[$key] ?? $key;
                 if (is_scalar($font)) {
                     $defaultFont[$key] = $font;
                 }

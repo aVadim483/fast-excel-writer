@@ -330,6 +330,34 @@ final class RegressionTest extends TestCase
 
 
     /**
+     * The default font of the workbook accepts the short keys ('name', 'size', ...) as well as the full ones
+     */
+    public function testDefaultFontShortKeys()
+    {
+        $testFileName = __DIR__ . '/regr_font_short_keys.xlsx';
+
+        $books = [
+            'default_font' => Excel::create(['Sheet1'], ['default_font' => ['name' => 'Arial', 'size' => 14, 'color' => '#0000ff']]),
+            'font' => Excel::create(['Sheet1'], ['font' => ['name' => 'Arial', 'size' => 14, 'color' => '#0000ff']]),
+        ];
+        foreach ($books as $option => $excel) {
+            $excel->sheet()->writeRow(['bold'], ['font' => ['style' => 'bold']]);
+
+            $this->saveCheckRead($excel, $testFileName);
+            $fonts = $this->readFonts($testFileName);
+
+            $this->assertCount(2, $fonts, $option);
+            foreach ($fonts as $font) {
+                $this->assertStringContainsString('<name val="Arial"/>', $font, $option);
+                $this->assertStringContainsString('<sz val="14"/>', $font, $option);
+                $this->assertStringContainsString('<color rgb="FF0000FF"/>', $font, $option);
+            }
+            $this->assertStringContainsString('<b/>', $fonts[1], $option);
+        }
+    }
+
+
+    /**
      * Changing one property of the default font must keep the others
      */
     public function testChangeDefaultFontKeepsOtherProperties()

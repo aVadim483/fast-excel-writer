@@ -18,8 +18,8 @@ final class RichTextTest extends TestCase
             $properties = [];
             foreach ($run->getElementsByTagName('rPr') as $rPr) {
                 foreach ($rPr->childNodes as $property) {
-                    $properties[$property->nodeName] = $property->getAttribute('val')
-                        ?: $property->getAttribute('rgb');
+                    $properties[$property->nodeName] = $property->hasAttribute('val')
+                        ? $property->getAttribute('val') : $property->getAttribute('rgb');
                 }
             }
             $runs[] = [$run->textContent, $properties];
@@ -105,6 +105,105 @@ final class RichTextTest extends TestCase
             finally {
                 unlink($path);
             }
+        }
+    }
+
+    public function testStrikethroughAndUnderline(): void
+    {
+        $text = new RichText();
+        $text->addText('old')->setStrike()->setUnderline();
+        $text->addText('new')->setUnderline(true);
+        $this->assertSame([
+            ['old', ['u' => 'single', 'strike' => '']],
+            ['new', ['u' => 'double']],
+        ], $this->runs($text));
+        $text->fragment(1)->setUnderline(false);
+        $this->assertSame('single', $this->runs($text)[1][1]['u']);
+        $this->assertSame([
+            ['a', ['strike' => '']], ['b', ['strike' => '']],
+            ['c', ['strike' => '']], ['d', []], ['18', ['sz' => '18']],
+        ], $this->runs(new RichText('<strike>a<del>b</del>c</strike>d<s=18>18</s>')));
+    }
+
+    public function testLiteralAndTaggedTextEscaping(): void
+    {
+        $plain = (new RichText())->addText('A & B, x < y, <b>literal</b>, &amp; "quoted"');
+        $this->assertSame('A & B, x < y, <b>literal</b>, &amp; "quoted"', $this->runs($plain)[0][0]);
+        $tagged = new RichText('<b>A &amp; B, x &lt; y, &lt;b&gt;, &amp;amp; &#34;quoted&#34;</b>');
+        $this->assertSame([['A & B, x < y, <b>, &amp; "quoted"', ['b' => '']]], $this->runs($tagged));
+        $this->assertSame('x < y & z <unknown>value</unknown>', $this->runs(new RichText('x < y & z <unknown>value</unknown>'))[0][0]);
+
+        $font = 'Example "Sans" & <Alt>';
+        $plain->setFont($font);
+        $this->assertSame($font, $this->runs($plain)[0][1]['rFont']);
+        $tagged = new RichText('<font="Example &quot;Sans&quot; &amp; &lt;Alt&gt;">x</font>');
+        $this->assertSame($font, $this->runs($tagged)[0][1]['rFont']);
+        $this->assertSame('A > B', $this->runs(new RichText('<font="A > B">x</font>'))[0][1]['rFont']);
+    }
+
+    public function testExplicitFormattingAndFractionalSize(): void
+    {
+        $text = (new RichText())->addText('plain')->setBold(false)->setItalic(false)
+            ->setStrike(false)->removeUnderline()->setSize(10.5);
+        $this->assertSame([['plain', [
+            'b' => '0', 'i' => '0', 'u' => 'none', 'strike' => '0', 'sz' => '10.5',
+        ]]], $this->runs($text));
+        $text->fragment(0)->setBold(true)->setItalic(true)->setStrike(true)->setUnderline(true)->setSize(12);
+        $this->assertSame([['plain', [
+            'b' => '', 'i' => '', 'u' => 'double', 'strike' => '', 'sz' => '12',
+        ]]], $this->runs($text));
+        $this->assertSame('10.5', $this->runs(new RichText('<s=10.5>x</s>'))[0][1]['sz']);
+    }
+
+    public function testInvalidFontSizesAreRejected(): void
+    {
+        foreach ([0, -1, INF, NAN] as $size) {
+            try {
+                (new RichText())->addText('x')->setSize($size);
+                $this->fail('Invalid size must be rejected');
+            }
+            catch (InvalidArgumentException $e) {
+                $this->assertStringContainsString('Font size', $e->getMessage());
+            }
+        }
+        $this->expectException(InvalidArgumentException::class);
+        new RichText('<s=invalid>x</s>');
+    }
+
+    public function testEscapingInWorkbookAndNotes(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'rich-escaping-');
+        try {
+            $value = "A & <B>\r\x07 _x000D_ &amp;";
+            $rich = (new RichText())->addText($value)->setFont('Example "Sans" & Co')
+                ->setSize(10.5)->setBold(false)->setItalic(false)->setStrike(false)->removeUnderline();
+            $excel = Excel::create();
+            $sheet = $excel->sheet();
+            $sheet->writeRow([$rich, new RichText('<b>A &amp; B</b>')]);
+            $sheet->addNote('A1', $value);
+            $sheet->addNote('B1', $rich);
+            $excel->save($path);
+            $this->assertTrue(ExcelReader::validate($path, $errors));
+            $cells = ExcelReader::open($path)->readCells();
+            $this->assertSame($value, $cells['A1']);
+            $this->assertSame('A & B', $cells['B1']);
+            $zip = new ZipArchive();
+            $zip->open($path);
+            foreach (['xl/sharedStrings.xml', 'xl/comments1.xml'] as $entry) {
+                $xml = $zip->getFromName($entry);
+                $doc = new DOMDocument();
+                $this->assertTrue($doc->loadXML($xml));
+                $this->assertSame('Example "Sans" & Co', $doc->getElementsByTagName('rFont')->item(0)->getAttribute('val'));
+                $this->assertSame('10.5', $doc->getElementsByTagName('sz')->item(0)->getAttribute('val'));
+                $this->assertStringContainsString('_x000D_', $xml);
+                $this->assertStringContainsString('_x0007_', $xml);
+                $this->assertStringContainsString('_x005F_x000D_', $xml);
+                $this->assertStringContainsString('<b val="0"/>', $xml);
+            }
+            $zip->close();
+        }
+        finally {
+            unlink($path);
         }
     }
 }

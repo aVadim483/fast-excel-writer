@@ -10,7 +10,7 @@ class RichText
     protected array $buffer;
     protected int $pos;
     protected int $cnt = -1;
-    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'vertAlign' => null];
+    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'vertAlign' => null, 'strike' => null];
     protected array $propStacks = [];
     protected array $fragments = [];
     protected ?string $xml = null;
@@ -61,19 +61,20 @@ class RichText
     {
         $fragments = [];
         if ($text !== '') {
-            $this->buffer = mb_str_split($text);
-            $this->pos = 0;
-            while (isset($this->buffer[$this->pos])) {
-                $token = $this->getToken();
+            // Split only supported tags; literal comparisons and unknown tags remain text.
+            $pattern = '~(</?(?:b|bold|i|italic|u|underline|f|font|s|size|c|color|sub|sup|strike|del)(?:=(?:"[^"]*"|\'[^\']*\'|[^>]*))?>)~i';
+            $tokens = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            foreach ($tokens as $token) {
                 if ($token !== '') {
-                    if ($token[0] === '<') {
+                    if (preg_match('~^</?(?:b|bold|i|italic|u|underline|f|font|s|size|c|color|sub|sup|strike|del)(?:=.*)?>$~is', $token)) {
                         $tags = [
                             'b' => 'b', 'bold' => 'b', 'i' => 'i', 'italic' => 'i',
                             'u' => 'u', 'underline' => 'u', 'f' => 'f', 'font' => 'f',
                             's' => 'sz', 'size' => 'sz', 'c' => 'c', 'color' => 'c',
                             'sub' => 'vertAlign', 'sup' => 'vertAlign',
+                            'strike' => 'strike', 'del' => 'strike',
                         ];
-                        if (preg_match('~^<(/?)([a-z]+)(?:=(.*))?>$~i', $token, $match)) {
+                        if (preg_match('~^<(/?)([a-z]+)(?:=(.*))?>$~is', $token, $match)) {
                             $tag = strtolower($match[2]);
                             if (!isset($tags[$tag])) {
                                 continue;
@@ -88,7 +89,12 @@ class RichText
                                     if (!isset($match[3])) {
                                         continue;
                                     }
-                                    $value = trim($match[3], '"\'');
+                                    $value = $match[3];
+                                    if (strlen($value) >= 2 && ($value[0] === '"' || $value[0] === "'")
+                                        && substr($value, -1) === $value[0]) {
+                                        $value = substr($value, 1, -1);
+                                    }
+                                    $value = html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
                                     if ($key === 'c') {
                                         $value = StyleManager::normalizeColor($value);
                                     }
@@ -105,7 +111,7 @@ class RichText
                         }
                     }
                     else {
-                        $fragments[] = new RichTextFragment($token, $this->prop);
+                        $fragments[] = new RichTextFragment(html_entity_decode($token, ENT_QUOTES | ENT_XML1, 'UTF-8'), $this->prop);
                     }
                 }
             }
@@ -132,7 +138,7 @@ class RichText
     }
 
     /**
-     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>, <sub>, <sup>)
+     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>, <sub>, <sup>, <strike>, <del>)
      *
      * @param string $text
      *
@@ -153,9 +159,17 @@ class RichText
      *
      * @return $this
      */
-    public function setBold(): RichText
+    public function setBold(bool $enabled = true): RichText
     {
-        $this->fragments[$this->cnt]->setBold();
+        $this->fragments[$this->cnt]->setBold($enabled);
+
+        return $this;
+    }
+
+    /** Set strikethrough for the last added fragment. */
+    public function setStrike(bool $enabled = true): RichText
+    {
+        $this->fragments[$this->cnt]->setStrike($enabled);
 
         return $this;
     }
@@ -189,9 +203,9 @@ class RichText
      *
      * @return $this
      */
-    public function setItalic(): RichText
+    public function setItalic(bool $enabled = true): RichText
     {
-        $this->fragments[$this->cnt]->setItalic();
+        $this->fragments[$this->cnt]->setItalic($enabled);
 
         return $this;
     }
@@ -206,6 +220,14 @@ class RichText
     public function setUnderline(?bool $double = false): RichText
     {
         $this->fragments[$this->cnt]->setUnderline($double);
+
+        return $this;
+    }
+
+    /** Explicitly disable underline for the last added fragment. */
+    public function removeUnderline(): RichText
+    {
+        $this->fragments[$this->cnt]->removeUnderline();
 
         return $this;
     }
@@ -227,11 +249,11 @@ class RichText
     /**
      * Set font size for the last added fragment
      *
-     * @param int $size
+     * @param float $size Positive finite font size in points
      *
      * @return $this
      */
-    public function setSize(int $size): RichText
+    public function setSize(float $size): RichText
     {
         $this->fragments[$this->cnt]->setSize($size);
 

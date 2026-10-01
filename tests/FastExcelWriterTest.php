@@ -119,7 +119,8 @@ final class FastExcelWriterTest extends TestCase
         }
         $this->assertTrue($valid);
 
-        if (substr(PHP_OS, 0, 3) === 'WIN') {
+        // Set FEW_SKIP_EXCEL_CHECK=1 for headless runs without Excel automation.
+        if (substr(PHP_OS, 0, 3) === 'WIN' && getenv('FEW_SKIP_EXCEL_CHECK') !== '1') {
             $vbsChecker = __DIR__ . '/win_check_open_xlsx.vbs';
             if (is_file($vbsChecker)) {
                 system("$vbsChecker $testFileName", $result);

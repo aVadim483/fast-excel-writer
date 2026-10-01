@@ -855,6 +855,7 @@ class Sheet implements InterfaceSheetWriter
     {
         if (!$rowOrCell) {
             $this->autoFilter = null;
+            $this->absoluteAutoFilter = '';
         }
         elseif (is_numeric($rowOrCell)) {
             $row = (int)$rowOrCell;
@@ -2969,6 +2970,23 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * Write rows from an iterable without collecting them in memory.
+     *
+     * @param iterable $rows Rows handled in the same way as writeRows()
+     * @param array|null $rowStyle Style applied to each row
+     *
+     * @return $this
+     */
+    public function writeIterable(iterable $rows, ?array $rowStyle = null): Sheet
+    {
+        foreach ($rows as $rowValues) {
+            $this->writeRow($rowValues ?: [], $rowStyle);
+        }
+
+        return $this;
+    }
+
+    /**
      * Move to the next row
      *
      * @param array|Style|null $style
@@ -3993,7 +4011,7 @@ class Sheet implements InterfaceSheetWriter
                 $text = $comment->outXml();
             }
             else {
-                $text = (new RichText(htmlspecialchars((string)$comment)))->outXml();
+                $text = (new RichText())->addText((string)$comment)->outXml();
             }
             $this->notes[$cell] = [
                 'cell' => $cell,

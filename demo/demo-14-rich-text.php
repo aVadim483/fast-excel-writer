@@ -55,6 +55,19 @@ $scientific->addText('CO')->addText('2')->setSubscript();
 $scientific->addText(' and E = mc')->addText('2')->setSuperscript()->setBold();
 $sheet->writeRow(['Subscript and superscript methods', $scientific]);
 
+// Strikethrough and underline
+$decorations = new RichText();
+$decorations->addText('Old price')->setStrike();
+$decorations->addText(' New price')->setUnderline(true);
+$sheet->writeRow(['Strikethrough and double underline', $decorations]);
+$sheet->writeRow(['Strikethrough tags', new RichText('<strike>old</strike> <del>removed</del> new')]);
+
+// Literal text is escaped automatically; fractional sizes are preserved.
+$literal = new RichText();
+$literal->addText('A & B, x < y')->setSize(10.5)->setBold();
+$literal->addText(' regular')->setBold(false)->setItalic(false)->setStrike(false)->removeUnderline();
+$sheet->writeRow(['Escaping, fractional size and explicit formatting', $literal]);
+
 // Save to XLSX-file
 $excel->save($outFileName);
 

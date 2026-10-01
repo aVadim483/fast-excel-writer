@@ -1,5 +1,14 @@
 ## Unreleased
 
+* Fixed XML escaping of rich text and font names, including control characters in cell text and notes; `addText()` accepts literal text, while tagged input decodes XML entities once (see the upgrade guide)
+* Added explicit enable/disable arguments to rich text `setBold()`, `setItalic()` and `setStrike()`, plus `removeUnderline()`
+* Added fractional rich text font sizes through `setSize(float $size)` and size tags, with validation of positive finite values
+
+* Added `Sheet::writeIterable()` to consume arrays, generators and traversable row sources without collecting them in memory; `writeRows()` keeps its existing signature
+* Added `RichText::setStrike()` and nested `<strike>` / `<del>` tags
+* Fixed reversed single/double underline selection in `RichTextFragment::setUnderline()`
+* Fixed disabling an autofilter leaving a stale `_xlnm._FilterDatabase` defined name
+
 * Fixed invalid workbook XML when sheet names contain XML special characters such as `&` or `<` and are referenced by an autofilter, a named range, a print area or print titles, see https://github.com/aVadim483/fast-excel-writer/issues/142
 * Added subscript and superscript rich text through `<sub>` / `<sup>` tags and `setSubscript()`, `setSuperscript()`, `setBaseline()` methods, see https://github.com/aVadim483/fast-excel-writer/issues/143
 * Rich text tags now restore nested formatting and correctly handle font size tags; changes to fragments are reflected in subsequent XML serialization

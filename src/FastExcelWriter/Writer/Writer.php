@@ -1949,7 +1949,7 @@ class Writer
         if ($definedNames) {
             $xmlText .= '<definedNames>';
             foreach ($definedNames as $item) {
-                $xmlText .= '<definedName ' . self::tagAttributes($item['_attr']) . '>' . $item['_value'] . '</definedName>';
+                $xmlText .= '<definedName ' . self::tagAttributes($item['_attr']) . '>' . self::xmlSpecialChars($item['_value']) . '</definedName>';
             }
             $xmlText .= '</definedNames>';
         }

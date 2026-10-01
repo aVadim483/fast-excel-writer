@@ -1,3 +1,7 @@
+## Unreleased
+
+* Fixed invalid workbook XML when sheet names contain XML special characters such as `&` or `<` and are referenced by an autofilter, a named range, a print area or print titles, see https://github.com/aVadim483/fast-excel-writer/issues/142
+
 ## V.6.17
 
 * New: the wrap text is enabled automatically for a string containing a line break (`"\n"`), rich text included – otherwise Excel displays such text in one line; an explicit `text-wrap` of the cell style wins, the option `auto_wrap_text` (`Options::autoWrapText()`) and `Excel::setAutoWrapText(false)` turn it off, see https://github.com/aVadim483/fast-excel-writer/issues/141

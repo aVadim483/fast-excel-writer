@@ -107,4 +107,21 @@ final class RichTextTest extends TestCase
             }
         }
     }
+
+    public function testStrikethroughAndUnderline(): void
+    {
+        $text = new RichText();
+        $text->addText('old')->setStrike()->setUnderline();
+        $text->addText('new')->setUnderline(true);
+        $this->assertSame([
+            ['old', ['u' => 'single', 'strike' => '']],
+            ['new', ['u' => 'double']],
+        ], $this->runs($text));
+        $text->fragment(1)->setUnderline(false);
+        $this->assertSame('single', $this->runs($text)[1][1]['u']);
+        $this->assertSame([
+            ['a', ['strike' => '']], ['b', ['strike' => '']],
+            ['c', ['strike' => '']], ['d', []], ['18', ['sz' => '18']],
+        ], $this->runs(new RichText('<strike>a<del>b</del>c</strike>d<s=18>18</s>')));
+    }
 }

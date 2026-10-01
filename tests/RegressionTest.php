@@ -59,6 +59,83 @@ final class RegressionTest extends TestCase
         return (string)$xml;
     }
 
+    public function testAutoFilterCanBeDisabledAndEnabledAgain(): void
+    {
+        foreach ([false, null, 0, ''] as $disable) {
+            $excel = Excel::create(['Sheet&']);
+            $sheet = $excel->sheet();
+            $sheet->setAutoFilter('A1:B2');
+            $sheet->setAutoFilter($disable);
+            $sheet->writeRows([['A', 'B'], [1, 2]]);
+            $path = __DIR__ . '/regr_disable_filter.xlsx';
+            $this->saveCheckRead($excel, $path);
+            $this->assertStringNotContainsString('<autoFilter', $this->readXml($path, 'xl/worksheets/sheet1.xml'));
+            $this->assertStringNotContainsString('_FilterDatabase', $this->readXml($path, 'xl/workbook.xml'));
+        }
+
+        $excel = Excel::create(['Sheet&']);
+        $sheet = $excel->sheet();
+        $sheet->setAutoFilter('A1:B2')->setAutoFilter(false)->setAutoFilter('B1:B2');
+        $sheet->writeRows([['A', 'B'], [1, 2]]);
+        $this->saveCheckRead($excel, $path);
+        $this->assertStringContainsString('<autoFilter ref="B1:B2"/>', $this->readXml($path, 'xl/worksheets/sheet1.xml'));
+        $doc = new DOMDocument();
+        $doc->loadXML($this->readXml($path, 'xl/workbook.xml'));
+        $this->assertSame("'Sheet&'!" . '$B$1:$B$2', $doc->getElementsByTagName('definedName')->item(0)->textContent);
+    }
+
+    public function testWriteIterablePropagatesIteratorErrors(): void
+    {
+        $sheet = Excel::create()->sheet();
+        $error = new RuntimeException('Source failed');
+        $rows = (function () use ($error) {
+            yield ['first'];
+            throw $error;
+        })();
+        try {
+            $sheet->writeIterable($rows);
+            $this->fail('The iterator exception must propagate');
+        }
+        catch (RuntimeException $caught) {
+            $this->assertSame($error, $caught);
+            $this->assertSame(1, $sheet->getCurrentRow());
+        }
+    }
+
+    public function testWriteIterableStreamsRows(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $visited = 0;
+        $rows = (function () use ($sheet, &$visited) {
+            yield 'first' => ['first', 1];
+            $this->assertSame(1, $sheet->getCurrentRow());
+            ++$visited;
+            yield 'first' => null;
+            $this->assertSame(2, $sheet->getCurrentRow());
+            ++$visited;
+            yield 42 => ['last', 3];
+        })();
+        $this->assertSame($sheet, $sheet->writeIterable($rows, ['font-style' => 'bold']));
+        $this->assertSame(2, $visited);
+        $sheet->writeIterable(new ArrayIterator([['iterator', 4]]));
+        $sheet->writeIterable([]);
+        $sheet->writeIterable([['array', 5]]);
+        $path = __DIR__ . '/regr_iterable.xlsx';
+        $reader = $this->saveCheckRead($excel, $path);
+        $cells = $reader->readCells();
+        $this->assertSame('first', $cells['A1']);
+        $this->assertSame('last', $cells['A2']);
+        $this->assertSame('iterator', $cells['A3']);
+        $this->assertSame('array', $cells['A4']);
+        $doc = new DOMDocument();
+        $doc->loadXML($this->readXml($path, 'xl/worksheets/sheet1.xml'));
+        $xpath = new DOMXPath($doc);
+        $xpath->registerNamespace('s', $doc->documentElement->namespaceURI);
+        $this->assertNotSame('0', $xpath->evaluate('string(//s:c[@r="A1"]/@s)'));
+        $this->assertSame($xpath->evaluate('string(//s:c[@r="A1"]/@s)'), $xpath->evaluate('string(//s:c[@r="A2"]/@s)'));
+    }
+
 
     /**
      * The last valid row (1048576) and the last valid column (XFD) must be accepted,

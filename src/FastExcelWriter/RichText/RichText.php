@@ -10,7 +10,7 @@ class RichText
     protected array $buffer;
     protected int $pos;
     protected int $cnt = -1;
-    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'vertAlign' => null];
+    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'vertAlign' => null, 'strike' => null];
     protected array $propStacks = [];
     protected array $fragments = [];
     protected ?string $xml = null;
@@ -72,6 +72,7 @@ class RichText
                             'u' => 'u', 'underline' => 'u', 'f' => 'f', 'font' => 'f',
                             's' => 'sz', 'size' => 'sz', 'c' => 'c', 'color' => 'c',
                             'sub' => 'vertAlign', 'sup' => 'vertAlign',
+                            'strike' => 'strike', 'del' => 'strike',
                         ];
                         if (preg_match('~^<(/?)([a-z]+)(?:=(.*))?>$~i', $token, $match)) {
                             $tag = strtolower($match[2]);
@@ -132,7 +133,7 @@ class RichText
     }
 
     /**
-     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>, <sub>, <sup>)
+     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>, <sub>, <sup>, <strike>, <del>)
      *
      * @param string $text
      *
@@ -156,6 +157,14 @@ class RichText
     public function setBold(): RichText
     {
         $this->fragments[$this->cnt]->setBold();
+
+        return $this;
+    }
+
+    /** Set strikethrough for the last added fragment. */
+    public function setStrike(): RichText
+    {
+        $this->fragments[$this->cnt]->setStrike();
 
         return $this;
     }

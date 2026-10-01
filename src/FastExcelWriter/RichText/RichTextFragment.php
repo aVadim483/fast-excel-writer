@@ -80,7 +80,7 @@ class RichTextFragment
      */
     public function setUnderline(?bool $double = false): RichTextFragment
     {
-        return $this->setProp('u', $double ? 'single' : 'double');
+        return $this->setProp('u', $double ? 'double' : 'single');
     }
 
     /**

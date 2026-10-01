@@ -2,6 +2,23 @@
 
 ### Writing Row by Row vs Direct
 
+`writeIterable(iterable $rows, ?array $rowStyle = null)` accepts arrays, generators and
+`Traversable` objects. Rows are consumed once, in iteration order; iterator keys are ignored.
+The method delegates each row to `writeRow()`, like `writeRows()`, without collecting the input.
+Each yielded row should be an array of cell values. An empty iterable writes nothing.
+
+```php
+$rows = (function () {
+    for ($i = 1; $i <= 100000; ++$i) {
+        yield [$i, 'Item ' . $i];
+    }
+})();
+$sheet->writeIterable($rows, ['font-size' => 11]);
+```
+
+Exceptions from the iterator propagate to the caller; rows already consumed are not rolled back.
+The existing `writeRows(array $rowArray, ...)` signature is unchanged.
+
 There are two ways to write to a XLSX-file in the library - sequential (row by row) and direct. 
 When you use "row by row" writing, cells are written to the file as soon as you move to the next row. 
 And you can no longer write something into the cells of the previous rows. 
@@ -523,6 +540,11 @@ The following tags can be used:
 | \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
 
 ### Subscript and superscript
+
+For strikethrough, use `$text->addText('old')->setStrike()` or `<strike>old</strike>` /
+`<del>old</del>`. These tags support nesting and can be combined with the other styles.
+`setUnderline()` and `setUnderline(false)` apply a single underline; `setUnderline(true)`
+applies a double underline, on both `RichText` and `RichTextFragment`.
 
 Use `<sub>` and `<sup>` to format part of a cell as a subscript or superscript:
 

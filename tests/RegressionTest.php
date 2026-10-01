@@ -438,6 +438,43 @@ final class RegressionTest extends TestCase
 
 
     /**
+     * Defined names must preserve XML special characters in sheet references (issue #142).
+     */
+    public function testDefinedNamesEscapeSheetNames()
+    {
+        foreach (['Sheet1&', 'Sheet<1>', 'Sheet&amp;'] as $sheetName) {
+            $testFileName = __DIR__ . '/regr_defined_name_escaping.xlsx';
+            $excel = Excel::create([$sheetName]);
+            $sheet = $excel->sheet();
+            $sheet->setAutoFilter(1);
+            $sheet->writeRow(['Title']);
+            $sheet->writeRow(['Value']);
+            $sheet->addNamedRange('A1:A2', 'Values');
+            $sheet->setPrintArea('A1:A2');
+            $sheet->setPrintTitles('1');
+
+            $reader = $this->saveCheckRead($excel, $testFileName);
+            $this->assertSame([$sheetName], array_values($reader->getSheetNames()));
+            $this->assertSame('Value', $reader->readCells()['A2']);
+
+            $xml = new DOMDocument();
+            $this->assertTrue($xml->loadXML($this->readXml($testFileName, 'xl/workbook.xml')));
+            $definedNames = [];
+            foreach ($xml->getElementsByTagName('definedName') as $node) {
+                $definedNames[$node->getAttribute('name')] = $node->textContent;
+            }
+            $range = "'" . $sheetName . "'!" . '$A$1:$A$2';
+            $this->assertSame([
+                'Values' => $range,
+                '_xlnm.Print_Area' => $range,
+                '_xlnm.Print_Titles' => "'" . $sheetName . "'!" . '$1:$1',
+                '_xlnm._FilterDatabase' => $range,
+            ], $definedNames);
+        }
+    }
+
+
+    /**
      * Duplicate sheet names are not allowed (case-insensitively), the reserved name "History" either
      */
     public function testSheetNames()

@@ -4011,7 +4011,7 @@ class Sheet implements InterfaceSheetWriter
                 $text = $comment->outXml();
             }
             else {
-                $text = (new RichText(htmlspecialchars((string)$comment)))->outXml();
+                $text = (new RichText())->addText((string)$comment)->outXml();
             }
             $this->notes[$cell] = [
                 'cell' => $cell,

@@ -541,6 +541,27 @@ The following tags can be used:
 
 ### Subscript and superscript
 
+`addText()` and `RichTextFragment` accept literal, unescaped text. The library escapes XML
+special characters and encodes XLSX control characters when saving. `setFont()` also accepts
+the literal font name, including quotes and ampersands.
+
+The constructor and `addTaggedText()` interpret supported tags and decode XML entities once.
+Use `&lt;b&gt;` to display a literal `<b>` in tagged text; unknown tags remain literal text.
+Use `addText()` for arbitrary input that must never be interpreted as markup.
+
+```php
+$text = new RichText();
+$text->addText('A & B, x < y')->setFont('Arial')->setSize(10.5);
+$text->addText(' regular')->setBold(false)->setItalic(false)->setStrike(false)->removeUnderline();
+$text->addTaggedText(' <b>A &amp; B</b>');
+```
+
+`setBold($enabled = true)`, `setItalic($enabled = true)` and `setStrike($enabled = true)`
+explicitly enable or disable the corresponding property. `removeUnderline()` explicitly
+disables underline. These settings override inherited font properties and are available on
+both `RichText` and `RichTextFragment`. `setSize(float $size)` accepts positive finite sizes,
+including fractional points; `<s=10.5>` and `<size=10.5>` are supported too.
+
 For strikethrough, use `$text->addText('old')->setStrike()` or `<strike>old</strike>` /
 `<del>old</del>`. These tags support nesting and can be combined with the other styles.
 `setUnderline()` and `setUnderline(false)` apply a single underline; `setUnderline(true)`

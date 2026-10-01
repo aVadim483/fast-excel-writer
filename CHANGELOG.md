@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Fixed XML escaping of rich text and font names, including control characters in cell text and notes; `addText()` accepts literal text, while tagged input decodes XML entities once (see the upgrade guide)
+* Added explicit enable/disable arguments to rich text `setBold()`, `setItalic()` and `setStrike()`, plus `removeUnderline()`
+* Added fractional rich text font sizes through `setSize(float $size)` and size tags, with validation of positive finite values
+
 * Added `Sheet::writeIterable()` to consume arrays, generators and traversable row sources without collecting them in memory; `writeRows()` keeps its existing signature
 * Added `RichText::setStrike()` and nested `<strike>` / `<del>` tags
 * Fixed reversed single/double underline selection in `RichTextFragment::setUnderline()`

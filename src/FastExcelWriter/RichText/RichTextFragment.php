@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter\RichText;
 
 use avadim\FastExcelWriter\Style\StyleManager;
+use avadim\FastExcelWriter\Writer\Writer;
 
 class RichTextFragment
 {
@@ -18,10 +19,16 @@ class RichTextFragment
      */
     public function __construct(?string $text = null, ?array $prop = null)
     {
-        $this->text = $text;
+        $this->text = $text ?? '';
         if ($prop) {
             foreach ((array)$prop as $k => $v) {
                 $this->prop[$k] = $v;
+            }
+            if ($this->prop['sz'] !== null) {
+                if (!is_numeric($this->prop['sz'])) {
+                    throw new \InvalidArgumentException('Font size must be a positive finite number');
+                }
+                $this->setSize((float)$this->prop['sz']);
             }
         }
     }
@@ -38,9 +45,9 @@ class RichTextFragment
      *
      * @return $this
      */
-    public function setBold(): RichTextFragment
+    public function setBold(bool $enabled = true): RichTextFragment
     {
-        return $this->setProp('b', true);
+        return $this->setProp('b', $enabled);
     }
 
     /** Set subscript for this fragment. */
@@ -66,9 +73,9 @@ class RichTextFragment
      *
      * @return $this
      */
-    public function setItalic(): RichTextFragment
+    public function setItalic(bool $enabled = true): RichTextFragment
     {
-        return $this->setProp('i', true);
+        return $this->setProp('i', $enabled);
     }
 
     /**
@@ -83,14 +90,20 @@ class RichTextFragment
         return $this->setProp('u', $double ? 'double' : 'single');
     }
 
+    /** Explicitly disable underline, including inherited formatting. */
+    public function removeUnderline(): RichTextFragment
+    {
+        return $this->setProp('u', 'none');
+    }
+
     /**
      * Set font decoration to strikethrough
      *
      * @return $this
      */
-    public function setStrike(): RichTextFragment
+    public function setStrike(bool $enabled = true): RichTextFragment
     {
-        return $this->setProp('strike', true);
+        return $this->setProp('strike', $enabled);
     }
 
     /**
@@ -108,12 +121,15 @@ class RichTextFragment
     /**
      * Set font size
      *
-     * @param int $size
+     * @param float $size Positive finite font size in points
      *
      * @return $this
      */
-    public function setSize(int $size): RichTextFragment
+    public function setSize(float $size): RichTextFragment
     {
+        if (!is_finite($size) || $size <= 0) {
+            throw new \InvalidArgumentException('Font size must be a positive finite number');
+        }
         return $this->setProp('sz', $size);
     }
 
@@ -147,27 +163,27 @@ class RichTextFragment
     public function outXml(): string
     {
         $rPr = '';
-        if ($this->prop['b']) {
-            $rPr .= '<b/>';
+        if ($this->prop['b'] !== null) {
+            $rPr .= $this->prop['b'] ? '<b/>' : '<b val="0"/>';
         }
-        if ($this->prop['i']) {
-            $rPr .= '<i/>';
+        if ($this->prop['i'] !== null) {
+            $rPr .= $this->prop['i'] ? '<i/>' : '<i val="0"/>';
         }
         if ($this->prop['u']) {
             //$rPr .= '<u/>';
-            $rPr .= '<u val="' . $this->prop['u'] . '"/>';
+            $rPr .= '<u val="' . Writer::xmlSpecialChars($this->prop['u']) . '"/>';
         }
-        if ($this->prop['strike']) {
-            $rPr .= '<strike/>';
+        if ($this->prop['strike'] !== null) {
+            $rPr .= $this->prop['strike'] ? '<strike/>' : '<strike val="0"/>';
         }
         if ($this->prop['f']) {
-            $rPr .= '<rFont val="' . $this->prop['f'] . '"/>';
+            $rPr .= '<rFont val="' . Writer::xmlSpecialChars($this->prop['f']) . '"/>';
         }
         if ($this->prop['sz']) {
-            $rPr .= '<sz val="' . $this->prop['sz'] . '"/>';
+            $rPr .= '<sz val="' . Writer::floatStr($this->prop['sz']) . '"/>';
         }
         if ($this->prop['c']) {
-            $rPr .= '<color rgb="' . $this->prop['c'] . '"/>';
+            $rPr .= '<color rgb="' . Writer::xmlSpecialChars($this->prop['c']) . '"/>';
         }
         if (in_array($this->prop['vertAlign'], ['baseline', 'subscript', 'superscript'], true)) {
             $rPr .= '<vertAlign val="' . $this->prop['vertAlign'] . '"/>';
@@ -176,6 +192,6 @@ class RichTextFragment
             $rPr = '<rPr>' . $rPr . '</rPr>';
         }
 
-        return '<r>' . $rPr . '<t xml:space="preserve">' . $this->getText() . '</t></r>';
+        return '<r>' . $rPr . '<t xml:space="preserve">' . Writer::xmlEscapedString($this->getText()) . '</t></r>';
     }
 }

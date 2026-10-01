@@ -5,6 +5,19 @@ updating your code.
 
 ## Upgrade to version 6
 
+### Rich text changes in version 6.18
+
+`RichText::addText()` and `RichTextFragment` now escape literal input on serialization.
+Remove manual `htmlspecialchars()` calls before passing text or font names to these APIs.
+For example, pass `A & B`, not `A &amp; B`; the latter now displays literally as `A &amp; B`.
+The constructor and `addTaggedText()` still accept XML entities (`&amp;`, `&lt;`, numeric
+references), which are decoded once before serialization. Unknown tags now remain text.
+
+`setBold()`, `setItalic()` and `setStrike()` accept an optional boolean argument;
+`setSize()` takes `float` instead of `int` (integer calls still work).
+Update overridden signatures if you subclass `RichText` or `RichTextFragment`.
+`setUnderline(false)` continues to mean single underline; use `removeUnderline()` to disable it.
+
 The general news of v.6.0 is [Data Validation](07-validation.md) support.
 
 ### Important changes in version 6.1

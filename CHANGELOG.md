@@ -1,4 +1,4 @@
-## Unreleased
+## V.6.18.0
 
 * Fixed XML escaping of rich text and font names, including control characters in cell text and notes; `addText()` accepts literal text, while tagged input decodes XML entities once (see the upgrade guide)
 * Added explicit enable/disable arguments to rich text `setBold()`, `setItalic()` and `setStrike()`, plus `removeUnderline()`

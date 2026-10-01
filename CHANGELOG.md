@@ -1,3 +1,8 @@
+## Unreleased
+
+* Added subscript and superscript rich text through `<sub>` / `<sup>` tags and `setSubscript()`, `setSuperscript()`, `setBaseline()` methods, see https://github.com/aVadim483/fast-excel-writer/issues/143
+* Rich text tags now restore nested formatting and correctly handle font size tags; changes to fragments are reflected in subsequent XML serialization
+
 ## V.6.17
 
 * New: the wrap text is enabled automatically for a string containing a line break (`"\n"`), rich text included – otherwise Excel displays such text in one line; an explicit `text-wrap` of the cell style wins, the option `auto_wrap_text` (`Options::autoWrapText()`) and `Excel::setAutoWrapText(false)` turn it off, see https://github.com/aVadim483/fast-excel-writer/issues/141

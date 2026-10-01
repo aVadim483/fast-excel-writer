@@ -522,6 +522,36 @@ The following tags can be used:
 | \<s=fontSize\>  | \<size=fontSize\>   | \<s=18\>text with size 18\</s\>  |
 | \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
 
+### Subscript and superscript
+
+Use `<sub>` and `<sup>` to format part of a cell as a subscript or superscript:
+
+```php
+$sheet->writeRow([
+    new RichText('H<sub>2</sub>O'),
+    new RichText('m<sup>2</sup>'),
+]);
+```
+
+The fluent API provides `setSubscript()`, `setSuperscript()` and `setBaseline()` on both
+`RichText` (the last added fragment) and `RichTextFragment`:
+
+```php
+$text = new RichText();
+$text->addText('H');
+$text->addText('2')->setSubscript();
+$text->addText('O');
+$sheet->writeCell($text);
+
+$text->fragment(1)->setSuperscript(); // Replace subscript with superscript
+$text->fragment(1)->setBaseline();   // Restore normal text positioning
+```
+
+Each new plain fragment starts without a script setting. Closing `</sub>` or `</sup>` restores
+the previous setting, including in nested tags. Scripts can be combined with bold, italic,
+color and font size. Excel handles the script size and position; no manual size reduction is needed.
+Changes to fragments affect subsequent serialization; cells already written are not updated.
+
 ### Streaming Mode And Memory
 
 Row-by-row writing is streaming: as soon as you move to the next row, the current one is flushed

@@ -48,6 +48,13 @@ $sheet->writeRow(['Fonts, sizes and colors', $richText]);
 $sheet->writeRow(['Rich text in the note (hover the cell)', 'Cell with a note'])
     ->addNote('B5', new RichText('here is <c=f00>red</c> and <c=00f>blue</c> text'));
 
+// Scientific notation with subscript and superscript
+$sheet->writeRow(['Subscript and superscript tags', new RichText('H<sub>2</sub>O, m<sup>2</sup>')]);
+$scientific = new RichText();
+$scientific->addText('CO')->addText('2')->setSubscript();
+$scientific->addText(' and E = mc')->addText('2')->setSuperscript()->setBold();
+$sheet->writeRow(['Subscript and superscript methods', $scientific]);
+
 // Save to XLSX-file
 $excel->save($outFileName);
 

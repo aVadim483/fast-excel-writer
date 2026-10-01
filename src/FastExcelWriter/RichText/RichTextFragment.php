@@ -8,7 +8,7 @@ class RichTextFragment
 {
     protected string $text = '';
     protected int $pos;
-    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'strike' => null];
+    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'strike' => null, 'vertAlign' => null];
 
     /**
      * RichTextFragment constructor
@@ -41,6 +41,24 @@ class RichTextFragment
     public function setBold(): RichTextFragment
     {
         return $this->setProp('b', true);
+    }
+
+    /** Set subscript for this fragment. */
+    public function setSubscript(): RichTextFragment
+    {
+        return $this->setProp('vertAlign', 'subscript');
+    }
+
+    /** Set superscript for this fragment. */
+    public function setSuperscript(): RichTextFragment
+    {
+        return $this->setProp('vertAlign', 'superscript');
+    }
+
+    /** Restore the baseline for this fragment. */
+    public function setBaseline(): RichTextFragment
+    {
+        return $this->setProp('vertAlign', 'baseline');
     }
 
     /**
@@ -150,6 +168,9 @@ class RichTextFragment
         }
         if ($this->prop['c']) {
             $rPr .= '<color rgb="' . $this->prop['c'] . '"/>';
+        }
+        if (in_array($this->prop['vertAlign'], ['baseline', 'subscript', 'superscript'], true)) {
+            $rPr .= '<vertAlign val="' . $this->prop['vertAlign'] . '"/>';
         }
         if ($rPr) {
             $rPr = '<rPr>' . $rPr . '</rPr>';

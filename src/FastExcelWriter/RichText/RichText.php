@@ -10,7 +10,8 @@ class RichText
     protected array $buffer;
     protected int $pos;
     protected int $cnt = -1;
-    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 's' => null, 'c' => null];
+    protected array $prop = ['b' => null, 'i' => null, 'u' => null, 'f' => null, 'sz' => null, 'c' => null, 'vertAlign' => null];
+    protected array $propStacks = [];
     protected array $fragments = [];
     protected ?string $xml = null;
 
@@ -59,46 +60,48 @@ class RichText
     protected function parse(string $text): array
     {
         $fragments = [];
-        if ($text) {
+        if ($text !== '') {
             $this->buffer = mb_str_split($text);
             $this->pos = 0;
             while (isset($this->buffer[$this->pos])) {
                 $token = $this->getToken();
-                if ($token) {
-                    if (substr($token, 0, 2) === '</') {
-                        $tag = substr($token, 2, 1);
-                        if (isset($this->prop[$tag])) {
-                            $this->prop[$tag] = null;
-                        }
-                    }
-                    elseif ($token[0] === '<') {
-                        switch (substr($token, 0, 2)) {
-                            case '<b':
-                                $this->prop['b'] = true;
-                                break;
-                            case '<i':
-                                $this->prop['i'] = true;
-                                break;
-                            case '<u':
-                                $this->prop['u'] = true;
-                                break;
-                            case '<f':
-                                if (strpos($token, '=')) {
-                                    [$name, $arg] = explode('=', $token, 2);
-                                    $this->prop['f'] = trim($arg, '"\'>');
+                if ($token !== '') {
+                    if ($token[0] === '<') {
+                        $tags = [
+                            'b' => 'b', 'bold' => 'b', 'i' => 'i', 'italic' => 'i',
+                            'u' => 'u', 'underline' => 'u', 'f' => 'f', 'font' => 'f',
+                            's' => 'sz', 'size' => 'sz', 'c' => 'c', 'color' => 'c',
+                            'sub' => 'vertAlign', 'sup' => 'vertAlign',
+                        ];
+                        if (preg_match('~^<(/?)([a-z]+)(?:=(.*))?>$~i', $token, $match)) {
+                            $tag = strtolower($match[2]);
+                            if (!isset($tags[$tag])) {
+                                continue;
+                            }
+                            $key = $tags[$tag];
+                            if ($match[1] === '/') {
+                                $this->prop[$key] = !empty($this->propStacks[$key])
+                                    ? array_pop($this->propStacks[$key]) : null;
+                            }
+                            else {
+                                if (in_array($key, ['f', 'sz', 'c'], true)) {
+                                    if (!isset($match[3])) {
+                                        continue;
+                                    }
+                                    $value = trim($match[3], '"\'');
+                                    if ($key === 'c') {
+                                        $value = StyleManager::normalizeColor($value);
+                                    }
                                 }
-                                break;
-                            case '<s':
-                                if (strpos($token, '=')) {
-                                    [$name, $arg] = explode('=', $token, 2);
-                                    $this->prop['s'] = trim($arg, '"\'>');
+                                else {
+                                    $value = $key === 'u' ? 'single' : true;
+                                    if ($key === 'vertAlign') {
+                                        $value = $tag === 'sub' ? 'subscript' : 'superscript';
+                                    }
                                 }
-                                break;
-                            case '<c':
-                                if (strpos($token, '=')) {
-                                    [$name, $arg] = explode('=', $token, 2);
-                                    $this->prop['c'] = StyleManager::normalizeColor(trim($arg, '"\'>'));
-                                }
+                                $this->propStacks[$key][] = $this->prop[$key];
+                                $this->prop[$key] = $value;
+                            }
                         }
                     }
                     else {
@@ -129,7 +132,7 @@ class RichText
     }
 
     /**
-     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>)
+     * Add tagged text (<b>, <i>, <u>, <f>, <s>, <c>, <sub>, <sup>)
      *
      * @param string $text
      *
@@ -153,6 +156,30 @@ class RichText
     public function setBold(): RichText
     {
         $this->fragments[$this->cnt]->setBold();
+
+        return $this;
+    }
+
+    /** Set subscript for the last added fragment. */
+    public function setSubscript(): RichText
+    {
+        $this->fragments[$this->cnt]->setSubscript();
+
+        return $this;
+    }
+
+    /** Set superscript for the last added fragment. */
+    public function setSuperscript(): RichText
+    {
+        $this->fragments[$this->cnt]->setSuperscript();
+
+        return $this;
+    }
+
+    /** Restore the baseline for the last added fragment. */
+    public function setBaseline(): RichText
+    {
+        $this->fragments[$this->cnt]->setBaseline();
 
         return $this;
     }
@@ -262,11 +289,10 @@ class RichText
      */
     public function outXml(): string
     {
-        if (!$this->xml) {
-            $this->xml = '';
-            foreach ($this->fragments as $fragment) {
-                $this->xml .= $fragment->outXml();
-            }
+        // Fragments can be changed directly through fragment() or fragments().
+        $this->xml = '';
+        foreach ($this->fragments as $fragment) {
+            $this->xml .= $fragment->outXml();
         }
 
         return $this->xml;

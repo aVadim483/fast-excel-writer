@@ -523,6 +523,37 @@ $sheet->writeTo('B2', $richText);
 | \<s=fontSize\>  | \<size=fontSize\>   | \<s=18\>text with size 18\</s\>  |
 | \<c=fontColor\> | \<color=fontColor\> | \<c="#f0b5d4"\>colored text\</c> |
 
+### Нижние и верхние индексы
+
+Теги `<sub>` и `<sup>` позволяют оформить часть текста ячейки как нижний или верхний индекс:
+
+```php
+$sheet->writeRow([
+    new RichText('H<sub>2</sub>O'),
+    new RichText('m<sup>2</sup>'),
+]);
+```
+
+Методы `setSubscript()`, `setSuperscript()` и `setBaseline()` доступны у `RichText`
+(применяются к последнему добавленному фрагменту) и у `RichTextFragment`:
+
+```php
+$text = new RichText();
+$text->addText('H');
+$text->addText('2')->setSubscript();
+$text->addText('O');
+$sheet->writeCell($text);
+
+$text->fragment(1)->setSuperscript(); // Replace subscript with superscript
+$text->fragment(1)->setBaseline();   // Restore normal text positioning
+```
+
+Новый обычный фрагмент создаётся без настройки индекса. Закрытие `</sub>` или `</sup>`
+восстанавливает предыдущую настройку, в том числе при вложенных тегах. Индексы можно сочетать
+с жирным начертанием, курсивом, цветом и размером шрифта. Размер и положение индекса определяет
+Excel; вручную уменьшать шрифт не требуется. Изменения фрагментов учитываются при последующей
+сериализации; уже записанные ячейки не обновляются.
+
 ### Потоковый режим и память { #streaming-mode-and-memory }
 
 Построчная запись — потоковая: как только вы переходите к следующей строке, текущая сбрасывается

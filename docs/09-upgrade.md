@@ -5,6 +5,8 @@ updating your code.
 
 ## Upgrade to version 6
 
+The general news of v.6.0 is [Data Validation](07-validation.md) support.
+
 ### Rich text changes in version 6.18
 
 `RichText::addText()` and `RichTextFragment` now escape literal input on serialization.
@@ -18,7 +20,12 @@ references), which are decoded once before serialization. Unknown tags now remai
 Update overridden signatures if you subclass `RichText` or `RichTextFragment`.
 `setUnderline(false)` continues to mean single underline; use `removeUnderline()` to disable it.
 
-The general news of v.6.0 is [Data Validation](07-validation.md) support.
+### Important changes in version 6.9
+
+* The namespace of the ```RichText``` class has been changed to ```avadim\FastExcelWriter\RichText```
+* The namespace of the ```Style```, ```StyleManager```, and ```Font``` classes has been changed to ```avadim\FastExcelWriter\Style```
+* Deprecated methods removed: ```Sheet::setColStyles()```, ```Sheet::setColOptions()```, ```Sheet::getExternalLinks()```,
+```Sheet::setPageOptions()```, ```Sheet::setRowOptions()```, ```Sheet::setRowStyles()```
 
 ### Important changes in version 6.1
 
@@ -27,13 +34,6 @@ are deprecated, instead of them you should use other functions: ```setRowStyle()
 ```setRowDataStyle()```, ```setRowDataStyleArray()```, ```setColStyle()```, ```setColStyleArray()```, ```setColDataStyle()```, ```setColDataStyleArray()```
 * The behavior of the ```Sheet::setRowStyle()``` and ```Sheet::setColStyle()``` has changed, they now set styles
 for the entire row or column (even if they are empty)
-
-### Important changes in version 6.9
-
-* The namespace of the ```RichText``` class has been changed to ```avadim\FastExcelWriter\RichText```
-* The namespace of the ```Style```, ```StyleManager```, and ```Font``` classes has been changed to ```avadim\FastExcelWriter\Style```
-* Deprecated methods removed: ```Sheet::setColStyles()```, ```Sheet::setColOptions()```, ```Sheet::getExternalLinks()```,
-```Sheet::setPageOptions()```, ```Sheet::setRowOptions()```, ```Sheet::setRowStyles()```
 
 ## Upgrade to version 5
 

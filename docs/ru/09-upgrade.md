@@ -5,6 +5,8 @@
 
 ## Обновление до версии 6
 
+Главная новость v.6.0 — поддержка [проверки данных](07-validation.md).
+
 ### Изменения RichText в версии 6.18
 
 `RichText::addText()` и `RichTextFragment` теперь экранируют буквальный ввод при сериализации.
@@ -20,7 +22,12 @@
 `setUnderline(false)` по-прежнему означает одинарное подчёркивание; для отключения используйте
 `removeUnderline()`.
 
-Главная новость v.6.0 — поддержка [проверки данных](07-validation.md).
+### Важные изменения в версии 6.9
+
+* Namespace класса ```RichText``` изменён на ```avadim\FastExcelWriter\RichText```
+* Namespace классов ```Style```, ```StyleManager``` и ```Font``` изменён на ```avadim\FastExcelWriter\Style```
+* Удалены устаревшие методы: ```Sheet::setColStyles()```, ```Sheet::setColOptions()```, ```Sheet::getExternalLinks()```,
+```Sheet::setPageOptions()```, ```Sheet::setRowOptions()```, ```Sheet::setRowStyles()```
 
 ### Важные изменения в версии 6.1
 
@@ -29,13 +36,6 @@
 ```setRowDataStyle()```, ```setRowDataStyleArray()```, ```setColStyle()```, ```setColStyleArray()```, ```setColDataStyle()```, ```setColDataStyleArray()```
 * Изменилось поведение ```Sheet::setRowStyle()``` и ```Sheet::setColStyle()``` — теперь они задают стили
 для всей строки или колонки (даже для пустых ячеек)
-
-### Важные изменения в версии 6.9
-
-* Namespace класса ```RichText``` изменён на ```avadim\FastExcelWriter\RichText```
-* Namespace классов ```Style```, ```StyleManager``` и ```Font``` изменён на ```avadim\FastExcelWriter\Style```
-* Удалены устаревшие методы: ```Sheet::setColStyles()```, ```Sheet::setColOptions()```, ```Sheet::getExternalLinks()```,
-```Sheet::setPageOptions()```, ```Sheet::setRowOptions()```, ```Sheet::setRowStyles()```
 
 ## Обновление до версии 5
 

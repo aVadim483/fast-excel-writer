@@ -1,0 +1,5 @@
+# Keep development files in Git, but exclude them from distribution archives.
+/.github        export-ignore
+/tests          export-ignore
+/.gitattributes export-ignore
+/.gitignore     export-ignore

@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter\Charts;
 
+use avadim\FastExcelWriter\Style\StyleManager;
+
 /**
  * This class uses source code of PHPExcel
  *
@@ -131,6 +133,9 @@ abstract class Properties
 
     protected function setColorProperties($color, $alpha, $type): array
     {
+        if (StyleManager::isNoneColor($color)) {
+            return ['type' => self::EXCEL_COLOR_TYPE_ARGB, 'value' => '000000', 'alpha' => '0'];
+        }
         return [
             'type' => (string) $type,
             'value' => (string) $color,

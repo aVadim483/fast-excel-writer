@@ -211,7 +211,7 @@ $sheet->writeCell('abc')->applyBgColor('#9f9');
 $sheet->writeTo('C3', 'edf')->applyBgColor('#cc99ff');
 
 // Выбираем указанный диапазон и применяем к нему внешние и внутренние границы ячеек
-$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER_DOUBLE)->applyBorderInner(Style::BORDER_DOTTED);
+$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER_DOUBLE)->applyInnerBorder(Style::BORDER_DOTTED);
 
 ```
 
@@ -221,8 +221,20 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyBorderRight(string $style, ?string $color = '#000000')
 * applyBorderTop(string $style, ?string $color = '#000000')
 * applyBorderBottom(string $style, ?string $color = '#000000')
-* applyBorderOuter(string $style, ?string $color = '#000000')
-* applyBorderInner(string $style, ?string $color = '#000000')
+* applyOuterBorder(string $style, ?string $color = '#000000')
+* applyInnerBorder(string $style, ?string $color = '#000000')
+
+`applyOuterBorder()` задаёт контур выбранного диапазона; `applyInnerBorder()` задаёт горизонтальные и вертикальные
+внутренние границы. Чтобы добавить только горизонтальные внутренние границы, задайте нижнюю границу каждой строки, кроме последней:
+
+```php
+// Add horizontal internal borders to B4:D6, preserving other borders
+for ($row = 4; $row < 6; $row++) {
+    $sheet->withRange('B' . $row . ':D' . $row)->applyBorderBottom(Style::BORDER_DOTTED);
+}
+```
+
+Применяйте эти стили до сброса затронутых строк при записи следующих строк или используйте буферизуемую область `Area`.
 
 #### Применение шрифтов
 * applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null)
@@ -240,6 +252,33 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyTextColor(string $color)
 * applyFillColor(string $color)
 * applyBgColor(string $color)
+
+Чтобы убрать заливку, передайте `'none'` в качестве цвета или задайте шаблон заливки `'none'`:
+
+```php
+// Remove the fill while preserving the font, borders and number format
+$sheet->withRange('B4:D5')->applyFillColor('none');
+// Equivalent explicit pattern
+$sheet->withRange('B4:D5')->applyStyle([Style::FILL_PATTERN => 'none']);
+```
+
+`'none'` поддерживается везде, где принимается цвет, включая массивы стилей и синонимы вроде `applyBgColor()`.
+Регистр не учитывается, пробелы по краям игнорируются. Значение зависит от свойства:
+
+| Свойство | Значение `'none'` |
+| --- | --- |
+| Заливка ячейки, включая условное форматирование | Нет заливки; отменяет ранее заданный цвет, узор или градиент |
+| Цвет шрифта, rich text или границы | Автоматический цвет; стиль границы сохраняется |
+| Цвет вкладки листа | Убрать заданный цвет вкладки |
+| Фон заметки | Нет заливки |
+| Ряд или сегмент диаграммы | Нет заливки (также применяется к маркерам линий) |
+| Цвет оси, линии сетки, свечения или тени диаграммы | Полностью прозрачный цвет |
+| Цвет конца градиента заливки ячейки | Убрать всю заливку |
+| Цветовая шкала или полоса данных условного форматирования | Автоматический цвет в этой позиции |
+
+Например, `(new Style())->setFillColor('none')` и `[Style::FILL_COLOR => 'none']` убирают заливку.
+Применяйте изменение до сброса затронутых строк или используйте буферизуемую область `Area`.
+Белая заливка задаёт цвет и отличается от отсутствия заливки. Другие недопустимые строки цвета по-прежнему считаются недопустимыми.
 
 #### Применение стилей текста
 * applyTextAlign(string $textAlign, ?string $verticalAlign = null)

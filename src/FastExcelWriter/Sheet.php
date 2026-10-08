@@ -913,7 +913,7 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setTabColor(?string $color): Sheet
     {
-        if (!$color) {
+        if (!$color || StyleManager::isNoneColor($color)) {
             if (isset($this->sheetProperties['tabColor'])) {
                 unset($this->sheetProperties['tabColor']);
             }
@@ -3995,10 +3995,12 @@ class Sheet implements InterfaceSheetWriter
                 $marginTop = number_format(self::NOTE_TOP_OFFSET + self::NOTE_TOP_INC * $rowIdx, 2, '.', '') . 'pt';
             }
             if (!empty($noteStyle['fill_color'])) {
-                $noteStyle['fill_color'] = '#' . substr(StyleManager::normalizeColor($noteStyle['fill_color']), 2);
+                $noteStyle['fill_color'] = StyleManager::isNoneColor($noteStyle['fill_color'])
+                    ? 'none' : '#' . substr(StyleManager::normalizeColor($noteStyle['fill_color']), 2);
             }
             elseif (!empty($noteStyle['bg_color'])) {
-                $noteStyle['fill_color'] = '#' . substr(StyleManager::normalizeColor($noteStyle['bg_color']), 2);
+                $noteStyle['fill_color'] = StyleManager::isNoneColor($noteStyle['bg_color'])
+                    ? 'none' : '#' . substr(StyleManager::normalizeColor($noteStyle['bg_color']), 2);
             }
             if (!empty($noteStyle['width']) && (is_int($noteStyle['width']) || is_float($noteStyle['width']))) {
                 $noteStyle['width'] = number_format($noteStyle['width'], 2, '.', '') . 'pt';

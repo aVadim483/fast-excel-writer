@@ -87,7 +87,7 @@ class Axis extends Properties
      *
      * @var  array of mixed
      */
-    private array $shadowProperties = [
+    protected array $shadowProperties = [
         'presets' => self::SHADOW_PRESETS_NOSHADOW,
         'effect' => null,
         'color' => [

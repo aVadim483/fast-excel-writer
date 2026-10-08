@@ -858,8 +858,11 @@ class Writer
                 if (empty($comment['style']['show'])) {
                     $style .= 'visibility:hidden';
                 }
-                $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '" fillcolor="' . $comment['style']['fill_color'] . '" o:insetmode="auto">';
-                $xmlDrawing .= '<v:fill color2="' . $comment['style']['fill_color'] . '"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
+                $noFill = $comment['style']['fill_color'] === 'none';
+                $xmlDrawing .= '<v:shape id="_x0000_s' . $id . '" type="#_x0000_t202" style="' . $style . '"'
+                    . ($noFill ? ' filled="f"' : ' fillcolor="' . $comment['style']['fill_color'] . '"') . ' o:insetmode="auto">';
+                $xmlDrawing .= ($noFill ? '<v:fill on="f"/>' : '<v:fill color2="' . $comment['style']['fill_color'] . '"/>')
+                    . '<v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/>';
                 $xmlDrawing .= '<v:textbox style="mso-direction-alt:auto">';
                 $xmlDrawing .= '<div style="text-align:' . ($this->excel->isRightToLeft() ? 'right' : 'left') . '"/>';
                 $xmlDrawing .= '</v:textbox>';

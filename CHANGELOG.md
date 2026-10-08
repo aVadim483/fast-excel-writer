@@ -1,5 +1,10 @@
 ## V.6.18.0
 
+* Added case-insensitive `none` colors across cell styles, rich text, sheet tabs, notes, conditional formatting and charts; serialize absent colors without empty RGB attributes
+* Fixed chart shadow property access from the shared `Properties` implementation
+
+* Fixed documented border method names and added examples for horizontal internal borders (#144) and removing cell fills (#145)
+
 * Fixed XML escaping of rich text and font names, including control characters in cell text and notes; `addText()` accepts literal text, while tagged input decodes XML entities once (see the upgrade guide)
 * Added explicit enable/disable arguments to rich text `setBold()`, `setItalic()` and `setStrike()`, plus `removeUnderline()`
 * Added fractional rich text font sizes through `setSize(float $size)` and size tags, with validation of positive finite values

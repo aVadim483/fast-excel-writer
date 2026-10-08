@@ -211,7 +211,7 @@ $sheet->writeCell('abc')->applyBgColor('#9f9');
 $sheet->writeTo('C3', 'edf')->applyBgColor('#cc99ff');
 
 // Select the specified range and apply outer and inner cell borders for it
-$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER_DOUBLE)->applyBorderInner(Style::BORDER_DOTTED);
+$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER_DOUBLE)->applyInnerBorder(Style::BORDER_DOTTED);
 
 ```
 
@@ -221,8 +221,20 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyBorderRight(string $style, ?string $color = '#000000')
 * applyBorderTop(string $style, ?string $color = '#000000')
 * applyBorderBottom(string $style, ?string $color = '#000000')
-* applyBorderOuter(string $style, ?string $color = '#000000')
-* applyBorderInner(string $style, ?string $color = '#000000')
+* applyOuterBorder(string $style, ?string $color = '#000000')
+* applyInnerBorder(string $style, ?string $color = '#000000')
+
+`applyOuterBorder()` applies the outline of the selected range; `applyInnerBorder()` applies both horizontal and vertical
+internal borders. To add only horizontal internal borders, apply a bottom border to each row except the last:
+
+```php
+// Add horizontal internal borders to B4:D6, preserving other borders
+for ($row = 4; $row < 6; $row++) {
+    $sheet->withRange('B' . $row . ':D' . $row)->applyBorderBottom(Style::BORDER_DOTTED);
+}
+```
+
+Apply these styles before the affected rows are flushed by writing subsequent rows, or use a buffered `Area`.
 
 #### Apply Fonts
 * applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null)
@@ -240,6 +252,33 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER
 * applyTextColor(string $color)
 * applyFillColor(string $color)
 * applyBgColor(string $color)
+
+To remove a fill, pass `'none'` as its color or set the fill pattern to `'none'`:
+
+```php
+// Remove the fill while preserving the font, borders and number format
+$sheet->withRange('B4:D5')->applyFillColor('none');
+// Equivalent explicit pattern
+$sheet->withRange('B4:D5')->applyStyle([Style::FILL_PATTERN => 'none']);
+```
+
+`'none'` is supported wherever a color is accepted, including style arrays and aliases such as `applyBgColor()`.
+It is case-insensitive and surrounding whitespace is ignored. Its meaning depends on the property:
+
+| Property | Meaning of `'none'` |
+| --- | --- |
+| Cell fill, including conditional formatting | No fill; overrides a previously set color, pattern or gradient |
+| Font, rich text or border color | Automatic color; border style remains unchanged |
+| Sheet tab color | Remove the custom tab color |
+| Note background | No fill |
+| Chart series or segment | No fill (also applies to line markers) |
+| Chart axis, grid line, glow or shadow color | Fully transparent color |
+| Gradient endpoint in a cell fill | Remove the whole fill |
+| Conditional color scale or data bar | Automatic color at that position |
+
+For example, `(new Style())->setFillColor('none')` and `[Style::FILL_COLOR => 'none']` both remove a fill.
+Apply the change before the affected rows are flushed, or use a buffered `Area`.
+A white fill is a color and is not the same as no fill. Other invalid color strings remain invalid.
 
 #### Apply Text Styles
 * applyTextAlign(string $textAlign, ?string $verticalAlign = null)

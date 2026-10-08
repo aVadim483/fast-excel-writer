@@ -18,6 +18,19 @@ class ChartWriter extends FileWriter
 {
     private int $_seriesIndex;
 
+    /** Write a series or marker fill, including an explicitly absent fill. */
+    private function writeSeriesFill(string $color)
+    {
+        if ($color === 'none') {
+            $this->writeElement('a:noFill');
+        }
+        else {
+            $this->startElement('a:solidFill');
+            $this->writeElementAttr('a:srgbClr', ['val' => $color]);
+            $this->endElement();
+        }
+    }
+
     /**
      * Write chart{n}.xml
      *
@@ -438,11 +451,7 @@ class ChartWriter extends FileWriter
                         $this->startElement('c:spPr');
                         $color = $segmentColors[$idx] ?? null;
                         if ($color) {
-                            $this->startElement('a:solidFill');
-                            $this->startElement('a:srgbClr');
-                            $this->writeAttribute('val', $color);
-                            $this->endElement(); // a:srgbClr
-                            $this->endElement(); // a:solidFill
+                            $this->writeSeriesFill($color);
                         }
                         $this->endElement(); // c:spPr
                         $this->endElement(); // c:dPt
@@ -468,11 +477,7 @@ class ChartWriter extends FileWriter
                         $this->endElement();
                     }
                     elseif ($dataColor) {
-                        $this->startElement('a:solidFill');
-                        $this->startElement('a:srgbClr');
-                        $this->writeAttribute('val', $dataColor);
-                        $this->endElement();
-                        $this->endElement();
+                        $this->writeSeriesFill($dataColor);
                     }
                     $this->endElement(); // a:ln
                     $this->endElement(); // c:spPr
@@ -480,11 +485,7 @@ class ChartWriter extends FileWriter
                 elseif ($dataColor) {
                     /* custom colors of data series */
                     $this->startElement('c:spPr');
-                    $this->startElement('a:solidFill');
-                    $this->startElement('a:srgbClr');
-                    $this->writeAttribute('val', $dataColor);
-                    $this->endElement();
-                    $this->endElement();
+                    $this->writeSeriesFill($dataColor);
                     $this->endElement(); // c:spPr
                 }
 
@@ -501,14 +502,10 @@ class ChartWriter extends FileWriter
                         }
                         if ($dataColor) {
                             $this->startElement('c:spPr');
-                            $this->startElement('a:solidFill');
-                            $this->writeElementAttr('a:srgbClr', ['val' => $dataColor]);
-                            $this->endElement(); // a:solidFill
+                            $this->writeSeriesFill($dataColor);
 
                             $this->startElement('a:ln');
-                            $this->startElement('a:solidFill');
-                            $this->writeElementAttr('a:srgbClr', ['val' => $dataColor]);
-                            $this->endElement(); // a:solidFill
+                            $this->writeSeriesFill($dataColor);
                             $this->endElement();
 
                             $this->endElement(); // c:spPr

@@ -96,7 +96,7 @@ class RichText
                                     }
                                     $value = html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
                                     if ($key === 'c') {
-                                        $value = StyleManager::normalizeColor($value);
+                                        $value = StyleManager::isNoneColor($value) ? 'none' : StyleManager::normalizeColor($value);
                                     }
                                 }
                                 else {

@@ -735,7 +735,7 @@ class Conditional
             }
             foreach ($this->style['color-rgb'] as $color) {
                 if ($color) {
-                    $xml .= '<color rgb="' . StyleManager::normalizeColor($color) . '"/>';
+                    $xml .= StyleManager::colorXml(StyleManager::normalizeColor($color));
                 }
             }
 

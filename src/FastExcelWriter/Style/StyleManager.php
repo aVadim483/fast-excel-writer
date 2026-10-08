@@ -403,7 +403,7 @@ class StyleManager
                 $result['val']['left-style'] = $style;
                 $result['val']['left-color'] = $color;
 
-                $result['tag']['left'] = '<left style="' . $style . '"><color rgb="' . $color . '"/></left>';
+                $result['tag']['left'] = '<left style="' . $style . '">' . self::colorXml($color) . '</left>';
             }
             else {
                 $result['tag']['left'] = '<left/>';
@@ -416,7 +416,7 @@ class StyleManager
                 $result['val']['right-style'] = $style;
                 $result['val']['right-color'] = $color;
 
-                $result['tag']['right'] = '<right style="' . $style . '"><color rgb="' . $color . '"/></right>';
+                $result['tag']['right'] = '<right style="' . $style . '">' . self::colorXml($color) . '</right>';
             }
             else {
                 $result['tag']['right'] = '<right/>';
@@ -429,7 +429,7 @@ class StyleManager
                 $result['val']['top-style'] = $style;
                 $result['val']['top-color'] = $color;
 
-                $result['tag']['top'] = '<top style="' . $style . '"><color rgb="' . $color . '"/></top>';
+                $result['tag']['top'] = '<top style="' . $style . '">' . self::colorXml($color) . '</top>';
             }
             else {
                 $result['tag']['top'] = '<top/>';
@@ -442,7 +442,7 @@ class StyleManager
                 $result['val']['bottom-style'] = $style;
                 $result['val']['bottom-color'] = $color;
 
-                $result['tag']['bottom'] = '<bottom style="' . $style . '"><color rgb="' . $color . '"/></bottom>';
+                $result['tag']['bottom'] = '<bottom style="' . $style . '">' . self::colorXml($color) . '</bottom>';
             }
             else {
                 $result['tag']['bottom'] = '<bottom/>';
@@ -462,6 +462,16 @@ class StyleManager
     public static function normalizeFill($fill): array
     {
         $result = [];
+
+        // Ignore stale colors from a previous fill type when the fill is changed again.
+        $colorKeys = is_array($fill) && ($fill['fill-pattern'] ?? ($fill['pattern'] ?? null)) === Style::FILL_GRADIENT_LINEAR
+            ? ['fill-gradient-start', 'fill-gradient-end']
+            : ['fill-color', 'color', 'fill', 'bg-color', 'background-color'];
+        foreach ($colorKeys as $key) {
+            if (is_array($fill) && isset($fill[$key]) && self::isNoneColor($fill[$key])) {
+                return ['tag' => '<fill><patternFill patternType="none"/></fill>'];
+            }
+        }
 
         $fillColor = null;
         if (!empty($fill) && $fill !== 'none') {
@@ -530,6 +540,9 @@ class StyleManager
      */
     public static function normalizeColor(string $color): ?string
     {
+        if (self::isNoneColor($color)) {
+            return null;
+        }
         static $normColors = [
             'BLACK' => 'FF000000',
             'WHITE' => 'FFFFFFFF',
@@ -580,6 +593,18 @@ class StyleManager
             }
         }
         return $normColors[$color] ?? null;
+    }
+
+    /** Whether a color explicitly requests no custom color. */
+    public static function isNoneColor($color): bool
+    {
+        return is_string($color) && strcasecmp(trim($color), 'none') === 0;
+    }
+
+    /** Serialize a normalized SpreadsheetML color without an empty rgb attribute. */
+    public static function colorXml(?string $color): string
+    {
+        return $color === null ? '<color auto="1"/>' : '<color rgb="' . $color . '"/>';
     }
 
     /**
@@ -667,7 +692,11 @@ class StyleManager
         }
 
         $color = $font['font-color'] ?? ($font['color'] ?? null);
-        if ($color) {
+        if (self::isNoneColor($color)) {
+            $result['val']['color'] = null;
+            $result['font']['font-color'] = 'none';
+        }
+        elseif ($color) {
             $color = self::normalizeColor($color);
             if ($color) {
                 $result['val']['color'] = $color;
@@ -686,7 +715,7 @@ class StyleManager
             $result['tag']['size'] = '<sz val="' . $result['font']['font-size'] . '"/>';
         }
         if (!empty($result['font']['font-color'])) {
-            $result['tag']['color'] = '<color rgb="' . $result['font']['font-color'] . '"/>';
+            $result['tag']['color'] = self::colorXml(self::normalizeColor($result['font']['font-color']));
         }
 
         $style = $font['font-style'] ?? ($font['style'] ?? null);
@@ -1405,15 +1434,11 @@ class StyleManager
     {
         $fgColor = self::normalizeColor($style['font-color'] ?? '#000000');
         $bgColor = self::normalizeColor($style['fill-color'] ?? '#ffffff');
-        $pattern = $style['fill-pattern'] ?? 'solid';
-        /* */
-        $dxfStyle = '<dxf><fill><patternFill patternType="' . $pattern . '">'
-            . '<fgColor rgb="' . $fgColor . '"/><bgColor rgb="' . $bgColor . '"/>'
-            . '</patternFill></fill></dxf>';
-        /* */
+        $noFill = self::isNoneColor($style['fill-color'] ?? null) || ($style['fill-pattern'] ?? null) === 'none';
         $dxfStyle = '<dxf>'
-            . '<font><color rgb="' . $fgColor . '"/></font>'
-            . '<fill><patternFill><bgColor rgb="' . $bgColor . '"/></patternFill></fill>'
+            . '<font>' . self::colorXml($fgColor) . '</font>'
+            . ($noFill ? '<fill><patternFill patternType="none"/></fill>'
+                : '<fill><patternFill><bgColor rgb="' . $bgColor . '"/></patternFill></fill>')
             . '</dxf>';
 
         return $this->addElement('dxfs', $dxfStyle, $fullStyle);

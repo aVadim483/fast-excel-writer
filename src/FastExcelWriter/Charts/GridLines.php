@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelWriter\Charts;
 
+use avadim\FastExcelWriter\Style\StyleManager;
+
 /**
  * This class uses source code of PHPExcel
  *
@@ -36,7 +38,7 @@ class GridLines extends Properties
         ]
     ];
 
-    private array $shadowProperties = [
+    protected array $shadowProperties = [
         'presets' => self::SHADOW_PRESETS_NOSHADOW,
         'effect' => null,
         'color' => [
@@ -210,6 +212,10 @@ class GridLines extends Properties
      */
     private function setGlowColor(?string $color, ?int $alpha, ?string $type)
     {
+        if (StyleManager::isNoneColor($color)) {
+            $this->glowProperties['color'] = $this->setColorProperties($color, 0, self::EXCEL_COLOR_TYPE_ARGB);
+            return;
+        }
         if ($color !== null) {
             $this->glowProperties['color']['value'] = (string) $color;
         }
@@ -286,6 +292,10 @@ class GridLines extends Properties
      */
     private function setShadowColor(?string $color, ?int $alpha, ?string $type)
     {
+        if (StyleManager::isNoneColor($color)) {
+            $this->shadowProperties['color'] = $this->setColorProperties($color, 0, self::EXCEL_COLOR_TYPE_ARGB);
+            return;
+        }
         if ($color !== null) {
             $this->shadowProperties['color']['value'] = (string) $color;
         }

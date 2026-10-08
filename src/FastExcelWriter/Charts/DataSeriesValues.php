@@ -210,6 +210,9 @@ class DataSeriesValues extends DataSource
     private function parseColor($color)
     {
         $color = trim($color);
+        if (strcasecmp($color, 'none') === 0) {
+            return 'none';
+        }
         if (preg_match('/^#?([0-9a-f]{6})$/i', $color, $m)) {
             return strtolower($m[1]);
         }

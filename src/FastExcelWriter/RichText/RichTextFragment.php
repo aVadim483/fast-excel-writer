@@ -142,7 +142,7 @@ class RichTextFragment
      */
     public function setColor(string $color): RichTextFragment
     {
-        return $this->setProp('c', StyleManager::normalizeColor($color));
+        return $this->setProp('c', StyleManager::isNoneColor($color) ? 'none' : StyleManager::normalizeColor($color));
     }
 
     /**
@@ -182,7 +182,10 @@ class RichTextFragment
         if ($this->prop['sz']) {
             $rPr .= '<sz val="' . Writer::floatStr($this->prop['sz']) . '"/>';
         }
-        if ($this->prop['c']) {
+        if (StyleManager::isNoneColor($this->prop['c'])) {
+            $rPr .= '<color auto="1"/>';
+        }
+        elseif ($this->prop['c']) {
             $rPr .= '<color rgb="' . Writer::xmlSpecialChars($this->prop['c']) . '"/>';
         }
         if (in_array($this->prop['vertAlign'], ['baseline', 'subscript', 'superscript'], true)) {

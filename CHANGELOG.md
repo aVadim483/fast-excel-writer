@@ -1,3 +1,8 @@
+## V.6.19.1
+
+* Made `applyBorderOuter()` and `applyBorderInner()` the primary range border methods; `applyOuterBorder()` and `applyInnerBorder()` remain supported aliases
+* Updated `Area` annotations, documentation and demos to use the primary border method names; added regression tests for both names on cells and ranges
+
 ## V.6.19.0
 
 * Added case-insensitive `none` colors across cell styles, rich text, sheet tabs, notes, conditional formatting and charts; serialize absent colors without empty RGB attributes

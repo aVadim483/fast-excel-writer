@@ -3512,7 +3512,7 @@ class Sheet implements InterfaceSheetWriter
     public function setOuterBorder(string $range, $style): Sheet
     {
         $borderStyle = StyleManager::borderOptions($style);
-        $this->withRange($range)->applyOuterBorder($borderStyle['border-left-style'], $borderStyle['border-left-color']);
+        $this->withRange($range)->applyBorderOuter($borderStyle['border-left-style'], $borderStyle['border-left-color']);
 
         return $this;
     }
@@ -5311,7 +5311,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function applyOuterBorder(string $style, ?string $color = '#000000'): Sheet
+    public function applyBorderOuter(string $style, ?string $color = '#000000'): Sheet
     {
         if ($this->lastTouch['area']['row_idx1'] === $this->lastTouch['area']['row_idx2']
             && $this->lastTouch['area']['col_idx1'] === $this->lastTouch['area']['col_idx2']) {
@@ -5439,7 +5439,7 @@ class Sheet implements InterfaceSheetWriter
      *
      * @return $this
      */
-    public function applyInnerBorder(string $style, ?string $color = '#000000'): Sheet
+    public function applyBorderInner(string $style, ?string $color = '#000000'): Sheet
     {
         if ($this->lastTouch['area']['row_idx1'] < $this->lastTouch['area']['row_idx2']
             || $this->lastTouch['area']['col_idx1'] < $this->lastTouch['area']['col_idx2']) {
@@ -5488,6 +5488,32 @@ class Sheet implements InterfaceSheetWriter
         }
 
         return $this;
+    }
+
+    /**
+     * Alias of applyBorderOuter().
+     *
+     * @param string $style
+     * @param string|null $color
+     *
+     * @return $this
+     */
+    public function applyOuterBorder(string $style, ?string $color = '#000000'): Sheet
+    {
+        return $this->applyBorderOuter($style, $color);
+    }
+
+    /**
+     * Alias of applyBorderInner().
+     *
+     * @param string $style
+     * @param string|null $color
+     *
+     * @return $this
+     */
+    public function applyInnerBorder(string $style, ?string $color = '#000000'): Sheet
+    {
+        return $this->applyBorderInner($style, $color);
     }
 
     /**

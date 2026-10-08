@@ -14,6 +14,8 @@ use avadim\FastExcelWriter\Style\Style;
  * @method Area applyBorderRight(string $style, ?string $color = '#000000')
  * @method Area applyBorderTop(string $style, ?string $color = '#000000')
  * @method Area applyBorderBottom(string $style, ?string $color = '#000000')
+ * @method Area applyBorderOuter(string $style, ?string $color = '#000000')
+ * @method Area applyBorderInner(string $style, ?string $color = '#000000')
  * @method Area applyOuterBorder(string $style, ?string $color = '#000000')
  * @method Area applyInnerBorder(string $style, ?string $color = '#000000')
  * @method Area applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null)

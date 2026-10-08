@@ -106,12 +106,12 @@ $sheet1->writeCell('=SUM(A1:B3)')->applyHide();
 $sheet1->protect();
 
 $area1 = $sheet1->makeArea('C3:F9')
-    ->applyOuterBorder('thin')
+    ->applyBorderOuter('thin')
     ->applyBgColor('#ccc');
     
 // Разблокируем ячейки внутри области    
 $area2 = $sheet1->makeArea('d4:e8')
-    ->applyOuterBorder('thin')
+    ->applyBorderOuter('thin')
     ->applyBgColor('none')
     ->applyUnlock();
 

@@ -211,7 +211,7 @@ $sheet->writeCell('abc')->applyBgColor('#9f9');
 $sheet->writeTo('C3', 'edf')->applyBgColor('#cc99ff');
 
 // Select the specified range and apply outer and inner cell borders for it
-$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER_DOUBLE)->applyInnerBorder(Style::BORDER_DOTTED);
+$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER_DOUBLE)->applyBorderInner(Style::BORDER_DOTTED);
 
 ```
 
@@ -221,10 +221,13 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER
 * applyBorderRight(string $style, ?string $color = '#000000')
 * applyBorderTop(string $style, ?string $color = '#000000')
 * applyBorderBottom(string $style, ?string $color = '#000000')
-* applyOuterBorder(string $style, ?string $color = '#000000')
-* applyInnerBorder(string $style, ?string $color = '#000000')
+* applyBorderOuter(string $style, ?string $color = '#000000')
+* applyBorderInner(string $style, ?string $color = '#000000')
 
-`applyOuterBorder()` applies the outline of the selected range; `applyInnerBorder()` applies both horizontal and vertical
+The previous names `applyOuterBorder()` and `applyInnerBorder()` remain supported aliases of
+`applyBorderOuter()` and `applyBorderInner()`, respectively. Both names are available on `Sheet` and `Area`.
+
+`applyBorderOuter()` applies the outline of the selected range; `applyBorderInner()` applies both horizontal and vertical
 internal borders. To add only horizontal internal borders, apply a bottom border to each row except the last:
 
 ```php

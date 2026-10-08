@@ -32,7 +32,9 @@
 * [applyBgColor()](#applybgcolor) – Alias of 'applyFillColor()'
 * [applyBorder()](#applyborder) – Sets all borders style
 * [applyBorderBottom()](#applyborderbottom) – Apply bottom border style and color to the selected area
+* [applyBorderInner()](#applyborderinner) – Apply inner border style and color to the selected area
 * [applyBorderLeft()](#applyborderleft) – Apply left border style and color to the selected area
+* [applyBorderOuter()](#applyborderouter) – Apply outer border style and color to the selected area
 * [applyBorderRight()](#applyborderright) – Apply right border style and color to the selected area
 * [applyBorderTop()](#applybordertop) – Apply top border style and color to the selected area
 * [applyColor()](#applycolor) – Alias of 'setFontColor()'
@@ -54,9 +56,9 @@
 * [applyIndentDistributed()](#applyindentdistributed) – Set distributed indent for the selected area
 * [applyIndentLeft()](#applyindentleft) – Set left indent for the selected area
 * [applyIndentRight()](#applyindentright) – Set right indent for the selected area
-* [applyInnerBorder()](#applyinnerborder) – Apply inner border style and color to the selected area
+* [applyInnerBorder()](#applyinnerborder) – Alias of applyBorderInner()
 * [applyNamedRange()](#applynamedrange) – Apply named range to the selected area
-* [applyOuterBorder()](#applyouterborder) – Apply outer border style and color to the selected area
+* [applyOuterBorder()](#applyouterborder) – Alias of applyBorderOuter()
 * [applyRowHeight()](#applyrowheight) – Sets height to the current row
 * [applyRowOutlineLevel()](#applyrowoutlinelevel) – Set outline level for the current row
 * [applyStyle()](#applystyle) – Apply the style
@@ -1052,6 +1054,40 @@ _Set right indent for the selected area_
 
 ---
 
+## applyBorderInner()
+
+---
+
+```php
+public function applyBorderInner(string $style,
+                                 ?string $color = '#000000'): Sheet
+```
+_Apply inner border style and color to the selected area_
+
+### Parameters
+
+* `string $style`
+* `string|null $color`
+
+---
+
+## applyBorderOuter()
+
+---
+
+```php
+public function applyBorderOuter(string $style,
+                                 ?string $color = '#000000'): Sheet
+```
+_Apply outer border style and color to the selected area_
+
+### Parameters
+
+* `string $style`
+* `string|null $color`
+
+---
+
 ## applyInnerBorder()
 
 ---
@@ -1060,7 +1096,7 @@ _Set right indent for the selected area_
 public function applyInnerBorder(string $style, 
                                  ?string $color = '#000000'): Sheet
 ```
-_Apply inner border style and color to the selected area_
+_Alias of [applyBorderInner()](#applyborderinner)_
 
 ### Parameters
 
@@ -1092,7 +1128,7 @@ _Apply named range to the selected area_
 public function applyOuterBorder(string $style, 
                                  ?string $color = '#000000'): Sheet
 ```
-_Apply outer border style and color to the selected area_
+_Alias of [applyBorderOuter()](#applyborderouter)_
 
 ### Parameters
 
@@ -3667,4 +3703,3 @@ $sheet->writeTo('B5:C7', $value, $styles, Sheet:MERGE_NO_CHECK); // don't check 
 
 
 ---
-

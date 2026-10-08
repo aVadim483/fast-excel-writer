@@ -211,7 +211,7 @@ $sheet->writeCell('abc')->applyBgColor('#9f9');
 $sheet->writeTo('C3', 'edf')->applyBgColor('#cc99ff');
 
 // Выбираем указанный диапазон и применяем к нему внешние и внутренние границы ячеек
-$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER_DOUBLE)->applyInnerBorder(Style::BORDER_DOTTED);
+$sheet->withRange('B4:D5')->applyBgColor('#cff')->applyBorderOuter(Style::BORDER_DOUBLE)->applyBorderInner(Style::BORDER_DOTTED);
 
 ```
 
@@ -221,10 +221,13 @@ $sheet->withRange('B4:D5')->applyBgColor('#cff')->applyOuterBorder(Style::BORDER
 * applyBorderRight(string $style, ?string $color = '#000000')
 * applyBorderTop(string $style, ?string $color = '#000000')
 * applyBorderBottom(string $style, ?string $color = '#000000')
-* applyOuterBorder(string $style, ?string $color = '#000000')
-* applyInnerBorder(string $style, ?string $color = '#000000')
+* applyBorderOuter(string $style, ?string $color = '#000000')
+* applyBorderInner(string $style, ?string $color = '#000000')
 
-`applyOuterBorder()` задаёт контур выбранного диапазона; `applyInnerBorder()` задаёт горизонтальные и вертикальные
+Прежние имена `applyOuterBorder()` и `applyInnerBorder()` остаются поддерживаемыми синонимами
+`applyBorderOuter()` и `applyBorderInner()` соответственно. Оба варианта доступны в `Sheet` и `Area`.
+
+`applyBorderOuter()` задаёт контур выбранного диапазона; `applyBorderInner()` задаёт горизонтальные и вертикальные
 внутренние границы. Чтобы добавить только горизонтальные внутренние границы, задайте нижнюю границу каждой строки, кроме последней:
 
 ```php

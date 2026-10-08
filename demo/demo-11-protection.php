@@ -17,7 +17,7 @@ $sheet->setColWidths(['B' => 36, 'C' => 12]);
 
 $sheet->writeTo('B3:C3', 'Calculate Mortgage Payments')
     ->applyBgColor('#cfd')
-    ->applyOuterBorder(Style::BORDER_THIN)
+    ->applyBorderOuter(Style::BORDER_THIN)
     ->applyFont('Arial', 14, 'bold')
     ->applyTextAlign('center', 'center')
 ;
@@ -63,8 +63,8 @@ $sheet = $excel->sheet(2);
 $area = $sheet->beginArea();
 $area->writeTo('C2:F2', 'You can write to yellow area only')->applyTextAlign('center', 'center');
 
-$area = $sheet->makeArea('C4:F10')->applyOuterBorder('thick')->applyBgColor('#ccc');
-$area = $sheet->makeArea('d5:e9')->applyOuterBorder('thin')->applyBgColor('#fffccc')->applyUnlock();
+$area = $sheet->makeArea('C4:F10')->applyBorderOuter('thick')->applyBgColor('#ccc');
+$area = $sheet->makeArea('d5:e9')->applyBorderOuter('thin')->applyBgColor('#fffccc')->applyUnlock();
 $sheet->protect('qwerty');
 
 $excel->protect();

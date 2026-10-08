@@ -239,6 +239,27 @@ for ($row = 4; $row < 6; $row++) {
 
 Apply these styles before the affected rows are flushed by writing subsequent rows, or use a buffered `Area`.
 
+When writing rows sequentially, you can also apply the border immediately after writing each row:
+
+```php
+foreach ($data as $row) {
+    $sheet->writeRow($row)->applyBorderBottom(Style::BORDER_DOTTED);
+}
+```
+
+The row remains editable until the next row is written. Styles applied to future rows remain buffered
+and do not flush those rows ahead of their data. Moving forward with `setTopLeftCell()` flushes preceding
+rows, so it preserves streaming and those preceding rows can no longer be edited.
+
+Individual border options can also be passed directly as row styles, or nested under `border`:
+
+```php
+$sheet->writeRow($row, [
+    'border-bottom-style' => Style::BORDER_DOTTED,
+    'border-bottom-color' => '#000000',
+]);
+```
+
 #### Apply Fonts
 * applyFont(string $fontName, ?int $fontSize = null, ?string $fontStyle = null, ?string $fontColor = null)
 * applyFontName(string $fontName)

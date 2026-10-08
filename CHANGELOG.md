@@ -1,3 +1,10 @@
+## V.6.19.2
+
+* Fixed premature flushing of future styled rows, which could silently discard values written with `writeRow()` (#144)
+* Moving forward with `setTopLeftCell()` now flushes preceding rows instead of accumulating them in memory
+* Support flat individual border options such as `border-bottom-style` and `border-bottom-color` in style arrays
+* Added streaming regression tests checking cell values, borders and buffered rows; range border tests now also verify sheet cell values
+
 ## V.6.19.1
 
 * Made `applyBorderOuter()` and `applyBorderInner()` the primary range border methods; `applyOuterBorder()` and `applyInnerBorder()` remain supported aliases

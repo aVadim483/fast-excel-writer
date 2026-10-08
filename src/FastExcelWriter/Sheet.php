@@ -895,7 +895,13 @@ class Sheet implements InterfaceSheetWriter
      */
     public function setTopLeftCell($cellAddress): Sheet
     {
+        $previousRowIdx = $this->currentRowIdx;
         $address = $this->_moveTo($cellAddress);
+        if ($address['rowIndex'] > $previousRowIdx) {
+            // Flush preceding rows before resetting the column pointer.
+            $this->currentRowIdx = $previousRowIdx;
+            $this->_writeCurrentRow($address['rowIndex'] - 1);
+        }
         $this->_touch($address['rowIndex'], $address['colIndex'], $address['rowIndex'], $address['colIndex'], 'cell');
 
         $this->currentRowIdx = $address['rowIndex'];
@@ -2789,9 +2795,10 @@ class Sheet implements InterfaceSheetWriter
     }
 
     /**
+     * @param int|null $lastRowIdx Last row to flush; defaults to the current row
      * @return int
      */
-    protected function _writeCurrentRow(): int
+    protected function _writeCurrentRow(?int $lastRowIdx = null): int
     {
         $savedRow = $this->currentRowIdx;
         if (!empty($this->cells['values']) || !empty($this->cells['styles']) || $this->rowSettings || $this->rowAttributes) {
@@ -2809,6 +2816,8 @@ class Sheet implements InterfaceSheetWriter
                 if ($maxRowIdx < $this->currentRowIdx) {
                     $maxRowIdx = $this->currentRowIdx;
                 }
+                // Future styles must remain buffered until their values are written.
+                $maxRowIdx = min($maxRowIdx, $lastRowIdx ?? $this->currentRowIdx);
 
                 for ($rowIdx = $this->rowCountWritten; $rowIdx <= $maxRowIdx; $rowIdx++) {
                     if (isset($this->cells['values'][$rowIdx])) {
@@ -2852,7 +2861,7 @@ class Sheet implements InterfaceSheetWriter
                         unset($this->rowSettings[$rowIdx]);
                     }
                 }
-                $this->currentRowIdx++;
+                $this->currentRowIdx = max($this->currentRowIdx + 1, $this->rowCountWritten);
             }
 
             $this->currentColIdx = $this->offsetCol;
@@ -3642,8 +3651,9 @@ class Sheet implements InterfaceSheetWriter
             $this->writeAreas();
         }
 
-        if ($this->currentColIdx || !empty($this->cells['values'][$this->currentRowIdx]) || !empty($this->cells['styles'][$this->currentRowIdx])) {
-            $this->_writeCurrentRow();
+        if ($this->currentColIdx || !empty($this->cells['values']) || !empty($this->cells['styles'])) {
+            // Saving is the point where future styled cells must also be flushed.
+            $this->_writeCurrentRow(PHP_INT_MAX);
         }
 
         if ($this->rowSettings || $this->rowAttributes) {

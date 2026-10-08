@@ -37,7 +37,7 @@ final class BorderMethodsTest extends TestCase
         $this->assertSame($target, $target->$outer(Style::BORDER_DOUBLE, $color));
         $this->assertSame($target, $target->$inner(Style::BORDER_DOTTED, $color));
         for ($row = 1; $row <= 4; $row++) {
-            $sheet->writeRow([1, 2, 3, 4]);
+            $sheet->writeRow([$row * 10 + 1, $row * 10 + 2, $row * 10 + 3, $row * 10 + 4]);
         }
         $file = tempnam(sys_get_temp_dir(), 'border-methods-');
         $zip = new ZipArchive();
@@ -54,6 +54,9 @@ final class BorderMethodsTest extends TestCase
                     $address = chr(64 + $col) . $row;
                     $cells = $xml->xpath('//s:c[@r="' . $address . '"]');
                     $this->assertCount(1, $cells, $address);
+                    if (!$area) {
+                        $this->assertSame((string)(($row - 1) * 10 + $col), (string)$cells[0]->v, $address . ':value');
+                    }
                     $xf = $styles->cellXfs->xf[(int)$cells[0]['s']];
                     $border = $styles->borders->border[(int)$xf['borderId']];
                     $expected = [

@@ -999,6 +999,9 @@ class StyleManager
                     elseif (strpos($styleKey, 'font-') === 0) {
                         $result['font'][$styleKey] = $styleVal;
                     }
+                    elseif (strpos($styleKey, 'border-') === 0) {
+                        $result['border'][$styleKey] = $styleVal;
+                    }
                     else {
                         $result[$styleKey] = $styleVal;
                     }

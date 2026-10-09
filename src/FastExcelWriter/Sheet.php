@@ -123,6 +123,9 @@ class Sheet implements InterfaceSheetWriter
     // ZERO based
     protected array $cells = [];
 
+    /** @var int Highest buffered cell row index, or -1 when no cells are buffered */
+    protected int $maxBufferedCellRowIdx = -1;
+
     // Current row index
     protected int $currentRowIdx = 0;
 
@@ -2806,8 +2809,7 @@ class Sheet implements InterfaceSheetWriter
             if (!$this->open) {
                 $writer->writeSheetDataBegin($this);
             }
-            $maxRowIdx = max($this->cells['values'] ? max(array_keys($this->cells['values'])) : -1,
-                $this->cells['styles'] ? max(array_keys($this->cells['styles'])) : -1);
+            $maxRowIdx = $this->maxBufferedCellRowIdx;
             if ($this->rowAttributes) {
                 $maxRowIdx = max($maxRowIdx, max(array_keys($this->rowAttributes)));
             }
@@ -2860,6 +2862,11 @@ class Sheet implements InterfaceSheetWriter
                     if (isset($this->rowSettings[$rowIdx])) {
                         unset($this->rowSettings[$rowIdx]);
                     }
+                }
+                // Rows are removed in ascending order, so the maximum stays valid
+                // until the last buffered cell row has been flushed.
+                if (!$this->cells['values'] && !$this->cells['styles']) {
+                    $this->maxBufferedCellRowIdx = -1;
                 }
                 $this->currentRowIdx = max($this->currentRowIdx + 1, $this->rowCountWritten);
             }
@@ -3318,6 +3325,9 @@ class Sheet implements InterfaceSheetWriter
                 $addr = Excel::cellAddress($colIdx + 1, $rowIdx + 1);
                 Exception::throwNew('Value for cell %s must be scalar or callable', $addr);
             }
+            if ($rowIdx > $this->maxBufferedCellRowIdx) {
+                $this->maxBufferedCellRowIdx = $rowIdx;
+            }
             if ($changeCurrent) {
                 $this->currentRowIdx = $rowIdx;
                 $this->currentColIdx = $colIdx;
@@ -3325,6 +3335,9 @@ class Sheet implements InterfaceSheetWriter
         }
         if ($styles) {
             $this->cells['styles'][$rowIdx][$colIdx] = StyleManager::normalize($styles);
+            if ($rowIdx > $this->maxBufferedCellRowIdx) {
+                $this->maxBufferedCellRowIdx = $rowIdx;
+            }
         }
 
         return $dimension;
@@ -3433,6 +3446,9 @@ class Sheet implements InterfaceSheetWriter
                 }
                 if (!isset($this->cells['values'][$row][$col])) {
                     $this->cells['values'][$row][$col] = '';
+                }
+                if ($row > $this->maxBufferedCellRowIdx) {
+                    $this->maxBufferedCellRowIdx = $row;
                 }
             }
         }
@@ -3568,7 +3584,7 @@ class Sheet implements InterfaceSheetWriter
         }
 
         if (!empty($this->cells['values']) || !empty($this->cells['styles'])) {
-            $maxRowIdx = max(array_keys($this->cells['values']) + array_keys($this->cells['styles']));
+            $maxRowIdx = $this->maxBufferedCellRowIdx;
             // writes row by row
             for ($rowIdx = $this->rowCountWritten; $rowIdx <= $maxRowIdx; $rowIdx++) {
                 if (isset($this->cells['values'][$rowIdx]) || isset($this->cells['styles'][$rowIdx])) {
@@ -3601,6 +3617,9 @@ class Sheet implements InterfaceSheetWriter
                     //$this->_writeRow($writer, [null]);
                     $this->_writeRow($writer, isset($this->rowSettings[$rowIdx]) ? [null] : []);
                 }
+            }
+            if (!$this->cells['values'] && !$this->cells['styles']) {
+                $this->maxBufferedCellRowIdx = -1;
             }
             $this->clearAreas();
         }
@@ -3734,6 +3753,9 @@ class Sheet implements InterfaceSheetWriter
             if (!isset($this->cells['values'][$rowIdx][$colIdx])) {
                 $this->cells['values'][$rowIdx][$colIdx] = null;
             }
+            if ($rowIdx > $this->maxBufferedCellRowIdx) {
+                $this->maxBufferedCellRowIdx = $rowIdx;
+            }
         }
         elseif ($ref === 'area') {
             for ($rowIdx = $this->lastTouch['area']['row_idx1']; $rowIdx <= $this->lastTouch['area']['row_idx2']; $rowIdx++) {
@@ -3746,6 +3768,9 @@ class Sheet implements InterfaceSheetWriter
                     }
                     if (!isset($this->cells['values'][$rowIdx][$colIdx])) {
                         $this->cells['values'][$rowIdx][$colIdx] = '';
+                    }
+                    if ($rowIdx > $this->maxBufferedCellRowIdx) {
+                        $this->maxBufferedCellRowIdx = $rowIdx;
                     }
                 }
             }
@@ -4108,6 +4133,9 @@ class Sheet implements InterfaceSheetWriter
         if ($cell) {
             if ($rowIdx >= $this->currentRowIdx && !isset($this->cells['values'][$rowIdx][$colIdx])) {
                 $this->cells['values'][$rowIdx][$colIdx] = null;
+                if ($rowIdx > $this->maxBufferedCellRowIdx) {
+                    $this->maxBufferedCellRowIdx = $rowIdx;
+                }
             }
             $imageData = $this->excel->loadImageFile($imageFile);
             if ($imageData) {

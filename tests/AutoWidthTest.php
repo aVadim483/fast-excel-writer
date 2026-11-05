@@ -288,6 +288,95 @@ final class AutoWidthTest extends TestCase
         $this->assertSame(255.0, $widths[2]);
     }
 
+    public function testSaturatedColumnsSkipMeasurementsAndResumeAfterWidthReset(): void
+    {
+        $calculator = new class extends Font {
+            public int $calls = 0;
+
+            public function calculateCellWidth($value, array $font, array $baseFont, bool $wrap): float
+            {
+                ++$this->calls;
+                return parent::calculateCellWidth($value, $font, $baseFont, $wrap);
+            }
+        };
+        $excel = Excel::create();
+        $property = new ReflectionProperty($excel, 'autoWidthFont');
+        $property->setAccessible(true);
+        $property->setValue($excel, $calculator);
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:B')->setColMinWidth('B', 255)->setAutoFilter('A1:B3');
+        $sheet->writeRow([str_repeat('W', 600), 'minimum width']);
+        $sheet->nextRow();
+        $this->assertSame(1, $calculator->calls);
+        $sheet->writeRow(['later text', new RichText('Saved <b>rich</b> text')]);
+        $sheet->nextRow();
+        $this->assertSame(1, $calculator->calls);
+        $sheet->setColWidth('A', 5);
+        Font::setFontWidthFactor(0.8);
+        $replacement = 'Automatic width after resetting';
+        $sheet->writeRow([$replacement, false]);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame(2, $calculator->calls);
+        $base = $excel->styleManager->defaultFont['val'];
+        $expected = (new Font())->calculateCellWidth($replacement, $base, $base, false) + 1;
+        $this->assertEqualsWithDelta($expected, $widths[1], 1 / 256);
+        $this->assertSame(255.0, $widths[2]);
+        $cells = ExcelReader::open(end($this->files))->readCells();
+        $this->assertSame('later text', $cells['A3']);
+        $this->assertSame('Saved rich text', $cells['B3']);
+        $this->assertSame($replacement, $cells['A5']);
+    }
+
+    public function testSaturatedColumnsStillInvokeNewCallbacksForEachValue(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A')->writeRow([str_repeat('W', 600)]);
+        $sheet->nextRow();
+        $seen = [];
+        $excel->setAutoWidthFormatter(function ($value) use (&$seen) {
+            $seen[] = $value;
+            return null;
+        });
+        $sheet->writeRows([[12.5], [false], [['=1+1', 2]], ["short\ntext"]]);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame([12.5, false, 2, "short\ntext"], $seen);
+        $this->assertSame(255.0, $widths[1]);
+        $cells = ExcelReader::open(end($this->files))->readCells();
+        $this->assertEquals(12.5, $cells['A3']);
+        $this->assertSame("short\ntext", $cells['A6']);
+    }
+
+    public function testSaturatedColumnsStillValidateCallbackResults(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A')->writeRow([str_repeat('W', 600)]);
+        $sheet->nextRow();
+        $excel->setAutoWidthFormatter(static function () { return 123; });
+        $sheet->writeRow(['later text']);
+        $this->expectException(UnexpectedValueException::class);
+        $this->saveWidths($excel);
+    }
+
+    public function testFormatterCanReduceASaturatedColumnWidth(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A')->writeRow([str_repeat('W', 600)]);
+        $sheet->nextRow();
+        $label = 'Width from callback';
+        $excel->setAutoWidthFormatter(function () use ($sheet, $label) {
+            $sheet->setColWidth('A', 5);
+            return $label;
+        });
+        $sheet->writeRow([false]);
+        $widths = $this->saveWidths($excel);
+        $base = $excel->styleManager->defaultFont['val'];
+        $expected = (new Font())->calculateCellWidth($label, $base, $base, false);
+        $this->assertEqualsWithDelta($expected, $widths[1], 1 / 256);
+    }
+
     public function testWorkbookWidthContextIsReleased(): void
     {
         $excel = Excel::create();

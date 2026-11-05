@@ -222,6 +222,8 @@ $sheet->setColDataStyleArray($colStyle);
 Therefore, automatic adjustment of the column width must be performed before you start writing data in the cells. 
 If this adjustment is performed at the end of document creation, it has no effect.
 
+Once a column reaches Excel's width limit of 255, further measurements are skipped unless an automatic width formatter callback is set. Callbacks retain their normal invocation rules. Lowering the column width with `setColWidth()` resumes measurement.
+
 2. Widths use character advance tables for Calibri, Arial, Tahoma and Times New Roman at 11 pt, scaled for size and selected for normal/bold/italic faces. Tables cover ASCII and Russian Cyrillic. Unknown fonts (including Aptos), other characters and complex text shaping use approximations. No GD extension or installed font files are required at runtime.
 
 Content pixels are converted to Excel units using the maximum digit width of the workbook base font, with cell padding added once. The regression fixture `tests/auto-width-excel.json` contains 41 AutoFit cases from Excel 16.0, with actual saved XML widths. Its acceptance tolerance is the larger of 1.15 width units and 5%; it covers these fixtures, not every font, size or writing system. See Microsoft's [column width definition](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.column) and [number format guidelines](https://support.microsoft.com/en-us/excel/review-guidelines-for-customizing-a-number-format).

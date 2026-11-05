@@ -2203,6 +2203,10 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
+        $currentWidth = $this->colAttributes[$colIdx]['width'] ?? null;
+        if ($currentWidth >= 255 && !$this->excel->hasAutoWidthFormatter()) {
+            return;
+        }
         $formulaResult = false;
         while (is_array($cellValue)) {
             if (array_key_exists('width_text', $cellValue)) {
@@ -2224,7 +2228,6 @@ class Sheet implements InterfaceSheetWriter
                 $cellValue, $style['font']['val'] ?? [],
                 $this->excel->styleManager->defaultFont['val'] ?? [], (bool)$this->autoFilter
             );
-            $currentWidth = $this->colAttributes[$colIdx]['width'] ?? null;
             if (($currentWidth === null || $currentWidth < $len) && ($this->colMinWidths[$colIdx] ?? 0) <= $len) {
                 $this->_setColAttributes($colIdx, ['width' => $len]);
             }

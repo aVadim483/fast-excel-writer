@@ -2203,6 +2203,7 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
+        $formulaResult = false;
         if (is_array($cellValue)) {
             if (array_key_exists('width_text', $cellValue)) {
                 $cellValue = $cellValue['width_text'];
@@ -2212,6 +2213,7 @@ class Sheet implements InterfaceSheetWriter
             }
             elseif (isset($cellValue[0]) && is_string($cellValue[0]) && strpos($cellValue[0], '=') === 0) {
                 $cellValue = $cellValue[1] ?? null;
+                $formulaResult = true;
             }
             else {
                 $cellValue = $cellValue['value'] ?? null;
@@ -2221,8 +2223,28 @@ class Sheet implements InterfaceSheetWriter
             $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
             $fontName = $font['name'] ?? Font::DEFAULT_FONT_NAME;
             $fontSize = $font['size'] ?? Font::DEFAULT_FONT_SIZE;
-            $value = is_bool($cellValue) ? ($cellValue ? 'TRUE' : 'FALSE') : $cellValue;
+            $value = $cellValue;
             $calculator = $this->excel->getAutoWidthFont();
+
+            if (!$value instanceof RichText) {
+                $type = $style['number_format_type'] ?? 'n_auto';
+                $numeric = $type === 'n_numeric' ? is_numeric($value) : ($type === 'n_auto' && $this->excel->getWriter()->isNumericValue($value));
+                if ($formulaResult) {
+                    $numeric = is_int($value) || is_float($value) || (is_string($value) && is_numeric($value)
+                        && ($value === '0' || $value[0] !== '0' || (isset($value[1]) && $value[1] === '.')));
+                }
+                elseif ($type === 'n_date' || $type === 'n_datetime') {
+                    $converted = Writer::convertDateTime($value);
+                    if ($converted !== false) {
+                        $value = $type === 'n_date' ? (int)$converted : $converted;
+                        $numeric = true;
+                    }
+                }
+                if ($type === 'n_auto' && is_string($value) && (strpos($value, '\\=') === 0 || strpos($value, '\\\\=') === 0)) {
+                    $value = substr($value, 1);
+                }
+                $value = $this->excel->formatAutoWidthValue($value, $numberFormat, $type, $numeric);
+            }
 
             if ($value instanceof RichText) {
                 $len = $calculator->calculateRichTextWidth($value, $font, (bool)$textWrap);
@@ -2231,11 +2253,11 @@ class Sheet implements InterfaceSheetWriter
                 // a wrapped multi-line text is as wide as its longest line
                 $len = 0;
                 foreach (explode("\n", str_replace("\r\n", "\n", $value)) as $line) {
-                    $len = max($len, $calculator->calculateTextWidth($fontName, $fontSize, $line, $numberFormat));
+                    $len = max($len, $calculator->calculateTextWidth($fontName, $fontSize, $line, '@'));
                 }
             }
             else {
-                $len = $calculator->calculateTextWidth($fontName, $fontSize, (string)$value, $numberFormat);
+                $len = $calculator->calculateTextWidth($fontName, $fontSize, (string)$value, '@');
             }
             if ($this->autoFilter) {
                 $len += 1;

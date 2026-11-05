@@ -249,6 +249,20 @@ class Writer
         $this->sharedString = $option;
     }
 
+    /** Use the same numeric coercion for display measurement and XML writing. */
+    public function isNumericValue($value): bool
+    {
+        if (!is_string($value)) {
+            return is_int($value) || is_float($value);
+        }
+        if (!$this->autoConvertNumber || $value === '') {
+            return false;
+        }
+        $numeric = $value === '0' || ($value[0] !== '0' && preg_match('/^\d+$/', $value))
+            || preg_match('/^-?(0|[1-9]\d*)(\.\d+)?$/', $value);
+        return $numeric && strlen(ltrim(preg_replace('/[^0-9].*$/', '', ltrim($value, '+-')), '0')) <= self::MAX_SIGNIFICANT_DIGITS;
+    }
+
     /**
      * @param string $name
      *

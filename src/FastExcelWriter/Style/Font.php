@@ -67,10 +67,12 @@ class Font
     protected static float $widthFactor = 1.0;
 
     protected WidthCache $widthCache;
+    protected DisplayFormatter $formatter;
 
     public function __construct()
     {
         $this->widthCache = new WidthCache();
+        $this->formatter = new DisplayFormatter();
     }
 
 
@@ -99,19 +101,23 @@ class Font
 
     public function calculateTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
     {
+        if ($numberFormat !== null && $numberFormat !== '@' && strcasecmp($numberFormat, 'general') !== 0) {
+            $value = $this->formatter->format($value, $numberFormat, is_numeric($value));
+        }
 
         $key = '[[[' . $fontName . ':' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
         $len = $this->widthCache->get($key);
         if ($len === null) {
             $len = self::_calcWidth($value, $fontName, $fontSize);
-            if ($numberFormat !== null && $numberFormat !== 'GENERAL' && $numberFormat !== '0' && $numberFormat != '@') {
-                $numberFormat = Excel::_formatValue($value, $numberFormat);
-                $len = max($len, self::_calcWidth(str_replace('\\', '', $numberFormat), $fontName, $fontSize, true));
-            }
             $this->widthCache->put($key, $len);
         }
 
         return round($len * self::$widthFactor, 8);
+    }
+
+    public function formatDisplayValue($value, string $format, bool $numeric, string $locale): string
+    {
+        return $this->formatter->format($value, $format, $numeric, $locale);
     }
 
     protected static function _ranges(): array

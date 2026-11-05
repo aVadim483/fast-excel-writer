@@ -174,6 +174,35 @@ class Excel implements InterfaceBookWriter
     protected bool $autoWrapText = true;
 
     protected ?\avadim\FastExcelWriter\Style\Font $autoWidthFont = null;
+    protected string $autoWidthLocale = 'en';
+    /** @var callable|null */
+    protected $autoWidthFormatter = null;
+
+    /** Callback receives value, format, format type and locale; null uses the built-in formatter. */
+    public function setAutoWidthFormatter(?callable $formatter): Excel
+    {
+        $this->autoWidthFormatter = $formatter;
+        return $this;
+    }
+
+    public function getAutoWidthLocale(): string
+    {
+        return $this->autoWidthLocale;
+    }
+
+    public function formatAutoWidthValue($value, string $format, string $type, bool $numeric): string
+    {
+        if ($this->autoWidthFormatter !== null) {
+            $text = ($this->autoWidthFormatter)($value, $format, $type, $this->autoWidthLocale);
+            if ($text !== null) {
+                if (!is_string($text)) {
+                    throw new \UnexpectedValueException('Automatic width formatter must return a string or null');
+                }
+                return $text;
+            }
+        }
+        return $this->getAutoWidthFont()->formatDisplayValue($value, $format, $numeric, $this->autoWidthLocale);
+    }
 
     /** Calculation state is local to the workbook and allocated only when needed. */
     public function getAutoWidthFont(): \avadim\FastExcelWriter\Style\Font
@@ -226,6 +255,9 @@ class Excel implements InterfaceBookWriter
         $writerOptions['shared_string'] = !empty($options['shared_string']);
         if (isset($options['auto_wrap_text'])) {
             $this->autoWrapText = (bool)$options['auto_wrap_text'];
+        }
+        if (isset($options['auto_width_formatter'])) {
+            $this->setAutoWidthFormatter($options['auto_width_formatter']);
         }
 
         if (!empty(self::$bufferLimit)) {
@@ -570,6 +602,7 @@ class Excel implements InterfaceBookWriter
      */
     public function setLocale(string $locale, ?string $dir = null): Excel
     {
+        $this->autoWidthLocale = strtolower(str_replace('-', '_', $locale));
         $localeSettings = [];
         // default settings
         $aFormatSettings = [

@@ -117,6 +117,13 @@ class Options implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /** Set an optional display-text callback for automatic column widths. */
+    public function autoWidthFormatter(?callable $formatter): Options
+    {
+        $this->options['auto_width_formatter'] = $formatter;
+        return $this;
+    }
+
     /**
      * Set default font
      *

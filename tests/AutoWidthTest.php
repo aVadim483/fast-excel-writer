@@ -5,6 +5,7 @@ declare(strict_types=1);
 use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\Style\Font;
 use avadim\FastExcelWriter\Style\WidthCache;
+use avadim\FastExcelWriter\Style\DisplayFormatter;
 use avadim\FastExcelWriter\RichText\RichText;
 use avadim\FastExcelReader\Excel as ExcelReader;
 use PHPUnit\Framework\TestCase;
@@ -132,5 +133,78 @@ final class AutoWidthTest extends TestCase
         $second = Excel::create();
         $this->assertNotSame($first->getAutoWidthFont(), $second->getAutoWidthFont());
         $this->assertSame($first->getAutoWidthFont(), $first->getAutoWidthFont());
+    }
+
+    public function displayValues(): array
+    {
+        return [
+            [0.25, '0%', true, 'en', '25%'],
+            [12, '000000', true, 'en', '000012'],
+            [1234.5, '0.00', true, 'en', '1234.50'],
+            [0.000001234, '0.00', true, 'en', '0.00'],
+            ['000012', '@', false, 'en', '000012'],
+            ['12', '000000', false, 'en', '12'],
+            [1234.5, '#,##0.00', true, 'en', '1,234.50'],
+            [1234.5, '#,##0.00', true, 'de', '1.234,50'],
+            [1234.5, '#,##0.00', true, 'ru', "1\xc2\xa0234,50"],
+            [1234567, '0.0,,', true, 'en', '1.2'],
+            [1234567, '0.00E+00', true, 'en', '1.23E+06'],
+            [0.0000123, '0.0E+00', true, 'en', '1.2E-05'],
+            [12.3, '0.##', true, 'en', '12.3'],
+            [-12.5, '0.00;(0.00);"zero"', true, 'en', '(12.50)'],
+            [0, '0.00;(0.00);"zero"', true, 'en', 'zero'],
+            [0, '0.00;0.00;', true, 'en', ''],
+            [5, '[>=10]0.0;[<0](0);"small"', true, 'en', 'small'],
+            [10, '[>=10]0.0;[<0](0);"small"', true, 'en', '10.0'],
+            [12, '"units; "0', true, 'en', 'units; 12'],
+            [12, '\\$0', true, 'en', '$12'],
+            [12, '[$€-407]0.00', true, 'en', '€12,00'],
+            ['abc', '0;0;0;"text: "@', false, 'en', 'text: abc'],
+            [12, '# ?/?', true, 'en', '12'],
+            [60, 'yyyy-mm-dd', true, 'en', '1900-02-29'],
+            [61, 'yyyy-mm-dd', true, 'en', '1900-03-01'],
+            [0, 'yyyy-mm-dd', true, 'en', '1900-01-00'],
+            [1.5, '[h]:mm', true, 'en', '36:00'],
+            [0.75, 'h:mm AM/PM', true, 'en', '6:00 PM'],
+            [61.520833333, 'yyyy-mm-dd hh:mm', true, 'en', '1900-03-01 12:30'],
+            [true, '0', false, 'en', 'TRUE'],
+        ];
+    }
+
+    /** @dataProvider displayValues */
+    public function testDisplayFormatting($value, string $format, bool $numeric, string $locale, string $expected): void
+    {
+        $formatter = new DisplayFormatter();
+        $this->assertSame($expected, $formatter->format($value, $format, $numeric, $locale));
+    }
+
+    public function testWidthsUseDisplayedTextOnly(): void
+    {
+        $excel = Excel::create([], ['locale' => 'en']);
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:D');
+        $sheet->writeRow([0.000001234, '0.00', 12, '000012'], [], [0 => ['format' => '0.00'], 2 => ['format' => '000000']]);
+        $widths = $this->saveWidths($excel);
+        $this->assertEqualsWithDelta($widths[2], $widths[1], 0.001);
+        $this->assertEqualsWithDelta($widths[4], $widths[3], 0.001);
+    }
+
+    public function testFormatterCallbackIsNotCachedAndDoesNotChangeCells(): void
+    {
+        $calls = 0;
+        $excel = Excel::create();
+        $excel->setAutoWidthFormatter(function ($value, $format, $type, $locale) use (&$calls) {
+            ++$calls;
+            return $value === 1 ? 'custom text' : null;
+        });
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:B');
+        $sheet->writeRow([1, 'custom text']);
+        $sheet->writeRow([1, 'custom text']);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame(4, $calls);
+        $this->assertEqualsWithDelta($widths[1], $widths[2], 0.001);
+        $cells = ExcelReader::open(end($this->files))->readCells();
+        $this->assertEquals(1, $cells['A1']);
     }
 }

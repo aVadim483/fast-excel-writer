@@ -226,7 +226,21 @@ If this adjustment is performed at the end of document creation, it has no effec
 But the width of different characters may differ, so the column width may be larger than the width of the text in the cell,
 or it may be smaller.
 
-3. The library cannot calculate formulas, so if a cell contains a formula, it will be ignored when calculating the automatic column width.
+3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.
+
+Automatic widths handle zero, boolean values and RichText, including fragment fonts, sizes and wrapped lines. Numeric cells are measured using their displayed value rather than the longer of the raw and formatted values. Supported masks include decimal places, leading zeros, grouping/scaling, percentages, currencies, scientific notation, sections/conditions, dates, time and elapsed `[h]:mm`. Text cells retain their text, including leading zeros. English, German, French and Russian numeric separators are selected from the workbook locale; explicit supported locale codes in a mask take precedence.
+
+Unsupported masks (for example fractions) fall back to the original value. Repeated `*` fill is ignored and `_` spacing is approximated by a space. A callback can supply display text for custom formats without changing the saved cell:
+
+```php
+$excel->setAutoWidthFormatter(function ($value, $format, $type, $locale) {
+    return $format === '# ?/?' ? 'custom fraction text' : null;
+});
+```
+
+The callback must return a string, or `null` to use the built-in formatter. It runs for each measured scalar cell and is not cached. It is also available as the `auto_width_formatter` workbook option and `Options::autoWidthFormatter()`.
+
+Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skipping keys over 1 KiB). Parsed formats have a separate bounded cache. Workbook caches are released with the workbook; shared strings and the style registry have their own memory requirements. `Font::setFontWidthFactor()` affects subsequent measurements, including cached ones, without remeasuring already written rows.
 
 ### Group/outline rows and columns
 

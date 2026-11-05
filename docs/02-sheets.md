@@ -246,7 +246,7 @@ Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skippi
 
 Measurement cache keys reuse equal-width digit patterns: the supported font tables use tabular digits, so `Row 12345` and `Row 98765` can share a measurement. This applies after display formatting and does not alter stored values. Short Unicode text uses multibyte splitting; long text covered by the tables uses a native character-count path with the same advances. Other characters retain the existing fallback.
 
-Measurements on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
+Initial implementation measurements before the date/text optimizations, on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
 
 | Scenario | PHP 7.4 before / after | PHP 8.3 before / after |
 | --- | --- | --- |
@@ -255,6 +255,17 @@ Measurements on Windows with Xdebug disabled (2026-11-05, median of five separat
 | Export 10,000 numeric rows, automatic widths disabled | 0.119 / 0.122 s | 0.109 / 0.112 s |
 
 The more detailed measurement costs time when automatic widths are enabled. In a separate streaming run with a fixed style set and inline strings, memory stayed near 2.2 MiB (PHP 7.4) / 1.3 MiB (PHP 8.3) above the initial process usage from 100,000 through 1,000,000 rows across two sheets. These figures describe the measured workloads; shared strings and unique styles can still grow. GD/FreeType was evaluated and remains a separate possible extension because it requires font files and costs substantially more per uncached measurement.
+
+After optimizing dates and text, the same 10,000-row export workloads were compared against the initial implementation (`3e8e6e1`), alternating versions over five separate runs:
+
+| Scenario | PHP 7.4 reduction in export time | PHP 8.3 reduction in export time |
+| --- | --- | --- |
+| Numeric date/time mask | 44% | 36% |
+| Text with the same prefix and varying digits | 16% | 20% |
+| Unique text without digits | 3% | 11% |
+| Long unique text | 33% | 32% |
+
+Short repeated text did not show a consistent speedup. In the same comparison, numeric dates and text with varying digits were within about 3% of the original `5996193` timings; other workloads can still cost more than the original coarse font estimation. These are workload-specific results, not a speed guarantee for every string or format.
 
 ### Group/outline rows and columns
 

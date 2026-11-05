@@ -17,6 +17,7 @@ use avadim\FastExcelWriter\Style\ImageStyle;
 use avadim\FastExcelWriter\Style\Style;
 use avadim\FastExcelWriter\Style\StyleManager;
 use avadim\FastExcelWriter\Writer\FileWriter;
+use avadim\FastExcelWriter\Writer\PreparedDateTime;
 use avadim\FastExcelWriter\Writer\Writer;
 
 /**
@@ -2169,7 +2170,12 @@ class Sheet implements InterfaceSheetWriter
                         $numberFormatType = $resultStyle['number_format_type'];
 
                         if (!empty($cellStyle['options']['width-auto']) && !($cellValue && is_string($cellValue) && $cellValue[0] === '=')) {
-                            $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? [], !empty($cellStyle['format']['format-text-wrap']));
+                            if ($numberFormatType === 'n_date' || $numberFormatType === 'n_datetime') {
+                                $preparedDateTime = $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? [], !empty($cellStyle['format']['format-text-wrap']));
+                            }
+                            else {
+                                $this->_columnWidth($colIdx, $cellValue, $numberFormat, $resultStyle ?? [], !empty($cellStyle['format']['format-text-wrap']));
+                            }
                         }
 
                         if (!$writer) {
@@ -2177,7 +2183,14 @@ class Sheet implements InterfaceSheetWriter
                         }
                     }
                     if ($cellValue !== null || $cellStyleIdx !== 0 || $numberFormatType !== 'n_auto') {
-                        $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+                        if (isset($preparedDateTime) && $preparedDateTime instanceof PreparedDateTime) {
+                            $writer->_writePreparedDateCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue,
+                                $numberFormatType, $cellStyleIdx, $preparedDateTime);
+                            unset($preparedDateTime);
+                        }
+                        else {
+                            $writer->_writeCell($this->fileWriter, $rowIdx + 1, $colIdx + 1, $cellValue, $numberFormatType, $cellStyleIdx);
+                        }
                         $this->_setDimension($rowIdx + 1, $colIdx + 1);
                     }
                     $colIdx++;
@@ -2200,6 +2213,7 @@ class Sheet implements InterfaceSheetWriter
      * @param $numberFormat
      * @param $style
      * @param bool|null $textWrap
+     * @return PreparedDateTime|null
      */
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
@@ -2253,7 +2267,8 @@ class Sheet implements InterfaceSheetWriter
                         && ($value === '0' || $value[0] !== '0' || (isset($value[1]) && $value[1] === '.')));
                 }
                 elseif ($type === 'n_date' || $type === 'n_datetime') {
-                    $converted = Writer::convertDateTime($value);
+                    $preparedDateTime = new PreparedDateTime($value);
+                    $converted = $preparedDateTime->serial;
                     if ($converted !== false) {
                         $value = $type === 'n_date' ? (int)$converted : $converted;
                         $numeric = true;
@@ -2277,6 +2292,7 @@ class Sheet implements InterfaceSheetWriter
                 $this->_setColAttributes($colIdx, ['width' => $len]);
             }
         }
+        return $preparedDateTime ?? null;
     }
 
     /**

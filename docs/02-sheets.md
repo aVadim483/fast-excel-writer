@@ -228,6 +228,8 @@ Once a column reaches Excel's width limit of 255, further measurements are skipp
 
 Content pixels are converted to Excel units using the maximum digit width of the workbook base font, with cell padding added once. The regression fixture `tests/auto-width-excel.json` contains 41 AutoFit cases from Excel 16.0, with actual saved XML widths. Its acceptance tolerance is the larger of 1.15 width units and 5%; it covers these fixtures, not every font, size or writing system. See Microsoft's [column width definition](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.column) and [number format guidelines](https://support.microsoft.com/en-us/excel/review-guidelines-for-customizing-a-number-format).
 
+Date conversion is shared between automatic width measurement and XML writing for the current cell. Custom writers still receive the original value. If the timezone or the value passed by a custom writer changes before serialization, the date is converted again.
+
 3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.
 
 Automatic widths handle zero, boolean values and RichText, including fragment fonts, sizes and wrapped lines. Numeric cells are measured using their displayed value rather than the longer of the raw and formatted values. Supported masks include decimal places, leading zeros, grouping/scaling, percentages, currencies, scientific notation, sections/conditions, dates, time and elapsed `[h]:mm`. Text cells retain their text, including leading zeros. English, German, French and Russian numeric separators are selected from the workbook locale; explicit supported locale codes in a mask take precedence.

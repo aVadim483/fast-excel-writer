@@ -64,6 +64,9 @@ class Writer
     protected bool $autoConvertNumber = false;
     protected bool $sharedString = false;
 
+    /** @var array|null Prepared date scoped to the current cell write. */
+    protected ?array $preparedDateTime = null;
+
     /**
      * Paths of temp files still pending removal, keyed by path.
      * Used as a fallback cleanup on shutdown (e.g. after a fatal error).
@@ -1442,6 +1445,20 @@ class Writer
         return [' t="str"', self::xmlEscapedString((string)$result)];
     }
 
+    /** @internal Keep custom _writeCell implementations and their original arguments. */
+    public function _writePreparedDateCell(FileWriter $file, int $rowNumber, int $colNumber, $value,
+        $numFormatType, ?int $cellStyleIdx, PreparedDateTime $date)
+    {
+        $previous = $this->preparedDateTime;
+        $this->preparedDateTime = [$rowNumber, $colNumber, $date];
+        try {
+            $this->_writeCell($file, $rowNumber, $colNumber, $value, $numFormatType, $cellStyleIdx);
+        }
+        finally {
+            $this->preparedDateTime = $previous;
+        }
+    }
+
     /**
      * @param FileWriter $file
      * @param int $rowNumber
@@ -1513,7 +1530,14 @@ class Writer
         }
         else {
             if ($numFormatType === 'n_date' || $numFormatType === 'n_datetime') {
-                $dateValue = self::convertDateTime($value);
+                $prepared = $this->preparedDateTime;
+                if ($prepared !== null && $prepared[0] === $rowNumber && $prepared[1] === $colNumber
+                    && $prepared[2]->sourceValue === $value && $prepared[2]->timezone === date_default_timezone_get()) {
+                    $dateValue = $prepared[2]->serial;
+                }
+                else {
+                    $dateValue = self::convertDateTime($value);
+                }
                 if ($dateValue === false) {
                     $numFormatType = 'n_auto';
                 }

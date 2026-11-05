@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Share a date conversion between automatic width measurement and XML writing for the current cell; preserve custom writers, invalid dates and callbacks that change the timezone
+
 * Stop automatic width measurements once a column reaches Excel's width limit of 255; preserve formatter callbacks and resume measuring after an explicit width reduction
 
 * Speed up automatic width display formatting for native numbers with `0.00` and `0.00%` masks while preserving rounding, signs, locale separators and overflow fallback

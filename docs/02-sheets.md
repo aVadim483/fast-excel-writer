@@ -271,6 +271,17 @@ After optimizing dates and text, the same 10,000-row export workloads were compa
 
 Short repeated text did not show a consistent speedup. In the same comparison, numeric dates and text with varying digits were within about 3% of the original `5996193` timings; other workloads can still cost more than the original coarse font estimation. These are workload-specific results, not a speed guarantee for every string or format.
 
+The date/text figures above precede the native integer/boolean paths. Their separate comparison against `a76ee1e` uses 20,000 rows and seven alternating runs per implementation, with Xdebug disabled:
+
+| Scenario | PHP 7.4 reduction in export time | PHP 8.3 reduction in export time |
+| --- | --- | --- |
+| Unique integers, `General` | 10.1% | 8.8% |
+| Repeated integers, `General` | 12.6% | 4.8% |
+| Integers, `0` | 25.0% | 18.0% |
+| Alternating native booleans | 10.5% | 6.7% |
+
+Against the exact `v6.19.2` tag, unique `General` integers took about 3–5% less time. Repeated integers were approximately equal on PHP 7.4 and 8% slower on PHP 8.3. Booleans remained 7–10% slower; the old width code ignored `false`, while the current code measures both values. Control runs for native integers and integer-valued floats under `0.00` retained the regular formatter and differed by about 1–3% from `a76ee1e`.
+
 ### Group/outline rows and columns
 
 Set group level for the specified rows

@@ -13,6 +13,8 @@ class Font
     protected WidthCache $widthCache;
     protected WidthCache $metricCache;
     protected DisplayFormatter $formatter;
+    protected array $lastBaseFont = [];
+    protected ?float $lastDigitWidth = null;
 
     public function __construct()
     {
@@ -37,10 +39,16 @@ class Font
 
     public function calculateTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
     {
-        if ($numberFormat !== null && $numberFormat !== '@' && strcasecmp($numberFormat, 'general') !== 0) {
-            $value = $this->formatter->format($value, $numberFormat, is_numeric($value));
+        $key = 'formatted:' . json_encode([$fontName, $fontSize, $numberFormat, $value], JSON_INVALID_UTF8_SUBSTITUTE);
+        $pixels = $this->widthCache->get($key);
+        if ($pixels === null) {
+            if ($numberFormat !== null && $numberFormat !== '@' && strcasecmp($numberFormat, 'general') !== 0) {
+                $value = $this->formatter->format($value, $numberFormat, is_numeric($value));
+            }
+            $pixels = $this->measurePixels($value, ['name' => $fontName, 'size' => $fontSize]);
+            $this->widthCache->put($key, $pixels);
         }
-        return $this->calculateCellWidth($value, ['name' => $fontName, 'size' => $fontSize], [], false);
+        return $this->excelWidth($pixels, []);
     }
 
     public function formatDisplayValue($value, string $format, bool $numeric, string $locale): string
@@ -68,8 +76,13 @@ class Font
             $this->metricCache->put($metricKey, $metrics);
         }
         $width = 0;
-        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) as $character) {
+        if (preg_match('/[\x80-\xff]/', $text)) {
+            $characters = preg_split('//u', mb_convert_encoding($text, 'UTF-8', 'UTF-8'), -1, PREG_SPLIT_NO_EMPTY);
+        }
+        else {
+            $characters = str_split($text);
+        }
+        foreach ($characters as $character) {
             if (isset($metrics[$character])) {
                 $width += $metrics[$character];
             }
@@ -88,6 +101,9 @@ class Font
 
     protected function excelWidth(float $pixels, array $baseFont): float
     {
+        if ($this->lastDigitWidth !== null && $baseFont === $this->lastBaseFont) {
+            return $this->scaleWidth(($pixels + 5) / max(1, $this->lastDigitWidth));
+        }
         $key = 'digits:' . json_encode([$baseFont['name'] ?? self::DEFAULT_FONT_NAME,
             $baseFont['size'] ?? self::DEFAULT_FONT_SIZE, !empty($baseFont['style-bold']), !empty($baseFont['style-italic'])]);
         $maximumDigit = $this->metricCache->get($key);
@@ -98,8 +114,15 @@ class Font
             }
             $this->metricCache->put($key, $maximumDigit);
         }
+        $this->lastBaseFont = $baseFont;
+        $this->lastDigitWidth = $maximumDigit;
         // OOXML widths include five pixels of padding and are stored in 1/256 units.
-        return min(255.0, max(0.0, floor(($pixels + 5) * self::$widthFactor / max(1, $maximumDigit) * 256) / 256));
+        return $this->scaleWidth(($pixels + 5) / max(1, $maximumDigit));
+    }
+
+    protected function scaleWidth(float $width): float
+    {
+        return min(255.0, max(0.0, floor($width * self::$widthFactor * 256) / 256));
     }
 
     public function calculateRichTextWidth(RichText $value, array $font, bool $wrap): float
@@ -110,6 +133,9 @@ class Font
     /** Measure the longest visual line; add padding once for the whole cell. */
     public function calculateCellWidth($value, array $font, array $baseFont, bool $wrap): float
     {
+        if (!$value instanceof RichText && (!$wrap || strpos((string)$value, "\n") === false)) {
+            return $this->excelWidth($this->measurePixels((string)$value, $font), $baseFont);
+        }
         $lineWidth = 0.0;
         $maxWidth = 0.0;
         $runs = [];

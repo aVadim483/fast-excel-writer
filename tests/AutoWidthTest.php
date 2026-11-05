@@ -339,4 +339,41 @@ final class AutoWidthTest extends TestCase
         $this->assertGreaterThan($font->calculateTextWidth('Calibri', 11, 'Row 12345'), $font->calculateTextWidth('Calibri', 11, 'Row 123456'));
         $this->assertGreaterThan($font->calculateTextWidth('Calibri', 11, '12345'), $font->calculateTextWidth('Calibri', 11, '12345', '0%'));
     }
+
+    public function testIntegerWidthsPreserveSignsFontsAndFactors(): void
+    {
+        $calculator = new Font();
+        foreach ([['name' => 'Calibri', 'size' => 11], ['name' => 'Arial', 'size' => 16, 'style-bold' => true]] as $font) {
+            foreach ([[], ['name' => 'Tahoma', 'size' => 14]] as $base) {
+                foreach ([1.0, 1.5] as $factor) {
+                    Font::setFontWidthFactor($factor);
+                    foreach ([0, 1, -1, 9, 10, -10, 999999999999999, PHP_INT_MIN, PHP_INT_MAX] as $value) {
+                        $this->assertSame($calculator->calculateCellWidth((string)$value, $font, $base, false),
+                            $calculator->calculateIntegerWidth($value, $font, $base));
+                    }
+                }
+            }
+        }
+    }
+
+    public function testIntegerFastPathPreservesFormatsAndCallbacks(): void
+    {
+        foreach (['en', 'de', 'ru'] as $locale) {
+            $excel = Excel::create([], ['locale' => $locale]);
+            $sheet = $excel->sheet();
+            $sheet->setColWidthAuto('A:H');
+            $sheet->writeRow([12, '12', 12, '000012', 12, '12', 12, '1200%'], [],
+                [2 => ['format' => '000000'], 4 => ['format' => '@'], 6 => ['format' => '0%']]);
+            $widths = $this->saveWidths($excel);
+            foreach ([[1, 2], [3, 4], [5, 6], [7, 8]] as $pair) {
+                $this->assertSame($widths[$pair[0]], $widths[$pair[1]]);
+            }
+        }
+        $seen = [];
+        $excel = Excel::create();
+        $excel->setAutoWidthFormatter(function ($value) use (&$seen) { $seen[] = $value; return 'custom integer'; });
+        $excel->sheet()->setColWidthAuto('A:B')->writeRow([12, 0]);
+        $this->saveWidths($excel);
+        $this->assertSame([12, 0], $seen);
+    }
 }

@@ -2223,8 +2223,15 @@ class Sheet implements InterfaceSheetWriter
             $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
             $value = $cellValue;
             $calculator = $this->excel->getAutoWidthFont();
+            $len = null;
 
-            if (!$value instanceof RichText) {
+            if (is_int($value)
+                && ($numberFormat === 'GENERAL' || $numberFormat === '@'
+                    || ($numberFormat === '0' && $value >= -999999999999999 && $value <= 999999999999999))
+                && !$this->excel->hasAutoWidthFormatter()) {
+                $len = $calculator->calculateIntegerWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? []);
+            }
+            elseif (!$value instanceof RichText) {
                 $type = $style['number_format_type'] ?? 'n_auto';
                 $numeric = $type === 'n_numeric' ? is_numeric($value) : ($type === 'n_auto' && $this->excel->getWriter()->isNumericValue($value));
                 if ($formulaResult) {
@@ -2244,7 +2251,9 @@ class Sheet implements InterfaceSheetWriter
                 $value = $this->excel->formatAutoWidthValue($value, $numberFormat, $type, $numeric);
             }
 
-            $len = $calculator->calculateCellWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? [], (bool)$textWrap);
+            if ($len === null) {
+                $len = $calculator->calculateCellWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? [], (bool)$textWrap);
+            }
             if ($this->autoFilter) {
                 $len += 1;
             }

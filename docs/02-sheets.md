@@ -246,6 +246,8 @@ Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skippi
 
 Measurement cache keys reuse equal-width digit patterns: the supported font tables use tabular digits, so `Row 12345` and `Row 98765` can share a measurement. This applies after display formatting and does not alter stored values. Short Unicode text uses multibyte splitting; long text covered by the tables uses a native character-count path with the same advances. Other characters retain the existing fallback.
 
+Native PHP integers with `General` or `@` use a direct width path without number-format parsing or locale conversion. The simple `0` mask uses this path for integers of up to 15 digits; larger formatted values retain the standard formatter. A bounded cache stores signed decimal lengths for one active font, with base-font conversion and the current width factor applied on retrieval. Custom masks and callbacks retain their usual behavior.
+
 Initial implementation measurements before the date/text optimizations, on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
 
 | Scenario | PHP 7.4 before / after | PHP 8.3 before / after |

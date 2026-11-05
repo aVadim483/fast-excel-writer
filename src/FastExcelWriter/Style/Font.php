@@ -15,6 +15,8 @@ class Font
     protected DisplayFormatter $formatter;
     protected array $lastBaseFont = [];
     protected ?float $lastDigitWidth = null;
+    protected array $simpleFont = [];
+    protected array $simplePixels = [];
 
     public function __construct()
     {
@@ -60,6 +62,22 @@ class Font
     public function dateWidthSample(string $format): ?string
     {
         return $this->formatter->dateWidthSample($format);
+    }
+
+    /** Cache signed decimal lengths for one active font; retain unscaled pixels. */
+    public function calculateIntegerWidth(int $value, array $font, array $baseFont): float
+    {
+        if ($font !== $this->simpleFont) {
+            $this->simpleFont = $font;
+            $this->simplePixels = [];
+        }
+        $text = (string)$value;
+        $length = strlen($text);
+        $shape = $value < 0 ? -$length : $length;
+        if (!isset($this->simplePixels[$shape])) {
+            $this->simplePixels[$shape] = $this->measurePixels($text, $font);
+        }
+        return $this->excelWidth($this->simplePixels[$shape], $baseFont);
     }
 
     /** Content measurements have no padding, workbook scaling or global factor. */

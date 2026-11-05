@@ -190,6 +190,11 @@ class Excel implements InterfaceBookWriter
         return $this->autoWidthLocale;
     }
 
+    public function hasAutoWidthFormatter(): bool
+    {
+        return $this->autoWidthFormatter !== null;
+    }
+
     public function formatAutoWidthValue($value, string $format, string $type, bool $numeric): string
     {
         if ($this->autoWidthFormatter !== null) {

@@ -1,3 +1,11 @@
+## Unreleased
+
+* Fixed automatic column widths for RichText, zero values, booleans and supplied formula results; preserve fragment formatting and account for wrapped lines
+* Measure numeric cells using their displayed format, with bounded format parsing and an optional `auto_width_formatter` callback (`Excel::setAutoWidthFormatter()` / `Options::autoWidthFormatter()`)
+* Bound automatic-width caches, keep workbook calculation state separate and apply changes to `Font::setFontWidthFactor()` to subsequent cached measurements
+* Improve automatic widths using character advance tables for Calibri, Arial, Tahoma and Times New Roman, including bold/italic, with conversion based on the workbook font; unknown fonts and unsupported masks remain approximate
+* Added 41 AutoFit reference cases from real Excel and regression coverage for memory bounds, workbook lifetimes, locale isolation, number formats and Excel's column width limit
+
 ## V.6.19.2
 
 * Fixed premature flushing of future styled rows, which could silently discard values written with `writeRow()` (#144)

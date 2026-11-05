@@ -242,6 +242,16 @@ The callback must return a string, or `null` to use the built-in formatter. It r
 
 Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skipping keys over 1 KiB). Parsed formats have a separate bounded cache. Workbook caches are released with the workbook; shared strings and the style registry have their own memory requirements. `Font::setFontWidthFactor()` affects subsequent measurements, including cached ones, without remeasuring already written rows.
 
+Measurements on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
+
+| Scenario | PHP 7.4 before / after | PHP 8.3 before / after |
+| --- | --- | --- |
+| 100,000 unique static width calculations with four masks, retained process memory | 12.60 / 1.36 MiB | 12.58 / 0.96 MiB |
+| Export 10,000 numeric rows, automatic widths enabled | 0.138 / 0.157 s | 0.133 / 0.146 s |
+| Export 10,000 numeric rows, automatic widths disabled | 0.119 / 0.122 s | 0.109 / 0.112 s |
+
+The more detailed measurement costs time when automatic widths are enabled. In a separate streaming run with a fixed style set and inline strings, memory stayed near 2.2 MiB (PHP 7.4) / 1.3 MiB (PHP 8.3) above the initial process usage from 100,000 through 1,000,000 rows across two sheets. These figures describe the measured workloads; shared strings and unique styles can still grow. GD/FreeType was evaluated and remains a separate possible extension because it requires font files and costs substantially more per uncached measurement.
+
 ### Group/outline rows and columns
 
 Set group level for the specified rows

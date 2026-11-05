@@ -87,7 +87,7 @@ class DisplayFormatter
 
     protected function parse(string $format): array
     {
-        preg_match_all('/"[^"]*"|\\\\.|\[[^\]]*\]|_.|\*.|AM\/PM|A\/P|[ymdhs]+|[^;]|;/iu', $format, $matches);
+        preg_match_all('/"[^"]*"|\\\\.|\[[^\]]*\]|_.|\*.|AM\/PM|A\/P|y+|m+|d+|h+|s+|[^;]|;/iu', $format, $matches);
         $sections = [];
         $section = ['tokens' => [], 'condition' => null, 'locale' => '', 'code' => ''];
         foreach ($matches[0] as $part) {

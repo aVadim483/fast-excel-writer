@@ -163,6 +163,7 @@ final class AutoWidthTest extends TestCase
             [12, '# ?/?', true, 'en', '12'],
             [60, 'yyyy-mm-dd', true, 'en', '1900-02-29'],
             [61, 'yyyy-mm-dd', true, 'en', '1900-03-01'],
+            [61, 'yyyymmdd', true, 'en', '19000301'],
             [0, 'yyyy-mm-dd', true, 'en', '1900-01-00'],
             [1.5, '[h]:mm', true, 'en', '36:00'],
             [0.75, 'h:mm AM/PM', true, 'en', '6:00 PM'],
@@ -237,5 +238,17 @@ final class AutoWidthTest extends TestCase
         $this->assertGreaterThan($calculator->calculateCellWidth('iiii', $normal, $normal, false), $calculator->calculateCellWidth('iiii', $normal + ['style-bold' => true], $normal, false));
         $this->assertSame($calculator->calculateTextWidth('Calibri', 11, '中文'), $calculator->calculateTextWidth('Unknown font', 11, '中文'));
         $this->assertLessThanOrEqual(255, $calculator->calculateTextWidth('Calibri', 11, str_repeat('W', 10000)));
+    }
+
+    public function testMinimumWidthAndAutofilterLimit(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:B')->setColMinWidth('A', 20)->setAutoFilter('A1:B2');
+        $sheet->writeRow(['i', str_repeat('W', 10000)]);
+        $sheet->writeRow(['i', 'short']);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame(20.0, $widths[1]);
+        $this->assertSame(255.0, $widths[2]);
     }
 }

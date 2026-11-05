@@ -2204,7 +2204,7 @@ class Sheet implements InterfaceSheetWriter
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
         $formulaResult = false;
-        if (is_array($cellValue)) {
+        while (is_array($cellValue)) {
             if (array_key_exists('width_text', $cellValue)) {
                 $cellValue = $cellValue['width_text'];
             }
@@ -2248,6 +2248,7 @@ class Sheet implements InterfaceSheetWriter
             if ($this->autoFilter) {
                 $len += 1;
             }
+            $len = min(255, $len);
 
             if ((empty($this->colAttributes[$colIdx]['width']) || $this->colAttributes[$colIdx]['width'] < $len) && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
                 $this->_setColAttributes($colIdx, ['width' => $len]);

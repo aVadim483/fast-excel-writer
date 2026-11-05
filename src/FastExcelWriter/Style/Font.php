@@ -65,6 +65,13 @@ class Font
 
     protected static float $widthFactor = 1.0;
 
+    protected WidthCache $widthCache;
+
+    public function __construct()
+    {
+        $this->widthCache = new WidthCache();
+    }
+
 
     public static function setFontWidthFactor(float $factor)
     {
@@ -81,22 +88,29 @@ class Font
      */
     public static function calcTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
     {
-        static $cache = [];
+        static $calculator;
+
+        if (!$calculator) {
+            $calculator = new self();
+        }
+        return $calculator->calculateTextWidth($fontName, $fontSize, $value, $numberFormat);
+    }
+
+    public function calculateTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
+    {
 
         $key = '[[[' . $fontName . ':' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
-        if (isset($cache[$key])) {
-            $len = $cache[$key];
-        }
-        else {
+        $len = $this->widthCache->get($key);
+        if ($len === null) {
             $len = self::_calcWidth($value, $fontName, $fontSize);
-            if ($numberFormat !== 'GENERAL' && $numberFormat !== '0' && $numberFormat != '@') {
+            if ($numberFormat !== null && $numberFormat !== 'GENERAL' && $numberFormat !== '0' && $numberFormat != '@') {
                 $numberFormat = Excel::_formatValue($value, $numberFormat);
                 $len = max($len, self::_calcWidth(str_replace('\\', '', $numberFormat), $fontName, $fontSize, true));
             }
-            $cache[$key] = $len;
+            $this->widthCache->put($key, $len);
         }
 
-        return $len;
+        return round($len * self::$widthFactor, 8);
     }
 
     protected static function _ranges(): array
@@ -167,7 +181,7 @@ class Font
             $charWidth = self::DEFAULT_FONT_WIDTH;
         }
         $n = $strWidth + $len * $charWidth + self::WIDTH_PADDING;
-        $k = $fontSize / self::DEFAULT_FONT_SIZE * self::$widthFactor;
+        $k = $fontSize / self::DEFAULT_FONT_SIZE;
 
         return round($n * $k, 8);
 

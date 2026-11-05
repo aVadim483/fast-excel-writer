@@ -173,6 +173,17 @@ class Excel implements InterfaceBookWriter
     /** @var bool Enable the wrap text for multi-line strings unless the cell style sets it explicitly */
     protected bool $autoWrapText = true;
 
+    protected ?\avadim\FastExcelWriter\Style\Font $autoWidthFont = null;
+
+    /** Calculation state is local to the workbook and allocated only when needed. */
+    public function getAutoWidthFont(): \avadim\FastExcelWriter\Style\Font
+    {
+        if ($this->autoWidthFont === null) {
+            $this->autoWidthFont = new \avadim\FastExcelWriter\Style\Font();
+        }
+        return $this->autoWidthFont;
+    }
+
 
     /**
      * Excel constructor

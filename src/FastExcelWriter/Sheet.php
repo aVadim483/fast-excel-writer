@@ -2210,11 +2210,11 @@ class Sheet implements InterfaceSheetWriter
                 // a wrapped multi-line text is as wide as its longest line
                 $len = 0;
                 foreach (explode("\n", $value) as $line) {
-                    $len = max($len, Font::calcTextWidth($fontName, $fontSize, $line, $numberFormat));
+                    $len = max($len, $this->excel->getAutoWidthFont()->calculateTextWidth($fontName, $fontSize, $line, $numberFormat));
                 }
             }
             else {
-                $len = Font::calcTextWidth($fontName, $fontSize, $value, $numberFormat);
+                $len = $this->excel->getAutoWidthFont()->calculateTextWidth($fontName, $fontSize, $value, $numberFormat);
             }
             if ($this->autoFilter) {
                 $len += 1;

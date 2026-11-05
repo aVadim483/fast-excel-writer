@@ -240,6 +240,8 @@ $excel->setAutoWidthFormatter(function ($value, $format, $type, $locale) {
 
 The callback must return a string, or `null` to use the built-in formatter. It runs for each measured scalar cell and is not cached. It is also available as the `auto_width_formatter` workbook option and `Options::autoWidthFormatter()`.
 
+Ordinary numeric date/time masks, such as `yyyy-mm-dd hh:mm:ss`, use a cached width sample (`0000-00-00 00:00:00`) instead of formatting each date. Single-digit fields are estimated at their maximum two-digit width. Month/day names, AM/PM, elapsed times and conditional sections retain value-based formatting. A supplied callback runs before this optimization and still receives the actual value.
+
 Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skipping keys over 1 KiB). Parsed formats have a separate bounded cache. Workbook caches are released with the workbook; shared strings and the style registry have their own memory requirements. `Font::setFontWidthFactor()` affects subsequent measurements, including cached ones, without remeasuring already written rows.
 
 Measurements on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):

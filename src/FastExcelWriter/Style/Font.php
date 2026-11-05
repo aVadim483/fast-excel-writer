@@ -56,6 +56,11 @@ class Font
         return $this->formatter->format($value, $format, $numeric, $locale);
     }
 
+    public function dateWidthSample(string $format): ?string
+    {
+        return $this->formatter->dateWidthSample($format);
+    }
+
     /** Content measurements have no padding, workbook scaling or global factor. */
     protected function measurePixels(string $text, array $font): float
     {

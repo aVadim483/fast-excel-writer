@@ -201,6 +201,12 @@ class Excel implements InterfaceBookWriter
                 return $text;
             }
         }
+        if ($numeric && ($type === 'n_date' || $type === 'n_datetime')) {
+            $sample = $this->getAutoWidthFont()->dateWidthSample($format);
+            if ($sample !== null) {
+                return $sample;
+            }
+        }
         return $this->getAutoWidthFont()->formatDisplayValue($value, $format, $numeric, $this->autoWidthLocale);
     }
 

@@ -275,4 +275,35 @@ final class AutoWidthTest extends TestCase
         $this->assertSame('1.234,50', $second->formatAutoWidthValue(1234.5, '#,##0.00', 'n_numeric', true));
         $this->assertSame('1,234.50', $first->formatAutoWidthValue(1234.5, '#,##0.00', 'n_numeric', true));
     }
+
+    public function testNumericDateWidthSamples(): void
+    {
+        $formatter = new DisplayFormatter();
+        $this->assertSame('0000-00-00 00:00:00', $formatter->dateWidthSample('yyyy-mm-dd hh:mm:ss'));
+        $this->assertSame('00/00/00', $formatter->dateWidthSample('m/d/yy'));
+        $this->assertSame('date 00000000', $formatter->dateWidthSample('"date "yyyymmdd'));
+        foreach (['mmmm d, yyyy', 'dddd', '[h]:mm', 'h:mm AM/PM', '[>=1]yyyy;mm', '0.00'] as $format) {
+            $this->assertNull($formatter->dateWidthSample($format), $format);
+            $this->assertNull($formatter->dateWidthSample($format), 'Cached ' . $format);
+        }
+    }
+
+    public function testDatesUseTheMaskAndCallbacksStillReceiveTheValue(): void
+    {
+        $excel = Excel::create([], ['locale' => 'en']);
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:C');
+        $sheet->writeRow(['2024-01-01 12:34:56', '2099-12-31 23:59:59', '0000-00-00 00:00:00'], [],
+            [0 => ['format' => 'yyyy-mm-dd hh:mm:ss'], 1 => ['format' => 'yyyy-mm-dd hh:mm:ss']]);
+        $widths = $this->saveWidths($excel);
+        $this->assertEqualsWithDelta($widths[3], $widths[1], 1 / 256);
+        $this->assertEqualsWithDelta($widths[3], $widths[2], 1 / 256);
+        $seen = null;
+        $excel->setAutoWidthFormatter(function ($value) use (&$seen) { $seen = $value; return 'custom'; });
+        $this->assertSame('custom', $excel->formatAutoWidthValue(60, 'yyyy-mm-dd', 'n_date', true));
+        $this->assertSame(60, $seen);
+        $excel->setAutoWidthFormatter(null);
+        $this->assertSame('1900-02-29', $excel->getAutoWidthFont()->formatDisplayValue(60, 'yyyy-mm-dd', true, 'en'));
+        $this->assertSame('January', $excel->formatAutoWidthValue(1, 'mmmm', 'n_date', true));
+    }
 }

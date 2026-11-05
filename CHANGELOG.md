@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Optimize automatic widths of numeric date/time masks using bounded cached width samples instead of formatting each date; preserve callbacks and value-dependent formats
+
 * Fixed automatic column widths for RichText, zero values, booleans and supplied formula results; preserve fragment formatting and account for wrapped lines
 * Measure numeric cells using their displayed format, with bounded format parsing and an optional `auto_width_formatter` callback (`Excel::setAutoWidthFormatter()` / `Options::autoWidthFormatter()`)
 * Bound automatic-width caches, keep workbook calculation state separate and apply changes to `Font::setFontWidthFactor()` to subsequent cached measurements

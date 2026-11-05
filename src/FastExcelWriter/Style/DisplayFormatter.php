@@ -6,10 +6,52 @@ namespace avadim\FastExcelWriter\Style;
 class DisplayFormatter
 {
     protected WidthCache $formats;
+    protected WidthCache $dateSamples;
 
     public function __construct()
     {
         $this->formats = new WidthCache(256, 262144, 4096);
+        $this->dateSamples = new WidthCache(256, 262144, 4096);
+    }
+
+    /** A numeric date mask has a reusable width sample; variable formats use the full formatter. */
+    public function dateWidthSample(string $format): ?string
+    {
+        $cached = $this->dateSamples->get($format);
+        if ($cached !== null) {
+            return $cached === false ? null : $cached;
+        }
+        $sections = $this->formats->get($format);
+        if ($sections === null) {
+            $sections = $this->parse($format);
+            $this->formats->put($format, $sections);
+        }
+        $sample = '';
+        $hasDate = false;
+        $supported = count($sections) === 1 && $sections[0]['condition'] === null;
+        if ($supported) {
+            foreach ($sections[0]['tokens'] as $token) {
+                if ($token[0] === 'date') {
+                    $part = strtolower($token[1]);
+                    if (!preg_match('/^(?:y{1,4}|m{1,2}|d{1,2}|h{1,2}|s{1,2})$/', $part)) {
+                        $supported = false;
+                        break;
+                    }
+                    $hasDate = true;
+                    $sample .= str_repeat('0', $part[0] === 'y' ? (strlen($part) <= 2 ? 2 : 4) : 2);
+                }
+                elseif ($token[0] === 'literal' || ($token[0] === 'code' && preg_match('/^[\s:\/.,-]$/u', $token[1]))) {
+                    $sample .= $token[1];
+                }
+                else {
+                    $supported = false;
+                    break;
+                }
+            }
+        }
+        $result = $supported && $hasDate ? $sample : false;
+        $this->dateSamples->put($format, $result);
+        return $result === false ? null : $result;
     }
 
     public function format($value, string $format, bool $numeric = false, string $locale = 'en'): string

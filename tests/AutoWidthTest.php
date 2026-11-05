@@ -141,6 +141,19 @@ final class AutoWidthTest extends TestCase
             [0.25, '0%', true, 'en', '25%'],
             [12, '000000', true, 'en', '000012'],
             [1234.5, '0.00', true, 'en', '1234.50'],
+            [1234.5, '0.00', true, 'ru', '1234,50'],
+            [1.995, '0.00', true, 'en', '2.00'],
+            [-0.00001, '0.00', true, 'en', '-0.00'],
+            [-0.0, '0.00', true, 'en', '0.00'],
+            [0.125, '0.00%', true, 'en', '12.50%'],
+            [-0.125, '0.00%', true, 'de', '-12,50%'],
+            [-0.00001, '0.00%', true, 'en', '-0.00%'],
+            [1e308, '0.00%', true, 'en', (string)1e308],
+            [INF, '0.00', true, 'en', 'INF'],
+            [-INF, '0.00%', true, 'en', '-INF'],
+            [NAN, '0.00', true, 'en', 'NAN'],
+            [12.5, '0.00', false, 'en', '12.5'],
+            ['12.50', '0.00%', false, 'en', '12.50'],
             [0.000001234, '0.00', true, 'en', '0.00'],
             ['000012', '@', false, 'en', '000012'],
             ['12', '000000', false, 'en', '12'],
@@ -179,6 +192,27 @@ final class AutoWidthTest extends TestCase
     {
         $formatter = new DisplayFormatter();
         $this->assertSame($expected, $formatter->format($value, $format, $numeric, $locale));
+    }
+
+    public function testSimpleNumericFormatsAgreeWithEquivalentColorSections(): void
+    {
+        $formatter = new DisplayFormatter();
+        $values = [PHP_INT_MIN, PHP_INT_MAX, -1, 0, 1, -0.0, 0.005, -0.005, -0.00001, 1.995,
+            5e-324, 1e20, 1e308, -1e308, INF, -INF, NAN, '12.50', false, true, null];
+        for ($i = -100; $i <= 100; ++$i) {
+            $values[] = $i / 317;
+        }
+        foreach (['en', 'de', 'ru', 'fr'] as $locale) {
+            foreach (['0.00', '0.00%'] as $format) {
+                foreach ($values as $value) {
+                    foreach ([true, false] as $numeric) {
+                        // Color metadata changes no display text and uses the general section formatter.
+                        $this->assertSame($formatter->format($value, '[Black]' . $format, $numeric, $locale),
+                            $formatter->format($value, $format, $numeric, $locale));
+                    }
+                }
+            }
+        }
     }
 
     public function testWidthsUseDisplayedTextOnly(): void

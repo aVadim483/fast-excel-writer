@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Speed up automatic width display formatting for native numbers with `0.00` and `0.00%` masks while preserving rounding, signs, locale separators and overflow fallback
+
 * Cache complete boolean column widths, including autofilter padding, in bounded font/base-font/factor contexts; repeated booleans bypass font merging and pixel conversion while preserving callbacks, minimum widths and zero factors
 
 * Optimize automatic widths for native integers with simple formats using a bounded cache of signed decimal lengths; preserve custom formats, callbacks, base fonts and width factors

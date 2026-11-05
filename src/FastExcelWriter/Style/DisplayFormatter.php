@@ -69,6 +69,15 @@ class DisplayFormatter
         if ($format === '' || strcasecmp($format, 'general') === 0) {
             return $numeric ? str_replace('.', $this->separators($locale)[0], $text) : $text;
         }
+        if ($numeric && ($format === '0.00' || $format === '0.00%') && (is_int($value) || is_float($value))) {
+            $number = (float)$value * ($format === '0.00%' ? 100 : 1);
+            if (!is_finite($number)) {
+                return $text;
+            }
+            // Keep the sign even when a negative value rounds to zero.
+            return ($number < 0 ? '-' : '') . number_format(abs($number), 2, $this->separators($locale)[0], '')
+                . ($format === '0.00%' ? '%' : '');
+        }
         $sections = $this->formats->get($format);
         if ($sections === null) {
             $sections = $this->parse($format);

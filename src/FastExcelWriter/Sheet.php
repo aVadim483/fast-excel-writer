@@ -2134,8 +2134,10 @@ class Sheet implements InterfaceSheetWriter
                                 else {
                                     $link = $cellValue;
                                 }
+                                $widthText = $cellValue;
                                 $cellValue = Writer::xmlEscapedString($cellValue);
                                 $cellValue = [
+                                    'width_text' => $widthText,
                                     'shared_value' => $cellValue,
                                     'shared_index' => $this->excel->addSharedString($cellValue),
                                 ];
@@ -2201,20 +2203,39 @@ class Sheet implements InterfaceSheetWriter
      */
     protected function _columnWidth(int $colIdx, $cellValue, $numberFormat, $style, ?bool $textWrap = false)
     {
-        if ($cellValue) {
-            $fontName = $style['font']['val']['name'] ?? Font::DEFAULT_FONT_NAME;
-            $fontSize = $style['font']['val']['size'] ?? Font::DEFAULT_FONT_SIZE;
-            $value = (isset($cellValue['shared_value'])) ? $cellValue['shared_value'] : $cellValue;
+        if (is_array($cellValue)) {
+            if (array_key_exists('width_text', $cellValue)) {
+                $cellValue = $cellValue['width_text'];
+            }
+            elseif (isset($cellValue['shared_value'])) {
+                $cellValue = Helper::unescapeString(html_entity_decode($cellValue['shared_value'], ENT_QUOTES | ENT_XML1, 'UTF-8'));
+            }
+            elseif (isset($cellValue[0]) && is_string($cellValue[0]) && strpos($cellValue[0], '=') === 0) {
+                $cellValue = $cellValue[1] ?? null;
+            }
+            else {
+                $cellValue = $cellValue['value'] ?? null;
+            }
+        }
+        if ($cellValue !== null && $cellValue !== '') {
+            $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
+            $fontName = $font['name'] ?? Font::DEFAULT_FONT_NAME;
+            $fontSize = $font['size'] ?? Font::DEFAULT_FONT_SIZE;
+            $value = is_bool($cellValue) ? ($cellValue ? 'TRUE' : 'FALSE') : $cellValue;
+            $calculator = $this->excel->getAutoWidthFont();
 
-            if ($textWrap && is_string($value) && strpos($value, "\n") !== false) {
+            if ($value instanceof RichText) {
+                $len = $calculator->calculateRichTextWidth($value, $font, (bool)$textWrap);
+            }
+            elseif ($textWrap && is_string($value) && strpos($value, "\n") !== false) {
                 // a wrapped multi-line text is as wide as its longest line
                 $len = 0;
-                foreach (explode("\n", $value) as $line) {
-                    $len = max($len, $this->excel->getAutoWidthFont()->calculateTextWidth($fontName, $fontSize, $line, $numberFormat));
+                foreach (explode("\n", str_replace("\r\n", "\n", $value)) as $line) {
+                    $len = max($len, $calculator->calculateTextWidth($fontName, $fontSize, $line, $numberFormat));
                 }
             }
             else {
-                $len = $this->excel->getAutoWidthFont()->calculateTextWidth($fontName, $fontSize, $value, $numberFormat);
+                $len = $calculator->calculateTextWidth($fontName, $fontSize, (string)$value, $numberFormat);
             }
             if ($this->autoFilter) {
                 $len += 1;

@@ -3,6 +3,7 @@
 namespace avadim\FastExcelWriter\Style;
 
 use avadim\FastExcelWriter\Excel;
+use avadim\FastExcelWriter\RichText\RichText;
 
 class Font
 {
@@ -128,6 +129,30 @@ class Font
             ];
         }
         return $ranges;
+    }
+
+    /** Measure runs without adding cell padding between adjacent fragments. */
+    public function calculateRichTextWidth(RichText $value, array $font, bool $wrap): float
+    {
+        $lineWidth = 0.0;
+        $maxWidth = 0.0;
+        foreach ($value->fragments() as $fragment) {
+            $prop = $fragment->getProperties();
+            $name = $prop['f'] ?? ($font['name'] ?? self::DEFAULT_FONT_NAME);
+            $size = $prop['sz'] ?? ($font['size'] ?? self::DEFAULT_FONT_SIZE);
+            $text = str_replace("\r\n", "\n", $fragment->getText());
+            $lines = $wrap ? explode("\n", $text) : [$text];
+            foreach ($lines as $index => $line) {
+                if ($index) {
+                    $maxWidth = max($maxWidth, $lineWidth);
+                    $lineWidth = 0.0;
+                }
+                $lineWidth += $this->calculateTextWidth($name, $size, $line, '@')
+                    - self::WIDTH_PADDING * $size / self::DEFAULT_FONT_SIZE * self::$widthFactor;
+            }
+        }
+        $padding = self::WIDTH_PADDING * ($font['size'] ?? self::DEFAULT_FONT_SIZE) / self::DEFAULT_FONT_SIZE;
+        return round(max($maxWidth, $lineWidth) + $padding * self::$widthFactor, 8);
     }
 
     /**

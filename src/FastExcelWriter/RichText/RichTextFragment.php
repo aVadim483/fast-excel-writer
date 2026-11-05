@@ -155,6 +155,12 @@ class RichTextFragment
         return $this->text;
     }
 
+    /** Return fragment overrides; null properties inherit the cell font. */
+    public function getProperties(): array
+    {
+        return $this->prop;
+    }
+
     /**
      * Converts the object properties into a string representation formatted as XML-like tags.
      *

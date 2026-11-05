@@ -23,6 +23,11 @@ class Font
     protected bool $booleanInherit = false;
     protected array $booleanWidths = [];
     protected ?WidthCache $booleanCache = null;
+    protected ?array $inheritedBaseFont = null;
+    protected array $inheritedFont = [];
+    protected array $resolvedFont = [];
+    protected ?FontContext $measurementContext = null;
+    protected ?FontContext $previousMeasurementContext = null;
 
     public function __construct()
     {
@@ -68,6 +73,26 @@ class Font
     public function dateWidthSample(string $format): ?string
     {
         return $this->formatter->dateWidthSample($format);
+    }
+
+    /** @internal Resolve effective font properties without merging complete font definitions. */
+    public function resolveCellFont(array $baseFont, array $font): array
+    {
+        if (!$font) {
+            return $baseFont;
+        }
+        if (!$baseFont) {
+            return $font;
+        }
+        if (!array_diff_key($baseFont, $font)) {
+            return $font;
+        }
+        if ($baseFont !== $this->inheritedBaseFont || $font !== $this->inheritedFont) {
+            $this->resolvedFont = array_replace($baseFont, $font);
+            $this->inheritedBaseFont = $baseFont;
+            $this->inheritedFont = $font;
+        }
+        return $this->resolvedFont;
     }
 
     /** Cache signed decimal lengths for one active font; retain unscaled pixels. */
@@ -138,18 +163,48 @@ class Font
     /** Content measurements have no padding, workbook scaling or global factor. */
     protected function measurePixels(string $text, array $font): float
     {
-        $name = $font['name'] ?? self::DEFAULT_FONT_NAME;
-        $size = (float)($font['size'] ?? self::DEFAULT_FONT_SIZE);
-        $face = (!empty($font['style-bold']) ? 1 : 0) + (!empty($font['style-italic']) ? 2 : 0);
+        $context = $this->measurementContext;
+        if ($context === null || $font !== $context->font) {
+            $previous = $this->previousMeasurementContext;
+            if ($previous !== null && $font === $previous->font) {
+                $this->previousMeasurementContext = $context;
+                $context = $previous;
+                $this->measurementContext = $context;
+            }
+            else {
+                $context = null;
+            }
+        }
+        if ($context === null) {
+            // A cached pixel width needs no new context when fonts keep changing.
+            $name = $font['name'] ?? self::DEFAULT_FONT_NAME;
+            $size = (float)($font['size'] ?? self::DEFAULT_FONT_SIZE);
+            $face = (!empty($font['style-bold']) ? 1 : 0) + (!empty($font['style-italic']) ? 2 : 0);
+            $prefix = 'T' . strlen($name) . ':' . $name . ':' . $size . ':' . $face . ':';
+        }
+        else {
+            $prefix = $context->prefix;
+        }
         // All supported metric tables use tabular digits. Normalize them only in the
         // measurement cache key, after value formatting; the saved text is untouched.
-        $key = 'T' . strlen($name) . ':' . $name . ':' . $size . ':' . $face . ':' . strtr($text, '123456789', '000000000');
+        $key = $prefix . strtr($text, '123456789', '000000000');
         $width = $this->widthCache->get($key);
         if ($width !== null) {
             return $width;
         }
-        $metricKey = strtolower($name) . ':' . $face;
-        $metrics = $this->metricCache->get($metricKey);
+        if ($context === null) {
+            $this->previousMeasurementContext = $this->measurementContext;
+            $context = new FontContext($font);
+            $this->measurementContext = $context;
+        }
+        $name = $context->name;
+        $size = $context->size;
+        $face = $context->face;
+        $metrics = $context->metrics;
+        if ($metrics === null) {
+            $metricKey = strtolower($name) . ':' . $face;
+            $metrics = $this->metricCache->get($metricKey);
+        }
         if ($metrics === null) {
             $names = ['calibri' => 'Calibri', 'arial' => 'Arial', 'tahoma' => 'Tahoma', 'times new roman' => 'Times New Roman'];
             $table = FontMetrics::WIDTHS[$names[strtolower($name)] ?? self::DEFAULT_FONT_NAME][$face];
@@ -165,6 +220,7 @@ class Font
             $metrics = ['widths' => $widths, 'translation' => $translation];
             $this->metricCache->put($metricKey, $metrics);
         }
+        $context->metrics = $metrics;
         if (strlen($text) >= 128) {
             $advances = strtr($text, $metrics['translation']);
             if (!preg_match('/[\x80-\xff]/', $advances)) {

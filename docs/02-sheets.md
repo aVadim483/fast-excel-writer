@@ -230,6 +230,8 @@ Content pixels are converted to Excel units using the maximum digit width of the
 
 Date conversion is shared between automatic width measurement and XML writing for the current cell. Custom writers still receive the original value. If the timezone or the value passed by a custom writer changes before serialization, the date is converted again.
 
+Automatic width reuses the active inherited font and two recent measurement contexts. Changes to the font, workbook base font and width factor still apply. These contexts belong to the workbook and do not grow with the number of fonts used.
+
 3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.
 
 Automatic widths handle zero, boolean values and RichText, including fragment fonts, sizes and wrapped lines. Numeric cells are measured using their displayed value rather than the longer of the raw and formatted values. Supported masks include decimal places, leading zeros, grouping/scaling, percentages, currencies, scientific notation, sections/conditions, dates, time and elapsed `[h]:mm`. Text cells retain their text, including leading zeros. English, German, French and Russian numeric separators are selected from the workbook locale; explicit supported locale codes in a mask take precedence.

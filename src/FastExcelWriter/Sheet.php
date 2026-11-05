@@ -2248,9 +2248,9 @@ class Sheet implements InterfaceSheetWriter
             return;
         }
         if ($cellValue !== null && $cellValue !== '') {
-            $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
             $value = $cellValue;
             $calculator = $this->excel->getAutoWidthFont();
+            $font = $calculator->resolveCellFont($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
             $len = null;
 
             if (is_int($value)

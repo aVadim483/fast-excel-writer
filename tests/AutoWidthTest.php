@@ -160,6 +160,8 @@ final class AutoWidthTest extends TestCase
             [12, '\\$0', true, 'en', '$12'],
             [12, '[$€-407]0.00', true, 'en', '€12,00'],
             ['abc', '0;0;0;"text: "@', false, 'en', 'text: abc'],
+            ['abc', '0;0;0;"hidden text"', false, 'en', 'hidden text'],
+            ['abc', '0;0;0;', false, 'en', ''],
             [12, '# ?/?', true, 'en', '12'],
             [60, 'yyyy-mm-dd', true, 'en', '1900-02-29'],
             [61, 'yyyy-mm-dd', true, 'en', '1900-03-01'],
@@ -250,5 +252,27 @@ final class AutoWidthTest extends TestCase
         $widths = $this->saveWidths($excel);
         $this->assertSame(20.0, $widths[1]);
         $this->assertSame(255.0, $widths[2]);
+    }
+
+    public function testWorkbookWidthContextIsReleased(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A')->writeRow(['text']);
+        $this->saveWidths($excel);
+        $reference = WeakReference::create($excel->getAutoWidthFont());
+        unset($sheet, $excel);
+        gc_collect_cycles();
+        gc_collect_cycles(); // Cycles containing destructors can require a second collection.
+        $this->assertTrue($reference->get() === null, 'The workbook must release its width calculator');
+    }
+
+    public function testWorkbookLocalesDoNotAffectEachOther(): void
+    {
+        $first = Excel::create([], ['locale' => 'en']);
+        $second = Excel::create([], ['locale' => 'de']);
+        $this->assertSame('1,234.50', $first->formatAutoWidthValue(1234.5, '#,##0.00', 'n_numeric', true));
+        $this->assertSame('1.234,50', $second->formatAutoWidthValue(1234.5, '#,##0.00', 'n_numeric', true));
+        $this->assertSame('1,234.50', $first->formatAutoWidthValue(1234.5, '#,##0.00', 'n_numeric', true));
     }
 }

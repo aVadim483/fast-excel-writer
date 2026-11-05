@@ -34,7 +34,7 @@ class DisplayFormatter
         }
         if (!$numeric || !is_numeric($value)) {
             $section = $sections[3] ?? (count($sections) === 1 ? $sections[0] : null);
-            if ($section === null || strpos($section['code'], '@') === false) {
+            if ($section === null || (count($sections) < 4 && strpos($section['code'], '@') === false)) {
                 return $text;
             }
             return $this->literal($section['tokens'], $text);
@@ -75,7 +75,7 @@ class DisplayFormatter
             $locale = $section['locale'];
         }
         if (strcasecmp($section['code'], 'general') === 0) {
-            return $text;
+            return str_replace('.', $this->separators($locale)[0], $text);
         }
         foreach ($section['tokens'] as $token) {
             if ($token[0] === 'date' || $token[0] === 'elapsed') {

@@ -39,7 +39,8 @@ class Font
 
     public function calculateTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
     {
-        $key = 'formatted:' . json_encode([$fontName, $fontSize, $numberFormat, $value], JSON_INVALID_UTF8_SUBSTITUTE);
+        $format = $numberFormat ?? '';
+        $key = 'F' . strlen($fontName) . ':' . $fontName . ':' . (float)$fontSize . ':' . strlen($format) . ':' . $format . $value;
         $pixels = $this->widthCache->get($key);
         if ($pixels === null) {
             if ($numberFormat !== null && $numberFormat !== '@' && strcasecmp($numberFormat, 'general') !== 0) {
@@ -67,7 +68,9 @@ class Font
         $name = $font['name'] ?? self::DEFAULT_FONT_NAME;
         $size = (float)($font['size'] ?? self::DEFAULT_FONT_SIZE);
         $face = (!empty($font['style-bold']) ? 1 : 0) + (!empty($font['style-italic']) ? 2 : 0);
-        $key = json_encode([$name, $size, $face, $text], JSON_INVALID_UTF8_SUBSTITUTE);
+        // All supported metric tables use tabular digits. Normalize them only in the
+        // measurement cache key, after value formatting; the saved text is untouched.
+        $key = 'T' . strlen($name) . ':' . $name . ':' . $size . ':' . $face . ':' . strtr($text, '123456789', '000000000');
         $width = $this->widthCache->get($key);
         if ($width !== null) {
             return $width;
@@ -77,19 +80,41 @@ class Font
         if ($metrics === null) {
             $names = ['calibri' => 'Calibri', 'arial' => 'Arial', 'tahoma' => 'Tahoma', 'times new roman' => 'Times New Roman'];
             $table = FontMetrics::WIDTHS[$names[strtolower($name)] ?? self::DEFAULT_FONT_NAME][$face];
-            $metrics = array_combine(preg_split('//u', FontMetrics::CHARACTERS, -1, PREG_SPLIT_NO_EMPTY), $table);
+            $widths = array_combine(mb_str_split(FontMetrics::CHARACTERS, 1, 'UTF-8'), $table);
+            $translation = [];
+            foreach ($widths as $character => $advance) {
+                $translation[(string)$character] = chr($advance);
+            }
+            for ($code = 0; $code < 32; ++$code) {
+                $translation[chr($code)] = chr(7);
+            }
+            $translation[chr(127)] = chr(7);
+            $metrics = ['widths' => $widths, 'translation' => $translation];
             $this->metricCache->put($metricKey, $metrics);
         }
+        if (strlen($text) >= 128) {
+            $advances = strtr($text, $metrics['translation']);
+            if (!preg_match('/[\x80-\xff]/', $advances)) {
+                $width = 0;
+                foreach (count_chars($advances, 1) as $advance => $count) {
+                    $width += $advance * $count;
+                }
+                $width *= $size / self::DEFAULT_FONT_SIZE;
+                $this->widthCache->put($key, $width);
+                return $width;
+            }
+        }
         $width = 0;
+        $widths = $metrics['widths'];
         if (preg_match('/[\x80-\xff]/', $text)) {
-            $characters = preg_split('//u', mb_convert_encoding($text, 'UTF-8', 'UTF-8'), -1, PREG_SPLIT_NO_EMPTY);
+            $characters = mb_str_split(mb_convert_encoding($text, 'UTF-8', 'UTF-8'), 1, 'UTF-8');
         }
         else {
             $characters = str_split($text);
         }
         foreach ($characters as $character) {
-            if (isset($metrics[$character])) {
-                $width += $metrics[$character];
+            if (isset($widths[$character])) {
+                $width += $widths[$character];
             }
             else {
                 $code = mb_ord($character);

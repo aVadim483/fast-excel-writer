@@ -306,4 +306,37 @@ final class AutoWidthTest extends TestCase
         $this->assertSame('1900-02-29', $excel->getAutoWidthFont()->formatDisplayValue(60, 'yyyy-mm-dd', true, 'en'));
         $this->assertSame('January', $excel->formatAutoWidthValue(1, 'mmmm', 'n_date', true));
     }
+
+    public function testLongAndShortTextMeasurementsAgree(): void
+    {
+        $calculator = new class extends Font {
+            public function pixels(string $text, array $font): float
+            {
+                return $this->measurePixels($text, $font);
+            }
+        };
+        foreach (['Calibri', 'Arial', 'Tahoma', 'Times New Roman'] as $name) {
+            foreach ([0, 1, 2, 3] as $face) {
+                $font = ['name' => $name, 'size' => 13.5, 'style-bold' => (bool)($face & 1), 'style-italic' => (bool)($face & 2)];
+                foreach (['WWW iii 0123 ', 'Текст Ёё 0123 ', '£ € ¥ ', "中文 e\xcc\x81 😀 ", "\t\n\0"] as $text) {
+                    $this->assertEqualsWithDelta($calculator->pixels($text, $font) * 30,
+                        $calculator->pixels(str_repeat($text, 30), $font), 0.000001, $name . ':' . $face);
+                }
+            }
+        }
+    }
+
+    public function testMeasurementCacheCanReuseTabularDigitPatterns(): void
+    {
+        $digits = strpos(\avadim\FastExcelWriter\Style\FontMetrics::CHARACTERS, '0');
+        foreach (\avadim\FastExcelWriter\Style\FontMetrics::WIDTHS as $faces) {
+            foreach ($faces as $widths) {
+                $this->assertCount(1, array_unique(array_slice($widths, $digits, 10)), 'Digit normalization requires tabular metrics');
+            }
+        }
+        $font = new Font();
+        $this->assertSame($font->calculateTextWidth('Calibri', 11, 'Row 12345'), $font->calculateTextWidth('Calibri', 11, 'Row 98765'));
+        $this->assertGreaterThan($font->calculateTextWidth('Calibri', 11, 'Row 12345'), $font->calculateTextWidth('Calibri', 11, 'Row 123456'));
+        $this->assertGreaterThan($font->calculateTextWidth('Calibri', 11, '12345'), $font->calculateTextWidth('Calibri', 11, '12345', '0%'));
+    }
 }

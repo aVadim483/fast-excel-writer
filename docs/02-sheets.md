@@ -244,6 +244,8 @@ Ordinary numeric date/time masks, such as `yyyy-mm-dd hh:mm:ss`, use a cached wi
 
 Width results use bounded FIFO caches (4096 entries, up to 1 MiB of keys, skipping keys over 1 KiB). Parsed formats have a separate bounded cache. Workbook caches are released with the workbook; shared strings and the style registry have their own memory requirements. `Font::setFontWidthFactor()` affects subsequent measurements, including cached ones, without remeasuring already written rows.
 
+Measurement cache keys reuse equal-width digit patterns: the supported font tables use tabular digits, so `Row 12345` and `Row 98765` can share a measurement. This applies after display formatting and does not alter stored values. Short Unicode text uses multibyte splitting; long text covered by the tables uses a native character-count path with the same advances. Other characters retain the existing fallback.
+
 Measurements on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
 
 | Scenario | PHP 7.4 before / after | PHP 8.3 before / after |

@@ -2221,8 +2221,6 @@ class Sheet implements InterfaceSheetWriter
         }
         if ($cellValue !== null && $cellValue !== '') {
             $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
-            $fontName = $font['name'] ?? Font::DEFAULT_FONT_NAME;
-            $fontSize = $font['size'] ?? Font::DEFAULT_FONT_SIZE;
             $value = $cellValue;
             $calculator = $this->excel->getAutoWidthFont();
 
@@ -2246,19 +2244,7 @@ class Sheet implements InterfaceSheetWriter
                 $value = $this->excel->formatAutoWidthValue($value, $numberFormat, $type, $numeric);
             }
 
-            if ($value instanceof RichText) {
-                $len = $calculator->calculateRichTextWidth($value, $font, (bool)$textWrap);
-            }
-            elseif ($textWrap && is_string($value) && strpos($value, "\n") !== false) {
-                // a wrapped multi-line text is as wide as its longest line
-                $len = 0;
-                foreach (explode("\n", str_replace("\r\n", "\n", $value)) as $line) {
-                    $len = max($len, $calculator->calculateTextWidth($fontName, $fontSize, $line, '@'));
-                }
-            }
-            else {
-                $len = $calculator->calculateTextWidth($fontName, $fontSize, (string)$value, '@');
-            }
+            $len = $calculator->calculateCellWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? [], (bool)$textWrap);
             if ($this->autoFilter) {
                 $len += 1;
             }

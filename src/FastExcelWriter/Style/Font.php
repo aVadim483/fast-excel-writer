@@ -2,7 +2,6 @@
 
 namespace avadim\FastExcelWriter\Style;
 
-use avadim\FastExcelWriter\Excel;
 use avadim\FastExcelWriter\RichText\RichText;
 
 class Font
@@ -10,89 +9,26 @@ class Font
     public const DEFAULT_FONT_NAME = 'Calibri';
     public const DEFAULT_FONT_SIZE = 11;
 
-    // constants for auo width
-    protected const WIDTH_PADDING = 0.81;
-    protected const DEFAULT_FONT_RANGE = 'default';
-    protected const DEFAULT_FONT_WIDTH = 1.2;
-
-
-    protected static array $fontWidths = [
-        'Aptos' => [
-            'default' => 1.07,
-            'dots' => 0.55,
-            'upper' => 1.48,
-            'wide' => 1.76,
-            'arabic' => 1.00,
-            'hebrew' => 0.80,
-            'chinese' => 2.18
-        ],
-        'Arial' => [
-            'default' => 1.10,
-            'dots' => 0.50,
-            'upper' => 1.35,
-            'wide' => 1.77,
-            'arabic' => 1.00,
-            'hebrew' => 0.92,
-            'chinese' => 2.18
-        ],
-        'Calibri' => [
-            'default' => 1.07,
-            'dots' => 0.60,
-            'upper' => 1.21,
-            'wide' => 1.72,
-            'arabic' => 1.00,
-            'hebrew' => 0.86,
-            'chinese' => 2.18
-        ],
-        'Tahoma' => [
-            'default' => 1.11,
-            'dots' => 0.68,
-            'upper' => 1.22,
-            'wide' => 1.89,
-            'arabic' => 0.76,
-            'hebrew' => 1.10,
-            'chinese' => 2.20
-        ],
-        'Times New Roman' => [
-            'default' => 1.00,
-            'dots' => 0.58,
-            'upper' => 1.48,
-            'wide' => 1.91,
-            'arabic' => 0.60,
-            'hebrew' => 1.12,
-            'chinese' => 2.20
-        ],
-    ];
-
     protected static float $widthFactor = 1.0;
-
     protected WidthCache $widthCache;
+    protected WidthCache $metricCache;
     protected DisplayFormatter $formatter;
 
     public function __construct()
     {
         $this->widthCache = new WidthCache();
+        $this->metricCache = new WidthCache(32, 8192, 256);
         $this->formatter = new DisplayFormatter();
     }
-
 
     public static function setFontWidthFactor(float $factor)
     {
         self::$widthFactor = $factor;
     }
 
-    /**
-     * @param string $fontName
-     * @param int|float $fontSize
-     * @param string $value
-     * @param string|null $numberFormat
-     *
-     * @return float
-     */
     public static function calcTextWidth(string $fontName, $fontSize, string $value, ?string $numberFormat = null): float
     {
         static $calculator;
-
         if (!$calculator) {
             $calculator = new self();
         }
@@ -104,15 +40,7 @@ class Font
         if ($numberFormat !== null && $numberFormat !== '@' && strcasecmp($numberFormat, 'general') !== 0) {
             $value = $this->formatter->format($value, $numberFormat, is_numeric($value));
         }
-
-        $key = '[[[' . $fontName . ':' . $fontSize . ']]][[[' . $numberFormat . ']]][[[' . $value . ']]]';
-        $len = $this->widthCache->get($key);
-        if ($len === null) {
-            $len = self::_calcWidth($value, $fontName, $fontSize);
-            $this->widthCache->put($key, $len);
-        }
-
-        return round($len * self::$widthFactor, 8);
+        return $this->calculateCellWidth($value, ['name' => $fontName, 'size' => $fontSize], [], false);
     }
 
     public function formatDisplayValue($value, string $format, bool $numeric, string $locale): string
@@ -120,102 +48,107 @@ class Font
         return $this->formatter->format($value, $format, $numeric, $locale);
     }
 
-    protected static function _ranges(): array
+    /** Content measurements have no padding, workbook scaling or global factor. */
+    protected function measurePixels(string $text, array $font): float
     {
-        static $ranges = [];
-
-        if (!$ranges) {
-            $ranges = [
-                'dots' => "/[,.\-:'\";`IiJjfl\[\]\(\)\{\}]/u",
-                'wide' => "/[@%&WMQ]/u",
-                'upper' => "/[[:upper:]#@w]/u",
-                'hebrew' => '/[' . mb_chr(0x0590) . '-' . mb_chr(0x05FF) . ']/u',
-                'arabic' => '/[' . mb_chr(0x0600) . '-' . mb_chr(0x06FF) . ']/u',
-                'chinese' => '/[' . mb_chr(0x4e00) . '-' . mb_chr(0x9FCC) . ']/u',
-            ];
+        $name = $font['name'] ?? self::DEFAULT_FONT_NAME;
+        $size = (float)($font['size'] ?? self::DEFAULT_FONT_SIZE);
+        $face = (!empty($font['style-bold']) ? 1 : 0) + (!empty($font['style-italic']) ? 2 : 0);
+        $key = json_encode([$name, $size, $face, $text], JSON_INVALID_UTF8_SUBSTITUTE);
+        $width = $this->widthCache->get($key);
+        if ($width !== null) {
+            return $width;
         }
-        return $ranges;
+        $metricKey = strtolower($name) . ':' . $face;
+        $metrics = $this->metricCache->get($metricKey);
+        if ($metrics === null) {
+            $names = ['calibri' => 'Calibri', 'arial' => 'Arial', 'tahoma' => 'Tahoma', 'times new roman' => 'Times New Roman'];
+            $table = FontMetrics::WIDTHS[$names[strtolower($name)] ?? self::DEFAULT_FONT_NAME][$face];
+            $metrics = array_combine(preg_split('//u', FontMetrics::CHARACTERS, -1, PREG_SPLIT_NO_EMPTY), $table);
+            $this->metricCache->put($metricKey, $metrics);
+        }
+        $width = 0;
+        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) as $character) {
+            if (isset($metrics[$character])) {
+                $width += $metrics[$character];
+            }
+            else {
+                $code = mb_ord($character);
+                if (($code >= 0x300 && $code <= 0x36f) || $code === 0x200d || ($code >= 0xfe00 && $code <= 0xfe0f)) {
+                    continue;
+                }
+                $width += ($code >= 0x2e80 && $code <= 0xa4cf) || $code >= 0x1f000 ? 14 : 7;
+            }
+        }
+        $width *= $size / self::DEFAULT_FONT_SIZE;
+        $this->widthCache->put($key, $width);
+        return $width;
     }
 
-    /** Measure runs without adding cell padding between adjacent fragments. */
+    protected function excelWidth(float $pixels, array $baseFont): float
+    {
+        $key = 'digits:' . json_encode([$baseFont['name'] ?? self::DEFAULT_FONT_NAME,
+            $baseFont['size'] ?? self::DEFAULT_FONT_SIZE, !empty($baseFont['style-bold']), !empty($baseFont['style-italic'])]);
+        $maximumDigit = $this->metricCache->get($key);
+        if ($maximumDigit === null) {
+            $maximumDigit = 0.0;
+            foreach (range(0, 9) as $digit) {
+                $maximumDigit = max($maximumDigit, $this->measurePixels((string)$digit, $baseFont));
+            }
+            $this->metricCache->put($key, $maximumDigit);
+        }
+        // OOXML widths include five pixels of padding and are stored in 1/256 units.
+        return min(255.0, max(0.0, floor(($pixels + 5) * self::$widthFactor / max(1, $maximumDigit) * 256) / 256));
+    }
+
     public function calculateRichTextWidth(RichText $value, array $font, bool $wrap): float
+    {
+        return $this->calculateCellWidth($value, $font, [], $wrap);
+    }
+
+    /** Measure the longest visual line; add padding once for the whole cell. */
+    public function calculateCellWidth($value, array $font, array $baseFont, bool $wrap): float
     {
         $lineWidth = 0.0;
         $maxWidth = 0.0;
-        foreach ($value->fragments() as $fragment) {
-            $prop = $fragment->getProperties();
-            $name = $prop['f'] ?? ($font['name'] ?? self::DEFAULT_FONT_NAME);
-            $size = $prop['sz'] ?? ($font['size'] ?? self::DEFAULT_FONT_SIZE);
-            $text = str_replace("\r\n", "\n", $fragment->getText());
+        $runs = [];
+        if ($value instanceof RichText) {
+            foreach ($value->fragments() as $fragment) {
+                $properties = $fragment->getProperties();
+                $runFont = $font;
+                foreach (['f' => 'name', 'sz' => 'size', 'b' => 'style-bold', 'i' => 'style-italic'] as $source => $target) {
+                    if ($properties[$source] !== null) {
+                        $runFont[$target] = $properties[$source];
+                    }
+                }
+                if (in_array($properties['vertAlign'], ['subscript', 'superscript'], true)) {
+                    $runFont['size'] = ($runFont['size'] ?? self::DEFAULT_FONT_SIZE) * 0.65;
+                }
+                $runs[] = [$fragment->getText(), $runFont];
+            }
+        }
+        else {
+            $runs[] = [(string)$value, $font];
+        }
+        foreach ($runs as $run) {
+            $text = str_replace("\r\n", "\n", $run[0]);
             $lines = $wrap ? explode("\n", $text) : [$text];
             foreach ($lines as $index => $line) {
                 if ($index) {
                     $maxWidth = max($maxWidth, $lineWidth);
                     $lineWidth = 0.0;
                 }
-                $lineWidth += $this->calculateTextWidth($name, $size, $line, '@')
-                    - self::WIDTH_PADDING * $size / self::DEFAULT_FONT_SIZE * self::$widthFactor;
+                $lineWidth += $this->measurePixels($line, $run[1]);
             }
         }
-        $padding = self::WIDTH_PADDING * ($font['size'] ?? self::DEFAULT_FONT_SIZE) / self::DEFAULT_FONT_SIZE;
-        return round(max($maxWidth, $lineWidth) + $padding * self::$widthFactor, 8);
+        return $this->excelWidth(max($maxWidth, $lineWidth), $baseFont);
     }
 
-    /**
-     * @param string $str
-     * @param string $fontName
-     * @param int|float $fontSize
-     * @param bool|null $numFormat
-     *
-     * @return float
-     */
+    /** Kept for subclasses using the previous protected helper. */
     protected static function _calcWidth(string $str, string $fontName, $fontSize, ?bool $numFormat = false): float
     {
-        if ($numFormat && strpos($str, ';')) {
-            $lenArray = [];
-            foreach (explode(';', $str) as $part) {
-                $lenArray[] = self::_calcWidth($part, $fontName, $fontSize);
-            }
-
-            return max(...$lenArray);
-        }
-
-        $len = mb_strlen($str);
-        $strWidth = 0;
-        foreach (self::_ranges() as $range => $pattern) {
-            if (preg_match_all($pattern, $str, $matches)) {
-                $count = count($matches[0]);
-                if (isset(self::$fontWidths[$fontName][$range])) {
-                    $charWidth = self::$fontWidths[$fontName][$range];
-                }
-                elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][$range])) {
-                    $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][$range];
-                }
-                elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE])) {
-                    $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE];
-                }
-                else {
-                    $charWidth = self::DEFAULT_FONT_WIDTH;
-                }
-                $strWidth += $count * $charWidth;
-                $len -= $count;
-                $str = preg_replace($pattern, '', $str);
-            }
-        }
-        if (isset(self::$fontWidths[$fontName][self::DEFAULT_FONT_RANGE])) {
-            $charWidth = self::$fontWidths[$fontName][self::DEFAULT_FONT_RANGE];
-        }
-        elseif (isset(self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE])) {
-            $charWidth = self::$fontWidths[self::DEFAULT_FONT_NAME][self::DEFAULT_FONT_RANGE];
-        }
-        else {
-            $charWidth = self::DEFAULT_FONT_WIDTH;
-        }
-        $n = $strWidth + $len * $charWidth + self::WIDTH_PADDING;
-        $k = $fontSize / self::DEFAULT_FONT_SIZE;
-
-        return round($n * $k, 8);
-
+        $calculator = new self();
+        return $calculator->calculateTextWidth($fontName, $fontSize, $str);
     }
-
 }

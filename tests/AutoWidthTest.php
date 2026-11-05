@@ -93,7 +93,7 @@ final class AutoWidthTest extends TestCase
     {
         $width = Font::calcTextWidth('Calibri', 11, 'cached text');
         Font::setFontWidthFactor(1.5);
-        $this->assertEqualsWithDelta($width * 1.5, Font::calcTextWidth('Calibri', 11, 'cached text'), 0.000001);
+        $this->assertEqualsWithDelta($width * 1.5, Font::calcTextWidth('Calibri', 11, 'cached text'), 1 / 256);
     }
 
     public function testCacheEvictionAndKeyBudgets(): void
@@ -206,5 +206,36 @@ final class AutoWidthTest extends TestCase
         $this->assertEqualsWithDelta($widths[1], $widths[2], 0.001);
         $cells = ExcelReader::open(end($this->files))->readCells();
         $this->assertEquals(1, $cells['A1']);
+    }
+
+    public function testExcelAutoFitReferences(): void
+    {
+        $fixture = json_decode(ltrim(file_get_contents(__DIR__ . '/auto-width-excel.json'), "\xef\xbb\xbf"), true);
+        $calculator = new Font();
+        foreach ($fixture['cases'] as $case) {
+            $text = $calculator->formatDisplayValue($case['value'], $case['format'], is_numeric($case['value']), $fixture['locale']);
+            if (isset($case['display'])) {
+                $this->assertSame($case['display'], $text);
+            }
+            $font = ['name' => $case['font'], 'size' => $case['size'], 'style-bold' => $case['bold'], 'style-italic' => $case['italic']];
+            $width = $calculator->calculateCellWidth($text, $font, ['name' => $fixture['base_font'], 'size' => $fixture['base_size']], false);
+            $this->assertEqualsWithDelta($case['xml_width'], $width, max(1.15, $case['xml_width'] * 0.05), json_encode($case, JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    public function testWorkbookFontAndFragmentOverrides(): void
+    {
+        $calculator = new Font();
+        $normal = ['name' => 'Arial', 'size' => 11];
+        $largeBase = ['name' => 'Arial', 'size' => 22];
+        $text = 'Sample WWW text';
+        $width = $calculator->calculateCellWidth($text, $normal, $normal, false);
+        $this->assertLessThan($width, $calculator->calculateCellWidth($text, $normal, $largeBase, false));
+        $rich = new RichText();
+        $rich->addText($text)->setBold(false)->setItalic(false);
+        $this->assertSame($width, $calculator->calculateCellWidth($rich, $normal + ['style-bold' => true, 'style-italic' => true], $normal, false));
+        $this->assertGreaterThan($calculator->calculateCellWidth('iiii', $normal, $normal, false), $calculator->calculateCellWidth('iiii', $normal + ['style-bold' => true], $normal, false));
+        $this->assertSame($calculator->calculateTextWidth('Calibri', 11, '中文'), $calculator->calculateTextWidth('Unknown font', 11, '中文'));
+        $this->assertLessThanOrEqual(255, $calculator->calculateTextWidth('Calibri', 11, str_repeat('W', 10000)));
     }
 }

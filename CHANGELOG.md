@@ -1,6 +1,7 @@
 ## Unreleased
 
 * Optimize automatic widths for native integers with simple formats using a bounded cache of signed decimal lengths; preserve custom formats, callbacks, base fonts and width factors
+* Optimize automatic widths for native booleans by caching the two visible literals per active font, including `false` and preserving custom callbacks
 
 * Optimize automatic widths of numeric date/time masks using bounded cached width samples instead of formatting each date; preserve callbacks and value-dependent formats
 * Reduce text measurement overhead with compact cache keys, tabular-digit pattern reuse, faster Unicode splitting and native counting for long supported text; retain the same font advances

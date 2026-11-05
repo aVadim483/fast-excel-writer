@@ -248,6 +248,8 @@ Measurement cache keys reuse equal-width digit patterns: the supported font tabl
 
 Native PHP integers with `General` or `@` use a direct width path without number-format parsing or locale conversion. The simple `0` mask uses this path for integers of up to 15 digits; larger formatted values retain the standard formatter. A bounded cache stores signed decimal lengths for one active font, with base-font conversion and the current width factor applied on retrieval. Custom masks and callbacks retain their usual behavior.
 
+Native booleans use the same bounded font context with two literal measurements, `TRUE` and `FALSE`, independently of the number mask. Both boolean values participate in automatic widths. Font, workbook base-font and width-factor changes remain effective; a custom callback always takes precedence over this path.
+
 Initial implementation measurements before the date/text optimizations, on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
 
 | Scenario | PHP 7.4 before / after | PHP 8.3 before / after |

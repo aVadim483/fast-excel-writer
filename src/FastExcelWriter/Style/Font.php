@@ -80,6 +80,20 @@ class Font
         return $this->excelWidth($this->simplePixels[$shape], $baseFont);
     }
 
+    /** Boolean literals ignore number masks and need only two measurements per font. */
+    public function calculateBooleanWidth(bool $value, array $font, array $baseFont): float
+    {
+        if ($font !== $this->simpleFont) {
+            $this->simpleFont = $font;
+            $this->simplePixels = [];
+        }
+        $text = $value ? 'TRUE' : 'FALSE';
+        if (!isset($this->simplePixels[$text])) {
+            $this->simplePixels[$text] = $this->measurePixels($text, $font);
+        }
+        return $this->excelWidth($this->simplePixels[$text], $baseFont);
+    }
+
     /** Content measurements have no padding, workbook scaling or global factor. */
     protected function measurePixels(string $text, array $font): float
     {

@@ -376,4 +376,54 @@ final class AutoWidthTest extends TestCase
         $this->saveWidths($excel);
         $this->assertSame([12, 0], $seen);
     }
+
+    public function testBooleanWidthsPreserveFontAndFactorChanges(): void
+    {
+        $calculator = new Font();
+        foreach ([['name' => 'Calibri', 'size' => 11], ['name' => 'Arial', 'size' => 16, 'style-italic' => true]] as $font) {
+            foreach ([[], ['name' => 'Tahoma', 'size' => 14]] as $base) {
+                foreach ([1.0, 1.5] as $factor) {
+                    Font::setFontWidthFactor($factor);
+                    foreach ([true, false, true] as $value) {
+                        $this->assertSame($calculator->calculateCellWidth($value ? 'TRUE' : 'FALSE', $font, $base, false),
+                            $calculator->calculateBooleanWidth($value, $font, $base));
+                        $this->assertSame($calculator->calculateCellWidth('12', $font, $base, false),
+                            $calculator->calculateIntegerWidth(12, $font, $base));
+                    }
+                }
+            }
+        }
+    }
+
+    public function testBooleansIgnoreNumberMasksAndPreserveCallbacks(): void
+    {
+        $excel = Excel::create();
+        $values = [];
+        $styles = [];
+        foreach (['GENERAL', '@', '0.00', 'yyyy-mm-dd', '0;0;0;"custom"'] as $format) {
+            foreach ([true, false] as $value) {
+                $styles[count($values)] = ['format' => $format];
+                $values[] = $value;
+                $values[] = $value ? 'TRUE' : 'FALSE';
+            }
+        }
+        $excel->sheet()->setColWidthAuto('A:T')->writeRow($values, [], $styles);
+        $widths = $this->saveWidths($excel);
+        for ($i = 1; $i <= 20; $i += 2) {
+            $this->assertSame($widths[$i + 1], $widths[$i]);
+        }
+        $seen = [];
+        $excel = Excel::create();
+        $excel->setAutoWidthFormatter(function ($value) use (&$seen) {
+            if (is_bool($value)) {
+                $seen[] = $value;
+                return $value ? 'custom true' : 'custom false';
+            }
+            return null;
+        });
+        $excel->sheet()->setColWidthAuto('A:B')->writeRows([[false, 'custom false'], [true, 'custom true']]);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame([false, true], $seen);
+        $this->assertSame($widths[1], $widths[2]);
+    }
 }

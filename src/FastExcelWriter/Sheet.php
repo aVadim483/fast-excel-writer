@@ -2231,6 +2231,9 @@ class Sheet implements InterfaceSheetWriter
                 && !$this->excel->hasAutoWidthFormatter()) {
                 $len = $calculator->calculateIntegerWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? []);
             }
+            elseif (is_bool($value) && !$this->excel->hasAutoWidthFormatter()) {
+                $len = $calculator->calculateBooleanWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? []);
+            }
             elseif (!$value instanceof RichText) {
                 $type = $style['number_format_type'] ?? 'n_auto';
                 $numeric = $type === 'n_numeric' ? is_numeric($value) : ($type === 'n_auto' && $this->excel->getWriter()->isNumericValue($value));

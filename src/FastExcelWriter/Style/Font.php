@@ -17,6 +17,12 @@ class Font
     protected ?float $lastDigitWidth = null;
     protected array $simpleFont = [];
     protected array $simplePixels = [];
+    protected array $booleanFont = [];
+    protected array $booleanBaseFont = [];
+    protected ?float $booleanFactor = null;
+    protected bool $booleanInherit = false;
+    protected array $booleanWidths = [];
+    protected ?WidthCache $booleanCache = null;
 
     public function __construct()
     {
@@ -80,18 +86,53 @@ class Font
         return $this->excelWidth($this->simplePixels[$shape], $baseFont);
     }
 
-    /** Boolean literals ignore number masks and need only two measurements per font. */
+    /** Return a ready column width, including the current base font and factor. */
     public function calculateBooleanWidth(bool $value, array $font, array $baseFont): float
     {
-        if ($font !== $this->simpleFont) {
-            $this->simpleFont = $font;
-            $this->simplePixels = [];
+        if ($this->booleanInherit || $this->booleanFactor !== self::$widthFactor
+            || $font !== $this->booleanFont || $baseFont !== $this->booleanBaseFont) {
+            $this->prepareBooleanWidths($font, $baseFont, false);
         }
-        $text = $value ? 'TRUE' : 'FALSE';
-        if (!isset($this->simplePixels[$text])) {
-            $this->simplePixels[$text] = $this->measurePixels($text, $font);
+        return $this->booleanWidths[(int)$value];
+    }
+
+    /** Resolve inherited cell fonts only when the boolean measurement context changes. */
+    public function calculateBooleanStyleWidth(bool $value, array $font, array $baseFont, bool $autoFilter = false): float
+    {
+        if (!$this->booleanInherit || $this->booleanFactor !== self::$widthFactor
+            || $font !== $this->booleanFont || $baseFont !== $this->booleanBaseFont) {
+            $this->prepareBooleanWidths($font, $baseFont, true);
         }
-        return $this->excelWidth($this->simplePixels[$text], $baseFont);
+        return $this->booleanWidths[($autoFilter ? 2 : 0) + (int)$value];
+    }
+
+    protected function prepareBooleanWidths(array $font, array $baseFont, bool $inherit): void
+    {
+        $sourceFont = $font;
+        if ($inherit) {
+            $font = array_replace($baseFont, $font);
+        }
+        $key = serialize([
+            $font['name'] ?? self::DEFAULT_FONT_NAME, (float)($font['size'] ?? self::DEFAULT_FONT_SIZE),
+            !empty($font['style-bold']), !empty($font['style-italic']),
+            $baseFont['name'] ?? self::DEFAULT_FONT_NAME, (float)($baseFont['size'] ?? self::DEFAULT_FONT_SIZE),
+            !empty($baseFont['style-bold']), !empty($baseFont['style-italic']), self::$widthFactor,
+        ]);
+        if ($this->booleanCache === null) {
+            $this->booleanCache = new WidthCache(32, 32768, 2048);
+        }
+        $widths = $this->booleanCache->get($key);
+        if ($widths === null) {
+            $false = $this->excelWidth($this->measurePixels('FALSE', $font), $baseFont);
+            $true = $this->excelWidth($this->measurePixels('TRUE', $font), $baseFont);
+            $widths = [$false, $true, min(255.0, $false + 1), min(255.0, $true + 1)];
+            $this->booleanCache->put($key, $widths);
+        }
+        $this->booleanFont = $sourceFont;
+        $this->booleanBaseFont = $baseFont;
+        $this->booleanFactor = self::$widthFactor;
+        $this->booleanInherit = $inherit;
+        $this->booleanWidths = $widths;
     }
 
     /** Content measurements have no padding, workbook scaling or global factor. */

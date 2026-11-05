@@ -2219,6 +2219,17 @@ class Sheet implements InterfaceSheetWriter
                 $cellValue = $cellValue['value'] ?? null;
             }
         }
+        if (is_bool($cellValue) && !$this->excel->hasAutoWidthFormatter()) {
+            $len = $this->excel->getAutoWidthFont()->calculateBooleanStyleWidth(
+                $cellValue, $style['font']['val'] ?? [],
+                $this->excel->styleManager->defaultFont['val'] ?? [], (bool)$this->autoFilter
+            );
+            $currentWidth = $this->colAttributes[$colIdx]['width'] ?? null;
+            if (($currentWidth === null || $currentWidth < $len) && ($this->colMinWidths[$colIdx] ?? 0) <= $len) {
+                $this->_setColAttributes($colIdx, ['width' => $len]);
+            }
+            return;
+        }
         if ($cellValue !== null && $cellValue !== '') {
             $font = array_replace($this->excel->styleManager->defaultFont['val'] ?? [], $style['font']['val'] ?? []);
             $value = $cellValue;
@@ -2230,9 +2241,6 @@ class Sheet implements InterfaceSheetWriter
                     || ($numberFormat === '0' && $value >= -999999999999999 && $value <= 999999999999999))
                 && !$this->excel->hasAutoWidthFormatter()) {
                 $len = $calculator->calculateIntegerWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? []);
-            }
-            elseif (is_bool($value) && !$this->excel->hasAutoWidthFormatter()) {
-                $len = $calculator->calculateBooleanWidth($value, $font, $this->excel->styleManager->defaultFont['val'] ?? []);
             }
             elseif (!$value instanceof RichText) {
                 $type = $style['number_format_type'] ?? 'n_auto';

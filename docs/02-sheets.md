@@ -248,7 +248,7 @@ Measurement cache keys reuse equal-width digit patterns: the supported font tabl
 
 Native PHP integers with `General` or `@` use a direct width path without number-format parsing or locale conversion. The simple `0` mask uses this path for integers of up to 15 digits; larger formatted values retain the standard formatter. A bounded cache stores signed decimal lengths for one active font, with base-font conversion and the current width factor applied on retrieval. Custom masks and callbacks retain their usual behavior.
 
-Native booleans use the same bounded font context with two literal measurements, `TRUE` and `FALSE`, independently of the number mask. Both boolean values participate in automatic widths. Font, workbook base-font and width-factor changes remain effective; a custom callback always takes precedence over this path.
+Native booleans cache ready Excel widths for `TRUE` and `FALSE`, including variants with autofilter padding. Repeated values bypass font merging, pixel conversion and factor arithmetic; the column only updates its maximum when necessary. The cache holds up to 32 font/base-font/factor contexts (32 KiB of keys, skipping keys over 2 KiB) and resolves inherited font properties on a context change. Both boolean values participate in automatic widths, independently of the number mask. A custom callback always takes precedence over this path.
 
 Initial implementation measurements before the date/text optimizations, on Windows with Xdebug disabled (2026-11-05, median of five separate runs, baseline `5996193`):
 
@@ -281,6 +281,8 @@ The date/text figures above precede the native integer/boolean paths. Their sepa
 | Alternating native booleans | 10.5% | 6.7% |
 
 Against the exact `v6.19.2` tag, unique `General` integers took about 3–5% less time. Repeated integers were approximately equal on PHP 7.4 and 8% slower on PHP 8.3. Booleans remained 7–10% slower; the old width code ignored `false`, while the current code measures both values. Control runs for native integers and integer-valued floats under `0.00` retained the regular formatter and differed by about 1–3% from `a76ee1e`.
+
+A subsequent ready-width cache for booleans was compared against `6ee1fbc` over seven alternating runs. An isolated 200,000-call width calculation took 45% less time on PHP 7.4 and 49% less on PHP 8.3. Full export of 20,000 alternating booleans took 5.3% / 4.6% less time respectively. In this run it remained about 4% / 6% slower than `v6.19.2`, whose width path skipped `false` and measured `true` as the string `1`. These figures distinguish width calculation from full export, which also includes row writing and ZIP assembly.
 
 ### Group/outline rows and columns
 

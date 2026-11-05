@@ -426,4 +426,80 @@ final class AutoWidthTest extends TestCase
         $this->assertSame([false, true], $seen);
         $this->assertSame($widths[1], $widths[2]);
     }
+
+    public function testReadyBooleanWidthsPreserveInheritanceAndFilters(): void
+    {
+        $calculator = new Font();
+        foreach ([['name' => 'Calibri', 'size' => 11], ['name' => 'Tahoma', 'size' => 18, 'style-bold' => true, 'style-italic' => true]] as $base) {
+            foreach ([[], ['size' => 16], ['style-bold' => false, 'name' => 'Arial'], ['size' => 1000]] as $overrides) {
+                foreach ([1.0, 1.5, 0.0, 1.0] as $factor) {
+                    Font::setFontWidthFactor($factor);
+                    foreach ([false, true] as $value) {
+                        $expected = $calculator->calculateCellWidth($value ? 'TRUE' : 'FALSE', array_replace($base, $overrides), $base, false);
+                        $this->assertSame($expected, $calculator->calculateBooleanStyleWidth($value, $overrides, $base));
+                        $this->assertSame(min(255.0, $expected + 1), $calculator->calculateBooleanStyleWidth($value, $overrides, $base, true));
+                        $direct = $calculator->calculateCellWidth($value ? 'TRUE' : 'FALSE', $overrides, $base, false);
+                        $this->assertSame($direct, $calculator->calculateBooleanWidth($value, $overrides, $base));
+                    }
+                }
+            }
+        }
+    }
+
+    public function testBooleanReadyPathPreservesColumnLimitsAndZeroWidths(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:D')->setColMinWidth('A:B', 20)->setAutoFilter('A1:D2');
+        $sheet->writeRows([[false, 'FALSE', true, 'TRUE'], [true, 'TRUE', false, 'FALSE']]);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame(20.0, $widths[1]);
+        $this->assertSame($widths[1], $widths[2]);
+        $this->assertSame($widths[3], $widths[4]);
+        Font::setFontWidthFactor(0.0);
+        $excel = Excel::create();
+        $excel->sheet()->setColWidthAuto('A:B')->writeRow([false, true]);
+        $widths = $this->saveWidths($excel);
+        $this->assertArrayHasKey(1, $widths);
+        $this->assertArrayHasKey(2, $widths);
+        $this->assertSame(0.0, $widths[1]);
+        $this->assertSame(0.0, $widths[2]);
+    }
+
+    public function testBooleanCacheDoesNotBypassNewCallbacks(): void
+    {
+        $excel = Excel::create();
+        $sheet = $excel->sheet();
+        $sheet->setColWidthAuto('A:B')->writeRow([false, 'FALSE']);
+        $sheet->nextRow();
+        $seen = [];
+        $excel->setAutoWidthFormatter(function ($value) use (&$seen) {
+            if (is_bool($value)) {
+                $seen[] = $value;
+                return 'A longer callback label';
+            }
+            return null;
+        });
+        $sheet->writeRow([true, 'A longer callback label']);
+        $sheet->nextRow();
+        $excel->setAutoWidthFormatter(null);
+        $sheet->writeRow([false, 'FALSE']);
+        $widths = $this->saveWidths($excel);
+        $this->assertSame([true], $seen);
+        $this->assertSame($widths[1], $widths[2]);
+    }
+
+    public function testReadyBooleanCacheMemoryIsBounded(): void
+    {
+        $calculator = new Font();
+        $base = ['name' => 'Calibri', 'size' => 11];
+        for ($i = 0; $i < 3000; ++$i) {
+            $calculator->calculateBooleanStyleWidth(true, ['size' => 10 + $i / 1000], $base);
+        }
+        $memory = memory_get_usage();
+        for ($i = 3000; $i < 15000; ++$i) {
+            $calculator->calculateBooleanStyleWidth(false, ['size' => 10 + $i / 1000], $base, true);
+        }
+        $this->assertLessThan(1048576, memory_get_usage() - $memory);
+    }
 }

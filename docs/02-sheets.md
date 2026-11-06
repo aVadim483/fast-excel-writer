@@ -232,7 +232,7 @@ Date conversion is shared between automatic width measurement and XML writing fo
 
 The last formatted date is reused when its serial value, format mask and effective locale are unchanged. Date-only cells use the already truncated day value; time fractions remain significant for date/time formats. Formatter callbacks still run for every applicable cell. Only one result is retained, with limits of 4 KiB for the mask and text and 256 bytes for the locale.
 
-Calendar formatting also reuses an immutable UTC epoch date within each formatter. This avoids recreating the epoch and timezone for every value, including unique dates, and remains independent of changes to the default PHP timezone.
+On 64-bit PHP, calendar formatting converts Excel days directly through UTC timestamps. On 32-bit PHP, the full calendar range is preserved by a DateTime fallback that reuses an immutable UTC epoch within each formatter. Both paths remain independent of changes to the default PHP timezone.
 
 Number and date masks are prepared as reusable section plans. Numeric precision, scaling, literals and scientific notation, as well as date fields and month/minute roles, are determined once. Conditional sections are still selected for each value, and locale overrides remain effective. Plans share the bounded format cache; plans exceeding 256 tokens are processed without retention.
 

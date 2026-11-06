@@ -17,6 +17,11 @@ class CountingDateFormatter extends DisplayFormatter
         return $this->dateEpoch;
     }
 
+    public function fallbackDate(int $day): DateTimeImmutable
+    {
+        return $this->calendarDateTime($day);
+    }
+
     protected function date(float $serial, array $tokens, string $locale): ?string
     {
         ++$this->calls;
@@ -138,7 +143,7 @@ final class AutoWidthDateFormattingTest extends TestCase
         $this->assertLessThan(1048576, memory_get_usage() - $memory);
     }
 
-    public function testUtcEpochIsLazyImmutableAndIndependentOfTheDefaultTimezone(): void
+    public function testFallbackUtcEpochIsLazyImmutableAndIndependentOfTheDefaultTimezone(): void
     {
         $formatter = new CountingDateFormatter();
         $mask = 'yyyy-mm-dd hh:mm:ss';
@@ -153,6 +158,7 @@ final class AutoWidthDateFormattingTest extends TestCase
                 foreach ([[61, '1900-03-01 00:00:00'], [60, '1900-02-29 00:00:00'],
                     [0, '1900-01-00 00:00:00'], [45292.5, '2024-01-01 12:00:00'],
                     [2958465, '9999-12-31 00:00:00'], [61.9999999999, '1900-03-02 00:00:00']] as [$serial, $expected]) {
+                    $formatter->fallbackDate((int)floor($serial));
                     $this->assertSame($expected, $formatter->format($serial, $mask, true, 'en'));
                     if ($epoch === null) {
                         $epoch = $formatter->epoch();
@@ -171,8 +177,8 @@ final class AutoWidthDateFormattingTest extends TestCase
     {
         $first = new CountingDateFormatter();
         $second = new CountingDateFormatter();
-        $first->format(61, 'dddd', true);
-        $second->format(61, 'dddd', true);
+        $first->fallbackDate(61);
+        $second->fallbackDate(61);
         $this->assertNotSame($first->epoch(), $second->epoch());
         $reference = WeakReference::create($first->epoch());
         unset($first);

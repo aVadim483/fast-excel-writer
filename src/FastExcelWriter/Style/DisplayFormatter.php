@@ -463,13 +463,24 @@ class DisplayFormatter
 
     protected function buildCalendarParts(int $day): array
     {
+        if (PHP_INT_SIZE >= 8) {
+            // Before serial 60, Excel's leap-day correction has not taken effect yet.
+            $parts = explode(' ', gmdate('Y n j w', ($day - 25569 + ($day < 60 ? 1 : 0)) * 86400));
+        }
+        else {
+            $parts = explode(' ', $this->calendarDateTime($day)->format('Y n j w'));
+        }
+        return [$day === 0 ? 1900 : (int)$parts[0], $day === 0 ? 1 : ($day === 60 ? 2 : (int)$parts[1]),
+            $day === 0 ? 0 : ($day === 60 ? 29 : (int)$parts[2]), (int)$parts[3]];
+    }
+
+    /** Keep the full calendar range on platforms with 32-bit timestamps. */
+    protected function calendarDateTime(int $day): \DateTimeImmutable
+    {
         if ($this->dateEpoch === null) {
             $this->dateEpoch = new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC'));
         }
-        $date = $this->dateEpoch->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
-        $parts = explode(' ', $date->format('Y n j w'));
-        return [$day === 0 ? 1900 : (int)$parts[0], $day === 0 ? 1 : ($day === 60 ? 2 : (int)$parts[1]),
-            $day === 0 ? 0 : ($day === 60 ? 29 : (int)$parts[2]), (int)$parts[3]];
+        return $this->dateEpoch->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
     }
 
     protected function date(float $serial, array $tokens, string $locale): ?string

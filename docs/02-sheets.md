@@ -230,6 +230,8 @@ Content pixels are converted to Excel units using the maximum digit width of the
 
 Date conversion is shared between automatic width measurement and XML writing for the current cell. Custom writers still receive the original value. If the timezone or the value passed by a custom writer changes before serialization, the date is converted again.
 
+The last formatted date is reused when its serial value, format mask and effective locale are unchanged. Date-only cells use the already truncated day value; time fractions remain significant for date/time formats. Formatter callbacks still run for every applicable cell. Only one result is retained, with limits of 4 KiB for the mask and text and 256 bytes for the locale.
+
 Automatic width reuses the active inherited font and two recent measurement contexts. Changes to the font, workbook base font and width factor still apply. These contexts belong to the workbook and do not grow with the number of fonts used.
 
 3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.

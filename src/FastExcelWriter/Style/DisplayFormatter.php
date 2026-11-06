@@ -7,6 +7,10 @@ class DisplayFormatter
 {
     protected WidthCache $formats;
     protected WidthCache $dateSamples;
+    protected ?float $lastDateValue = null;
+    protected string $lastDateFormat = '';
+    protected string $lastDateLocale = '';
+    protected ?string $lastDateText = null;
 
     public function __construct()
     {
@@ -130,7 +134,7 @@ class DisplayFormatter
         }
         foreach ($section['tokens'] as $token) {
             if ($token[0] === 'date' || $token[0] === 'elapsed') {
-                return $this->date($number, $section['tokens'], $locale) ?? $text;
+                return $this->formatDate($number, $section['tokens'], $locale, $format) ?? $text;
             }
         }
         return $this->number($absolute ? abs($number) : $number, $section['tokens'], $locale) ?? $text;
@@ -298,6 +302,22 @@ class DisplayFormatter
         $output = ($number < 0 ? '-' : '') . $integer . ($fraction !== '' ? $decimal . $fraction : '') . $exponent;
         return $this->literal(array_slice($tokens, 0, $first)) . $output
             . $this->literal(array_slice($tokens, $last + 1));
+    }
+
+    /** Cache one exact date value; time fractions and section selection remain significant. */
+    protected function formatDate(float $serial, array $tokens, string $locale, string $format): ?string
+    {
+        if ($serial === $this->lastDateValue && $format === $this->lastDateFormat && $locale === $this->lastDateLocale) {
+            return $this->lastDateText;
+        }
+        $text = $this->date($serial, $tokens, $locale);
+        if ($text !== null && strlen($format) <= 4096 && strlen($locale) <= 256 && strlen($text) <= 4096) {
+            $this->lastDateFormat = $format;
+            $this->lastDateLocale = $locale;
+            $this->lastDateText = $text;
+            $this->lastDateValue = $serial;
+        }
+        return $text;
     }
 
     protected function date(float $serial, array $tokens, string $locale): ?string

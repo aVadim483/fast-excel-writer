@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Cache the last formatted date value by serial number, mask and effective locale for automatic widths; preserve time fractions, conditions and per-cell callbacks with bounded retained text
+
 * Reuse the active font inheritance, measurement key prefix and glyph metrics during automatic width calculation; keep font changes, callbacks and width factors effective
 
 * Share a date conversion between automatic width measurement and XML writing for the current cell; preserve custom writers, invalid dates and callbacks that change the timezone

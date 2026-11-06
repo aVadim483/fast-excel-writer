@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Compile automatic width format sections into reusable numeric and date operations; avoid repeated mask scans, pattern parsing and month/minute detection while preserving conditional sections and locale overrides
+
 * Reuse an immutable UTC epoch when formatting calendar dates for automatic widths, avoiding repeated epoch and timezone construction for unique values
 
 * Cache the last formatted date value by serial number, mask and effective locale for automatic widths; preserve time fractions, conditions and per-cell callbacks with bounded retained text

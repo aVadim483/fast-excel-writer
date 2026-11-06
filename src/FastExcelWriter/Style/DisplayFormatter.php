@@ -12,6 +12,7 @@ class DisplayFormatter
     protected string $lastDateLocale = '';
     protected ?string $lastDateText = null;
     protected ?\DateTimeImmutable $dateEpoch = null;
+    protected ?array $activeSection = null;
 
     public function __construct()
     {
@@ -26,14 +27,11 @@ class DisplayFormatter
         if ($cached !== null) {
             return $cached === false ? null : $cached;
         }
-        $sections = $this->formats->get($format);
-        if ($sections === null) {
-            $sections = $this->parse($format);
-            $this->formats->put($format, $sections);
-        }
+        $plan = $this->formatPlan($format);
+        $sections = $plan['sections'];
         $sample = '';
         $hasDate = false;
-        $supported = count($sections) === 1 && $sections[0]['condition'] === null;
+        $supported = $plan['count'] === 1 && !$plan['conditional'];
         if ($supported) {
             foreach ($sections[0]['tokens'] as $token) {
                 if ($token[0] === 'date') {
@@ -83,14 +81,11 @@ class DisplayFormatter
             return ($number < 0 ? '-' : '') . number_format(abs($number), 2, $this->separators($locale)[0], '')
                 . ($format === '0.00%' ? '%' : '');
         }
-        $sections = $this->formats->get($format);
-        if ($sections === null) {
-            $sections = $this->parse($format);
-            $this->formats->put($format, $sections);
-        }
+        $plan = $this->formatPlan($format);
+        $sections = $plan['sections'];
         if (!$numeric || !is_numeric($value)) {
-            $section = $sections[3] ?? (count($sections) === 1 ? $sections[0] : null);
-            if ($section === null || (count($sections) < 4 && strpos($section['code'], '@') === false)) {
+            $section = $plan['text'] === null ? null : $sections[$plan['text']];
+            if ($section === null || ($plan['count'] < 4 && !$section['has_text'])) {
                 return $text;
             }
             return $this->literal($section['tokens'], $text);
@@ -101,44 +96,91 @@ class DisplayFormatter
         }
         $section = null;
         $absolute = false;
-        $conditional = false;
-        foreach (array_slice($sections, 0, 3) as $candidate) {
-            if ($candidate['condition'] !== null) {
-                $conditional = true;
-                if ($this->matches($number, $candidate['condition'])) {
-                    $section = $candidate;
+        if ($plan['conditional']) {
+            for ($i = 0; $i < min(3, $plan['count']); ++$i) {
+                if ($sections[$i]['condition'] !== null && $this->matches($number, $sections[$i]['condition'])) {
+                    $section = $sections[$i];
                     break;
                 }
             }
-        }
-        if ($conditional && $section === null) {
-            foreach (array_slice($sections, 0, 3) as $candidate) {
-                if ($candidate['condition'] === null) {
-                    $section = $candidate;
-                    break;
-                }
+            if ($section === null && $plan['fallback'] !== null) {
+                $section = $sections[$plan['fallback']];
             }
             if ($section === null) {
                 return $text;
             }
         }
-        if (!$conditional) {
-            $index = $number < 0 && count($sections) > 1 ? 1 : ($number == 0 && count($sections) > 2 ? 2 : 0);
+        else {
+            $index = $number < 0 && $plan['count'] > 1 ? 1 : ($number == 0 && $plan['count'] > 2 ? 2 : 0);
             $section = $sections[$index];
             $absolute = $index === 1;
         }
         if ($section['locale'] !== '') {
             $locale = $section['locale'];
         }
-        if (strcasecmp($section['code'], 'general') === 0) {
+        if ($section['kind'] === 'general') {
             return str_replace('.', $this->separators($locale)[0], $text);
         }
-        foreach ($section['tokens'] as $token) {
-            if ($token[0] === 'date' || $token[0] === 'elapsed') {
+        $previous = $this->activeSection;
+        $this->activeSection = $section;
+        try {
+            if ($section['kind'] === 'date') {
                 return $this->formatDate($number, $section['tokens'], $locale, $format) ?? $text;
             }
+            return $this->number($absolute ? abs($number) : $number, $section['tokens'], $locale) ?? $text;
         }
-        return $this->number($absolute ? abs($number) : $number, $section['tokens'], $locale) ?? $text;
+        finally {
+            $this->activeSection = $previous;
+        }
+    }
+
+    /** Keep compiled sections in the existing bounded format cache. */
+    protected function formatPlan(string $format): array
+    {
+        $plan = $this->formats->get($format);
+        if ($plan !== null) {
+            return $plan;
+        }
+        $parsed = $this->parse($format);
+        $count = count($parsed);
+        $plan = ['count' => $count, 'conditional' => false, 'fallback' => null,
+            'text' => $count >= 4 ? 3 : ($count === 1 ? 0 : null), 'sections' => []];
+        $tokenCount = 0;
+        foreach ($parsed as $index => $section) {
+            if ($index >= 4) {
+                break;
+            }
+            $tokenCount += count($section['tokens']);
+            if ($index < 3) {
+                if ($section['condition'] !== null) {
+                    $plan['conditional'] = true;
+                }
+                elseif ($plan['fallback'] === null) {
+                    $plan['fallback'] = $index;
+                }
+            }
+            $section['has_text'] = strpos($section['code'], '@') !== false;
+            $section['kind'] = strcasecmp($section['code'], 'general') === 0 ? 'general' : 'number';
+            if ($section['kind'] !== 'general') {
+                foreach ($section['tokens'] as $token) {
+                    if ($token[0] === 'date' || $token[0] === 'elapsed') {
+                        $section['kind'] = 'date';
+                        break;
+                    }
+                }
+            }
+            if ($section['kind'] === 'date') {
+                $section['date_plan'] = $this->prepareDate($section['tokens']);
+            }
+            elseif ($section['kind'] === 'number') {
+                $section['number_plan'] = $this->prepareNumber($section['tokens']);
+            }
+            $plan['sections'][$index] = $section;
+        }
+        if ($tokenCount <= 256) {
+            $this->formats->put($format, $plan);
+        }
+        return $plan;
     }
 
     protected function parse(string $format): array
@@ -233,7 +275,7 @@ class DisplayFormatter
         return ['.', ','];
     }
 
-    protected function number(float $number, array $tokens, string $locale): ?string
+    protected function prepareNumber(array $tokens): array
     {
         $first = null;
         $last = null;
@@ -248,7 +290,7 @@ class DisplayFormatter
             }
         }
         if ($first === null) {
-            return $this->literal($tokens);
+            return ['kind' => 'literal', 'text' => $this->literal($tokens)];
         }
         while (isset($tokens[$last + 1]) && $tokens[$last + 1] === ['code', ',']) {
             ++$last;
@@ -256,53 +298,73 @@ class DisplayFormatter
         $pattern = '';
         for ($i = $first; $i <= $last; ++$i) {
             if ($tokens[$i][0] !== 'code') {
-                return null;
+                return ['kind' => 'unsupported'];
             }
             $pattern .= $tokens[$i][1];
         }
         if (!preg_match('/^([#0?,]+)(?:\.([#0?]+))?(?:([Ee])([+-])(0+))?(,*)$/', $pattern, $parts)) {
-            return null;
+            return ['kind' => 'unsupported'];
         }
         $integerMask = $parts[1];
         $scale = strlen($integerMask) - strlen(rtrim($integerMask, ','));
         $integerMask = rtrim($integerMask, ',');
         $scale += strlen($parts[6] ?? '');
-        $number *= pow(100, $percent) / pow(1000, $scale);
-        if (!is_finite($number)) {
-            return null;
-        }
         $fractionMask = $parts[2] ?? '';
         $decimals = strlen($fractionMask);
         if ($decimals > 30 || strlen($integerMask) > 100) {
+            return ['kind' => 'unsupported'];
+        }
+        return ['kind' => 'number', 'multiplier' => pow(100, $percent) / pow(1000, $scale),
+            'fraction' => $fractionMask, 'decimals' => $decimals, 'zeroes' => substr_count($integerMask, '0'),
+            'trim_limit' => $decimals - strspn(strrev($fractionMask), '#?'), 'scientific_format' => '%.' . $decimals . 'E',
+            'grouped' => strpos($integerMask, ',') !== false, 'prefix' => $this->literal(array_slice($tokens, 0, $first)),
+            'suffix' => $this->literal(array_slice($tokens, $last + 1)), 'exponent' => $parts[3] ?? '',
+            'exponent_sign' => $parts[4] ?? '', 'exponent_zeroes' => strlen($parts[5] ?? '')];
+    }
+
+    protected function number(float $number, array $tokens, string $locale): ?string
+    {
+        $section = $this->activeSection;
+        $plan = $section !== null && isset($section['number_plan']) && $tokens === $section['tokens']
+            ? $section['number_plan'] : $this->prepareNumber($tokens);
+        if ($plan['kind'] === 'literal') {
+            return $plan['text'];
+        }
+        if ($plan['kind'] === 'unsupported') {
             return null;
         }
+        $number *= $plan['multiplier'];
+        if (!is_finite($number)) {
+            return null;
+        }
+        $fractionMask = $plan['fraction'];
+        $decimals = $plan['decimals'];
         $exponent = '';
-        if (!empty($parts[3])) {
-            $scientific = explode('E', sprintf('%.' . $decimals . 'E', abs($number)));
+        if ($plan['exponent'] !== '') {
+            $scientific = explode('E', sprintf($plan['scientific_format'], abs($number)));
             $number = ($number < 0 ? -1 : 1) * (float)str_replace(',', '.', $scientific[0]);
             $power = (int)$scientific[1];
-            $exponent = $parts[3] . ($power < 0 ? '-' : ($parts[4] === '+' ? '+' : ''))
-                . str_pad((string)abs($power), strlen($parts[5]), '0', STR_PAD_LEFT);
+            $exponent = $plan['exponent'] . ($power < 0 ? '-' : ($plan['exponent_sign'] === '+' ? '+' : ''))
+                . str_pad((string)abs($power), $plan['exponent_zeroes'], '0', STR_PAD_LEFT);
         }
         [$decimal, $thousands] = $this->separators($locale);
         $formatted = explode('.', number_format(abs($number), $decimals, '.', ''));
-        $integer = str_pad($formatted[0], substr_count($integerMask, '0'), '0', STR_PAD_LEFT);
-        if ($integer === '0' && strpos($integerMask, '0') === false) {
+        $integer = str_pad($formatted[0], $plan['zeroes'], '0', STR_PAD_LEFT);
+        if ($integer === '0' && $plan['zeroes'] === 0) {
             $integer = '';
         }
-        if (strpos($integerMask, ',') !== false) {
+        if ($plan['grouped']) {
             $integer = preg_replace('/\B(?=(\d{3})+(?!\d))/', $thousands, $integer);
         }
         $fraction = $formatted[1] ?? '';
-        for ($i = $decimals - 1; $i >= 0 && $i < strlen($fractionMask); --$i) {
-            if ($fractionMask[$i] === '0' || ($fraction[$i] ?? '') !== '0') {
+        for ($i = $decimals - 1; $i >= $plan['trim_limit']; --$i) {
+            if (($fraction[$i] ?? '') !== '0') {
                 break;
             }
             $fraction = substr($fraction, 0, $i) . ($fractionMask[$i] === '?' ? ' ' : '');
         }
         $output = ($number < 0 ? '-' : '') . $integer . ($fraction !== '' ? $decimal . $fraction : '') . $exponent;
-        return $this->literal(array_slice($tokens, 0, $first)) . $output
-            . $this->literal(array_slice($tokens, $last + 1));
+        return $plan['prefix'] . $output . $plan['suffix'];
     }
 
     /** Cache one exact date value; time fractions and section selection remain significant. */
@@ -321,6 +383,75 @@ class DisplayFormatter
         return $text;
     }
 
+    protected function prepareDate(array $tokens): array
+    {
+        $parts = [];
+        $previous = [];
+        $next = [];
+        $last = '';
+        $amPm = false;
+        foreach ($tokens as $index => $token) {
+            $parts[$index] = strtolower($token[1]);
+            $previous[$index] = $last;
+            if ($parts[$index] === 'am/pm' || $parts[$index] === 'a/p') {
+                $amPm = true;
+            }
+            if ($token[0] === 'date' || $token[0] === 'elapsed') {
+                $last = $parts[$index];
+            }
+        }
+        $last = '';
+        for ($index = count($tokens) - 1; $index >= 0; --$index) {
+            $next[$index] = $last;
+            if ($tokens[$index][0] === 'date' || $tokens[$index][0] === 'elapsed') {
+                $last = $parts[$index];
+            }
+        }
+        $plan = ['operations' => [], 'am_pm' => $amPm, 'calendar' => false, 'weekday' => false];
+        foreach ($tokens as $index => $token) {
+            $part = $parts[$index];
+            $length = strlen($part);
+            if ($token[0] === 'elapsed') {
+                $plan['operations'][] = ['elapsed', $length, $part[0] === 'h' ? 3600 : ($part[0] === 'm' ? 60 : 1)];
+                continue;
+            }
+            if ($token[0] !== 'date') {
+                $lastIndex = count($plan['operations']) - 1;
+                if ($lastIndex >= 0 && $plan['operations'][$lastIndex][0] === 'literal') {
+                    $plan['operations'][$lastIndex][1] .= $token[1];
+                }
+                else {
+                    $plan['operations'][] = ['literal', $token[1]];
+                }
+                continue;
+            }
+            if ($part === 'am/pm' || $part === 'a/p') {
+                $plan['operations'][] = ['am_pm', $part === 'a/p'];
+                continue;
+            }
+            if ($part[0] === 'y') {
+                $kind = 'year';
+            }
+            elseif ($part[0] === 'd') {
+                $kind = $length >= 3 ? 'weekday' : 'day';
+            }
+            elseif ($part[0] === 'm') {
+                $kind = ($previous[$index][0] ?? '') === 'h' || ($next[$index][0] ?? '') === 's' ? 'minute' : 'month';
+            }
+            else {
+                $kind = $part[0] === 'h' ? 'hour' : 'second';
+            }
+            if (in_array($kind, ['year', 'month', 'day', 'weekday'], true)) {
+                $plan['calendar'] = true;
+            }
+            if ($kind === 'weekday') {
+                $plan['weekday'] = true;
+            }
+            $plan['operations'][] = [$kind, $length];
+        }
+        return $plan;
+    }
+
     protected function date(float $serial, array $tokens, string $locale): ?string
     {
         if ($serial < 0 || $serial >= 2958466) {
@@ -332,6 +463,9 @@ class DisplayFormatter
             ++$day;
             $seconds = 0;
         }
+        $section = $this->activeSection;
+        $plan = $section !== null && isset($section['date_plan']) && $tokens === $section['tokens']
+            ? $section['date_plan'] : $this->prepareDate($tokens);
         if ($this->dateEpoch === null) {
             $this->dateEpoch = new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC'));
         }
@@ -339,15 +473,11 @@ class DisplayFormatter
         $year = $day === 0 ? 1900 : (int)$date->format('Y');
         $month = $day === 0 ? 1 : ($day === 60 ? 2 : (int)$date->format('n'));
         $monthDay = $day === 60 ? 29 : ($day === 0 ? 0 : (int)$date->format('j'));
+        $weekday = $plan['weekday'] ? (int)$date->format('w') : 0;
         $hour = intdiv($seconds, 3600);
         $minute = intdiv($seconds % 3600, 60);
         $second = $seconds % 60;
-        $amPm = false;
-        foreach ($tokens as $token) {
-            if (in_array(strtolower($token[1]), ['am/pm', 'a/p'], true)) {
-                $amPm = true;
-            }
-        }
+        $amPm = $plan['am_pm'];
         $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         if (substr(strtolower($locale), 0, 2) === 'ru') {
@@ -355,48 +485,41 @@ class DisplayFormatter
             $days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
         }
         $output = '';
-        foreach ($tokens as $i => $token) {
-            $part = strtolower($token[1]);
-            $length = strlen($part);
-            if ($token[0] === 'elapsed') {
-                $divisor = $part[0] === 'h' ? 3600 : ($part[0] === 'm' ? 60 : 1);
-                $output .= str_pad((string)(int)floor(($day * 86400 + $seconds) / $divisor), $length, '0', STR_PAD_LEFT);
-            }
-            elseif ($token[0] !== 'date') {
-                $output .= $token[1];
-            }
-            elseif ($part === 'am/pm' || $part === 'a/p') {
-                $output .= $part === 'a/p' ? ($hour < 12 ? 'A' : 'P') : ($hour < 12 ? 'AM' : 'PM');
-            }
-            elseif ($part[0] === 'y') {
-                $output .= $length <= 2 ? str_pad((string)($year % 100), 2, '0', STR_PAD_LEFT) : $year;
-            }
-            elseif ($part[0] === 'd') {
-                $output .= $length >= 3 ? ($length === 3 ? mb_substr($days[(int)$date->format('w')], 0, 3) : $days[(int)$date->format('w')])
-                    : str_pad((string)$monthDay, $length, '0', STR_PAD_LEFT);
-            }
-            elseif ($part[0] === 'm') {
-                $previous = '';
-                $next = '';
-                for ($j = $i - 1; $j >= 0; --$j) {
-                    if ($tokens[$j][0] === 'date' || $tokens[$j][0] === 'elapsed') { $previous = strtolower($tokens[$j][1]); break; }
-                }
-                for ($j = $i + 1; $j < count($tokens); ++$j) {
-                    if ($tokens[$j][0] === 'date' || $tokens[$j][0] === 'elapsed') { $next = strtolower($tokens[$j][1]); break; }
-                }
-                if (($previous !== '' && $previous[0] === 'h') || ($next !== '' && $next[0] === 's')) {
-                    $output .= str_pad((string)$minute, $length, '0', STR_PAD_LEFT);
-                }
-                else {
+        foreach ($plan['operations'] as $operation) {
+            $kind = $operation[0];
+            $length = $operation[1];
+            switch ($kind) {
+                case 'elapsed':
+                    $output .= str_pad((string)(int)floor(($day * 86400 + $seconds) / $operation[2]), $length, '0', STR_PAD_LEFT);
+                    break;
+                case 'literal':
+                    $output .= $operation[1];
+                    break;
+                case 'am_pm':
+                    $output .= $operation[1] ? ($hour < 12 ? 'A' : 'P') : ($hour < 12 ? 'AM' : 'PM');
+                    break;
+                case 'year':
+                    $output .= $length <= 2 ? str_pad((string)($year % 100), 2, '0', STR_PAD_LEFT) : $year;
+                    break;
+                case 'day':
+                    $output .= str_pad((string)$monthDay, $length, '0', STR_PAD_LEFT);
+                    break;
+                case 'weekday':
+                    $output .= $length === 3 ? mb_substr($days[$weekday], 0, 3) : $days[$weekday];
+                    break;
+                case 'month':
                     $output .= $length >= 3 ? ($length === 3 ? mb_substr($months[$month - 1], 0, 3) : ($length === 5 ? mb_substr($months[$month - 1], 0, 1) : $months[$month - 1]))
                         : str_pad((string)$month, $length, '0', STR_PAD_LEFT);
-                }
-            }
-            elseif ($part[0] === 'h') {
-                $output .= str_pad((string)($amPm ? (($hour % 12) ?: 12) : $hour), $length, '0', STR_PAD_LEFT);
-            }
-            elseif ($part[0] === 's') {
-                $output .= str_pad((string)$second, $length, '0', STR_PAD_LEFT);
+                    break;
+                case 'minute':
+                    $output .= str_pad((string)$minute, $length, '0', STR_PAD_LEFT);
+                    break;
+                case 'hour':
+                    $output .= str_pad((string)($amPm ? (($hour % 12) ?: 12) : $hour), $length, '0', STR_PAD_LEFT);
+                    break;
+                case 'second':
+                    $output .= str_pad((string)$second, $length, '0', STR_PAD_LEFT);
+                    break;
             }
         }
         return $output;

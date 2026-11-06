@@ -234,6 +234,8 @@ The last formatted date is reused when its serial value, format mask and effecti
 
 Calendar formatting also reuses an immutable UTC epoch date within each formatter. This avoids recreating the epoch and timezone for every value, including unique dates, and remains independent of changes to the default PHP timezone.
 
+Number and date masks are prepared as reusable section plans. Numeric precision, scaling, literals and scientific notation, as well as date fields and month/minute roles, are determined once. Conditional sections are still selected for each value, and locale overrides remain effective. Plans share the bounded format cache; plans exceeding 256 tokens are processed without retention.
+
 Automatic width reuses the active inherited font and two recent measurement contexts. Changes to the font, workbook base font and width factor still apply. These contexts belong to the workbook and do not grow with the number of fonts used.
 
 3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.

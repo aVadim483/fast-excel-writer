@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Handle native integers with simple automatic width formats directly in Sheet before generic value processing, reusing the current column width while preserving callbacks, filters and width limits
+
 * Measure plain wrapped text directly by its longest line, avoiding RichText run arrays while preserving line endings, font metrics and cell padding
 
 * Cache final automatic widths for native integers by signed decimal length, invalidating them when the cell font, base font or width factor changes

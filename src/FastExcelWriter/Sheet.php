@@ -2221,6 +2221,25 @@ class Sheet implements InterfaceSheetWriter
         if ($currentWidth >= 255 && !$this->excel->hasAutoWidthFormatter()) {
             return;
         }
+        // Ordinary integers need neither value unwrapping nor generic type handling.
+        if (is_int($cellValue)
+            && ($numberFormat === 'GENERAL' || $numberFormat === '@'
+                || ($numberFormat === '0' && $cellValue >= -999999999999999 && $cellValue <= 999999999999999))
+            && !$this->excel->hasAutoWidthFormatter()) {
+            $calculator = $this->excel->getAutoWidthFont();
+            $baseFont = $this->excel->styleManager->defaultFont['val'] ?? [];
+            $font = $calculator->resolveCellFont($baseFont, $style['font']['val'] ?? []);
+            $len = $calculator->calculateIntegerWidth($cellValue, $font, $baseFont);
+            if ($this->autoFilter) {
+                $len += 1;
+            }
+            $len = min(255, $len);
+            if ((empty($currentWidth) || $currentWidth < $len)
+                && (empty($this->colMinWidths[$colIdx]) || $this->colMinWidths[$colIdx] <= $len)) {
+                $this->_setColAttributes($colIdx, ['width' => $len]);
+            }
+            return;
+        }
         $formulaResult = false;
         while (is_array($cellValue)) {
             if (array_key_exists('width_text', $cellValue)) {

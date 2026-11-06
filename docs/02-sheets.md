@@ -244,6 +244,8 @@ Automatic width reuses the active inherited font and two recent measurement cont
 
 Native integer fast paths also retain final Excel widths by decimal length and sign for two recent cell fonts and the active base font and width factor. Changes to the base font or factor invalidate both sets of final widths; unscaled pixel measurements remain reusable. The cache size depends on integer lengths, not the number of rows or fonts used.
 
+For native integers with `General`, `@` or the supported simple `0` format and no custom formatter, the sheet updates automatic width before generic value processing. Minimum widths, the 255-unit limit and AutoFilter padding still apply. Custom formatters and values supplied in arrays retain their existing paths.
+
 Plain text with enabled wrapping is measured directly by its longest line, without building RichText run arrays. CRLF is normalized for measurement only, and cell padding is added once. RichText continues to use per-fragment fonts and line handling.
 
 3. The library cannot calculate formulas. A formula without a supplied result is ignored; a formula with a known result uses that result when calculating the width.

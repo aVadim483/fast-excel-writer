@@ -11,6 +11,7 @@ class DisplayFormatter
     protected string $lastDateFormat = '';
     protected string $lastDateLocale = '';
     protected ?string $lastDateText = null;
+    protected ?\DateTimeImmutable $dateEpoch = null;
 
     public function __construct()
     {
@@ -331,8 +332,10 @@ class DisplayFormatter
             ++$day;
             $seconds = 0;
         }
-        $date = (new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC')))
-            ->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
+        if ($this->dateEpoch === null) {
+            $this->dateEpoch = new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC'));
+        }
+        $date = $this->dateEpoch->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
         $year = $day === 0 ? 1900 : (int)$date->format('Y');
         $month = $day === 0 ? 1 : ($day === 60 ? 2 : (int)$date->format('n'));
         $monthDay = $day === 60 ? 29 : ($day === 0 ? 0 : (int)$date->format('j'));

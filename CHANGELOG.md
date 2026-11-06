@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Reuse an immutable UTC epoch when formatting calendar dates for automatic widths, avoiding repeated epoch and timezone construction for unique values
+
 * Cache the last formatted date value by serial number, mask and effective locale for automatic widths; preserve time fractions, conditions and per-cell callbacks with bounded retained text
 
 * Reuse the active font inheritance, measurement key prefix and glyph metrics during automatic width calculation; keep font changes, callbacks and width factors effective

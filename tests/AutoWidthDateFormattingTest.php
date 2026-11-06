@@ -12,6 +12,11 @@ class CountingDateFormatter extends DisplayFormatter
 {
     public int $calls = 0;
 
+    public function epoch(): ?DateTimeImmutable
+    {
+        return $this->dateEpoch;
+    }
+
     protected function date(float $serial, array $tokens, string $locale): ?string
     {
         ++$this->calls;
@@ -131,5 +136,47 @@ final class AutoWidthDateFormattingTest extends TestCase
             $formatter->format(45292 + $i, 'dddd, d mmmm yyyy "' . $i . '"', true, 'en');
         }
         $this->assertLessThan(1048576, memory_get_usage() - $memory);
+    }
+
+    public function testUtcEpochIsLazyImmutableAndIndependentOfTheDefaultTimezone(): void
+    {
+        $formatter = new CountingDateFormatter();
+        $mask = 'yyyy-mm-dd hh:mm:ss';
+        $this->assertNull($formatter->epoch());
+        $this->assertSame('-1', $formatter->format(-1, $mask, true));
+        $this->assertNull($formatter->epoch());
+        $epoch = null;
+        $timezone = date_default_timezone_get();
+        try {
+            foreach (['Pacific/Honolulu', 'Europe/Moscow', 'UTC'] as $name) {
+                date_default_timezone_set($name);
+                foreach ([[61, '1900-03-01 00:00:00'], [60, '1900-02-29 00:00:00'],
+                    [0, '1900-01-00 00:00:00'], [45292.5, '2024-01-01 12:00:00'],
+                    [2958465, '9999-12-31 00:00:00'], [61.9999999999, '1900-03-02 00:00:00']] as [$serial, $expected]) {
+                    $this->assertSame($expected, $formatter->format($serial, $mask, true, 'en'));
+                    if ($epoch === null) {
+                        $epoch = $formatter->epoch();
+                    }
+                    $this->assertSame($epoch, $formatter->epoch());
+                    $this->assertSame('1899-12-31 00:00:00 UTC', $epoch->format('Y-m-d H:i:s e'));
+                }
+            }
+        }
+        finally {
+            date_default_timezone_set($timezone);
+        }
+    }
+
+    public function testEpochsBelongToEachFormatterAndAreReleased(): void
+    {
+        $first = new CountingDateFormatter();
+        $second = new CountingDateFormatter();
+        $first->format(61, 'dddd', true);
+        $second->format(61, 'dddd', true);
+        $this->assertNotSame($first->epoch(), $second->epoch());
+        $reference = WeakReference::create($first->epoch());
+        unset($first);
+        gc_collect_cycles();
+        $this->assertNull($reference->get());
     }
 }

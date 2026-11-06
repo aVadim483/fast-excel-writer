@@ -9,6 +9,14 @@ class CountingCalendarFormatter extends DisplayFormatter
 {
     public int $builds = 0;
 
+    protected function prepareDate(array $tokens): array
+    {
+        // Exercise component reuse independently of native whole-date formatting.
+        $plan = parent::prepareDate($tokens);
+        $plan['native_mask'] = null;
+        return $plan;
+    }
+
     protected function buildCalendarParts(int $day): array
     {
         ++$this->builds;

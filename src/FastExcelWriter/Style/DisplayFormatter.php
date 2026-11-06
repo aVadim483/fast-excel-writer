@@ -448,7 +448,65 @@ class DisplayFormatter
             }
             $plan['operations'][] = [$kind, $length];
         }
+        $plan['native_mask'] = $plan['calendar'] ? $this->nativeDateMask($plan) : null;
         return $plan;
+    }
+
+    /** Compile only calendar operations with an exact PHP date-format equivalent. */
+    protected function nativeDateMask(array $plan): ?string
+    {
+        $mask = '';
+        foreach ($plan['operations'] as $operation) {
+            [$kind, $length] = $operation;
+            switch ($kind) {
+                case 'literal':
+                    if (strpos($operation[1], "\0") !== false) {
+                        return null;
+                    }
+                    // Escape every byte, including date-format letters and backslashes.
+                    for ($index = 0, $literalLength = strlen($operation[1]); $index < $literalLength; ++$index) {
+                        $mask .= '\\' . $operation[1][$index];
+                    }
+                    break;
+                case 'year':
+                    $mask .= $length <= 2 ? 'y' : 'Y';
+                    break;
+                case 'day':
+                    $mask .= $length === 1 ? 'j' : 'd';
+                    break;
+                case 'weekday':
+                    $mask .= $length === 3 ? 'D' : 'l';
+                    break;
+                case 'month':
+                    if ($length > 4) {
+                        return null;
+                    }
+                    $mask .= [1 => 'n', 2 => 'm', 3 => 'M', 4 => 'F'][$length];
+                    break;
+                case 'minute':
+                case 'second':
+                    if ($length !== 2) {
+                        return null;
+                    }
+                    $mask .= $kind === 'minute' ? 'i' : 's';
+                    break;
+                case 'hour':
+                    if ($length > 2) {
+                        return null;
+                    }
+                    $mask .= $plan['am_pm'] ? ($length === 1 ? 'g' : 'h') : ($length === 1 ? 'G' : 'H');
+                    break;
+                case 'am_pm':
+                    if ($operation[1]) {
+                        return null;
+                    }
+                    $mask .= 'A';
+                    break;
+                default:
+                    return null;
+            }
+        }
+        return $mask;
     }
 
     /** Cache only the effective Excel day, including midnight carry and the fake leap day. */
@@ -497,6 +555,9 @@ class DisplayFormatter
         $section = $this->activeSection;
         $plan = $section !== null && isset($section['date_plan']) && $tokens === $section['tokens']
             ? $section['date_plan'] : $this->prepareDate($tokens);
+        if (PHP_INT_SIZE >= 8 && $locale === 'en' && isset($plan['native_mask']) && $day !== 0 && $day !== 60) {
+            return gmdate($plan['native_mask'], ($day - 25569 + ($day < 60 ? 1 : 0)) * 86400 + $seconds);
+        }
         $calendar = $plan['calendar'] ? $this->calendarParts($day) : null;
         $hour = intdiv($seconds, 3600);
         $minute = intdiv($seconds % 3600, 60);

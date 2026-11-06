@@ -236,6 +236,8 @@ On 64-bit PHP, calendar formatting converts Excel days directly through UTC time
 
 Number and date masks are prepared as reusable section plans. Numeric precision, scaling, literals and scientific notation, as well as date fields and month/minute roles, are determined once. Conditional sections are still selected for each value, and locale overrides remain effective. Plans share the bounded format cache; plans exceeding 256 tokens are processed without retention.
 
+On 64-bit PHP, supported calendar masks in the effective `en` locale are also compiled to a native UTC date format. Conditional section selection and the last-result cache still apply. Literals are escaped, and Excel's synthetic days, other locales, elapsed formats and operations without an exact native equivalent use the operation renderer. Time-only formats retain their existing path.
+
 Calendar components for the last effective Excel day are reused across different times, masks and locales. The day key includes rounding across midnight and distinguishes Excel's synthetic 29 February 1900. Only one set of year/month/day/weekday values is retained. Time-only and elapsed formats skip calendar conversion entirely.
 
 Automatic width reuses the active inherited font and two recent measurement contexts. Changes to the font, workbook base font and width factor still apply. These contexts belong to the workbook and do not grow with the number of fonts used.

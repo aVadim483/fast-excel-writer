@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Execute supported English automatic width calendar masks with native UTC formatting, retaining conditional sections, literal escaping, result caching and fallback rendering for other locales and unsupported operations
+
 * Convert automatic width calendar days directly through UTC timestamps on 64-bit PHP, preserving synthetic Excel dates and the DateTime fallback for 32-bit platforms
 
 * Cache year, month, day and weekday for the last effective Excel day during automatic width formatting; reuse them across time values and locales, and skip calendar conversion for time-only and elapsed formats

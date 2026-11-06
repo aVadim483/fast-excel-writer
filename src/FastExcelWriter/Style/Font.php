@@ -17,6 +17,12 @@ class Font
     protected ?float $lastDigitWidth = null;
     protected array $simpleFont = [];
     protected array $simplePixels = [];
+    protected array $simpleBaseFont = [];
+    protected ?float $simpleFactor = null;
+    protected array $simpleWidths = [];
+    protected array $previousSimpleFont = [];
+    protected array $previousSimplePixels = [];
+    protected array $previousSimpleWidths = [];
     protected array $booleanFont = [];
     protected array $booleanBaseFont = [];
     protected ?float $booleanFactor = null;
@@ -95,20 +101,54 @@ class Font
         return $this->resolvedFont;
     }
 
-    /** Cache signed decimal lengths for one active font; retain unscaled pixels. */
+    /** Cache ready widths by signed decimal length for two recent fonts and the active scale. */
     public function calculateIntegerWidth(int $value, array $font, array $baseFont): float
     {
         if ($font !== $this->simpleFont) {
-            $this->simpleFont = $font;
-            $this->simplePixels = [];
+            $previousFont = $this->simpleFont;
+            $previousPixels = $this->simplePixels;
+            $previousWidths = $this->simpleWidths;
+            if ($font === $this->previousSimpleFont) {
+                $this->simpleFont = $this->previousSimpleFont;
+                $this->simplePixels = $this->previousSimplePixels;
+                $this->simpleWidths = $this->previousSimpleWidths;
+            }
+            else {
+                // Detach mutable references without constructing a measurement context.
+                $this->simpleFont = [];
+                foreach ($font as $key => $property) {
+                    $this->simpleFont[$key] = $property;
+                }
+                $this->simplePixels = [];
+                $this->simpleWidths = [];
+            }
+            $this->previousSimpleFont = $previousFont;
+            $this->previousSimplePixels = $previousPixels;
+            $this->previousSimpleWidths = $previousWidths;
+        }
+        if ($baseFont !== $this->simpleBaseFont || self::$widthFactor !== $this->simpleFactor) {
+            if ($baseFont !== $this->simpleBaseFont) {
+                $this->simpleBaseFont = [];
+                foreach ($baseFont as $key => $property) {
+                    $this->simpleBaseFont[$key] = $property;
+                }
+                // A referenced base-font value may have mutated the previous digit context.
+                $this->lastDigitWidth = null;
+            }
+            $this->simpleFactor = self::$widthFactor;
+            $this->simpleWidths = [];
+            $this->previousSimpleWidths = [];
         }
         $text = (string)$value;
         $length = strlen($text);
         $shape = $value < 0 ? -$length : $length;
-        if (!isset($this->simplePixels[$shape])) {
-            $this->simplePixels[$shape] = $this->measurePixels($text, $font);
+        if (!isset($this->simpleWidths[$shape])) {
+            if (!isset($this->simplePixels[$shape])) {
+                $this->simplePixels[$shape] = $this->measurePixels($text, $font);
+            }
+            $this->simpleWidths[$shape] = $this->excelWidth($this->simplePixels[$shape], $this->simpleBaseFont);
         }
-        return $this->excelWidth($this->simplePixels[$shape], $baseFont);
+        return $this->simpleWidths[$shape];
     }
 
     /** Return a ready column width, including the current base font and factor. */

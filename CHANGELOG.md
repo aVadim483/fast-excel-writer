@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Cache final automatic widths for native integers by signed decimal length, invalidating them when the cell font, base font or width factor changes
+
 * Execute supported English automatic width calendar masks with native UTC formatting, retaining conditional sections, literal escaping, result caching and fallback rendering for other locales and unsupported operations
 
 * Convert automatic width calendar days directly through UTC timestamps on 64-bit PHP, preserving synthetic Excel dates and the DateTime fallback for 32-bit platforms

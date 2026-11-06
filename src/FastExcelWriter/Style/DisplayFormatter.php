@@ -13,6 +13,8 @@ class DisplayFormatter
     protected ?string $lastDateText = null;
     protected ?\DateTimeImmutable $dateEpoch = null;
     protected ?array $activeSection = null;
+    protected ?int $lastCalendarDay = null;
+    protected array $lastCalendarParts = [];
 
     public function __construct()
     {
@@ -407,7 +409,7 @@ class DisplayFormatter
                 $last = $parts[$index];
             }
         }
-        $plan = ['operations' => [], 'am_pm' => $amPm, 'calendar' => false, 'weekday' => false];
+        $plan = ['operations' => [], 'am_pm' => $amPm, 'calendar' => false];
         foreach ($tokens as $index => $token) {
             $part = $parts[$index];
             $length = strlen($part);
@@ -444,12 +446,30 @@ class DisplayFormatter
             if (in_array($kind, ['year', 'month', 'day', 'weekday'], true)) {
                 $plan['calendar'] = true;
             }
-            if ($kind === 'weekday') {
-                $plan['weekday'] = true;
-            }
             $plan['operations'][] = [$kind, $length];
         }
         return $plan;
+    }
+
+    /** Cache only the effective Excel day, including midnight carry and the fake leap day. */
+    protected function calendarParts(int $day): array
+    {
+        if ($day !== $this->lastCalendarDay) {
+            $this->lastCalendarParts = $this->buildCalendarParts($day);
+            $this->lastCalendarDay = $day;
+        }
+        return $this->lastCalendarParts;
+    }
+
+    protected function buildCalendarParts(int $day): array
+    {
+        if ($this->dateEpoch === null) {
+            $this->dateEpoch = new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC'));
+        }
+        $date = $this->dateEpoch->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
+        $parts = explode(' ', $date->format('Y n j w'));
+        return [$day === 0 ? 1900 : (int)$parts[0], $day === 0 ? 1 : ($day === 60 ? 2 : (int)$parts[1]),
+            $day === 0 ? 0 : ($day === 60 ? 29 : (int)$parts[2]), (int)$parts[3]];
     }
 
     protected function date(float $serial, array $tokens, string $locale): ?string
@@ -466,14 +486,7 @@ class DisplayFormatter
         $section = $this->activeSection;
         $plan = $section !== null && isset($section['date_plan']) && $tokens === $section['tokens']
             ? $section['date_plan'] : $this->prepareDate($tokens);
-        if ($this->dateEpoch === null) {
-            $this->dateEpoch = new \DateTimeImmutable('1899-12-31', new \DateTimeZone('UTC'));
-        }
-        $date = $this->dateEpoch->modify('+' . ($day - ($day >= 60 ? 1 : 0)) . ' days');
-        $year = $day === 0 ? 1900 : (int)$date->format('Y');
-        $month = $day === 0 ? 1 : ($day === 60 ? 2 : (int)$date->format('n'));
-        $monthDay = $day === 60 ? 29 : ($day === 0 ? 0 : (int)$date->format('j'));
-        $weekday = $plan['weekday'] ? (int)$date->format('w') : 0;
+        $calendar = $plan['calendar'] ? $this->calendarParts($day) : null;
         $hour = intdiv($seconds, 3600);
         $minute = intdiv($seconds % 3600, 60);
         $second = $seconds % 60;
@@ -499,17 +512,17 @@ class DisplayFormatter
                     $output .= $operation[1] ? ($hour < 12 ? 'A' : 'P') : ($hour < 12 ? 'AM' : 'PM');
                     break;
                 case 'year':
-                    $output .= $length <= 2 ? str_pad((string)($year % 100), 2, '0', STR_PAD_LEFT) : $year;
+                    $output .= $length <= 2 ? str_pad((string)($calendar[0] % 100), 2, '0', STR_PAD_LEFT) : $calendar[0];
                     break;
                 case 'day':
-                    $output .= str_pad((string)$monthDay, $length, '0', STR_PAD_LEFT);
+                    $output .= str_pad((string)$calendar[2], $length, '0', STR_PAD_LEFT);
                     break;
                 case 'weekday':
-                    $output .= $length === 3 ? mb_substr($days[$weekday], 0, 3) : $days[$weekday];
+                    $output .= $length === 3 ? mb_substr($days[$calendar[3]], 0, 3) : $days[$calendar[3]];
                     break;
                 case 'month':
-                    $output .= $length >= 3 ? ($length === 3 ? mb_substr($months[$month - 1], 0, 3) : ($length === 5 ? mb_substr($months[$month - 1], 0, 1) : $months[$month - 1]))
-                        : str_pad((string)$month, $length, '0', STR_PAD_LEFT);
+                    $output .= $length >= 3 ? ($length === 3 ? mb_substr($months[$calendar[1] - 1], 0, 3) : ($length === 5 ? mb_substr($months[$calendar[1] - 1], 0, 1) : $months[$calendar[1] - 1]))
+                        : str_pad((string)$calendar[1], $length, '0', STR_PAD_LEFT);
                     break;
                 case 'minute':
                     $output .= str_pad((string)$minute, $length, '0', STR_PAD_LEFT);

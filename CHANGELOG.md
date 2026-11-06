@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Cache year, month, day and weekday for the last effective Excel day during automatic width formatting; reuse them across time values and locales, and skip calendar conversion for time-only and elapsed formats
+
 * Compile automatic width format sections into reusable numeric and date operations; avoid repeated mask scans, pattern parsing and month/minute detection while preserving conditional sections and locale overrides
 
 * Reuse an immutable UTC epoch when formatting calendar dates for automatic widths, avoiding repeated epoch and timezone construction for unique values

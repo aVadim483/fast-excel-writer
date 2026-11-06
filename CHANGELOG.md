@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Measure plain wrapped text directly by its longest line, avoiding RichText run arrays while preserving line endings, font metrics and cell padding
+
 * Cache final automatic widths for native integers by signed decimal length, invalidating them when the cell font, base font or width factor changes
 
 * Execute supported English automatic width calendar masks with native UTC formatting, retaining conditional sections, literal escaping, result caching and fallback rendering for other locales and unsupported operations

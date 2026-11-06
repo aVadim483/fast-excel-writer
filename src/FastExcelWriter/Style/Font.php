@@ -335,6 +335,13 @@ class Font
         if (!$value instanceof RichText && (!$wrap || strpos((string)$value, "\n") === false)) {
             return $this->excelWidth($this->measurePixels((string)$value, $font), $baseFont);
         }
+        if (is_string($value)) {
+            $maxWidth = 0.0;
+            foreach (explode("\n", str_replace("\r\n", "\n", $value)) as $line) {
+                $maxWidth = max($maxWidth, $this->measurePixels($line, $font));
+            }
+            return $this->excelWidth($maxWidth, $baseFont);
+        }
         $lineWidth = 0.0;
         $maxWidth = 0.0;
         $runs = [];

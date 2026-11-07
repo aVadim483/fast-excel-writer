@@ -29,6 +29,7 @@ class Font
     protected bool $booleanInherit = false;
     protected array $booleanWidths = [];
     protected ?WidthCache $booleanCache = null;
+    protected array $booleanLabels = ['FALSE', 'TRUE'];
     protected ?array $inheritedBaseFont = null;
     protected array $inheritedFont = [];
     protected array $resolvedFont = [];
@@ -151,6 +152,16 @@ class Font
         return $this->simpleWidths[$shape];
     }
 
+    /** @internal Prepare captions on locale changes, keeping repeated measurements unchanged. */
+    public function setBooleanLocale(string $locale): void
+    {
+        $labels = DisplayFormatter::booleanLabels($locale);
+        if ($labels !== $this->booleanLabels) {
+            $this->booleanLabels = $labels;
+            $this->booleanFactor = null;
+        }
+    }
+
     /** Return a ready column width, including the current base font and factor. */
     public function calculateBooleanWidth(bool $value, array $font, array $baseFont): float
     {
@@ -181,15 +192,15 @@ class Font
             $font['name'] ?? self::DEFAULT_FONT_NAME, (float)($font['size'] ?? self::DEFAULT_FONT_SIZE),
             !empty($font['style-bold']), !empty($font['style-italic']),
             $baseFont['name'] ?? self::DEFAULT_FONT_NAME, (float)($baseFont['size'] ?? self::DEFAULT_FONT_SIZE),
-            !empty($baseFont['style-bold']), !empty($baseFont['style-italic']), self::$widthFactor,
+            !empty($baseFont['style-bold']), !empty($baseFont['style-italic']), self::$widthFactor, $this->booleanLabels,
         ]);
         if ($this->booleanCache === null) {
             $this->booleanCache = new WidthCache(32, 32768, 2048);
         }
         $widths = $this->booleanCache->get($key);
         if ($widths === null) {
-            $false = $this->excelWidth($this->measurePixels('FALSE', $font), $baseFont);
-            $true = $this->excelWidth($this->measurePixels('TRUE', $font), $baseFont);
+            $false = $this->excelWidth($this->measurePixels($this->booleanLabels[0], $font), $baseFont);
+            $true = $this->excelWidth($this->measurePixels($this->booleanLabels[1], $font), $baseFont);
             $widths = [$false, $true, min(255.0, $false + 1), min(255.0, $true + 1)];
             $this->booleanCache->put($key, $widths);
         }

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Measure boolean automatic widths using workbook-localized captions, reusing cached widths across locale changes and keeping custom formatter fallback consistent
+
 * Handle native integers with simple automatic width formats directly in Sheet before generic value processing, reusing the current column width while preserving callbacks, filters and width limits
 
 * Measure plain wrapped text directly by its longest line, avoiding RichText run arrays while preserving line endings, font metrics and cell padding

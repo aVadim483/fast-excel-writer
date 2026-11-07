@@ -59,10 +59,26 @@ class DisplayFormatter
         return $result === false ? null : $result;
     }
 
+    /** Boolean captions follow the workbook language, independently of number masks. */
+    public static function booleanLabels(string $locale): array
+    {
+        static $labels = [
+            'cs' => ['NEPRAVDA', 'PRAVDA'], 'da' => ['FALSK', 'SAND'],
+            'de' => ['FALSCH', 'WAHR'], 'es' => ['FALSO', 'VERDADERO'],
+            'fi' => ['EPÄTOSI', 'TOSI'], 'fr' => ['FAUX', 'VRAI'],
+            'hu' => ['HAMIS', 'IGAZ'], 'it' => ['FALSO', 'VERO'],
+            'nl' => ['ONWAAR', 'WAAR'], 'no' => ['USANN', 'SANN'],
+            'pl' => ['FAŁSZ', 'PRAWDA'], 'pt' => ['FALSO', 'VERDADEIRO'],
+            'ru' => ['ЛОЖЬ', 'ИСТИНА'], 'sv' => ['FALSKT', 'SANT'],
+            'tr' => ['YANLIŞ', 'DOĞRU'],
+        ];
+        return $labels[strtolower(substr($locale, 0, 2))] ?? ['FALSE', 'TRUE'];
+    }
+
     public function format($value, string $format, bool $numeric = false, string $locale = 'en'): string
     {
         if (is_bool($value)) {
-            return $value ? 'TRUE' : 'FALSE';
+            return self::booleanLabels($locale)[(int)$value];
         }
         if ($value === null) {
             return '';

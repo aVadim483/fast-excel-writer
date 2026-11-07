@@ -77,7 +77,7 @@ final class AutoWidthTest extends TestCase
 
     public function testZerosBooleansAndFormulaResults(): void
     {
-        $excel = Excel::create();
+        $excel = Excel::create([], ['locale' => 'en']);
         $sheet = $excel->sheet();
         $sheet->setColWidthAuto('A:F');
         $sheet->writeRow([0, '0', false, 'FALSE', ['=1-1', 0], ['=1+1', null]]);
@@ -520,7 +520,7 @@ final class AutoWidthTest extends TestCase
 
     public function testBooleansIgnoreNumberMasksAndPreserveCallbacks(): void
     {
-        $excel = Excel::create();
+        $excel = Excel::create([], ['locale' => 'en']);
         $values = [];
         $styles = [];
         foreach (['GENERAL', '@', '0.00', 'yyyy-mm-dd', '0;0;0;"custom"'] as $format) {
@@ -571,7 +571,7 @@ final class AutoWidthTest extends TestCase
 
     public function testBooleanReadyPathPreservesColumnLimitsAndZeroWidths(): void
     {
-        $excel = Excel::create();
+        $excel = Excel::create([], ['locale' => 'en']);
         $sheet = $excel->sheet();
         $sheet->setColWidthAuto('A:D')->setColMinWidth('A:B', 20)->setAutoFilter('A1:D2');
         $sheet->writeRows([[false, 'FALSE', true, 'TRUE'], [true, 'TRUE', false, 'FALSE']]);
@@ -624,5 +624,83 @@ final class AutoWidthTest extends TestCase
             $calculator->calculateBooleanStyleWidth(false, ['size' => 10 + $i / 1000], $base, true);
         }
         $this->assertLessThan(1048576, memory_get_usage() - $memory);
+    }
+
+    public function testBooleanLocalesMatchProjectTranslations(): void
+    {
+        $formatter = new DisplayFormatter();
+        foreach (glob(__DIR__ . '/../src/FastExcelWriter/locale/*/settings.php') as $file) {
+            $settings = include $file;
+            $language = basename(dirname($file));
+            foreach ([false => 'FALSE', true => 'TRUE'] as $value => $function) {
+                $label = array_search($function, $settings['functions'], true);
+                $this->assertNotFalse($label, $language);
+                $this->assertSame($label, $formatter->format((bool)$value, '0.00', false, $language));
+            }
+        }
+        foreach (['ru-RU', 'RU_ru.UTF-8'] as $locale) {
+            $this->assertSame('ИСТИНА', $formatter->format(true, '@', false, $locale));
+            $this->assertSame('ЛОЖЬ', $formatter->format(false, 'GENERAL', false, $locale));
+        }
+        $this->assertSame('TRUE', $formatter->format(true, 'GENERAL', false, 'unknown'));
+        $this->assertSame('FALSE', $formatter->format(false, 'GENERAL', false, 'en-US'));
+    }
+
+    public function testLocalizedBooleanWidthsAndCallbackFallback(): void
+    {
+        foreach ([false, true] as $shared) {
+            foreach (['ru-RU' => ['ЛОЖЬ', 'ИСТИНА'], 'de' => ['FALSCH', 'WAHR'], 'fr' => ['FAUX', 'VRAI']] as $locale => $labels) {
+                $excel = Excel::create([], ['locale' => $locale, 'shared_string' => $shared]);
+                $sheet = $excel->sheet();
+                $sheet->setColWidthAuto('A:D')->setAutoFilter('A1:D2');
+                $sheet->setColDataStyle('A:D', ['font-size' => 16, 'font-style' => 'bold']);
+                $sheet->writeRow([false, $labels[0], true, $labels[1]]);
+                $sheet->nextRow();
+                $calls = [];
+                $excel->setAutoWidthFormatter(function ($value, $format, $type, $language) use (&$calls) {
+                    if (is_bool($value)) { $calls[] = [$value, $language]; }
+                    return null;
+                });
+                $sheet->writeRow([false, $labels[0], true, $labels[1]]);
+                $widths = $this->saveWidths($excel);
+                $this->assertSame([[false, strtolower(str_replace('-', '_', $locale))], [true, strtolower(str_replace('-', '_', $locale))]], $calls);
+                $this->assertSame($widths[1], $widths[2]);
+                $this->assertSame($widths[3], $widths[4]);
+            }
+        }
+    }
+
+    public function testBooleanLocaleChangesReuseCachedContexts(): void
+    {
+        $calculator = new class extends Font {
+            public int $measurements = 0;
+            protected function measurePixels(string $text, array $font): float
+            {
+                ++$this->measurements;
+                return parent::measurePixels($text, $font);
+            }
+        };
+        $base = ['name' => 'Calibri', 'size' => 11];
+        $english = $calculator->calculateBooleanStyleWidth(true, [], $base);
+        $calculator->setBooleanLocale('ru');
+        $russian = $calculator->calculateBooleanStyleWidth(true, [], $base);
+        $this->assertGreaterThan($english, $russian);
+        $calls = $calculator->measurements;
+        foreach (['en', 'ru-RU', 'ru_RU.UTF-8', 'en'] as $locale) {
+            $calculator->setBooleanLocale($locale);
+            $expected = substr($locale, 0, 2) === 'ru' ? $russian : $english;
+            $this->assertSame($expected, $calculator->calculateBooleanStyleWidth(true, [], $base));
+            $this->assertSame(min(255.0, $expected + 1), $calculator->calculateBooleanStyleWidth(true, [], $base, true));
+            $this->assertSame($calls, $calculator->measurements);
+        }
+        $first = Excel::create([], ['locale' => 'en']);
+        $second = Excel::create([], ['locale' => 'ru']);
+        $this->assertSame($english, $first->getAutoWidthFont()->calculateBooleanStyleWidth(true, [], $base));
+        $this->assertSame($russian, $second->getAutoWidthFont()->calculateBooleanStyleWidth(true, [], $base));
+        $first->setLocale('ru');
+        $this->assertSame($russian, $first->getAutoWidthFont()->calculateBooleanStyleWidth(true, [], $base));
+        $first->setLocale('en');
+        $this->assertSame($english, $first->getAutoWidthFont()->calculateBooleanStyleWidth(true, [], $base));
+        $this->assertSame($russian, $second->getAutoWidthFont()->calculateBooleanStyleWidth(true, [], $base));
     }
 }

@@ -223,6 +223,7 @@ class Excel implements InterfaceBookWriter
     {
         if ($this->autoWidthFont === null) {
             $this->autoWidthFont = new \avadim\FastExcelWriter\Style\Font();
+            $this->autoWidthFont->setBooleanLocale($this->autoWidthLocale);
         }
         return $this->autoWidthFont;
     }
@@ -617,6 +618,9 @@ class Excel implements InterfaceBookWriter
     public function setLocale(string $locale, ?string $dir = null): Excel
     {
         $this->autoWidthLocale = strtolower(str_replace('-', '_', $locale));
+        if ($this->autoWidthFont !== null) {
+            $this->autoWidthFont->setBooleanLocale($this->autoWidthLocale);
+        }
         $localeSettings = [];
         // default settings
         $aFormatSettings = [

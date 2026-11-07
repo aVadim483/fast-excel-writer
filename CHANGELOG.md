@@ -10,6 +10,7 @@
 * Respect minimum column widths, autofilter padding and Excel's width limit of 255; skip further measurements for saturated columns while preserving custom formatter callbacks
 * Optimize buffered row bounds tracking to avoid repeatedly scanning buffered cell indexes
 * Add Excel AutoFit reference fixtures and regression tests for formatting, locale changes, cache limits and streaming behavior
+* Avoid NAN-to-string conversion warnings in automatic width formatting on PHP 8.5 while preserving text format sections
 
 ## V.6.19.2
 

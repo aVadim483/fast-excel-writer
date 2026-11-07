@@ -83,7 +83,8 @@ class DisplayFormatter
         if ($value === null) {
             return '';
         }
-        $text = (string)$value;
+        // PHP 8.5 warns on implicit NAN string conversion; retain text-section handling.
+        $text = is_float($value) && is_nan($value) ? 'NAN' : (string)$value;
         if ($format === '@') {
             return $text;
         }

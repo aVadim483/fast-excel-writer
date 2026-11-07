@@ -1,46 +1,15 @@
-## Unreleased
+## V.6.20.0
 
-* Measure boolean automatic widths using workbook-localized captions, reusing cached widths across locale changes and keeping custom formatter fallback consistent
-
-* Handle native integers with simple automatic width formats directly in Sheet before generic value processing, reusing the current column width while preserving callbacks, filters and width limits
-
-* Measure plain wrapped text directly by its longest line, avoiding RichText run arrays while preserving line endings, font metrics and cell padding
-
-* Cache final automatic widths for native integers by signed decimal length, invalidating them when the cell font, base font or width factor changes
-
-* Execute supported English automatic width calendar masks with native UTC formatting, retaining conditional sections, literal escaping, result caching and fallback rendering for other locales and unsupported operations
-
-* Convert automatic width calendar days directly through UTC timestamps on 64-bit PHP, preserving synthetic Excel dates and the DateTime fallback for 32-bit platforms
-
-* Cache year, month, day and weekday for the last effective Excel day during automatic width formatting; reuse them across time values and locales, and skip calendar conversion for time-only and elapsed formats
-
-* Compile automatic width format sections into reusable numeric and date operations; avoid repeated mask scans, pattern parsing and month/minute detection while preserving conditional sections and locale overrides
-
-* Reuse an immutable UTC epoch when formatting calendar dates for automatic widths, avoiding repeated epoch and timezone construction for unique values
-
-* Cache the last formatted date value by serial number, mask and effective locale for automatic widths; preserve time fractions, conditions and per-cell callbacks with bounded retained text
-
-* Reuse the active font inheritance, measurement key prefix and glyph metrics during automatic width calculation; keep font changes, callbacks and width factors effective
-
-* Share a date conversion between automatic width measurement and XML writing for the current cell; preserve custom writers, invalid dates and callbacks that change the timezone
-
-* Stop automatic width measurements once a column reaches Excel's width limit of 255; preserve formatter callbacks and resume measuring after an explicit width reduction
-
-* Speed up automatic width display formatting for native numbers with `0.00` and `0.00%` masks while preserving rounding, signs, locale separators and overflow fallback
-
-* Cache complete boolean column widths, including autofilter padding, in bounded font/base-font/factor contexts; repeated booleans bypass font merging and pixel conversion while preserving callbacks, minimum widths and zero factors
-
-* Optimize automatic widths for native integers with simple formats using a bounded cache of signed decimal lengths; preserve custom formats, callbacks, base fonts and width factors
-* Optimize automatic widths for native booleans by caching the two visible literals per active font, including `false` and preserving custom callbacks
-
-* Optimize automatic widths of numeric date/time masks using bounded cached width samples instead of formatting each date; preserve callbacks and value-dependent formats
-* Reduce text measurement overhead with compact cache keys, tabular-digit pattern reuse, faster Unicode splitting and native counting for long supported text; retain the same font advances
-
-* Fixed automatic column widths for RichText, zero values, booleans and supplied formula results; preserve fragment formatting and account for wrapped lines
-* Measure numeric cells using their displayed format, with bounded format parsing and an optional `auto_width_formatter` callback (`Excel::setAutoWidthFormatter()` / `Options::autoWidthFormatter()`)
-* Bound automatic-width caches, keep workbook calculation state separate and apply changes to `Font::setFontWidthFactor()` to subsequent cached measurements
-* Improve automatic widths using character advance tables for Calibri, Arial, Tahoma and Times New Roman, including bold/italic, with conversion based on the workbook font; unknown fonts and unsupported masks remain approximate
-* Added 41 AutoFit reference cases from real Excel and regression coverage for memory bounds, workbook lifetimes, locale isolation, number formats and Excel's column width limit
+* Improve automatic column widths using character metrics for Calibri, Arial, Tahoma and Times New Roman, including bold and italic styles
+* Fix automatic widths for zero values, native booleans, RichText with fragment formatting, wrapped text and formulas with supplied results
+* Measure numeric cells using supported display formats, including decimal places, leading zeros, percentages, currencies, scientific notation, format sections, dates, time and elapsed durations
+* Measure boolean captions using the workbook locale, with translations for 15 languages and English fallback
+* Add custom automatic width formatting through Excel::setAutoWidthFormatter(), the auto_width_formatter option and Options::autoWidthFormatter()
+* Optimize automatic width calculations with reusable format plans, font contexts, date conversions and cached widths for integers, booleans and numeric date/time masks
+* Bound automatic width caches, isolate calculation state between workbooks and respect changes to fonts, locales and width factors
+* Respect minimum column widths, autofilter padding and Excel's width limit of 255; skip further measurements for saturated columns while preserving custom formatter callbacks
+* Optimize buffered row bounds tracking to avoid repeatedly scanning buffered cell indexes
+* Add Excel AutoFit reference fixtures and regression tests for formatting, locale changes, cache limits and streaming behavior
 
 ## V.6.19.2
 
